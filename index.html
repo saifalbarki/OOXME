@@ -1,106 +1,78 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="ooxme — Business Developer Partner." />
-    <title>ooxme — Business Developer Partner</title>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap');
-
-      :root { --ink:#0d0d0d; --paper:#ffffff; --soft:#f1f3f7; --line:rgba(241,243,247,.28); }
-      * { box-sizing:border-box; }
-      html { scroll-behavior:smooth; }
-      body { margin:0; background:var(--ink); color:var(--soft); font-family:Manrope,Arial,sans-serif; overflow-x:hidden; }
-      a { color:inherit; text-decoration:none; }
-      .wrap { max-width:1440px; margin:auto; padding:0 3.5vw; }
-      .mono { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
-      nav { height:80px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; }
-      header.wrap { max-width:none; padding:0; background:var(--soft); }
-      header nav { max-width:1440px; margin:auto; padding:0 3.5vw; color:var(--ink); border-bottom-color:rgba(13,13,13,.18); }
-      .brand-logo { display:flex; align-items:center; }
-      .brand-logo img { display:block; width:47px; height:47px; object-fit:contain; }
-      .nav-links { display:flex; align-items:center; gap:28px; }
-      .nav-links a { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; }
-      .hero { min-height:730px; padding:8.2vw 3.5vw 5vw; position:relative; border-bottom:1px solid var(--line); }
-      .eyebrow { display:flex; align-items:center; justify-content:center; margin-bottom:30px; text-align:center; }
-      .eyebrow span { display:none; }
-      h1 { font-size:clamp(48px,8.2vw,118px); letter-spacing:-.085em; font-weight:700; line-height:1.04; margin:0 auto; max-width:1200px; text-align:center; }
-      h1 em { font-family:'Playfair Display',Georgia,serif; font-weight:500; letter-spacing:-.07em; }
-      .hero-bottom { margin-top:78px; }
-      .intro { width:100%; max-width:none; font-size:clamp(20px,2.1vw,30px); line-height:1.4; letter-spacing:-.04em; text-align:center; }
-      .intro strong { background:transparent; color:inherit; font-weight:700; padding:0; }
-      .ticker { white-space:nowrap; overflow:hidden; background:var(--ink); color:var(--soft); padding:13px 0 12px; border-bottom:1px solid var(--ink); }
-      .ticker-track { display:inline-block; animation:slide 24s linear infinite; }
-      .ticker span { margin-right:42px; font-family:'DM Mono',monospace; font-size:12px; font-weight:500; text-transform:uppercase; }
-      .ticker b { margin-right:42px; font-size:14px; }
-      @keyframes slide { to { transform:translateX(-50%); } }
-      section { padding:100px 0; }
-      .section-top { display:flex; justify-content:space-between; margin-bottom:55px; }
-      .section-top h2 { font-size:clamp(38px,5vw,70px); letter-spacing:-.075em; margin:9px 0 0; line-height:.95; }
-      .work-list { border-top:1px solid var(--line); }
-      .project { display:grid; grid-template-columns:58px 1.3fr .9fr 42px; gap:20px; align-items:center; padding:23px 0; border-bottom:1px solid var(--line); cursor:pointer; transition:.25s ease; }
-      .project:hover { padding-left:15px; background:rgba(241,243,247,.08); }
-      .project-title { font-size:clamp(27px,3.3vw,47px); font-weight:700; letter-spacing:-.07em; }
-      .project-type { font-family:'DM Mono',monospace; font-size:11px; text-transform:uppercase; color:#5c5a54; }
-      .arrow { font-size:27px; text-align:right; transition:.25s ease; }
-      .project:hover .arrow { transform:translate(4px,-4px); }
-      .selected { background:var(--ink); color:var(--soft); }
-      .selected .project-type { color:rgba(241,243,247,.66); }
-      .selected:hover { background:var(--ink); }
-      .services { background:var(--ink); color:var(--soft); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
-      @keyframes section-dissolve { 0% { opacity:.16; transform:translateY(36px); filter:blur(5px); } 28%,72% { opacity:1; transform:translateY(0); filter:blur(0); } 100% { opacity:.16; transform:translateY(-36px); filter:blur(5px); } }
-      @keyframes hero-dissolve { 0%,35% { opacity:1; filter:blur(0); } 100% { opacity:.18; filter:blur(5px); } }
-      @media (prefers-reduced-motion:no-preference) { @supports (animation-timeline:view()) { main > .services { animation:section-dissolve linear both; animation-timeline:view(); animation-range:entry 0% exit 100%; } main > .hero { animation:hero-dissolve linear both; animation-timeline:view(); animation-range:exit 0% exit 85%; } } }
-      .service-grid { display:grid; grid-template-columns:1fr 2fr; gap:8vw; }
-      .services h2 { font-size:clamp(45px,6vw,85px); line-height:.9; margin:10px 0; letter-spacing:-.08em; }
-      .service-copy { font-size:16px; max-width:360px; line-height:1.55; }
-      .service-items { margin-top:47px; border-top:1px solid rgba(241,243,247,.35); }
-      .service-item { padding:17px 0; border-bottom:1px solid rgba(241,243,247,.35); display:flex; justify-content:space-between; font-size:21px; font-weight:700; letter-spacing:-.04em; }
-      .service-item span { font-family:'DM Mono',monospace; font-weight:400; font-size:11px; letter-spacing:0; align-self:center; }
-      .row-arrow { width:17px; height:17px; object-fit:contain; filter:invert(1); vertical-align:-4px; margin-left:6px; }
-      .about { display:grid; grid-template-columns:1fr 1.25fr; gap:8vw; }
-      .portrait { height:410px; background:#b8b7a6; overflow:hidden; position:relative; }
-      .portrait::before { content:'OO'; position:absolute; font-family:'Playfair Display',serif; color:var(--soft); font-size:280px; bottom:-80px; left:20px; line-height:1; letter-spacing:-.22em; transform:rotate(-12deg); }
-      .portrait::after { content:'ooxme'; position:absolute; left:23px; top:20px; font-family:'DM Mono',monospace; font-size:11px; text-transform:uppercase; color:var(--ink); }
-      .about-copy h2 { font-size:clamp(39px,5vw,72px); line-height:.95; letter-spacing:-.08em; margin:4px 0 28px; }
-      .about-copy p { max-width:540px; font-size:17px; letter-spacing:-.025em; line-height:1.55; }
-      .facts { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:50px; border-top:1px solid var(--line); padding-top:16px; }
-      .facts b { display:block; font-size:26px; letter-spacing:-.06em; margin-bottom:4px; }
-      .facts small { font-family:'DM Mono',monospace; font-size:9px; text-transform:uppercase; }
-      .process-list { border-top:1px solid var(--line); }
-      .process-step { display:grid; grid-template-columns:58px 1fr 1fr; gap:20px; padding:25px 0; border-bottom:1px solid var(--line); }
-      .process-step h3 { font-size:clamp(26px,3vw,42px); line-height:1; letter-spacing:-.065em; margin:0; }
-      .process-step p { max-width:370px; margin:3px 0 0; font-size:15px; line-height:1.5; letter-spacing:-.02em; }
-      .contact { background:var(--ink); color:var(--soft); padding:110px 0 35px; }
-      .contact h2 { font-size:clamp(49px,8vw,118px); letter-spacing:-.09em; line-height:.83; max-width:1050px; margin:12px 0 55px; }
-      .contact h2 em { font-family:'Playfair Display',Georgia,serif; font-weight:500; }
-      .email { font-size:clamp(20px,3vw,40px); letter-spacing:-.05em; border-bottom:2px solid var(--soft); padding-bottom:5px; }
-      .footer { border-top:1px solid rgba(241,243,247,.28); margin-top:100px; padding-top:20px; display:flex; justify-content:space-between; color:rgba(241,243,247,.7); }
-      .socials { display:flex; gap:17px; }
-      .socials a:hover { color:var(--soft); }
-      @media (max-width:680px) { .wrap { padding:0 22px; } nav { height:67px; } header nav { padding:0 22px; } .nav-links { gap:17px; } .nav-links a { font-size:10px; } .hero { min-height:620px; padding:85px 22px 69px; } h1 { font-size:clamp(48px,13vw,78px); } .hero-bottom { margin-top:65px; } .intro { font-size:20px; text-align:left; } section { padding:69px 0; } .project { grid-template-columns:35px 1fr 26px; } .project-type { display:none; } .service-grid,.about { grid-template-columns:1fr; gap:30px; } .portrait { height:280px; } .facts { gap:8px; } .facts b { font-size:20px; } .process-step { grid-template-columns:35px 1fr; gap:12px; } .process-step p { grid-column:2; margin-top:0; } }
-    </style>
+    <meta name="description" content="OOXME — Business Developer Partner." />
+    <meta name="theme-color" content="#0d0d0d" />
+    <title>OOXME — Business Developer Partner</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="js/app.js" defer></script>
   </head>
   <body>
-    <header class="wrap">
-      <nav>
-        <a class="brand-logo" href="#home" aria-label="ooxme home"><img src="OX-001-LOGO.png" alt="OXME logo" /></a>
-        <div class="nav-links"><a href="#work">Creative work</a><a href="#services">Creative services</a><a href="#process">Process</a><a href="#contact">Contact</a></div>
-      </nav>
-    </header>
-    <main id="home">
-      <div class="wrap hero">
-        <div class="eyebrow mono"><span></span> Business Developer Partner</div>
-        <h1>Digital experiences<br>with <em>an edge.</em></h1>
-        <div class="hero-bottom">
-          <p class="intro">ooxme helps bold businesses find their voice, shape their look, and move forward.</p>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="brand-logo" href="#home" aria-label="OOXME home">
+          <img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME logo" />
+        </a>
+
+        <nav class="primary-nav" id="primary-nav" aria-label="Primary navigation">
+          <a href="#home" data-i18n="navHome">Home</a>
+          <a href="#work" data-i18n="navWork">Creative Work</a>
+          <a href="#services" data-i18n="navServices">Creative Services</a>
+          <a href="#process" data-i18n="navProcess">Process</a>
+          <a href="#contact" data-i18n="navContact">Contact</a>
+        </nav>
+
+        <div class="header-actions">
+          <button class="language-toggle" type="button" aria-label="Switch to Arabic">العربية</button>
+          <button class="menu-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" aria-label="Open menu">
+            <span></span><span></span><span></span>
+          </button>
         </div>
       </div>
-      <section id="work" class="services"><div class="wrap service-grid"><div><div class="mono">01 / Creative work</div><h2>Ideas in<br>the wild</h2></div><div><p class="service-copy">A selection of identities and experiences shaped to be clear, memorable, and useful.</p><div class="service-items"><div class="service-item">business we managed <span>01</span></div><div class="service-item">Brands we have designed <span>02</span></div><div class="service-item">Visual identities we have designed <span>03</span></div><div class="service-item">Logos we designed <span>04</span></div></div></div></div></section>
-      <section id="services" class="services"><div class="wrap service-grid"><div><div class="mono">02 / Creative services</div><h2>Make your<br>mark.</h2></div><div><p class="service-copy">From the first spark to the finished expression, I help ambitious teams create distinctive work with clarity and intent.</p><div class="service-items"><div class="service-item">Brand strategy <span>01</span></div><div class="service-item">Visual identity <span>02</span></div><div class="service-item">Art direction <span>03</span></div><div class="service-item">Digital design <span>04</span></div></div></div></div></section>
-      <section id="process" class="services"><div class="wrap service-grid"><div><div class="mono">03 / Process</div><h2>Good work<br>has rhythm.</h2></div><div><p class="service-copy">Every project follows a focused path — enough structure to stay clear, with room for the unexpected.</p><div class="service-items"><div class="service-item">Discover <span>01</span></div><div class="service-item">Define <span>02</span></div><div class="service-item">Design <span>03</span></div><div class="service-item">Deliver <span>04</span></div></div></div></div></section>
-      <section id="contact" class="services"><div class="wrap service-grid"><div><div class="mono">04 / Contact</div><h2>Let’s make<br>something move.</h2></div><div><p class="service-copy">Have a project, partnership, or an idea worth exploring? I’d love to hear from you.</p><div class="service-items"><a class="service-item" href="mailto:info@ooxme.com">Email <span>info@ooxme.com <img class="row-arrow" src="arrow-right.png" alt="" /></span></a><a class="service-item" href="https://wa.me/9647721117110" target="_blank" rel="noreferrer">WhatsApp <span>+964 772 111 7110 <img class="row-arrow" src="arrow-right.png" alt="" /></span></a><a class="service-item" href="https://www.instagram.com/ooxme/" target="_blank" rel="noreferrer">Instagram <span>@ooxme <img class="row-arrow" src="arrow-right.png" alt="" /></span></a><a class="service-item" href="https://www.linkedin.com/in/ooxme/" target="_blank" rel="noreferrer">LinkedIn <span>ooxme <img class="row-arrow" src="arrow-right.png" alt="" /></span></a><a class="service-item" href="https://ooxme.com" target="_blank" rel="noreferrer">Website <span>ooxme.com <img class="row-arrow" src="arrow-right.png" alt="" /></span></a></div></div></div></section>
+    </header>
+    <div class="menu-scrim" aria-hidden="true"></div>
+
+    <main>
+      <section id="home" class="hero reveal">
+        <div class="shell hero-inner">
+          <p class="eyebrow mono" data-i18n="eyebrow">Business Developer Partner</p>
+          <h1>
+            <span data-i18n="heroTitle">Digital experiences</span><br />
+            <em data-i18n="heroAccent">with an edge.</em>
+          </h1>
+          <p class="hero-intro" data-i18n="heroIntro">OOXME helps bold businesses find their voice, shape their look, and move forward.</p>
+        </div>
+      </section>
+
+      <section id="work" class="content-section reveal">
+        <div class="shell section-grid">
+          <div class="section-heading"><p class="mono" data-i18n="workLabel">01 / Creative Work</p><h2 data-i18n="workHeading">Ideas in<br />the wild</h2></div>
+          <div class="section-content"><p class="section-copy" data-i18n="workCopy">A selection of identities and experiences shaped to be clear, memorable, and useful.</p><ul class="detail-list"><li data-i18n="workItem1">Businesses we managed <span>01</span></li><li data-i18n="workItem2">Brands we have designed <span>02</span></li><li data-i18n="workItem3">Visual identities we have designed <span>03</span></li><li data-i18n="workItem4">Logos we designed <span>04</span></li></ul></div>
+        </div>
+      </section>
+
+      <section id="services" class="content-section reveal">
+        <div class="shell section-grid">
+          <div class="section-heading"><p class="mono" data-i18n="servicesLabel">02 / Creative Services</p><h2 data-i18n="servicesHeading">Make your<br />mark.</h2></div>
+          <div class="section-content"><p class="section-copy" data-i18n="servicesCopy">From the first spark to the finished expression, we help ambitious teams create distinctive work with clarity and intent.</p><ul class="detail-list"><li data-i18n="servicesItem1">Brand strategy <span>01</span></li><li data-i18n="servicesItem2">Visual identity <span>02</span></li><li data-i18n="servicesItem3">Art direction <span>03</span></li><li data-i18n="servicesItem4">Digital design <span>04</span></li></ul></div>
+        </div>
+      </section>
+
+      <section id="process" class="content-section reveal">
+        <div class="shell section-grid">
+          <div class="section-heading"><p class="mono" data-i18n="processLabel">03 / Process</p><h2 data-i18n="processHeading">Good work<br />has rhythm.</h2></div>
+          <div class="section-content"><p class="section-copy" data-i18n="processCopy">Every project follows a focused path — enough structure to stay clear, with room for the unexpected.</p><ul class="detail-list"><li data-i18n="processItem1">Discover <span>01</span></li><li data-i18n="processItem2">Define <span>02</span></li><li data-i18n="processItem3">Design <span>03</span></li><li data-i18n="processItem4">Deliver <span>04</span></li></ul></div>
+        </div>
+      </section>
+
+      <section id="contact" class="content-section contact-section reveal">
+        <div class="shell section-grid">
+          <div class="section-heading"><p class="mono" data-i18n="contactLabel">04 / Contact</p><h2 data-i18n="contactHeading">Let’s make<br />something move.</h2></div>
+          <div class="section-content"><p class="section-copy" data-i18n="contactCopy">Have a project, partnership, or an idea worth exploring? We’d love to hear from you.</p><div class="contact-actions" role="group" aria-label="OOXME contact links"><a class="icon-link" href="mailto:info@ooxme.com" data-aria-key="email" aria-label="Email OOXME"><img src="assets/icons/mail.png" alt="" /></a><a class="icon-link" href="tel:+9647721117110" data-aria-key="phone" aria-label="Call OOXME"><img src="assets/icons/call.png" alt="" /></a><a class="icon-link" href="https://wa.me/9647721117110" target="_blank" rel="noreferrer" data-aria-key="whatsapp" aria-label="Message OOXME on WhatsApp"><img src="assets/icons/whatsapp.png" alt="" /></a><a class="icon-link" href="https://www.instagram.com/ooxme/" target="_blank" rel="noreferrer" data-aria-key="instagram" aria-label="Visit OOXME on Instagram"><img src="assets/icons/instagram.png" alt="" /></a><a class="icon-link" href="https://www.linkedin.com/in/ooxme/" target="_blank" rel="noreferrer" data-aria-key="linkedin" aria-label="Visit OOXME on LinkedIn"><img src="assets/icons/linkedin.png" alt="" /></a></div></div>
+        </div>
+      </section>
     </main>
   </body>
 </html>
