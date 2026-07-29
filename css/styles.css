@@ -57,3 +57,24 @@ html[dir=rtl] .detail-marker{background-image:url('../assets/icons/arrow-left.pn
 .js .text-reveal{opacity:0;filter:blur(10px);transform:translateY(28px);transition:opacity .7s ease,filter .7s ease,transform .7s cubic-bezier(.22,.61,.36,1)}
 .js .text-reveal.is-visible{opacity:1;filter:blur(0);transform:translateY(0)}
 @media (prefers-reduced-motion:reduce){.js .text-reveal{opacity:1;filter:none;transform:none;transition:none!important}}
+
+/* Black header and mobile icon-only controls. */
+.site-header{background:var(--ink);color:var(--soft)}
+.header-inner{border-bottom-color:rgba(241,243,247,.22)}
+.brand-logo img{filter:invert(1)}
+.primary-nav{background:var(--ink);color:var(--soft)}
+.menu-toggle img,.globe-icon{filter:invert(1)}
+.globe-icon{display:none;width:18px;height:18px;object-fit:contain}
+footer{background:var(--ink)}
+
+@media (max-width:979px){
+  .header-inner{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:0}
+  .header-actions{display:contents}
+  .brand-logo{grid-column:2;justify-self:center}
+  .language-toggle{grid-column:1;justify-self:start;min-width:44px;height:44px;padding:0}
+  .menu-toggle{grid-column:3;justify-self:end;min-width:44px;height:44px}
+  .language-toggle .lang-option,.language-toggle .lang-sep{display:none}
+  .globe-icon{display:block}
+}
+
+@media (min-width:980px){.globe-icon{display:none}}
