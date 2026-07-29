@@ -1,4 +1,8 @@
 const copy={en:{title:'OOXME — Business Developer Partner',navHome:'Home',navWork:'Creative Work',navServices:'Creative Services',navProcess:'Process',navContact:'Contact',eyebrow:'Business Developer Partner',heroTitle:'Digital experiences',heroAccent:'with an edge.',heroIntro:'OOXME helps bold businesses find their voice, shape their look, and move forward.',workLabel:'01 / Creative Work',workHeading:'Ideas in<br>the wild',workCopy:'A selection of identities and experiences shaped to be clear, memorable, and useful.',workItem1:'Businesses we managed <span class="detail-marker" aria-hidden="true"></span>',workItem2:'Brands we have designed <span class="detail-marker" aria-hidden="true"></span>',workItem3:'Visual identities we have designed <span class="detail-marker" aria-hidden="true"></span>',workItem4:'Logos we designed <span class="detail-marker" aria-hidden="true"></span>',servicesLabel:'02 / Creative Services',servicesHeading:'Make your<br>mark.',servicesCopy:'From the first spark to the finished expression, we help ambitious teams create distinctive work with clarity and intent.',servicesItem1:'Brand strategy <span class="detail-marker" aria-hidden="true"></span>',servicesItem2:'Visual identity <span class="detail-marker" aria-hidden="true"></span>',servicesItem3:'Art direction <span class="detail-marker" aria-hidden="true"></span>',servicesItem4:'Digital design <span class="detail-marker" aria-hidden="true"></span>',processLabel:'03 / Process',processHeading:'Good work<br>has rhythm.',processCopy:'Every project follows a focused path — enough structure to stay clear, with room for the unexpected.',processItem1:'Discover <span class="detail-marker" aria-hidden="true"></span>',processItem2:'Define <span class="detail-marker" aria-hidden="true"></span>',processItem3:'Design <span class="detail-marker" aria-hidden="true"></span>',processItem4:'Deliver <span class="detail-marker" aria-hidden="true"></span>',contactLabel:'04 / Contact',contactHeading:'Let’s make<br>something move.',contactCopy:'Have a project, partnership, or an idea worth exploring? We’d love to hear from you.',language:'العربية',languageAria:'Switch to Arabic',menuOpen:'Open menu',menuClose:'Close menu',email:'Email OOXME',phone:'Call OOXME',whatsapp:'Message OOXME on WhatsApp',instagram:'Visit OOXME on Instagram',linkedin:'Visit OOXME on LinkedIn'},ar:{title:'أوكسمي — شريك تطوير الأعمال',navHome:'الرئيسية',navWork:'الأعمال الإبداعية',navServices:'الخدمات الإبداعية',navProcess:'المنهجية',navContact:'تواصل معنا',eyebrow:'شريك تطوير الأعمال',heroTitle:'تجارب رقمية',heroAccent:'بلمسة مختلفة.',heroIntro:'نساعد الشركات الجريئة على اكتشاف صوتها وبناء حضورها والمضي قدمًا.',workLabel:'٠١ / الأعمال الإبداعية',workHeading:'أفكار تنبض<br>بالحياة',workCopy:'مجموعة من الهويات والتجارب التي صُممت لتكون واضحة، مؤثرة، وسهلة التذكر.',workItem1:'أعمال نديرها <span class="detail-marker" aria-hidden="true"></span>',workItem2:'علامات صممناها <span class="detail-marker" aria-hidden="true"></span>',workItem3:'هويات بصرية صممناها <span class="detail-marker" aria-hidden="true"></span>',workItem4:'شعارات صممناها <span class="detail-marker" aria-hidden="true"></span>',servicesLabel:'٠٢ / الخدمات الإبداعية',servicesHeading:'اصنع<br>بصمتك.',servicesCopy:'من الشرارة الأولى إلى النتيجة النهائية، نساعد الفرق الطموحة على صنع عمل مميز بوضوح وهدف.',servicesItem1:'استراتيجية العلامة <span class="detail-marker" aria-hidden="true"></span>',servicesItem2:'الهوية البصرية <span class="detail-marker" aria-hidden="true"></span>',servicesItem3:'التوجيه الفني <span class="detail-marker" aria-hidden="true"></span>',servicesItem4:'التصميم الرقمي <span class="detail-marker" aria-hidden="true"></span>',processLabel:'٠٣ / المنهجية',processHeading:'العمل الجيد<br>له إيقاع.',processCopy:'كل مشروع يسير ضمن مسار واضح؛ هيكل منظم يترك مساحة لما هو غير متوقع.',processItem1:'اكتشاف <span class="detail-marker" aria-hidden="true"></span>',processItem2:'تحديد <span class="detail-marker" aria-hidden="true"></span>',processItem3:'تصميم <span class="detail-marker" aria-hidden="true"></span>',processItem4:'تسليم <span class="detail-marker" aria-hidden="true"></span>',contactLabel:'٠٤ / تواصل معنا',contactHeading:'لنصنع<br>شيئًا مؤثرًا.',contactCopy:'هل لديك مشروع أو شراكة أو فكرة تستحق الاستكشاف؟ يسعدنا أن نسمع منك.',language:'EN',languageAria:'التبديل إلى الإنجليزية',menuOpen:'فتح القائمة',menuClose:'إغلاق القائمة',email:'البريد الإلكتروني لأوكسمي',phone:'الاتصال بأوكسمي',whatsapp:'مراسلة أوكسمي عبر واتساب',instagram:'زيارة أوكسمي على إنستغرام',linkedin:'زيارة أوكسمي على لينكدإن'}};
+const sectionLabels={
+  en:['Creative Work','Creative Services','Process','Contact'],
+  ar:['الأعمال الإبداعية','الخدمات الإبداعية','المنهجية','تواصل معنا']
+};
 const root=document.documentElement;
 const menuButton=document.querySelector('.menu-toggle');
 const languageButton=document.querySelector('.language-toggle');
@@ -22,6 +26,7 @@ function setLanguage(next){
   root.dir=next==='ar'?'rtl':'ltr';
   document.title=copy[next].title;
   document.querySelectorAll('[data-i18n]').forEach((element)=>{element.innerHTML=copy[next][element.dataset.i18n]});
+  document.querySelectorAll('[data-section-label]').forEach((element,index)=>{element.textContent=sectionLabels[next][index]});
   document.querySelectorAll('[data-aria-key]').forEach((element)=>{element.setAttribute('aria-label',copy[next][element.dataset.ariaKey])});
   const langEn=languageButton.querySelector('.lang-en');
   const langAlt=languageButton.querySelector('.lang-alt');
@@ -46,11 +51,18 @@ menuScrim.addEventListener('click',()=>setMenu(false));
 navLinks.forEach((link)=>link.addEventListener('click',()=>setMenu(false)));
 document.addEventListener('keydown',(event)=>{if(event.key==='Escape')setMenu(false)});
 root.classList.add('js');
+const textReveals=[...document.querySelectorAll('main h1, main h2, main p, .detail-list li a, .contact-actions')];
+textReveals.forEach((element,index)=>{
+  element.classList.add('text-reveal');
+  element.style.transitionDelay=`${Math.min(index % 8,5)*55}ms`;
+});
 
 if('IntersectionObserver'in window){
   const observer=new IntersectionObserver((entries)=>entries.forEach((entry)=>entry.target.classList.toggle('is-visible',entry.isIntersecting)),{threshold:.12,rootMargin:'0px 0px -6% 0px'});
   document.querySelectorAll('.reveal').forEach((section)=>observer.observe(section));
+  const textObserver=new IntersectionObserver((entries)=>entries.forEach((entry)=>entry.target.classList.toggle('is-visible',entry.isIntersecting)),{threshold:.18,rootMargin:'0px 0px -8% 0px'});
+  textReveals.forEach((element)=>textObserver.observe(element));
   const navigationObserver=new IntersectionObserver((entries)=>entries.forEach((entry)=>{if(entry.isIntersecting)setActiveLink(entry.target.id)}),{rootMargin:'-34% 0px -56% 0px',threshold:0});
   document.querySelectorAll('main section[id]').forEach((section)=>navigationObserver.observe(section));
-}
+}else{textReveals.forEach((element)=>element.classList.add('is-visible'))}
 setLanguage(language);

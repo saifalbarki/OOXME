@@ -35,3 +35,25 @@ html[dir=rtl] body{font-family:var(--font-arabic)}html[dir=rtl] .mono{font-famil
   .menu-scrim{display:none}
   .primary-nav a.is-active{opacity:.56}
 }
+
+/* Service links and supplied navigation icons. */
+.menu-toggle img{display:block;width:var(--menu-icon);height:var(--menu-icon);object-fit:contain;transition:transform .25s ease}
+.menu-toggle[aria-expanded=true] img{transform:rotate(90deg)}
+.detail-list li{display:block;padding:0}
+.detail-list li a{display:flex;width:100%;align-items:center;justify-content:space-between;gap:18px;min-height:65px;padding:15px 0}
+.detail-list li a:active{opacity:.62}
+.detail-marker{width:19px;height:19px;background-image:url('../assets/icons/arrow-right.png');filter:invert(1);opacity:1}
+html[dir=rtl] .detail-marker{background-image:url('../assets/icons/arrow-left.png');transform:none}
+@media (prefers-reduced-motion:reduce){.menu-toggle img{transition:none!important}}
+@media (min-width:980px){
+  .language-toggle,.lang-alt{font-size:12px}
+  .lang-en.is-arabic-script,.lang-alt.is-arabic-script{font-size:12px}
+  .detail-list li a:hover .detail-marker{transform:translateX(3px)}
+  html[dir=rtl] .detail-list li a:hover .detail-marker{transform:translateX(-3px)}
+}
+
+/* Text enters softly as each section reaches the viewport. */
+.js .reveal{opacity:1;transform:none}
+.js .text-reveal{opacity:0;filter:blur(10px);transform:translateY(28px);transition:opacity .7s ease,filter .7s ease,transform .7s cubic-bezier(.22,.61,.36,1)}
+.js .text-reveal.is-visible{opacity:1;filter:blur(0);transform:translateY(0)}
+@media (prefers-reduced-motion:reduce){.js .text-reveal{opacity:1;filter:none;transform:none;transition:none!important}}
