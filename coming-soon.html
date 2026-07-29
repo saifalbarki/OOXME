@@ -9,13 +9,20 @@
     <link rel="stylesheet" href="css/styles.css" />
     <script src="js/coming-soon.js" defer></script>
   </head>
-  <body>
+  <body class="coming-page">
     <header class="site-header">
       <div class="shell header-inner">
         <a class="brand-logo" href="index.html#home" aria-label="OOXME home">
           <img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME logo" />
         </a>
-        <a class="mono" href="index.html#home" data-i18n="home">Home</a>
+        <div class="header-actions">
+          <button class="language-toggle" type="button" aria-label="Switch language">
+            <img class="globe-icon" src="assets/icons/globe.png" alt="" aria-hidden="true" />
+          </button>
+          <a class="home-icon" href="index.html#home" aria-label="Home">
+            <img src="assets/icons/home.png" alt="" aria-hidden="true" />
+          </a>
+        </div>
       </div>
     </header>
     <main>
