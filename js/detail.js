@@ -34,6 +34,15 @@ const detail=detailContent[detailKey]||detailContent.consultation;
 const detailMenu=document.querySelector('.site-menu');
 const detailMenuButton=document.querySelector('.menu-toggle');
 const detailLanguageButton=document.querySelector('.language-toggle');
+const detailHomeButton=detailMenuButton.cloneNode(true);
+detailHomeButton.classList.add('home-toggle');
+detailHomeButton.removeAttribute('aria-controls');
+detailHomeButton.removeAttribute('aria-expanded');
+detailHomeButton.setAttribute('aria-label','Home');
+detailHomeButton.querySelector('img').src='assets/icons/home.png';
+detailHomeButton.querySelector('img').alt='';
+detailMenuButton.replaceWith(detailHomeButton);
+detailHomeButton.addEventListener('click',()=>{window.location.href='index.html'});
 let detailLanguage='en';
 try{detailLanguage=localStorage.getItem('ooxme-language')==='ar'?'ar':'en'}catch(error){}
 function setDetailLanguage(next){detailLanguage=next;const isArabic=next==='ar';detailRoot.lang=next;detailRoot.dir=isArabic?'rtl':'ltr';document.title=isArabic?'قريبًا — اوكسوم':'Much More Is Coming — OOXME';document.querySelector('[data-detail-label]').textContent='';document.querySelector('[data-detail-heading]').textContent=isArabic?'المزيد قادم قريبًا':'Much More Is Coming';document.querySelector('[data-detail-description]').textContent=isArabic?'هذه الصفحة قيد التطوير حاليًا. سيتوفر المزيد من المحتوى التفصيلي قريبًا.':'This page is currently under development. More detailed content will be available soon.';detailLanguageButton.setAttribute('aria-label',isArabic?'التبديل إلى الإنجليزية':'Switch to Arabic');document.querySelector('[data-nav-home]').textContent=isArabic?'الرئيسية':'Home';document.querySelector('[data-nav-portfolio]').textContent=isArabic?'المعرض':'Portfolio';try{localStorage.setItem('ooxme-language',next)}catch(error){}}
