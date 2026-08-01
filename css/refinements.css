@@ -476,4 +476,4 @@ html[dir=rtl] .plan-preview.content-card>span.card-copy{flex-direction:row-rever
 html[dir=rtl] .plan-preview .card-arrow{background-image:url('../assets/icons/arrow-left.png')}
 .js .plan-grid .plan-preview.text-reveal{opacity:0;filter:blur(10px);transform:translateY(26px)}
 .js .plan-grid .plan-preview.text-reveal.is-visible{opacity:1;filter:blur(0);transform:none}
-@media (max-width:768px){.plan-grid{gap:10px;margin-top:26px}.plan-grid .plan-preview{min-height:75px;border-radius:18px}.plan-preview .card-copy{padding:18px 20px}.plan-preview .card-title{font-size:clamp(24px,8vw,34px)}.plan-preview .card-arrow{flex-basis:18px;width:18px;height:18px;margin:0}}
+@media (max-width:768px){.plan-grid{gap:10px;margin-top:26px}.plan-grid .plan-preview{min-height:38px;height:38px;border-radius:18px}.plan-preview .card-copy{padding:6px 16px}.plan-preview .card-title{font-size:clamp(18px,6.2vw,24px)}.plan-preview .card-arrow{flex-basis:14px;width:14px;height:14px;margin:0}}
