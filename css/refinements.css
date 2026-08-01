@@ -162,6 +162,7 @@ html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(-4px)}
 }
 
 /* Consultation booking flow. */
+.booking-page main>section+section{border-top:0}
 .booking-intro{padding:104px 0 54px}
 .booking-intro-inner{max-width:760px;text-align:center}
 .booking-intro .hero-copy{margin-inline:auto}
@@ -378,6 +379,7 @@ html[dir=rtl] .hero-headline-accent{font-family:inherit;font-style:normal;font-w
 .calendar-day{font-weight:700;color:var(--ink)}
 html[dir=rtl] .calendar-heading{direction:rtl}
 html[dir=rtl] .month-switcher{direction:ltr}
+html[dir=rtl] .calendar-weekdays{font-family:var(--font-arabic);font-weight:600;letter-spacing:0}
 @media (max-width:768px){
   .calendar-heading{display:flex;gap:12px;margin-bottom:20px}
   .calendar-heading h2{font-size:28px}
@@ -406,9 +408,10 @@ html[dir=rtl] .month-switcher{direction:ltr}
 }
 
 /* Consultation time choices. */
+.calendar-panel{padding:30px;border:1px solid var(--line);border-radius:24px}
 .booking-step{border-radius:24px}
 .choice-button{border-radius:16px;font-size:18px;font-weight:700;line-height:1}
-@media (max-width:768px){.booking-step{border-radius:18px}.choice-button{border-radius:14px;font-size:15px}}
+@media (max-width:768px){.calendar-panel{padding:20px 14px;border-radius:18px}.booking-step{border-radius:18px}.choice-button{border-radius:14px;font-size:15px}}
 
 /* Booking confirmation: centered hierarchy matching the time selector. */
 .booking-summary{text-align:center}
