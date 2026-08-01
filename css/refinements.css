@@ -120,3 +120,53 @@ html[dir=rtl] .card-line .card-arrow{margin-left:0;margin-right:auto;background-
 .menu-toggle{grid-column:1;justify-self:start}
 .language-toggle{grid-column:3;justify-self:end}
 .card-label{display:none}
+
+/* Header controls stay visually neutral when tapped; keyboard users retain a clear focus cue. */
+.icon-control{-webkit-tap-highlight-color:transparent}
+.icon-control:hover,.icon-control:active{background:transparent}
+.icon-control:focus{outline:none;background:transparent}
+.icon-control:focus-visible{outline:1px solid var(--ink);outline-offset:2px;border-radius:50%}
+
+/* Home hero: a clean main line paired with a restrained editorial italic accent. */
+.home-hero h1{font-family:var(--font-main);font-style:normal;font-weight:700;letter-spacing:-.075em}
+.hero-headline-main,.hero-headline-accent{display:block}
+.hero-headline-accent{font-family:Playfair,Georgia,serif;font-style:italic;font-weight:600;letter-spacing:-.06em}
+.home-hero .hero-copy{max-width:390px;margin-top:20px;font-size:clamp(9px,1.85vw,10px);line-height:1.65;letter-spacing:-.01em}
+.home-page .language-choices{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px;gap:10px;margin-top:30px}
+.home-page .language-choices .primary-button{min-height:44px;padding:10px 16px;font-size:12px;line-height:1;font-weight:700}
+.home-page .language-choices .arabic-choice{font-size:13px;font-weight:600;line-height:1}
+html[dir=rtl] .home-hero h1{font-family:var(--font-arabic);font-style:normal;letter-spacing:0}
+html[dir=rtl] .home-hero .hero-copy{font-size:10px;line-height:1.9}
+html[dir=rtl] .hero-headline-accent{font-family:inherit;font-style:normal;font-weight:inherit;letter-spacing:inherit}
+
+/* Compact mobile rhythm without changing desktop scale. */
+@media (max-width:679px){
+  :root{--gutter:16px}
+  .header-inner{min-height:58px}
+  .brand-logo img{width:30px;height:30px}
+  .icon-control{width:34px;height:34px}
+  .icon-control img{width:11px;height:11px}
+  .site-menu{inset:58px 0 0;padding:24px var(--gutter);gap:20px}
+  .site-menu a{font-size:25px}
+  .hero{min-height:calc(100svh - 59px);padding:38px 0}
+  .hero h1{font-size:clamp(27px,7.6vw,34px)}
+  .section-title{font-size:clamp(25px,7vw,32px)}
+  .home-hero .hero-copy{max-width:290px;margin-top:16px;font-size:9px;line-height:1.65}
+  .home-page .language-choices{max-width:290px;gap:8px;margin-top:24px}
+  .home-page .language-choices .primary-button{min-height:40px;padding:8px 10px;font-size:10px}
+  .home-page .language-choices .arabic-choice{font-size:11px}
+  .hero-copy,.section-copy{font-size:11px}
+  .section-copy{margin-top:14px;line-height:1.55}
+  .portfolio-section{padding:46px 0}
+  .consultation-section,.contact-section{padding:62px 0}
+  .card-grid{margin-top:22px}
+  .content-card{padding:12px 0!important}
+  .card-title{font-size:14px;line-height:1.18}
+  .card-arrow{width:13px;height:13px}
+  .primary-button{min-height:42px;padding:9px 16px;font-size:10px;line-height:1}
+  .contact-actions{gap:8px;margin-top:20px}
+  .contact-icon{width:34px;height:34px}
+  .contact-icon img{width:14px;height:14px}
+  html[dir=rtl] .home-hero h1{font-size:clamp(27px,7.6vw,34px);line-height:1.35}
+  html[dir=rtl] .home-hero .hero-copy{font-size:9px;line-height:1.9}
+}
