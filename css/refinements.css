@@ -421,3 +421,14 @@ html[dir=rtl] .calendar-weekdays{font-family:var(--font-arabic);font-weight:600;
 html[dir=rtl] .booking-summary div{grid-template-columns:1fr}
 html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:auto;grid-row:auto;text-align:center}
 @media (max-width:768px){.booking-summary dd{font-size:15px}.booking-summary dt{font-size:10px}}
+
+/* Booking availability and selected choices. */
+.booking-intro .calendar-legend{justify-content:center;margin:20px auto 0}
+.calendar-panel .calendar-legend{display:none}
+.legend.available i{background:#071478}
+.legend.booked i{background:#0d0d0d}
+.legend.unavailable i{background:#8c9198}
+.calendar-day.available{color:#071478}
+.calendar-day.booked{color:#0d0d0d}
+.calendar-day.unavailable{color:#8c9198}
+.choice-button:hover,.choice-button.is-selected{border-color:#0d0d0d;background:#0d0d0d;color:#fff}
