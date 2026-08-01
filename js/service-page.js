@@ -12,7 +12,7 @@ const serviceContent={
   design:{en:['Design','Give the idea a form.','We explore, refine, and build the visual language that makes the strategy tangible.','Process'],ar:['تصميم','امنح الفكرة شكلًا.','نستكشف ونصقل ونبني اللغة البصرية التي تجعل الاستراتيجية ملموسة.','المنهجية']},
   deliver:{en:['Deliver','Make it ready to move.','We prepare the final system, assets, and handoff so the work performs in the real world.','Process'],ar:['تسليم','اجعلها جاهزة للتحرك.','نجهز النظام النهائي والأصول والتسليم ليؤدي العمل في العالم الحقيقي.','المنهجية']}
 };
-serviceContent.consultation={en:['Consultation','Let’s Build Your Business Together','Book a consultation with OOXME to discuss your business, identify opportunities, and create a clear growth strategy.','Consultation'],ar:['استشارة','لنبنِ نمو أعمالك معًا','احجز جلسة استشارية مع OOXME لمناقشة أعمالك وتحديد الفرص وبناء استراتيجية نمو واضحة.','استشارة']};
+serviceContent.consultation={en:['Consultation','Let’s Build Your Business Together','Book a consultation with OOXME to discuss your business, identify opportunities, and create a clear growth strategy.','Consultation'],ar:['استشارة','لنبنِ نمو أعمالك معًا','احجز جلسة استشارية مع اوكسوم لمناقشة أعمالك وتحديد الفرص وبناء استراتيجية نمو واضحة.','استشارة']};
 
 let serviceLanguage='en';
 try{serviceLanguage=localStorage.getItem('ooxme-language')==='ar'?'ar':'en'}catch(error){}

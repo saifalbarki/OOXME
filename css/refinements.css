@@ -48,3 +48,75 @@ html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(-4px)}
 .detail-page .detail-info{display:none}
 .detail-page .eyebrow{display:none}
 @media (min-width:980px){.contact-section{padding:150px 0}}
+
+/* Compact, consistent mobile layout. */
+.service-grid .card-label,.all-services-grid .card-label{display:none}
+.service-grid .content-card,.all-services-grid .content-card{align-items:center}
+.service-grid .card-title,.all-services-grid .card-title{line-height:1.2}
+.primary-button,.contact-icon{transition:transform .25s ease,box-shadow .25s ease,background-color .25s ease,border-color .25s ease}
+.primary-button:hover,.contact-icon:hover{transform:translateY(-3px)}
+.primary-button:active,.contact-icon:active{transform:scale(.96)}
+.icon-control{transition:transform .25s ease,background-color .25s ease}
+.icon-control:hover{background:rgba(7,20,120,.06);transform:translateY(-2px)}
+.icon-control:active{transform:scale(.94)}
+@media (max-width:679px){
+  :root{--gutter:18px}
+  .header-inner{min-height:62px}
+  .brand-logo img{width:34px;height:34px}
+  .icon-control{width:38px;height:38px}
+  .icon-control img{width:12px;height:12px}
+  .site-menu{inset:62px 0 0;padding:28px var(--gutter)}
+  .site-menu a{font-size:28px}
+  .hero{min-height:calc(100svh - 63px);padding:52px 0}
+  .hero h1{font-size:clamp(30px,8.2vw,38px);line-height:1.08}
+  .section-title{font-size:clamp(28px,7.7vw,36px);line-height:1.06}
+  .hero-copy{max-width:520px;margin-top:20px;font-size:13px;line-height:1.55}
+  .section-copy{margin-top:17px;font-size:12px;line-height:1.58}
+  .eyebrow{margin-bottom:12px;font-size:7px}
+  .language-choices{max-width:330px;gap:10px;margin-top:30px}
+  .primary-button{min-height:46px;padding:11px 20px;font-size:11px}
+  .portfolio-section{padding:58px 0}
+  .consultation-section,.contact-section{min-height:0;padding:78px 0}
+  .card-grid{margin-top:27px}
+  .content-card{min-height:0!important;padding:15px 0!important;gap:14px}
+  .card-title{font-size:16px;line-height:1.15}
+  .card-arrow{width:15px;height:15px}
+  .see-more-wrap{margin-top:25px}
+  .contact-actions{gap:10px;margin-top:25px}
+  .contact-icon{width:38px;height:38px}
+  .contact-icon img{width:16px;height:16px}
+  .detail-placeholder{min-height:220px}
+  html[dir=rtl] .hero h1,html[dir=rtl] .section-title{font-size:clamp(30px,8.2vw,38px);line-height:1.35}
+  html[dir=rtl] .hero-copy{font-size:13px;line-height:1.9}
+  html[dir=rtl] .section-copy{font-size:12px;line-height:1.9}
+}
+
+/* Universal clickable subsection row: title left, arrow right in both languages. */
+.card-grid{direction:ltr}
+.content-card{display:flex;align-items:center;justify-content:space-between;width:100%;padding:20px 0!important;border:0!important;border-top:1px solid var(--line)!important;background:transparent!important;text-align:left}
+.content-card:first-child{border-top:0!important}
+.content-card:last-child{border-bottom:0!important}
+.content-card>span:first-child{display:block;min-width:0;text-align:left}
+.content-card .card-arrow{flex:0 0 auto;margin-left:auto;margin-right:0;transform:none}
+html[dir=rtl] .content-card{direction:ltr}
+html[dir=rtl] .content-card>span:first-child{direction:rtl;text-align:left}
+html[dir=rtl] .content-card .card-arrow{background-image:url('../assets/icons/arrow-right.png');transform:none}
+html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(4px)}
+@media (max-width:679px){.content-card{padding:15px 0!important}}
+
+/* Title-and-arrow line shares one precise horizontal axis. */
+.card-grid{max-width:none;margin-inline:0}
+.card-copy{display:block;width:100%}
+.card-line{display:flex;align-items:center;justify-content:space-between;width:100%;gap:20px}
+.card-line .card-title{min-width:0;margin:0}
+.card-line .card-arrow{flex:0 0 auto;margin-left:auto;margin-right:0}
+/* Arabic keeps the natural RTL arrangement: title at right, left-facing arrow at left. */
+html[dir=rtl] .card-line{direction:rtl}
+html[dir=rtl] .card-line .card-title{direction:rtl;text-align:right}
+html[dir=rtl] .card-line .card-arrow{margin-left:0;margin-right:auto;background-image:url('../assets/icons/arrow-left.png')}
+
+/* Keep the compact home-header control geometry identical on every page and language. */
+.header-inner{direction:ltr}
+.menu-toggle{grid-column:1;justify-self:start}
+.language-toggle{grid-column:3;justify-self:end}
+.card-label{display:none}
