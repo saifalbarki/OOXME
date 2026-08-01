@@ -116,6 +116,51 @@ html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(-4px)}
   .hero{min-height:calc(100svh - 55px)}
 }
 
+/* Exact mobile header component rules — replaces earlier compact overrides. */
+@media (max-width:768px){
+  .site-header{height:72px}
+  .site-header .shell.header-inner{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:calc(100% - 40px);
+    height:72px;
+    min-height:72px!important;
+    margin-inline:auto;
+    padding:0;
+  }
+  .site-header .brand-logo{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    display:grid;
+    place-items:center;
+    line-height:0;
+  }
+  .site-header .brand-logo img{
+    width:32px!important;
+    max-width:32px!important;
+    height:auto!important;
+  }
+  .site-header .icon-control{
+    width:40px;
+    height:40px;
+    min-width:40px;
+    min-height:40px;
+  }
+  .site-header .icon-control img{
+    width:18px!important;
+    height:18px!important;
+    max-width:18px!important;
+    object-fit:contain;
+  }
+  .site-header .menu-toggle{grid-column:auto;justify-self:auto}
+  .site-header .language-toggle{grid-column:auto;justify-self:auto}
+  .site-menu{inset:72px 0 0!important}
+  .hero{min-height:calc(100svh - 73px)}
+}
+
 /* Universal clickable subsection row: title left, arrow right in both languages. */
 .card-grid{direction:ltr}
 .content-card{display:flex;align-items:center;justify-content:space-between;width:100%;padding:20px 0!important;border:0!important;border-top:1px solid var(--line)!important;background:transparent!important;text-align:left}
