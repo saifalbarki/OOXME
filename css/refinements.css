@@ -200,6 +200,10 @@ html[dir=rtl] .card-line .card-arrow{margin-left:0;margin-right:auto;background-
 /* Clean header edge across the site. */
 .site-header{border-bottom:0!important}
 
+/* Sections have no individual strokes; a single divider appears only between neighbours. */
+.portfolio-section{border:0!important}
+main>section+section{border-top:1px solid var(--line)}
+
 /* Home hero: a clean main line paired with a restrained editorial italic accent. */
 .home-hero h1{font-family:var(--font-main);font-style:normal;font-weight:700;letter-spacing:-.075em}
 .hero-headline-main,.hero-headline-accent{display:block}
