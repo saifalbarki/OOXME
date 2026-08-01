@@ -441,6 +441,7 @@ html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:
 
 /* Payment selection. */
 .payment-shell{max-width:720px;margin-inline:auto;text-align:center}
+.payment-total{margin:0 0 20px;font-size:clamp(18px,2vw,24px);font-weight:700;letter-spacing:-.05em}
 .payment-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .payment-option{display:grid;gap:9px;min-height:142px;padding:28px;border:1px solid var(--line);border-radius:24px;background:#fff;color:var(--ink);text-align:center;cursor:pointer;transition:transform .25s ease,border-color .25s ease,background-color .25s ease,color .25s ease}
 .payment-option:hover:not(:disabled){border-color:var(--ink);background:var(--ink);color:#fff;transform:translateY(-4px)}
@@ -466,18 +467,18 @@ html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:
 
 /* Full-width partnership plan rows. */
 .plan-grid{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;margin:42px 0 0;padding:0;overflow:visible;scroll-snap-type:none}
-.plan-grid .plan-preview{position:relative;display:block;min-height:107px;padding:0;border:1px solid var(--line)!important;border-radius:24px;background:var(--paper);opacity:1;filter:none;overflow:hidden;transform:none;transition:opacity .72s ease,filter .72s ease,transform .72s cubic-bezier(.22,.61,.36,1),border-color .25s ease,background-color .25s ease}
+.plan-grid .plan-preview.content-card{position:relative;display:block;height:268px!important;min-height:268px!important;padding:0;border:1px solid var(--line)!important;border-radius:24px;background:var(--paper);opacity:1;filter:none;overflow:hidden;transform:none;transition:opacity .72s ease,filter .72s ease,transform .72s cubic-bezier(.22,.61,.36,1),border-color .25s ease,background-color .25s ease}
 .plan-grid .plan-preview::after{display:none}
 .plan-grid .plan-preview:hover{border-color:var(--brand)!important;background:rgba(7,20,120,.025);box-shadow:none;transform:none}
 .plan-grid .plan-preview:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
-.plan-preview.content-card>span.card-copy{position:absolute;inset:0;display:flex!important;flex-direction:row;align-items:center;justify-content:space-between;gap:24px;padding:30px 34px;text-align:left}
-.plan-preview .card-title{margin:0;font-size:clamp(30px,4vw,58px);line-height:1;font-weight:700;letter-spacing:-.07em}
-.plan-preview .card-arrow{display:block;flex:0 0 24px;width:24px;height:24px;margin:0;background:url('../assets/icons/arrow-right.png') center/contain no-repeat}
-html[dir=rtl] .plan-preview.content-card>span.card-copy{flex-direction:row-reverse;direction:rtl;text-align:right}
+.plan-preview.content-card>span.card-copy{position:absolute;inset:0;display:grid!important;grid-template-columns:minmax(0,1fr) 24px;align-items:center;column-gap:24px;padding:30px 34px;text-align:left}
+.plan-preview .card-title{min-width:0;margin:0;font-size:clamp(30px,4vw,58px);line-height:1;font-weight:700;letter-spacing:-.07em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-preview .card-arrow{display:block;width:24px;height:24px;margin:0;background:url('../assets/icons/arrow-right.png') center/contain no-repeat}
+html[dir=rtl] .plan-preview.content-card>span.card-copy{grid-template-columns:24px minmax(0,1fr);direction:rtl;text-align:right}
 html[dir=rtl] .plan-preview .card-arrow{background-image:url('../assets/icons/arrow-left.png')}
 .js .plan-grid .plan-preview.text-reveal{opacity:0;filter:blur(10px);transform:translateY(26px)}
 .js .plan-grid .plan-preview.text-reveal.is-visible{opacity:1;filter:blur(0);transform:none}
-@media (max-width:768px){.plan-grid{gap:10px;margin-top:26px}.plan-grid .plan-preview{min-height:38px;height:38px;border-radius:18px}.plan-preview .card-copy{padding:6px 0}.plan-preview .card-title{font-size:clamp(18px,6.2vw,24px)}.plan-preview .card-arrow{flex-basis:14px;width:14px;height:14px;margin:0}}
+@media (max-width:768px){.plan-grid{gap:10px;margin-top:26px}.plan-grid .plan-preview.content-card{height:95px!important;min-height:95px!important;border-radius:18px}.plan-preview.content-card>span.card-copy{grid-template-columns:minmax(0,1fr) 14px;column-gap:12px;padding:6px 0}.plan-preview .card-title{font-size:clamp(18px,6.2vw,24px)}.plan-preview .card-arrow{width:14px;height:14px;margin:0}html[dir=rtl] .plan-preview.content-card>span.card-copy{grid-template-columns:14px minmax(0,1fr)}}
 
 /* Shared header frame: its inner content always follows the same shell as each page. */
 .site-header .shell.header-inner{width:min(calc(100% - var(--gutter)*2),1440px);margin-inline:auto}
