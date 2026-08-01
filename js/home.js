@@ -18,4 +18,5 @@ document.addEventListener('keydown',(event)=>{if(event.key==='Escape')setHomeMen
 document.querySelectorAll('[data-language-choice]').forEach((button)=>button.addEventListener('click',()=>{setHomeLanguage(button.dataset.languageChoice);window.location.href='portfolio.html'}));
 homeRoot.classList.add('js');
 setHomeLanguage('en');
-requestAnimationFrame(()=>document.querySelectorAll('.text-reveal').forEach((element,index)=>{element.style.transitionDelay=`${index*80}ms`;element.classList.add('is-visible')}));
+const homeRevealElements=[...document.querySelectorAll('.text-reveal')];
+if('IntersectionObserver'in window){const homeObserver=new IntersectionObserver((entries)=>entries.forEach((entry)=>entry.target.classList.toggle('is-visible',entry.isIntersecting)),{threshold:.14,rootMargin:'0px 0px -7% 0px'});homeRevealElements.forEach((element,index)=>{element.style.transitionDelay=`${index*70}ms`;homeObserver.observe(element)})}else{homeRevealElements.forEach((element)=>element.classList.add('is-visible'))}

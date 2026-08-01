@@ -1,3 +1,4 @@
+@import url('refinements.css');
 @font-face{font-family:Manrope;src:url('../assets/fonts/english/manrope/Manrope-VariableFont_wght.ttf') format('truetype');font-display:swap;font-weight:200 800}
 @font-face{font-family:DMMono;src:url('../assets/fonts/english/dm-mono/DMMono-Regular.ttf') format('truetype');font-display:swap;font-weight:400}
 @font-face{font-family:Playfair;src:url('../assets/fonts/english/playfair/PlayfairDisplay-Italic-VariableFont_wght.ttf') format('truetype');font-display:swap;font-style:italic;font-weight:400 900}

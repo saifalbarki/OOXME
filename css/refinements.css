@@ -1,0 +1,50 @@
+/* Refined type scale, consultation focus, and consistent reveal behaviour. */
+.icon-control img{width:16px;height:16px}
+.site-menu a{font-size:clamp(23px,6.75vw,36px)}
+.eyebrow{font-size:8px}
+.hero h1{font-family:Playfair,Georgia,serif;font-size:clamp(36px,9.15vw,82px);font-style:italic;font-weight:600;letter-spacing:-.06em;line-height:1.05}
+.section-title{font-size:clamp(32px,6.98vw,66px)}
+.hero-copy{max-width:640px;margin-top:28px;font-size:clamp(14px,3.7vw,19px)}
+.section-copy{max-width:540px;margin-top:22px;font-size:13px}
+.primary-button{min-height:52px;padding:13px 24px;font-size:12px}
+.arabic-choice{font-size:12px}
+.language-choices{margin-top:38px}
+.card-label{font-size:8px}
+.card-title{font-size:clamp(16px,3.15vw,23px)}
+.card-arrow{width:17px;height:17px}
+.content-card{min-height:88px;padding:19px}
+.detail-placeholder{font-size:clamp(13px,2.25vw,18px)}
+.consultation-section{display:grid;min-height:72svh;align-items:center;padding:120px 0}
+.consultation-layout{max-width:720px;margin-inline:auto;justify-items:center;text-align:center}
+.consultation-layout .section-copy{margin-inline:auto}
+.consultation-layout .primary-button{margin-top:30px}
+.see-more-wrap{display:flex;justify-content:center;margin-top:34px}
+.js .text-reveal{will-change:opacity,filter,transform;transition-duration:.78s}
+html[dir=rtl] .hero h1,html[dir=rtl] .section-title{font-family:var(--font-arabic);font-style:normal;font-weight:600;font-size:clamp(36px,9.15vw,82px);line-height:1.3}
+html[dir=rtl] .hero-copy{font-weight:400;font-size:clamp(14px,3.7vw,19px);line-height:1.95}
+html[dir=rtl] .section-copy{font-weight:400;font-size:13px;line-height:1.95}
+html[dir=rtl] .eyebrow{font-size:10px;font-weight:500}
+html[dir=rtl] .card-title{font-weight:600}
+html[dir=rtl] .primary-button{font-weight:600}
+@media (min-width:680px){.content-card{min-height:98px}.section-copy{font-size:14px}.detail-placeholder{font-size:18px}}
+@media (min-width:980px){.hero h1{font-size:clamp(50px,6.9vw,82px)}.section-title{font-size:clamp(46px,5.25vw,66px)}.content-card{min-height:123px;padding:22px}.consultation-section{padding:150px 0}.icon-control img{width:16px;height:16px}}
+
+/* Minimal, aligned navigation lists. */
+.card-grid{display:grid!important;grid-template-columns:1fr!important;max-width:760px;margin-inline:auto;gap:0}
+.content-card{width:100%;min-height:0!important;padding:20px 0!important;border:0;border-top:1px solid var(--line);background:transparent;box-shadow:none!important}
+.content-card:last-child{border-bottom:1px solid var(--line)}
+.content-card:hover{border-color:var(--ink);transform:none}
+.content-card:hover .card-arrow{transform:translateX(4px)}
+.content-card>span:first-child{min-width:0}
+.card-title{line-height:1.18}
+.card-arrow{margin-inline-start:auto;transition:transform .25s ease}
+html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(-4px)}
+.contact-section{display:grid;min-height:72svh;align-items:center;padding:120px 0}
+.contact-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:480px;margin:32px auto 0}
+.contact-icon{display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--line);border-radius:50%;transition:transform .25s ease,border-color .25s ease,background-color .25s ease}
+.contact-icon img{width:18px;height:18px;object-fit:contain}
+.contact-icon:hover{border-color:var(--brand);background:rgba(7,20,120,.06);transform:translateY(-3px)}
+.contact-icon:active{transform:scale(.94)}
+.detail-page .detail-info{display:none}
+.detail-page .eyebrow{display:none}
+@media (min-width:980px){.contact-section{padding:150px 0}}
