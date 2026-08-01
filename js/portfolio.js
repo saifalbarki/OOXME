@@ -9,8 +9,8 @@ Object.assign(portfolioCopy.ar,{contactLabel:'تواصل',contactHeading:'لنت
 Object.assign(portfolioCopy.en,{navContact:'Contact'});
 Object.assign(portfolioCopy.ar,{navContact:'تواصل'});
 const portfolioItems={
-  projects:[['albasri-commercial-group','Albasri Commercial Group','مجموعة البصري التجارية'],['alfayha-eyewear','Alfayha Eyewear','نظارات الفيحاء'],['viir','Viir','فيير'],['zone-restaurant','Zone Restaurant','مطعم زون']],
-  plans:[['starter','Starter','البداية'],['standard','Standard','القياسية'],['plus','Plus','بلس']],
+  projects:[['albasri-commercial-group','Brands We Managed','علامات تجارية أدرناها'],['alfayha-eyewear','Brands We Created','علامات تجارية أنشأناها'],['viir','Identities & Logos','هويات وشعارات'],['zone-restaurant','Other','أخرى']],
+  plans:[['starter','Starter','البداية'],['standard','Standard','القياسية'],['plus','Premium','بريميوم']],
   services:[['business-development','Business Development','تطوير الأعمال'],['brand-strategy','Brand Strategy','استراتيجية العلامة'],['brand-identity','Brand Identity','هوية العلامة'],['brand-management','Brand Management','إدارة العلامة'],['website-design-development','Website Design & Development','تصميم وتطوير المواقع'],['ui-ux-design','UI/UX Design','تصميم تجربة وواجهة المستخدم'],['social-media-management','Social Media Management','إدارة وسائل التواصل'],['content-creation','Content Creation','صناعة المحتوى'],['photography','Photography','التصوير الفوتوغرافي'],['videography','Videography','إنتاج الفيديو'],['drone-production','Drone Production','إنتاج الدرون'],['interior-photography','Interior Photography','تصوير المساحات الداخلية'],['product-photography','Product Photography','تصوير المنتجات'],['motion-graphics','Motion Graphics','الرسوم المتحركة'],['graphic-design','Graphic Design','التصميم الجرافيكي'],['digital-marketing','Digital Marketing','التسويق الرقمي'],['seo','SEO','تحسين محركات البحث'],['advertising-campaigns','Advertising Campaigns','الحملات الإعلانية'],['ai-integration','AI Integration','تكامل الذكاء الاصطناعي'],['business-consultation','Business Consultation','استشارات الأعمال']]
 };
 const portfolioRoot=document.documentElement;
