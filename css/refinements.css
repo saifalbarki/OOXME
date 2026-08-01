@@ -91,6 +91,31 @@ html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(-4px)}
   html[dir=rtl] .section-copy{font-size:12px;line-height:1.9}
 }
 
+/* Unified compact sticky header scale. */
+.header-inner{min-height:64px}
+.brand-logo img{width:31px;height:31px}
+.icon-control{width:40px;height:40px}
+.icon-control img{width:16px;height:16px}
+.site-menu{inset:64px 0 0}
+@media (min-width:680px){
+  .header-inner{min-height:68px}
+  .brand-logo img{width:32px;height:32px}
+  .site-menu{inset:68px 0 0}
+}
+@media (min-width:980px){
+  .header-inner{min-height:70px}
+  .brand-logo img{width:32px;height:32px}
+  .site-menu{inset:70px 0 auto auto;min-height:calc(100svh - 70px)}
+}
+@media (max-width:679px){
+  .header-inner{min-height:54px}
+  .brand-logo img{width:23px;height:23px}
+  .icon-control{width:30px;height:30px}
+  .icon-control img{width:12px;height:12px}
+  .site-menu{inset:54px 0 0}
+  .hero{min-height:calc(100svh - 55px)}
+}
+
 /* Universal clickable subsection row: title left, arrow right in both languages. */
 .card-grid{direction:ltr}
 .content-card{display:flex;align-items:center;justify-content:space-between;width:100%;padding:20px 0!important;border:0!important;border-top:1px solid var(--line)!important;background:transparent!important;text-align:left}
