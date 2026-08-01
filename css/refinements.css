@@ -161,6 +161,37 @@ html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(-4px)}
   .hero{min-height:calc(100svh - 73px)}
 }
 
+/* Consultation booking flow. */
+.booking-intro{padding:104px 0 54px}
+.booking-intro-inner{max-width:760px;text-align:center}
+.booking-intro .hero-copy{margin-inline:auto}
+.booking-section{padding:0 0 110px}
+.booking-shell{display:grid;gap:32px;max-width:920px}
+.calendar-panel{padding:30px;border:1px solid var(--line)}
+.calendar-heading{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:28px}
+.calendar-heading h2{margin:0;font-size:clamp(26px,4vw,40px);letter-spacing:-.06em}
+.calendar-heading p{max-width:250px;margin:0;font-size:12px;line-height:1.5;text-align:right}
+.calendar-legend{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:20px;font-size:10px}
+.legend{display:inline-flex;align-items:center;gap:7px}.legend i{width:8px;height:8px;border-radius:50%}.legend.available i{background:#2b8c4b}.legend.booked i{background:#d8a728}.legend.unavailable i{background:#9ca1a8}
+.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.calendar-weekdays{margin-bottom:8px;color:rgba(13,13,13,.55);font-family:var(--font-mono);font-size:8px;text-align:center}
+.calendar-day,.calendar-empty{aspect-ratio:1;min-height:44px;border:0;border-radius:50%;background:transparent;font-size:13px;transition:transform .2s ease,box-shadow .2s ease}
+.calendar-day.available{background:#dff1e4;color:#176434;cursor:pointer}.calendar-day.available:hover,.calendar-day.is-selected{box-shadow:inset 0 0 0 1px #176434;transform:scale(1.04)}
+.calendar-day.booked{background:#faedc9;color:#936b00}.calendar-day.unavailable{background:#eceef0;color:#8c9198}.calendar-day:disabled{cursor:not-allowed}
+.booking-choices{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.booking-step{padding:24px;border:1px solid var(--line);transition:opacity .25s ease,filter .25s ease}.booking-step.is-disabled{opacity:.35;filter:grayscale(1);pointer-events:none}
+.choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}.choice-button{min-height:45px;padding:8px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:11px;cursor:pointer;transition:transform .2s ease,border-color .2s ease,background-color .2s ease}.choice-button:hover,.choice-button.is-selected{border-color:var(--brand);background:rgba(7,20,120,.06);transform:translateY(-2px)}
+.summary-shell{max-width:620px;margin-inline:auto}.booking-summary{margin:0 0 30px;border-top:1px solid var(--line)}.booking-summary div{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--line)}.booking-summary dt{font-family:var(--font-mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase}.booking-summary dd{margin:0;font-size:15px}.confirm-pay{width:100%}.payment-note{margin:15px 0 0;font-size:11px;line-height:1.5;text-align:center;color:rgba(13,13,13,.62)}
+html[dir=rtl] .calendar-heading p{text-align:left}html[dir=rtl] .booking-summary div{grid-template-columns:1fr 150px}html[dir=rtl] .booking-summary dt{grid-column:2;text-align:left}html[dir=rtl] .booking-summary dd{grid-column:1;grid-row:1;text-align:right}
+
+/* Clean calendar availability treatment. */
+.calendar-panel{border:0}
+.calendar-day{border-radius:0;background:transparent!important}
+.calendar-day.available{color:#258348}.calendar-day.booked{color:#b28200}.calendar-day.unavailable{color:#8c9198}
+.calendar-day.available:hover,.calendar-day.is-selected{box-shadow:inset 0 -2px 0 var(--brand);transform:none}
+.booking-step.is-disabled{display:none}
+@media (max-width:768px){.booking-intro{padding:72px 0 38px}.booking-section{padding-bottom:72px}.calendar-panel{padding:20px 14px}.calendar-heading{display:block;margin-bottom:20px}.calendar-heading h2{font-size:27px}.calendar-heading p{margin-top:8px;text-align:left}.calendar-legend{gap:10px;font-size:9px}.calendar-weekdays,.calendar-grid{gap:5px}.calendar-weekdays{font-size:7px}.calendar-day,.calendar-empty{min-height:36px;font-size:11px}.booking-choices{grid-template-columns:1fr;gap:12px}.booking-step{padding:19px}.choice-button{min-height:41px;font-size:10px}.booking-summary div{grid-template-columns:1fr;gap:6px;padding:16px 0}.booking-summary dt{font-size:8px}.booking-summary dd{font-size:13px}html[dir=rtl] .calendar-heading p{text-align:right}html[dir=rtl] .booking-summary div{grid-template-columns:1fr}html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:auto;grid-row:auto;text-align:right}}
+
 /* Universal clickable subsection row: title left, arrow right in both languages. */
 .card-grid{direction:ltr}
 .content-card{display:flex;align-items:center;justify-content:space-between;width:100%;padding:20px 0!important;border:0!important;border-top:1px solid var(--line)!important;background:transparent!important;text-align:left}
@@ -203,6 +234,89 @@ html[dir=rtl] .card-line .card-arrow{margin-left:0;margin-right:auto;background-
 /* Sections have no individual strokes; a single divider appears only between neighbours. */
 .portfolio-section{border:0!important}
 main>section+section{border-top:1px solid var(--line)}
+
+/* Partnership plan comparison and supporting sections. */
+.home-control{grid-column:1;justify-self:start}
+.plans-hero{min-height:0;padding:120px 0 84px}
+.plans-hero .hero-copy{max-width:650px}
+.plans-hero .hero-inner{display:grid;justify-items:center;text-align:center}
+.plans-section{padding:100px 0}
+.plans-page .plans-section .shell{text-align:center}
+.plans-page .plans-section .section-title{margin-inline:auto;text-align:center}
+[data-comparison-label]{display:none}
+.plans-table{display:grid;grid-template-columns:1fr;gap:16px;margin-top:42px}
+.plan-card{padding:28px 24px;border:0!important;background:#fff;transition:transform .25s ease,box-shadow .25s ease}
+.plan-card:hover,.plan-card.is-selected{box-shadow:none!important;transform:translateY(-4px)}
+.plan-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.plan-card h3{margin:0;font-size:clamp(20px,2.1vw,28px);letter-spacing:-.06em}
+.plan-price{display:grid;gap:5px;margin:0;text-align:right;font-size:16px;font-weight:700;letter-spacing:-.035em;white-space:nowrap}
+.plan-price span,.plan-includes{font-family:var(--font-mono);font-size:8px;font-weight:400;letter-spacing:.06em;text-transform:uppercase}
+.plan-includes{margin:20px 0 0}
+.plan-includes{text-align:center}
+.plan-features{display:grid;gap:0;max-width:760px;margin:12px auto 0;padding:0;list-style:none}
+.plan-features li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.plan-features li:last-child{border-bottom:0}
+.feature-number{font-family:var(--font-mono);font-size:8px;line-height:1.5}
+.plan-features strong,.plan-features small{display:block}
+.plan-features strong{font-size:13px;letter-spacing:-.025em}
+.plan-features small{margin-top:3px;font-size:10px;line-height:1.45;color:rgba(13,13,13,.65)}
+.plan-features li{display:block;padding:12px 0;text-align:center}
+.plan-features strong,.plan-features small{text-align:center}
+.next-plan-wrap{display:flex;align-items:center;justify-content:center;gap:24px;margin-top:34px}
+.next-plan-name{min-width:120px;font-size:13px;font-weight:700;letter-spacing:-.025em;text-align:center}
+.plan-nav-arrow{display:grid;place-items:center;width:32px;height:32px;transition:transform .25s ease}
+.plan-nav-arrow span{width:16px;height:16px;background:center/contain no-repeat}
+.previous-plan span{background-image:url('../assets/icons/arrow-left.png')}
+.next-plan span{background-image:url('../assets/icons/arrow-right.png')}
+.previous-plan:hover{transform:translateX(-3px)}
+.next-plan:hover{transform:translateX(3px)}
+.price-hero-section{display:grid;min-height:42svh;place-items:center;padding:88px 0}
+.price-hero-section .section-title{font-size:clamp(52px,10vw,120px);background:linear-gradient(90deg,#071478 0%,#0d0d0d 76%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.included-list{display:grid;grid-template-columns:1fr;gap:0;max-width:640px;margin:38px auto 0;padding:0;list-style:none}
+.included-list li{position:relative;padding:17px 0 17px 30px;border-bottom:1px solid var(--line);font-size:14px;line-height:1.45}
+.included-list li::before{content:'✓';position:absolute;left:0;top:16px;font-weight:700}
+.included-list li{padding-left:0;text-align:center}
+.included-list li::before{position:static;display:inline-block;margin-right:10px}
+.note-layout{max-width:760px}
+.note-layout .section-copy{max-width:100%;margin-top:0}
+.plans-cta{padding:130px 0}
+.plan-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;width:492px;max-width:100%;margin:30px auto 0}
+.plan-actions .primary-button,.plan-actions .secondary-button{width:240px!important;min-width:240px!important;height:52px;min-height:52px;padding-inline:16px}
+.plan-actions .primary-button{margin-top:0!important}
+.secondary-button{display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:13px 24px;border:1px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font-size:12px;font-weight:700;letter-spacing:-.02em;transition:transform .25s ease,background-color .25s ease,color .25s ease}
+.secondary-button:hover{background:var(--ink);color:#fff;transform:translateY(-3px)}
+.secondary-button:active{transform:scale(.96)}
+html[dir=rtl] .plan-card h3,html[dir=rtl] .plan-price{text-align:right}
+html[dir=rtl] .plan-price span,html[dir=rtl] .plan-includes{font-family:var(--font-arabic);letter-spacing:0;text-transform:none}
+html[dir=rtl] .plan-features li{display:block}
+html[dir=rtl] .included-list li{padding:17px 0;text-align:center}
+html[dir=rtl] .included-list li::before{position:static;margin:0 0 0 10px}
+html[dir=rtl] .previous-plan span{background-image:url('../assets/icons/arrow-right.png')}
+html[dir=rtl] .next-plan span{background-image:url('../assets/icons/arrow-left.png')}
+@media (max-width:979px){.plan-card{padding:26px 22px}.plans-section{padding:78px 0}}
+@media (max-width:768px){
+  .plans-hero{padding:80px 0 56px}
+  .plans-section{padding:58px 0}
+  .plans-table{gap:12px;margin-top:28px}
+  .plan-card{padding:20px 18px}
+  .plan-card-top{padding-bottom:18px}
+  .plan-card h3{font-size:20px}
+  .plan-price{font-size:13px}
+  .plan-includes{margin-top:16px}
+  .plan-features li{padding:10px 0}
+  .plan-features strong{font-size:12px}
+  .plan-features small{font-size:9px}
+  .included-list{grid-template-columns:1fr;margin-top:25px}
+  .included-list li{padding-top:13px;padding-bottom:13px;font-size:12px}
+  .included-list li::before{top:12px}
+  .plans-cta{padding:72px 0}
+  .price-hero-section{min-height:30svh;padding:58px 0}
+  .price-hero-section .section-title{font-size:clamp(42px,13vw,58px)}
+  .plan-actions{gap:10px;margin-top:24px}
+  .plan-actions .primary-button,.plan-actions .secondary-button{width:240px!important;min-width:240px!important;height:42px;min-height:42px}
+  .next-plan-wrap{gap:18px;margin-top:26px}
+  .secondary-button{min-height:42px;padding:9px 16px;font-size:10px}
+}
 
 /* Home hero: a clean main line paired with a restrained editorial italic accent. */
 .home-hero h1{font-family:var(--font-main);font-style:normal;font-weight:700;letter-spacing:-.075em}
@@ -247,3 +361,60 @@ html[dir=rtl] .hero-headline-accent{font-family:inherit;font-style:normal;font-w
   html[dir=rtl] .home-hero h1{font-size:clamp(27px,7.6vw,34px);line-height:1.35}
   html[dir=rtl] .home-hero .hero-copy{font-size:9px;line-height:1.9}
 }
+
+/* Calendar controls: fixed year, navigable month, and confident date hierarchy. */
+.calendar-heading{align-items:center}
+.calendar-heading h2{font-size:clamp(30px,4.2vw,46px)}
+.month-switcher{display:flex;align-items:center;justify-content:flex-end;gap:12px}
+.month-switcher p{max-width:none;margin:0;font-size:clamp(18px,2.4vw,27px);font-weight:700;letter-spacing:-.05em;line-height:1;text-align:center}
+.calendar-nav{display:grid;place-items:center;width:32px;height:32px;padding:0;border:0;background:transparent;cursor:pointer;transition:opacity .2s ease,transform .2s ease}
+.calendar-nav:hover:not(:disabled){transform:translateY(-2px)}
+.calendar-nav:active:not(:disabled){transform:scale(.92)}
+.calendar-nav:disabled{cursor:default;opacity:.24}
+.calendar-nav span{width:12px;height:12px;background:center/contain no-repeat}
+.previous-month span{background-image:url('../assets/icons/arrow-left.png')}
+.next-month span{background-image:url('../assets/icons/arrow-right.png')}
+.calendar-weekdays{font-family:var(--font-main);font-size:11px;font-weight:700;color:var(--ink)}
+.calendar-day{font-weight:700;color:var(--ink)}
+html[dir=rtl] .calendar-heading{direction:rtl}
+html[dir=rtl] .month-switcher{direction:ltr}
+@media (max-width:768px){
+  .calendar-heading{display:flex;gap:12px;margin-bottom:20px}
+  .calendar-heading h2{font-size:28px}
+  .month-switcher{gap:6px}
+  .month-switcher p{font-size:17px}
+  .calendar-nav{width:28px;height:28px}
+  .calendar-nav span{width:10px;height:10px}
+  .calendar-weekdays{font-size:9px}
+  .calendar-day{font-weight:700}
+}
+
+/* Consultation refinement: a more prominent introduction and legible calendar. */
+.booking-intro h1{font-size:clamp(42px,5vw,68px)}
+.booking-intro .hero-copy{max-width:630px;font-size:clamp(15px,1.45vw,18px);line-height:1.55}
+.calendar-heading h2,.month-switcher p{font-size:clamp(30px,3.2vw,40px);font-weight:700;letter-spacing:-.06em}
+.calendar-legend{justify-content:center;margin:0 auto 24px;font-size:11px}
+.calendar-weekdays{font-size:13px;font-weight:700;padding-bottom:4px}
+.calendar-day{font-size:18px;font-weight:700}
+@media (max-width:768px){
+  .booking-intro h1{font-size:clamp(34px,10vw,44px)}
+  .booking-intro .hero-copy{max-width:330px;font-size:12px;line-height:1.65}
+  .calendar-heading h2,.month-switcher p{font-size:26px}
+  .calendar-legend{margin-bottom:20px;font-size:10px}
+  .calendar-weekdays{font-size:11px}
+  .calendar-day{font-size:15px}
+}
+
+/* Consultation time choices. */
+.booking-step{border-radius:24px}
+.choice-button{border-radius:16px;font-size:18px;font-weight:700;line-height:1}
+@media (max-width:768px){.booking-step{border-radius:18px}.choice-button{border-radius:14px;font-size:15px}}
+
+/* Booking confirmation: centered hierarchy matching the time selector. */
+.booking-summary{text-align:center}
+.booking-summary div{grid-template-columns:1fr;gap:8px;justify-items:center}
+.booking-summary dt{font-family:var(--font-main);font-size:11px;font-weight:700;letter-spacing:.04em}
+.booking-summary dd{font-size:18px;font-weight:700;line-height:1.1;text-align:center}
+html[dir=rtl] .booking-summary div{grid-template-columns:1fr}
+html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:auto;grid-row:auto;text-align:center}
+@media (max-width:768px){.booking-summary dd{font-size:15px}.booking-summary dt{font-size:10px}}
