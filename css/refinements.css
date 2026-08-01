@@ -470,7 +470,7 @@ html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:
 .plan-grid .plan-preview::after{display:none}
 .plan-grid .plan-preview:hover{border-color:var(--brand)!important;background:rgba(7,20,120,.025);box-shadow:none;transform:none}
 .plan-grid .plan-preview:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
-.plan-preview.content-card>span.card-copy{display:flex!important;flex:1;flex-direction:row;align-items:center;justify-content:space-between;gap:24px;padding:30px 34px;text-align:left}
+.plan-preview.content-card>span.card-copy{display:flex!important;align-self:stretch;flex:1;flex-direction:row;align-items:center;justify-content:space-between;gap:24px;padding:30px 34px;text-align:left}
 .plan-preview .card-title{margin:0;font-size:clamp(30px,4vw,58px);line-height:1;font-weight:700;letter-spacing:-.07em}
 .plan-preview .card-arrow{display:block;flex:0 0 24px;width:24px;height:24px;margin:0;background:url('../assets/icons/arrow-right.png') center/contain no-repeat}
 html[dir=rtl] .plan-preview.content-card>span.card-copy{flex-direction:row-reverse;direction:rtl;text-align:right}
