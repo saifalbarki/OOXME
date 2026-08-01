@@ -143,9 +143,9 @@ html[dir=rtl] .hero-headline-accent{font-family:inherit;font-style:normal;font-w
 @media (max-width:679px){
   :root{--gutter:16px}
   .header-inner{min-height:58px}
-  .brand-logo img{width:30px;height:30px}
+  .brand-logo img{width:23px;height:23px}
   .icon-control{width:30px;height:30px}
-  .icon-control img{width:9px;height:9px}
+  .icon-control img{width:7px;height:7px}
   .site-menu{inset:58px 0 0;padding:24px var(--gutter);gap:20px}
   .site-menu a{font-size:25px}
   .hero{min-height:calc(100svh - 59px);padding:38px 0}
