@@ -465,15 +465,15 @@ html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:
 
 /* Full-width partnership plan rows. */
 .plan-grid{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;margin:42px 0 0;padding:0;overflow:visible;scroll-snap-type:none}
-.plan-grid .plan-preview{display:flex;align-items:center;min-height:142px;padding:0;border:1px solid var(--line)!important;border-radius:24px;background:var(--paper);opacity:1;filter:none;transform:none;transition:opacity .72s ease,filter .72s ease,transform .72s cubic-bezier(.22,.61,.36,1),border-color .25s ease,background-color .25s ease}
+.plan-grid .plan-preview{display:flex;align-items:center;min-height:107px;padding:0;border:1px solid var(--line)!important;border-radius:24px;background:var(--paper);opacity:1;filter:none;transform:none;transition:opacity .72s ease,filter .72s ease,transform .72s cubic-bezier(.22,.61,.36,1),border-color .25s ease,background-color .25s ease}
 .plan-grid .plan-preview::after{display:none}
 .plan-grid .plan-preview:hover{border-color:var(--brand)!important;background:rgba(7,20,120,.025);box-shadow:none;transform:none}
 .plan-grid .plan-preview:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
 .plan-preview.content-card>span.card-copy{display:flex!important;flex:1;flex-direction:row;align-items:center;justify-content:space-between;gap:24px;padding:30px 34px;text-align:left}
 .plan-preview .card-title{margin:0;font-size:clamp(30px,4vw,58px);line-height:1;font-weight:700;letter-spacing:-.07em}
-.plan-preview .card-arrow{display:block;flex:0 0 24px;width:24px;height:24px;background:url('../assets/icons/arrow-right.png') center/contain no-repeat}
-html[dir=rtl] .plan-preview.content-card>span.card-copy{flex-direction:row-reverse;text-align:right}
+.plan-preview .card-arrow{display:block;flex:0 0 24px;width:24px;height:24px;margin:0;background:url('../assets/icons/arrow-right.png') center/contain no-repeat}
+html[dir=rtl] .plan-preview.content-card>span.card-copy{flex-direction:row-reverse;direction:rtl;text-align:right}
 html[dir=rtl] .plan-preview .card-arrow{background-image:url('../assets/icons/arrow-left.png')}
 .js .plan-grid .plan-preview.text-reveal{opacity:0;filter:blur(10px);transform:translateY(26px)}
 .js .plan-grid .plan-preview.text-reveal.is-visible{opacity:1;filter:blur(0);transform:none}
-@media (max-width:768px){.plan-grid{gap:10px;margin-top:26px}.plan-grid .plan-preview{min-height:100px;border-radius:18px}.plan-preview .card-copy{padding:22px 20px}.plan-preview .card-title{font-size:clamp(24px,8vw,34px)}.plan-preview .card-arrow{flex-basis:18px;width:18px;height:18px}}
+@media (max-width:768px){.plan-grid{gap:10px;margin-top:26px}.plan-grid .plan-preview{min-height:75px;border-radius:18px}.plan-preview .card-copy{padding:18px 20px}.plan-preview .card-title{font-size:clamp(24px,8vw,34px)}.plan-preview .card-arrow{flex-basis:18px;width:18px;height:18px;margin:0}}
