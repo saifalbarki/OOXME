@@ -1,3 +1,6 @@
+const repairLocalizedText=window.repairLocalizedText||(window.repairLocalizedText=(root=document.body)=>{const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;while(node=walker.nextNode()){const value=node.nodeValue;if(/[ÃÂØÙâ]/.test(value)){try{node.nodeValue=decodeURIComponent(escape(value))}catch(error){}}}});
+new MutationObserver(()=>repairLocalizedText()).observe(document.body,{childList:true,subtree:true,characterData:true});
+repairLocalizedText();
 const detailContent={
  'project-albasri-commercial-group':{en:['Project','Albasri Commercial Group','A focused brand and business development engagement designed to strengthen clarity, presence, and commercial momentum.'],ar:['مشروع','مجموعة البصري التجارية','مشروع علامة وتطوير أعمال صُمم لتعزيز الوضوح والحضور والزخم التجاري.']},
  'project-alfayha-eyewear':{en:['Project','Alfayha Eyewear','A refined identity and customer experience direction for a modern eyewear business.'],ar:['مشروع','نظارات الفيحاء','توجيه لهوية وتجربة عميل راقية لعلامة نظارات عصرية.']},

@@ -1,5 +1,28 @@
 const dotCanvas = document.querySelector('.dot-field');
 const homeReveal = document.querySelector('.home-reveal');
+const homeLanguageCopy={
+  en:{heading:'Hello',description:'OOXME is a premium brand management and business development partner, helping ambitious businesses build clarity, momentum, and lasting value.',cta:"Let's Discover"},
+  ar:{heading:'مرحبًا',description:'اوكسوم شريك متميز في إدارة العلامات التجارية وتطوير الأعمال، نساعد الشركات الطموحة على بناء الوضوح والزخم والقيمة المستدامة.',cta:'لنكتشف'}
+};
+const homeRoot=document.documentElement;
+const homeHeading=document.querySelector('#home-heading');
+const homeDescription=document.querySelector('.home-description');
+const homeDiscover=document.querySelector('.home-discover');
+let homeLanguage='en';
+try{homeLanguage=localStorage.getItem('ooxme-language')==='ar'?'ar':'en'}catch(error){}
+function setHomeLanguage(next){
+  homeLanguage=next;
+  const copy=homeLanguageCopy[next];
+  homeRoot.lang=next;
+  homeRoot.dir=next==='ar'?'rtl':'ltr';
+  homeHeading.textContent=copy.heading;
+  homeDescription.textContent=copy.description;
+  homeDiscover.textContent=copy.cta;
+  try{localStorage.setItem('ooxme-language',next)}catch(error){}
+}
+setHomeLanguage(homeLanguage);
+homeDiscover?.addEventListener('click',()=>{try{localStorage.setItem('ooxme-language',homeLanguage)}catch(error){}});
+window.setInterval(()=>setHomeLanguage(homeLanguage==='en'?'ar':'en'),3000);
 
 if (homeReveal) {
   requestAnimationFrame(() => homeReveal.classList.add('is-visible'));

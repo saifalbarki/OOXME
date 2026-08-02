@@ -1,3 +1,6 @@
+const repairLocalizedText=window.repairLocalizedText||(window.repairLocalizedText=(root=document.body)=>{const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let node;while(node=walker.nextNode()){const value=node.nodeValue;if(/[ÃÂØÙâ]/.test(value)){try{node.nodeValue=decodeURIComponent(escape(value))}catch(error){}}}});
+new MutationObserver(()=>repairLocalizedText()).observe(document.body,{childList:true,subtree:true,characterData:true});
+repairLocalizedText();
 const serviceContent={
   'businesses-we-managed':{en:['Businesses We Managed','Growth with a clear direction.','We help ambitious businesses turn focused decisions into steady momentum.','Business development'],ar:['الأعمال التي أدرناها','نمو باتجاه واضح.','نساعد الشركات الطموحة على تحويل القرارات المركزة إلى زخم مستمر.','تطوير الأعمال']},
   'brands-we-designed':{en:['Brands We Designed','Distinctive brands, built to move.','A considered brand system gives every ambitious idea a clear place in the world.','Brand work'],ar:['علامات صممناها','علامات مميزة صُممت لتتحرك.','منظومة علامة مدروسة تمنح كل فكرة طموحة مكانًا واضحًا في العالم.','عمل العلامة']},
