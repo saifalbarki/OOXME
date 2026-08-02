@@ -57,7 +57,7 @@ if(dotCanvas){
         context.globalAlpha=Math.pow(fade,1.85);
         context.fillStyle='#000000';
         context.beginPath();
-        context.arc(x,y,width<680?1.25:1.5,0,Math.PI*2);
+        context.arc(x,y,width<680?3.75:4.5,0,Math.PI*2);
         context.fill();
       }
     }
