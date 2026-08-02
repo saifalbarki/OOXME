@@ -25,12 +25,13 @@ if(dotCanvas){
     const oldWidth=width;
     const oldHeight=height;
     const bounds=dotCanvas.getBoundingClientRect();
-    scale=Math.min(window.devicePixelRatio||1,2);
+    scale=window.devicePixelRatio||1;
     width=Math.round(bounds.width);
     height=Math.round(bounds.height);
     dotCanvas.width=Math.round(width*scale);
     dotCanvas.height=Math.round(height*scale);
     context.setTransform(scale,0,0,scale,0,0);
+    context.imageSmoothingEnabled=true;
     // A sqrt(2) reduction in spacing gives approximately twice as many dots.
     spacing=width<680?14:20;
     radius=width<680?92:150;
@@ -64,17 +65,17 @@ if(dotCanvas){
   }
 
   function animate(now){
-    wave+=.018;
+    wave+=.054;
     const pointerControlled=now<pointer.activeUntil;
     if(pointerControlled){
       orb.x+=(pointer.x-orb.x)*.14;
       orb.y+=(pointer.y-orb.y)*.14;
     }else{
       if(wasPointerControlled)chooseTarget();
-      const flowX=Math.sin(wave*.73)*.16+Math.sin(wave*.21+1.7)*.12;
-      const flowY=Math.cos(wave*.57)*.16+Math.cos(wave*.31+.8)*.12;
-      orb.x+=(orb.targetX-orb.x)*.012+flowX;
-      orb.y+=(orb.targetY-orb.y)*.012+flowY;
+      const flowX=Math.sin(wave*.73)*.48+Math.sin(wave*.21+1.7)*.36;
+      const flowY=Math.cos(wave*.57)*.48+Math.cos(wave*.31+.8)*.36;
+      orb.x+=(orb.targetX-orb.x)*.036+flowX;
+      orb.y+=(orb.targetY-orb.y)*.036+flowY;
       if(Math.hypot(orb.targetX-orb.x,orb.targetY-orb.y)<8)chooseTarget();
     }
     wasPointerControlled=pointerControlled;
@@ -97,4 +98,6 @@ if(dotCanvas){
   dotCanvas.addEventListener('pointerleave',()=>{pointer.activeUntil=0},{passive:true});
   dotCanvas.addEventListener('pointercancel',()=>{pointer.activeUntil=0},{passive:true});
   window.addEventListener('resize',resize,{passive:true});
+  window.addEventListener('orientationchange',resize,{passive:true});
+  if('ResizeObserver' in window){new ResizeObserver(resize).observe(dotCanvas)}
 }
