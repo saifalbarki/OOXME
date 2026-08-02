@@ -72,7 +72,7 @@ if(detailKey==='project-sawa-university'){
   let sawaIndex=0;
   let scrollFrame=0;
   const setSawaDot=(index)=>{sawaIndex=(index+sawaSlides.length)%sawaSlides.length;sawaDots.forEach((dot,dotIndex)=>{const active=dotIndex===sawaIndex;dot.classList.toggle('is-active',active);dot.setAttribute('aria-current',String(active))})};
-  const showSawaSlide=(index,behavior=reduceMotion?'auto':'smooth')=>{setSawaDot(index);sawaSlides[sawaIndex].scrollIntoView({behavior,block:'nearest',inline:'start'})};
+  const showSawaSlide=(index,behavior=reduceMotion?'auto':'smooth')=>{setSawaDot(index);sawaCarousel.scrollTo({left:sawaSlides[sawaIndex].offsetLeft-sawaCarousel.offsetLeft,behavior})};
   sawaDots.forEach((dot,index)=>dot.addEventListener('click',()=>showSawaSlide(index)));
   sawaCarousel.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=0;const edge=sawaCarousel.getBoundingClientRect().left;let nearest=0;let distance=Infinity;sawaSlides.forEach((slide,index)=>{const nextDistance=Math.abs(slide.getBoundingClientRect().left-edge);if(nextDistance<distance){distance=nextDistance;nearest=index}});setSawaDot(nearest)})},{passive:true});
   window.setInterval(()=>showSawaSlide(sawaIndex+1),3000);

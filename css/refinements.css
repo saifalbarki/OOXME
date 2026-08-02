@@ -592,7 +592,8 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .sawa-carousel-dots button.is-active{width:26px;background:var(--brand)}
 .sawa-carousel-dots button:hover{background:var(--brand);transform:scale(1.08)}
 .sawa-carousel-dots button:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
-.sawa-next{display:inline-grid;justify-self:center;place-items:center;width:31px;height:31px;margin:10px 0 0;color:var(--brand);font-family:var(--font-main);font-size:clamp(19px,1.65vw,24px);font-weight:700;line-height:1;transition:color .22s ease,opacity .28s ease,filter .28s ease,transform .28s cubic-bezier(.22,.61,.36,1)}
+.sawa-next{display:inline-grid;justify-self:center;place-items:center;width:31px;height:31px;margin:10px 0 0;color:var(--brand);transition:color .22s ease,opacity .28s ease,filter .28s ease,transform .28s cubic-bezier(.22,.61,.36,1)}
+.sawa-next-icon{width:11px;height:11px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translate(-2px,-2px)}
 .sawa-next:hover{color:var(--brand);transform:translateY(3px)}
 .sawa-next:focus-visible{outline:2px solid var(--ink);outline-offset:5px;border-radius:2px}
 .sawa-tile{aspect-ratio:3/1;margin:0;background:#F1F3F7;scroll-snap-align:start}
@@ -611,7 +612,6 @@ html[dir=rtl] .sawa-intro p{font-weight:400;line-height:1.6}
   .sawa-intro p{max-width:310px;margin-top:7px;font-size:10px}
   .sawa-carousel{grid-auto-columns:100%;gap:var(--gutter)}
   .sawa-tile{border-radius:18px}
-  .sawa-next{font-size:15px}
 }
 @media (max-width:480px){
   .sawa-project{height:var(--default-safe-frame-height)}
