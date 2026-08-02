@@ -1,23 +1,66 @@
-const homeCopy={
-  en:{title:'OOXME — Let’s Change',navHome:'Home',navPortfolio:'Portfolio',navConsultation:'Consultation',headline:"Let's Change",supporting:'OOXME helps businesses grow through smarter operations, stronger branding, optimized workflows, and measurable business development. Transform your company into a scalable, organized, and profitable business.',next:'Next',languageAria:'Switch to Arabic',menuOpen:'Open menu',menuClose:'Close menu'},
-  ar:{title:'OOXME',navHome:'الرئيسية',navPortfolio:'المعرض',navConsultation:'استشارة',headline:'لنغيّر',supporting:'تساعد أوكسوم الشركات على النمو عبر عمليات أكثر ذكاءً، وهوية أقوى، وسير عمل منظم، وتطوير أعمال قابل للقياس. حوّل شركتك إلى عمل قابل للتوسع والتنظيم والربح.',next:'التالي',languageAria:'التبديل إلى الإنجليزية',menuOpen:'فتح القائمة',menuClose:'إغلاق القائمة'}
-};
-const homeRoot=document.documentElement;
-const homeMenu=document.querySelector('.site-menu');
-const homeMenuButton=document.querySelector('.menu-toggle');
-const homeLanguageButton=document.querySelector('.language-toggle');
-const homeNextButton=document.querySelector('[data-next]');
-let homeLanguage='en';
+const dotCanvas=document.querySelector('.dot-field');
+const homeReveal=document.querySelector('.home-reveal');
 
-function setHomeMenu(open){homeMenu.classList.toggle('is-open',open);homeMenuButton.setAttribute('aria-expanded',String(open));homeMenuButton.setAttribute('aria-label',homeCopy[homeLanguage][open?'menuClose':'menuOpen']);document.body.classList.toggle('menu-open',open)}
-function setHomeLanguage(next){homeLanguage=next;const copy=homeCopy[next];homeRoot.lang=next;homeRoot.dir=next==='ar'?'rtl':'ltr';document.title=copy.title;document.querySelectorAll('[data-i18n]').forEach((element)=>{element.textContent=copy[element.dataset.i18n]});homeLanguageButton.setAttribute('aria-label',copy.languageAria);try{localStorage.setItem('ooxme-language',next)}catch(error){}}
+if(homeReveal){requestAnimationFrame(()=>homeReveal.classList.add('is-visible'))}
 
-homeMenuButton.addEventListener('click',()=>setHomeMenu(!homeMenu.classList.contains('is-open')));
-homeLanguageButton.addEventListener('click',()=>setHomeLanguage(homeLanguage==='en'?'ar':'en'));
-homeMenu.querySelectorAll('a').forEach((link)=>link.addEventListener('click',()=>setHomeMenu(false)));
-homeNextButton.addEventListener('click',()=>{window.location.href='portfolio.html'});
-document.addEventListener('keydown',(event)=>{if(event.key==='Escape')setHomeMenu(false)});
-homeRoot.classList.add('js');
-setHomeLanguage('en');
-const homeRevealElements=[...document.querySelectorAll('.text-reveal')];
-if('IntersectionObserver'in window){const homeObserver=new IntersectionObserver((entries)=>entries.forEach((entry)=>entry.target.classList.toggle('is-visible',entry.isIntersecting)),{threshold:.14});homeRevealElements.forEach((element,index)=>{element.style.transitionDelay=`${index*110}ms`;homeObserver.observe(element)})}else{homeRevealElements.forEach((element)=>element.classList.add('is-visible'))}
+if(dotCanvas){
+  const context=dotCanvas.getContext('2d');
+  const motionReduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let width=0;
+  let height=0;
+  let scale=1;
+  let spacing=22;
+  let radius=115;
+  let orb={x:0,y:0,targetX:0,targetY:0};
+
+  function chooseTarget(){
+    const edge=radius*.55;
+    orb.targetX=edge+Math.random()*Math.max(1,width-edge*2);
+    orb.targetY=edge+Math.random()*Math.max(1,height-edge*2);
+  }
+
+  function resize(){
+    const bounds=dotCanvas.getBoundingClientRect();
+    scale=Math.min(window.devicePixelRatio||1,2);
+    width=Math.round(bounds.width);
+    height=Math.round(bounds.height);
+    dotCanvas.width=Math.round(width*scale);
+    dotCanvas.height=Math.round(height*scale);
+    context.setTransform(scale,0,0,scale,0,0);
+    spacing=width<680?20:28;
+    radius=width<680?92:150;
+    orb.x=width*.5;
+    orb.y=height*.42;
+    chooseTarget();
+  }
+
+  function draw(){
+    context.clearRect(0,0,width,height);
+    for(let y=spacing*.5;y<height;y+=spacing){
+      for(let x=spacing*.5;x<width;x+=spacing){
+        const distance=Math.hypot(x-orb.x,y-orb.y);
+        if(distance>=radius)continue;
+        const fade=1-distance/radius;
+        context.globalAlpha=Math.pow(fade,1.85);
+        context.fillStyle='#0d0d0d';
+        context.beginPath();
+        context.arc(x,y,width<680?1.05:1.25,0,Math.PI*2);
+        context.fill();
+      }
+    }
+    context.globalAlpha=1;
+  }
+
+  function animate(){
+    orb.x+=(orb.targetX-orb.x)*.006;
+    orb.y+=(orb.targetY-orb.y)*.006;
+    if(Math.hypot(orb.targetX-orb.x,orb.targetY-orb.y)<1.5)chooseTarget();
+    draw();
+    if(!motionReduced)requestAnimationFrame(animate);
+  }
+
+  resize();
+  draw();
+  if(!motionReduced)animate();
+  window.addEventListener('resize',resize,{passive:true});
+}

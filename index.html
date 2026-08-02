@@ -1,51 +1,47 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="OOXME helps businesses grow through smarter operations, stronger branding, optimized workflows, and measurable business development." />
-    <meta name="theme-color" content="#37B8FF" />
-    <title>OOXME — Let’s Change</title>
+    <meta name="description" content="OOXME is a premium brand management and business development partner." />
+    <meta name="theme-color" content="#ffffff" />
+    <title>OOXME</title>
     <link rel="stylesheet" href="css/styles.css" />
     <script src="js/home.js" defer></script>
     <style>
-      .home-page{min-height:100svh;background:#fff;animation:none}
-      .home-page .site-header{position:absolute;width:100%;background:transparent;border:0;backdrop-filter:none}
-      .home-page .site-header .brand-logo img{filter:none}
-      .home-page .site-header .icon-control{display:none}
-      .home-page .home-hero{position:relative;display:grid;min-height:100svh;padding:90px 0 clamp(38px,6svh,72px);background:transparent;align-items:stretch;overflow:hidden}
-      .home-page .home-hero::before{position:absolute;z-index:0;right:0;bottom:0;left:0;height:25%;content:"";background:#F1F3F7}
-      .home-page .home-hero .hero-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:calc(100svh - 162px);text-align:center}
-      .home-page .home-hero h1{margin:0;color:#0d0d0d;font-family:var(--font-main);font-size:clamp(52px,8.2vw,104px);font-style:normal;font-weight:700;letter-spacing:-.075em;line-height:.96}
-      .home-page .home-hero .hero-copy{max-width:500px;margin:16px auto 0;color:#8A8A8A;font-size:clamp(15px,1.55vw,19px);font-weight:500;letter-spacing:-.025em;line-height:1.38;text-align:justify;text-align-last:center}
-      .home-page .next-button{display:inline-flex;align-items:center;justify-content:center;margin-top:20px;padding:0;border:0;background:transparent;color:#8A8A8A;box-shadow:none;font-family:var(--font-main);font-size:16px;font-weight:700;letter-spacing:-.02em;cursor:pointer;transition:color .28s ease,transform .28s ease}
-      .home-page .next-button:hover{color:#0D0D0D;transform:translateY(-2px)}
-      .home-page .next-button:active{transform:scale(.97)}
-      html[dir="rtl"] .home-page .home-hero h1{font-family:var(--font-arabic);font-size:clamp(50px,7.5vw,92px);letter-spacing:0;line-height:1.18}
-      html[dir="rtl"] .home-page .home-hero .hero-copy{font-family:var(--font-arabic);letter-spacing:0;line-height:1.9}
-      @media (max-width:768px){.home-page .home-hero{display:grid!important;min-height:100dvh!important;padding:76px 0 max(34px,env(safe-area-inset-bottom))!important;align-items:stretch!important}.home-page .home-hero::before{height:25%}.home-page .home-hero .hero-inner{justify-content:flex-end!important;min-height:calc(100dvh - 110px)!important}.home-page .home-hero h1{font-size:clamp(36px,10vw,44px)}.home-page .home-hero .hero-copy{max-width:330px;margin-top:12px;font-size:14px;line-height:1.36}.home-page .next-button{margin-top:16px;font-size:15px}}
-      @media (prefers-reduced-motion:reduce){.home-page{animation:none}.home-page .next-button{transition:none}}
+      .home-page{min-width:320px;min-height:100svh;background:#fff;color:#0d0d0d;font-family:var(--font-main)}
+      .home-layout{display:grid;grid-template-rows:70svh 30svh;min-height:100svh}
+      .home-stage{position:relative;min-height:0;overflow:hidden;background:#fff}
+      .home-top{position:relative;z-index:1;display:grid;place-items:center;height:calc(15svh);min-height:78px}
+      .home-logo{display:block;width:30px;height:auto}
+      .dot-field{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+      .home-bottom{display:grid;place-items:center;min-height:0;padding:24px 20px 28px;background:#F1F3F7;text-align:center}
+      .home-bottom-inner{display:flex;flex-direction:column;align-items:center;width:min(100%,560px)}
+      .home-bottom h1{margin:0;color:#0d0d0d;font-size:clamp(42px,6.8vw,82px);font-weight:700;letter-spacing:-.075em;line-height:.95}
+      .home-description{max-width:520px;margin:16px 0 0;color:#7f8185;font-size:clamp(13px,1.25vw,17px);font-weight:500;letter-spacing:-.02em;line-height:1.45;text-align:center}
+      .home-discover{margin-top:17px;color:#7f8185;font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,transform .22s ease}
+      .home-discover:hover{color:#0d0d0d;transform:translateY(-2px)}
+      .home-discover:focus-visible{outline:2px solid #0d0d0d;outline-offset:5px;border-radius:2px}
+      .home-reveal{opacity:0;transform:translateY(12px);transition:opacity .75s ease,transform .75s cubic-bezier(.22,.61,.36,1)}
+      .home-reveal.is-visible{opacity:1;transform:none}
+      @media (min-width:769px){.home-top{min-height:100px}.home-logo{width:38px}.home-bottom{padding:34px 30px 38px}.home-description{margin-top:20px}.home-discover{margin-top:22px}}
+      @media (max-height:720px){.home-bottom{padding-top:16px;padding-bottom:18px}.home-bottom h1{font-size:clamp(36px,6vw,54px)}.home-description{margin-top:10px;line-height:1.35}.home-discover{margin-top:11px}}
+      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}}
     </style>
   </head>
   <body class="app-page home-page">
-    <header class="site-header">
-      <div class="shell header-inner">
-        <button class="icon-control menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open menu"><img src="assets/icons/menu.png" alt="" /></button>
-        <a class="brand-logo" href="index.html" aria-label="OOXME home"><img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME logo" /></a>
-        <button class="icon-control language-toggle" type="button" aria-label="Switch to Arabic"><img src="assets/icons/globe.png" alt="" /></button>
-      </div>
-    </header>
-    <nav id="site-menu" class="site-menu" aria-label="Primary navigation">
-      <a href="index.html" data-i18n="navHome">Home</a>
-      <a href="portfolio.html" data-i18n="navPortfolio">Portfolio</a>
-      <a href="consultation.html" data-i18n="navConsultation">Consultation</a>
-    </nav>
-    <main>
-      <section class="hero home-hero">
-        <div class="shell hero-inner">
-          <h1 class="text-reveal" data-i18n="headline">Let's Change</h1>
-          <p class="hero-copy text-reveal" data-i18n="supporting">OOXME helps businesses grow through smarter operations, stronger branding, optimized workflows, and measurable business development. Transform your company into a scalable, organized, and profitable business.</p>
-          <a class="next-button text-reveal" href="portfolio.html" data-next data-i18n="next">Next</a>
+    <main class="home-layout">
+      <section class="home-stage" aria-label="OOXME introduction">
+        <canvas class="dot-field" aria-hidden="true"></canvas>
+        <header class="home-top">
+          <a href="index.html" aria-label="OOXME home"><img class="home-logo" src="assets/logo/OX-001-LOGO-black.png" alt="OOXME" /></a>
+        </header>
+      </section>
+      <section class="home-bottom" aria-labelledby="home-heading">
+        <div class="home-bottom-inner home-reveal">
+          <h1 id="home-heading">Hello</h1>
+          <p class="home-description">OOXME is a premium brand management and business development partner, helping ambitious businesses build clarity, momentum, and lasting value.</p>
+          <a class="home-discover" href="portfolio.html">Let's Discover</a>
         </div>
       </section>
     </main>
