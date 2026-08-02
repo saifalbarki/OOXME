@@ -499,7 +499,8 @@ body::after{bottom:0;height:env(safe-area-inset-bottom)}
 
 /* Global layout system: one compact type, spacing, and action language. */
 :root{--section-space:clamp(48px,6vw,88px);--copy-line-height:1.28}
-.app-page:not(.home-page) main>section{border:0!important;background:var(--paper)}
+.app-page main>section{border:0!important;outline:0!important;box-shadow:none!important}
+.app-page:not(.home-page) main>section{background:var(--paper)}
 .app-page:not(.home-page) main>section:nth-of-type(even){background:#F1F3F7}
 .app-page:not(.home-page) main>section:last-child{background:var(--paper)}
 .app-page:not(.home-page) .portfolio-section{padding-block:var(--section-space)}
@@ -621,6 +622,25 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .alfayha-carousel-dots button.is-active{width:26px;background:var(--brand)}
 .alfayha-carousel-dots button:hover{background:var(--brand);transform:scale(1.08)}
 .alfayha-carousel-dots button:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+
+/* Hyper Albasri: responsive layered portfolio cards. */
+.albasri-project{background:var(--paper)}
+.albasri-intro-section,.albasri-gallery-section{padding:clamp(48px,7vw,104px) 0;border:0!important;outline:0!important;box-shadow:none!important;background:var(--paper)!important}
+.albasri-shell{display:grid;gap:clamp(28px,4vw,52px);max-width:980px}
+.albasri-intro,.albasri-section-copy{display:grid;justify-items:center;text-align:center}
+.albasri-intro{padding:clamp(28px,5vw,64px);border-radius:24px;background:#F1F3F7;color:var(--ink)}
+.albasri-intro h1,.albasri-section-copy h2{max-width:760px;margin:10px 0 0;font-family:var(--font-main);font-size:clamp(28px,4vw,46px);font-weight:700;letter-spacing:-.07em;line-height:1}
+.albasri-intro>p:last-child,.albasri-section-copy>p:last-child{max-width:620px;margin:14px 0 0;font-family:var(--font-main);font-size:clamp(12px,1.15vw,15px);font-weight:500;line-height:1.3}
+.albasri-stack{position:relative;width:min(50%,310px);aspect-ratio:1;margin-inline:auto;touch-action:pan-y;user-select:none;isolation:isolate}
+.albasri-stack figure{position:absolute;inset:0;margin:0;overflow:hidden;border:6px solid #F1F3F7;border-radius:24px;background:#F1F3F7;box-shadow:0 18px 34px rgba(13,13,13,.14);will-change:transform,opacity;transition:transform .5s cubic-bezier(.22,.61,.36,1),opacity .36s ease,filter .36s ease;cursor:grab}
+.albasri-stack figure:active{cursor:grabbing}
+.albasri-stack img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.albasri-stack figure.is-front{z-index:3;transform:translate(0) rotate(1.2deg);opacity:1}
+.albasri-stack figure.is-middle{z-index:2;transform:translate(-6%,3%) rotate(-4deg);opacity:.94}
+.albasri-stack figure.is-back{z-index:1;transform:translate(7%,5%) rotate(4deg);opacity:.88}
+.albasri-stack figure.is-hidden{z-index:0;transform:translate(0,7%) scale(.92);opacity:0;pointer-events:none}
+html[dir=rtl] .albasri-intro h1,html[dir=rtl] .albasri-section-copy h2,html[dir=rtl] .albasri-intro p,html[dir=rtl] .albasri-section-copy p{font-family:var(--font-arabic);letter-spacing:0}
+@media (max-width:768px){.albasri-intro-section,.albasri-gallery-section{padding-block:36px}.albasri-intro{padding:24px 20px;border-radius:18px}.albasri-intro h1,.albasri-section-copy h2{font-size:clamp(24px,7vw,32px)}.albasri-intro>p:last-child,.albasri-section-copy>p:last-child{margin-top:10px;font-size:11px}.albasri-stack{width:min(50%,195px)}.albasri-stack figure{border-radius:18px}.albasri-stack figure.is-middle{transform:translate(-5%,3%) rotate(-4deg)}.albasri-stack figure.is-back{transform:translate(5%,5%) rotate(4deg)}}
 html[dir=rtl] .alfayha-intro h1,html[dir=rtl] .alfayha-intro h2,html[dir=rtl] .alfayha-logo-copy h2,html[dir=rtl] .alfayha-intro p,html[dir=rtl] .alfayha-logo-copy p,html[dir=rtl] .alfayha-slide figcaption{font-family:var(--font-arabic);letter-spacing:0}
 html[dir=rtl] .sawa-intro h1,html[dir=rtl] .sawa-intro p{font-family:var(--font-arabic);letter-spacing:0}
 html[dir=rtl] .sawa-intro h2{font-family:var(--font-arabic);letter-spacing:0}
