@@ -29,7 +29,11 @@ function setServiceLanguage(next){
   document.querySelector('[data-page-label]').textContent=value[3];
   document.querySelector('[data-page-heading]').textContent=value[0];
   document.querySelector('[data-page-description]').textContent=value[2];
-  document.querySelector('[data-page-placeholder]').textContent=next==='ar'?'صورة ومحتوى قادم قريبًا':'Image and case study coming soon';
+  const panel=document.querySelector('[data-page-placeholder]');
+  const isArabic=next==='ar';
+  const items=isArabic?['اتجاه واضح','نظام مترابط','تنفيذ قابل للقياس']:['Clear direction','A connected system','Measurable execution'];
+  panel.classList.add('service-detail-panel');
+  panel.innerHTML=`<p class="eyebrow">${isArabic?'كيف نساعد':'How we help'}</p><h2>${value[0]}</h2><ul>${items.map(item=>`<li>${item}</li>`).join('')}</ul><a class="primary-button" href="consultation.html">${isArabic?'ابدأ محادثة':'Start a conversation'}</a>`;
   languageButton.setAttribute('aria-label',next==='en'?'Switch to Arabic':'التبديل إلى الإنجليزية');
   try{localStorage.setItem('ooxme-language',next)}catch(error){}
 }

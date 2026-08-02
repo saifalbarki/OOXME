@@ -37,21 +37,28 @@ const detailDescription=document.querySelector('[data-detail-description]');
 const detailMenu=document.querySelector('.site-menu');
 const detailMenuButton=document.querySelector('.menu-toggle');
 const detailLanguageButton=document.querySelector('.language-toggle');
-const detailHomeButton=detailMenuButton.cloneNode(true);
-detailHomeButton.classList.add('home-toggle');
-detailHomeButton.removeAttribute('aria-controls');
-detailHomeButton.removeAttribute('aria-expanded');
-detailHomeButton.setAttribute('aria-label','Home');
-detailHomeButton.querySelector('img').src='assets/icons/home.png';
-detailHomeButton.querySelector('img').alt='';
-detailMenuButton.replaceWith(detailHomeButton);
-detailHomeButton.addEventListener('click',()=>{window.location.href='index.html'});
 let detailLanguage='en';
 try{detailLanguage=localStorage.getItem('ooxme-language')==='ar'?'ar':'en'}catch(error){}
 function setDetailLanguage(next){detailLanguage=next;const isArabic=next==='ar';detailRoot.lang=next;detailRoot.dir=isArabic?'rtl':'ltr';document.title=isArabic?'قريبًا — اوكسوم':'Much More Is Coming — OOXME';if(detailLabel)detailLabel.textContent='';if(detailHeading)detailHeading.textContent=isArabic?'المزيد قادم قريبًا':'Much More Is Coming';if(detailDescription)detailDescription.textContent=isArabic?'هذه الصفحة قيد التطوير حاليًا. سيتوفر المزيد من المحتوى التفصيلي قريبًا.':'This page is currently under development. More detailed content will be available soon.';detailLanguageButton.setAttribute('aria-label',isArabic?'التبديل إلى الإنجليزية':'Switch to Arabic');document.querySelector('[data-nav-home]').textContent=isArabic?'الرئيسية':'Home';document.querySelector('[data-nav-portfolio]').textContent=isArabic?'المعرض':'Portfolio';try{localStorage.setItem('ooxme-language',next)}catch(error){}}
 function setDetailMenu(open){detailMenu.classList.toggle('is-open',open);detailMenuButton.setAttribute('aria-expanded',String(open));document.body.classList.toggle('menu-open',open)}
 function observeDetailReveals(){const elements=[...document.querySelectorAll('.text-reveal')];if(!('IntersectionObserver'in window)){elements.forEach((element)=>element.classList.add('is-visible'));return}const observer=new IntersectionObserver((entries)=>entries.forEach((entry)=>entry.target.classList.toggle('is-visible',entry.isIntersecting)),{threshold:.14,rootMargin:'0px 0px -7% 0px'});elements.forEach((element,index)=>{element.style.transitionDelay=`${Math.min(index,5)*65}ms`;observer.observe(element)})}
 detailMenuButton.addEventListener('click',()=>setDetailMenu(!detailMenu.classList.contains('is-open')));detailLanguageButton.addEventListener('click',()=>setDetailLanguage(detailLanguage==='en'?'ar':'en'));detailMenu.querySelectorAll('a').forEach((link)=>link.addEventListener('click',()=>setDetailMenu(false)));document.addEventListener('keydown',(event)=>{if(event.key==='Escape')setDetailMenu(false)});detailRoot.classList.add('js');setDetailLanguage(detailLanguage);observeDetailReveals();
+function enhanceServiceDetail(){
+ if(!detailKey?.startsWith('service-'))return;
+ const localized=detail[detailRoot.lang==='ar'?'ar':'en'];
+ const placeholder=document.querySelector('[data-placeholder]');
+ if(!placeholder)return;
+ const isArabic=detailRoot.lang==='ar';
+ const items=isArabic?['استراتيجية واضحة','نظام متماسك','تنفيذ قابل للقياس']:['Clear direction','A connected system','Measurable execution'];
+ if(detailLabel)detailLabel.textContent=localized[0];
+ if(detailHeading)detailHeading.textContent=localized[1];
+ if(detailDescription)detailDescription.textContent=localized[2];
+ document.title=`${localized[1]} — OOXME`;
+ placeholder.classList.add('service-detail-card');
+ placeholder.innerHTML=`<p class="eyebrow">${isArabic?'كيف نساعد':'How we help'}</p><h2>${localized[1]}</h2><ul>${items.map(item=>`<li>${item}</li>`).join('')}</ul><a class="primary-button" href="consultation.html">${isArabic?'ابدأ محادثة':'Start a conversation'}</a>`;
+}
+enhanceServiceDetail();
+detailLanguageButton.addEventListener('click',()=>window.setTimeout(enhanceServiceDetail,0));
 if(detailKey==='project-zone-restaurant'){
  const updateZoneDetail=()=>{const arabic=detailRoot.lang==='ar';document.querySelector('[data-detail-heading]').textContent=arabic?'المزيد':'Much More';document.querySelector('[data-detail-description]').textContent=arabic?'اكتشف الأعمال والأفكار والشراكات التي تصنع ما هو قادم.':'Discover the work, ideas, and partnerships that shape what comes next.'};
  updateZoneDetail();
