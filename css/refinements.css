@@ -585,5 +585,6 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
   .detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-inner{top:-6px}
   .detail-page[data-detail="project-zone-restaurant"] .page-hero h1+.hero-copy{margin-top:8px}
   .detail-page[data-detail="project-zone-restaurant"] .project-promo-section{padding-top:clamp(240px,38svh,360px)}
+  .detail-page[data-detail="project-zone-restaurant"] .project-promo-content{transform:translateY(-10px)}
   .detail-page[data-detail="project-zone-restaurant"] .project-promo-content .project-promo-cta{margin-top:3px}
 }
