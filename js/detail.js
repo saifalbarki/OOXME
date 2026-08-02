@@ -69,6 +69,24 @@ if(detailKey==='project-sawa-university'){
   const sawaCarousel=gallery.querySelector('.sawa-carousel');
   const sawaDots=[...gallery.querySelectorAll('.sawa-carousel-dots button')];
   const sawaSlides=[...sawaCarousel.querySelectorAll('.sawa-tile')];
+  const isTapeGallery=gallery.classList.contains('sawa-project-gallery--tape');
+  if(isTapeGallery&&!reduceMotion){
+   const tapeClones=sawaSlides.map((slide)=>{const clone=slide.cloneNode(true);clone.setAttribute('aria-hidden','true');return clone});
+   sawaCarousel.append(...tapeClones);
+   let tapeFrame=0;
+   let tapeTimestamp=0;
+   let tapePaused=false;
+   const setTapeDot=(index)=>{const activeIndex=(index+sawaSlides.length)%sawaSlides.length;sawaDots.forEach((dot,dotIndex)=>{const active=dotIndex===activeIndex;dot.classList.toggle('is-active',active);dot.setAttribute('aria-current',String(active))})};
+   const getTapeLength=()=>tapeClones[0].offsetLeft-sawaSlides[0].offsetLeft;
+   const moveTape=(timestamp)=>{if(!tapeTimestamp)tapeTimestamp=timestamp;const elapsed=Math.min(timestamp-tapeTimestamp,50);tapeTimestamp=timestamp;if(!tapePaused){const loopLength=getTapeLength();if(loopLength){sawaCarousel.scrollLeft+=elapsed*.042;if(sawaCarousel.scrollLeft>=loopLength)sawaCarousel.scrollLeft-=loopLength;setTapeDot(Math.floor((sawaCarousel.scrollLeft/(loopLength/sawaSlides.length))%sawaSlides.length))}}tapeFrame=requestAnimationFrame(moveTape)};
+   sawaDots.forEach((dot,index)=>dot.addEventListener('click',()=>{sawaCarousel.scrollLeft=sawaSlides[index].offsetLeft;setTapeDot(index)}));
+   sawaCarousel.addEventListener('pointerdown',()=>{tapePaused=true},{passive:true});
+   sawaCarousel.addEventListener('pointerup',()=>{tapePaused=false;tapeTimestamp=0},{passive:true});
+   sawaCarousel.addEventListener('pointercancel',()=>{tapePaused=false;tapeTimestamp=0},{passive:true});
+   window.addEventListener('resize',()=>{const loopLength=getTapeLength();if(loopLength)sawaCarousel.scrollLeft%=loopLength},{passive:true});
+   tapeFrame=requestAnimationFrame(moveTape);
+   return;
+  }
   let sawaIndex=0;
   let scrollFrame=0;
   const setSawaDot=(index)=>{sawaIndex=(index+sawaSlides.length)%sawaSlides.length;sawaDots.forEach((dot,dotIndex)=>{const active=dotIndex===sawaIndex;dot.classList.toggle('is-active',active);dot.setAttribute('aria-current',String(active))})};

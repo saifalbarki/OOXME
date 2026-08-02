@@ -16,12 +16,12 @@
       .home-top{position:relative;z-index:1;display:grid;place-items:center;height:calc(15svh);min-height:78px}
       .home-logo{display:block;width:30px;height:auto}
       .dot-field{position:absolute;z-index:0;inset:0;display:block;width:100%;height:100%;background:#fff;pointer-events:auto}
-      .home-bottom{position:relative;z-index:1;display:grid;flex:1 0 28svh;place-items:end center;min-height:28svh;min-height:28dvh;padding:24px 20px calc(28px + env(safe-area-inset-bottom));border:0;outline:0;background:transparent;text-align:center}
-      .home-bottom-inner{position:relative;top:0;display:flex;flex-direction:column;align-items:center;width:min(100%,560px);padding:clamp(24px,4vw,56px);border-radius:24px;background:#F1F3F7}
+      .home-bottom{position:relative;z-index:1;display:grid;flex:1 0 28svh;place-items:end center;min-height:28svh;min-height:28dvh;padding:18px 20px calc(16px + env(safe-area-inset-bottom));border:0;outline:0;background:transparent;text-align:center}
+      .home-bottom-inner{position:relative;top:0;display:flex;flex-direction:column;align-items:center;width:min(100%,560px);padding:clamp(18px,2.5vw,32px);border-radius:24px;background:#F1F3F7}
       .home-slot{display:grid;width:100%;place-items:center}
       .home-heading-slot{min-height:clamp(46px,7vw,88px)}
       .home-description-slot{min-height:clamp(80px,11vw,112px);margin-top:16px}
-      .home-cta-slot{min-height:31px;margin-top:12px}
+      .home-cta-slot{min-height:31px;margin-top:3px}
       .home-bottom h1{margin:0;color:#0d0d0d;font-size:clamp(42px,6.8vw,82px);font-weight:700;letter-spacing:-.075em;line-height:.95}
       .home-description{max-width:520px;margin:0;color:#7f8185;font-size:clamp(13px,1.25vw,17px);font-weight:500;letter-spacing:-.02em;line-height:1.2;text-align:center}
       .home-discover{position:relative;margin:0;color:#071478;font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,opacity .28s ease,filter .28s ease,transform .28s cubic-bezier(.22,.61,.36,1)}
@@ -31,7 +31,7 @@
       .home-discover:focus-visible{outline:2px solid #0d0d0d;outline-offset:5px;border-radius:2px}
       .home-reveal{opacity:0;transform:translateY(12px);transition:opacity .75s ease,transform .75s cubic-bezier(.22,.61,.36,1)}
       .home-reveal.is-visible{opacity:1;transform:none}
-      @media (min-width:769px){.home-top{min-height:100px}.home-logo{width:38px}.home-bottom{padding:34px 30px 38px}.home-description{margin-top:20px}.home-discover{margin-top:14px}}
+      @media (min-width:769px){.home-top{min-height:100px}.home-logo{width:38px}.home-bottom{padding:22px 30px 24px}.home-description{margin-top:20px}.home-discover{margin-top:14px}}
       @media (max-height:720px){.home-bottom{padding-top:16px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}.home-bottom-inner{top:0;padding:20px}.home-description-slot{min-height:66px;margin-top:10px}.home-cta-slot{margin-top:11px}.home-bottom h1{font-size:clamp(36px,6vw,54px)}}
       @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}.home-discover::after{animation:none}}
     </style>
