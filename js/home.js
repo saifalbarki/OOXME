@@ -5,13 +5,15 @@ if(homeReveal){requestAnimationFrame(()=>homeReveal.classList.add('is-visible'))
 
 if(dotCanvas){
   const context=dotCanvas.getContext('2d');
-  const motionReduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let width=0;
   let height=0;
   let scale=1;
   let spacing=22;
   let radius=115;
+  let wave=0;
   let orb={x:0,y:0,targetX:0,targetY:0};
+  let pointer={x:0,y:0,activeUntil:0};
+  let wasPointerControlled=false;
 
   function chooseTarget(){
     const edge=radius*.55;
@@ -20,6 +22,8 @@ if(dotCanvas){
   }
 
   function resize(){
+    const oldWidth=width;
+    const oldHeight=height;
     const bounds=dotCanvas.getBoundingClientRect();
     scale=Math.min(window.devicePixelRatio||1,2);
     width=Math.round(bounds.width);
@@ -27,11 +31,19 @@ if(dotCanvas){
     dotCanvas.width=Math.round(width*scale);
     dotCanvas.height=Math.round(height*scale);
     context.setTransform(scale,0,0,scale,0,0);
-    spacing=width<680?20:28;
+    // A sqrt(2) reduction in spacing gives approximately twice as many dots.
+    spacing=width<680?14:20;
     radius=width<680?92:150;
-    orb.x=width*.5;
-    orb.y=height*.42;
-    chooseTarget();
+    if(oldWidth&&oldHeight){
+      orb.x=orb.x/oldWidth*width;
+      orb.y=orb.y/oldHeight*height;
+      orb.targetX=orb.targetX/oldWidth*width;
+      orb.targetY=orb.targetY/oldHeight*height;
+    }else{
+      orb.x=width*.5;
+      orb.y=height*.42;
+      chooseTarget();
+    }
   }
 
   function draw(){
@@ -42,25 +54,47 @@ if(dotCanvas){
         if(distance>=radius)continue;
         const fade=1-distance/radius;
         context.globalAlpha=Math.pow(fade,1.85);
-        context.fillStyle='#0d0d0d';
+        context.fillStyle='#000000';
         context.beginPath();
-        context.arc(x,y,width<680?1.05:1.25,0,Math.PI*2);
+        context.arc(x,y,width<680?1.25:1.5,0,Math.PI*2);
         context.fill();
       }
     }
     context.globalAlpha=1;
   }
 
-  function animate(){
-    orb.x+=(orb.targetX-orb.x)*.006;
-    orb.y+=(orb.targetY-orb.y)*.006;
-    if(Math.hypot(orb.targetX-orb.x,orb.targetY-orb.y)<1.5)chooseTarget();
+  function animate(now){
+    wave+=.018;
+    const pointerControlled=now<pointer.activeUntil;
+    if(pointerControlled){
+      orb.x+=(pointer.x-orb.x)*.14;
+      orb.y+=(pointer.y-orb.y)*.14;
+    }else{
+      if(wasPointerControlled)chooseTarget();
+      const flowX=Math.sin(wave*.73)*.16+Math.sin(wave*.21+1.7)*.12;
+      const flowY=Math.cos(wave*.57)*.16+Math.cos(wave*.31+.8)*.12;
+      orb.x+=(orb.targetX-orb.x)*.012+flowX;
+      orb.y+=(orb.targetY-orb.y)*.012+flowY;
+      if(Math.hypot(orb.targetX-orb.x,orb.targetY-orb.y)<8)chooseTarget();
+    }
+    wasPointerControlled=pointerControlled;
     draw();
-    if(!motionReduced)requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
+  }
+
+  function followPointer(event){
+    const bounds=dotCanvas.getBoundingClientRect();
+    pointer.x=Math.max(0,Math.min(bounds.width,event.clientX-bounds.left));
+    pointer.y=Math.max(0,Math.min(bounds.height,event.clientY-bounds.top));
+    pointer.activeUntil=performance.now()+700;
   }
 
   resize();
   draw();
-  if(!motionReduced)animate();
+  requestAnimationFrame(animate);
+  dotCanvas.addEventListener('pointermove',followPointer,{passive:true});
+  dotCanvas.addEventListener('pointerdown',followPointer,{passive:true});
+  dotCanvas.addEventListener('pointerleave',()=>{pointer.activeUntil=0},{passive:true});
+  dotCanvas.addEventListener('pointercancel',()=>{pointer.activeUntil=0},{passive:true});
   window.addEventListener('resize',resize,{passive:true});
 }

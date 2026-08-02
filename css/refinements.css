@@ -2,7 +2,7 @@
 .icon-control img{width:16px;height:16px}
 .site-menu a{font-size:clamp(23px,6.75vw,36px)}
 .eyebrow{font-size:8px}
-.hero h1{font-family:Playfair,Georgia,serif;font-size:clamp(36px,9.15vw,82px);font-style:italic;font-weight:600;letter-spacing:-.06em;line-height:1.05}
+.hero h1{font-family:var(--font-main);font-size:clamp(36px,9.15vw,82px);font-style:normal;font-weight:700;letter-spacing:-.06em;line-height:1.05}
 .section-title{font-size:clamp(32px,6.98vw,66px)}
 .hero-copy{max-width:640px;margin-top:28px;font-size:clamp(14px,3.7vw,19px)}
 .section-copy{max-width:540px;margin-top:22px;font-size:13px}
@@ -324,7 +324,7 @@ html[dir=rtl] .next-plan span{background-image:url('../assets/icons/arrow-left.p
 .hero-copy,.section-copy{text-align:justify;text-align-last:center}
 .home-hero h1{font-family:var(--font-main);font-style:normal;font-weight:700;letter-spacing:-.075em}
 .hero-headline-main,.hero-headline-accent{display:block}
-.hero-headline-accent{font-family:Playfair,Georgia,serif;font-style:italic;font-weight:600;letter-spacing:-.06em}
+.hero-headline-accent{font-family:var(--font-main);font-style:normal;font-weight:700;letter-spacing:-.06em}
 .home-hero .hero-copy{max-width:390px;margin-top:20px;font-size:clamp(9px,1.85vw,10px);line-height:1.65;letter-spacing:-.01em}
 .home-page .language-choices{grid-template-columns:repeat(2,minmax(0,1fr));max-width:380px;gap:10px;margin-top:30px}
 .home-page .language-choices .primary-button{min-height:44px;padding:10px 16px;font-size:12px;line-height:1;font-weight:700}

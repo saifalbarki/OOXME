@@ -9,24 +9,28 @@
     <link rel="stylesheet" href="css/styles.css" />
     <script src="js/home.js" defer></script>
     <style>
-      .home-page{min-width:320px;min-height:100svh;background:#fff;color:#0d0d0d;font-family:var(--font-main)}
-      .home-layout{display:grid;grid-template-rows:70svh 30svh;min-height:100svh}
-      .home-stage{position:relative;min-height:0;overflow:hidden;background:#fff}
+      html{min-height:100%;background:#F1F3F7}
+      .home-page{min-width:320px;min-height:100svh;min-height:100dvh;margin:0;background:#F1F3F7;color:#0d0d0d;font-family:var(--font-main)}
+      .home-layout{display:grid;grid-template-rows:minmax(0,70svh) minmax(30svh,1fr);min-height:100svh;min-height:100dvh;border:0;outline:0}
+      .home-stage{position:relative;min-height:0;overflow:hidden;border:0;outline:0;background:#fff}
       .home-top{position:relative;z-index:1;display:grid;place-items:center;height:calc(15svh);min-height:78px}
       .home-logo{display:block;width:30px;height:auto}
-      .dot-field{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-      .home-bottom{display:grid;place-items:center;min-height:0;padding:24px 20px 28px;background:#F1F3F7;text-align:center}
+      .dot-field{position:absolute;inset:0;width:100%;height:100%;pointer-events:auto}
+      .home-bottom{display:grid;place-items:center;min-height:30svh;padding:24px 20px 28px;border:0;outline:0;background:#F1F3F7;text-align:center}
       .home-bottom-inner{display:flex;flex-direction:column;align-items:center;width:min(100%,560px)}
       .home-bottom h1{margin:0;color:#0d0d0d;font-size:clamp(42px,6.8vw,82px);font-weight:700;letter-spacing:-.075em;line-height:.95}
       .home-description{max-width:520px;margin:16px 0 0;color:#7f8185;font-size:clamp(13px,1.25vw,17px);font-weight:500;letter-spacing:-.02em;line-height:1.45;text-align:center}
-      .home-discover{margin-top:17px;color:#7f8185;font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,transform .22s ease}
-      .home-discover:hover{color:#0d0d0d;transform:translateY(-2px)}
+      .home-discover{position:relative;margin-top:17px;color:#7f8185;font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,transform .22s ease;animation:discoverNudge 2.4s cubic-bezier(.22,.61,.36,1) infinite}
+      .home-discover::after{content:'';position:absolute;right:0;bottom:-5px;left:0;height:1px;background:currentColor;transform:scaleX(.34);transform-origin:center;opacity:.45;transition:transform .22s ease,opacity .22s ease}
+      .home-discover:hover{color:#0d0d0d;transform:translateY(-2px);animation-play-state:paused}
+      .home-discover:hover::after{transform:scaleX(1);opacity:1}
       .home-discover:focus-visible{outline:2px solid #0d0d0d;outline-offset:5px;border-radius:2px}
       .home-reveal{opacity:0;transform:translateY(12px);transition:opacity .75s ease,transform .75s cubic-bezier(.22,.61,.36,1)}
       .home-reveal.is-visible{opacity:1;transform:none}
+      @keyframes discoverNudge{0%,100%{transform:translateY(0)}48%{transform:translateY(-3px)}56%{transform:translateY(-3px)}70%{transform:translateY(0)}}
       @media (min-width:769px){.home-top{min-height:100px}.home-logo{width:38px}.home-bottom{padding:34px 30px 38px}.home-description{margin-top:20px}.home-discover{margin-top:22px}}
       @media (max-height:720px){.home-bottom{padding-top:16px;padding-bottom:18px}.home-bottom h1{font-size:clamp(36px,6vw,54px)}.home-description{margin-top:10px;line-height:1.35}.home-discover{margin-top:11px}}
-      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}}
+      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}.home-discover{animation:none}}
     </style>
   </head>
   <body class="app-page home-page">
