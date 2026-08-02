@@ -85,7 +85,6 @@ if(detailKey==='project-albasri-commercial-group'){
  document.body.append(lightbox);
  const lightboxImage=lightbox.querySelector('img');
  const closeLightbox=()=>{lightbox.classList.remove('is-open');lightbox.setAttribute('aria-hidden','true')};
- lightbox.addEventListener('click',closeLightbox);
  lightbox.addEventListener('click',event=>{if(event.target===lightbox)closeLightbox()});
  lightbox.querySelector('button').addEventListener('click',closeLightbox);
  document.addEventListener('keydown',event=>{if(event.key==='Escape')closeLightbox()});
