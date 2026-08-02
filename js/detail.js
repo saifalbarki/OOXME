@@ -31,6 +31,9 @@ const detailContent={
 const detailRoot=document.documentElement;
 const detailKey=document.body.dataset.detail;
 const detail=detailContent[detailKey]||detailContent.consultation;
+const detailLabel=document.querySelector('[data-detail-label]');
+const detailHeading=document.querySelector('[data-detail-heading]');
+const detailDescription=document.querySelector('[data-detail-description]');
 const detailMenu=document.querySelector('.site-menu');
 const detailMenuButton=document.querySelector('.menu-toggle');
 const detailLanguageButton=document.querySelector('.language-toggle');
@@ -45,7 +48,7 @@ detailMenuButton.replaceWith(detailHomeButton);
 detailHomeButton.addEventListener('click',()=>{window.location.href='index.html'});
 let detailLanguage='en';
 try{detailLanguage=localStorage.getItem('ooxme-language')==='ar'?'ar':'en'}catch(error){}
-function setDetailLanguage(next){detailLanguage=next;const isArabic=next==='ar';detailRoot.lang=next;detailRoot.dir=isArabic?'rtl':'ltr';document.title=isArabic?'قريبًا — اوكسوم':'Much More Is Coming — OOXME';document.querySelector('[data-detail-label]').textContent='';document.querySelector('[data-detail-heading]').textContent=isArabic?'المزيد قادم قريبًا':'Much More Is Coming';document.querySelector('[data-detail-description]').textContent=isArabic?'هذه الصفحة قيد التطوير حاليًا. سيتوفر المزيد من المحتوى التفصيلي قريبًا.':'This page is currently under development. More detailed content will be available soon.';detailLanguageButton.setAttribute('aria-label',isArabic?'التبديل إلى الإنجليزية':'Switch to Arabic');document.querySelector('[data-nav-home]').textContent=isArabic?'الرئيسية':'Home';document.querySelector('[data-nav-portfolio]').textContent=isArabic?'المعرض':'Portfolio';try{localStorage.setItem('ooxme-language',next)}catch(error){}}
+function setDetailLanguage(next){detailLanguage=next;const isArabic=next==='ar';detailRoot.lang=next;detailRoot.dir=isArabic?'rtl':'ltr';document.title=isArabic?'قريبًا — اوكسوم':'Much More Is Coming — OOXME';if(detailLabel)detailLabel.textContent='';if(detailHeading)detailHeading.textContent=isArabic?'المزيد قادم قريبًا':'Much More Is Coming';if(detailDescription)detailDescription.textContent=isArabic?'هذه الصفحة قيد التطوير حاليًا. سيتوفر المزيد من المحتوى التفصيلي قريبًا.':'This page is currently under development. More detailed content will be available soon.';detailLanguageButton.setAttribute('aria-label',isArabic?'التبديل إلى الإنجليزية':'Switch to Arabic');document.querySelector('[data-nav-home]').textContent=isArabic?'الرئيسية':'Home';document.querySelector('[data-nav-portfolio]').textContent=isArabic?'المعرض':'Portfolio';try{localStorage.setItem('ooxme-language',next)}catch(error){}}
 function setDetailMenu(open){detailMenu.classList.toggle('is-open',open);detailMenuButton.setAttribute('aria-expanded',String(open));document.body.classList.toggle('menu-open',open)}
 function observeDetailReveals(){const elements=[...document.querySelectorAll('.text-reveal')];if(!('IntersectionObserver'in window)){elements.forEach((element)=>element.classList.add('is-visible'));return}const observer=new IntersectionObserver((entries)=>entries.forEach((entry)=>entry.target.classList.toggle('is-visible',entry.isIntersecting)),{threshold:.14,rootMargin:'0px 0px -7% 0px'});elements.forEach((element,index)=>{element.style.transitionDelay=`${Math.min(index,5)*65}ms`;observer.observe(element)})}
 detailMenuButton.addEventListener('click',()=>setDetailMenu(!detailMenu.classList.contains('is-open')));detailLanguageButton.addEventListener('click',()=>setDetailLanguage(detailLanguage==='en'?'ar':'en'));detailMenu.querySelectorAll('a').forEach((link)=>link.addEventListener('click',()=>setDetailMenu(false)));document.addEventListener('keydown',(event)=>{if(event.key==='Escape')setDetailMenu(false)});detailRoot.classList.add('js');setDetailLanguage(detailLanguage);observeDetailReveals();
@@ -53,4 +56,24 @@ if(detailKey==='project-zone-restaurant'){
  const updateZoneDetail=()=>{const arabic=detailRoot.lang==='ar';document.querySelector('[data-detail-heading]').textContent=arabic?'المزيد':'Much More';document.querySelector('[data-detail-description]').textContent=arabic?'اكتشف الأعمال والأفكار والشراكات التي تصنع ما هو قادم.':'Discover the work, ideas, and partnerships that shape what comes next.'};
  updateZoneDetail();
  detailLanguageButton.addEventListener('click',()=>window.setTimeout(updateZoneDetail,0));
+}
+if(detailKey==='project-sawa-university'){
+ const sawaTitle=document.querySelector('[data-sawa-title]');
+ const sawaDescription=document.querySelector('[data-sawa-description]');
+ const updateSawaDetail=()=>{const arabic=detailRoot.lang==='ar';document.title=arabic?'جامعة ساوا — اوكسوم':'Sawa University — OOXME';if(sawaTitle)sawaTitle.textContent=arabic?'جامعة ساوا':'Sawa University';if(sawaDescription)sawaDescription.textContent=arabic?'هوية بصرية راقية لجامعة ساوا، تجمع بين التميّز الأكاديمي ولغة بصرية معاصرة وواضحة.':'A refined visual identity created for Sawa University, blending academic distinction with a clear, contemporary visual language.'};
+ updateSawaDetail();
+ detailLanguageButton.addEventListener('click',()=>window.setTimeout(updateSawaDetail,0));
+ const sawaCarousel=document.querySelector('.sawa-carousel');
+ const sawaDots=[...document.querySelectorAll('.sawa-carousel-dots button')];
+ if(sawaCarousel&&sawaDots.length){
+  const sawaSlides=[...sawaCarousel.querySelectorAll('.sawa-tile')];
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let sawaIndex=0;
+  let scrollFrame=0;
+  const setSawaDot=(index)=>{sawaIndex=(index+sawaSlides.length)%sawaSlides.length;sawaDots.forEach((dot,dotIndex)=>{const active=dotIndex===sawaIndex;dot.classList.toggle('is-active',active);dot.setAttribute('aria-current',String(active))})};
+  const showSawaSlide=(index,behavior=reduceMotion?'auto':'smooth')=>{setSawaDot(index);sawaSlides[sawaIndex].scrollIntoView({behavior,block:'nearest',inline:'start'})};
+  sawaDots.forEach((dot,index)=>dot.addEventListener('click',()=>showSawaSlide(index)));
+  sawaCarousel.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=0;const edge=sawaCarousel.getBoundingClientRect().left;let nearest=0;let distance=Infinity;sawaSlides.forEach((slide,index)=>{const nextDistance=Math.abs(slide.getBoundingClientRect().left-edge);if(nextDistance<distance){distance=nextDistance;nearest=index}});setSawaDot(nearest)})},{passive:true});
+  window.setInterval(()=>showSawaSlide(sawaIndex+1),3000);
+ }
 }
