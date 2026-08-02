@@ -692,7 +692,7 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .albasri-intro{padding:clamp(28px,5vw,64px);border-radius:24px;background:#F1F3F7;color:var(--ink)}
 .albasri-intro h1,.albasri-section-copy h2{max-width:760px;margin:10px 0 0;font-family:var(--font-main);font-size:clamp(28px,4vw,46px);font-weight:700;letter-spacing:-.07em;line-height:1}
 .albasri-intro>p:last-child,.albasri-section-copy>p:last-child{max-width:620px;margin:14px 0 0;font-family:var(--font-main);font-size:clamp(12px,1.15vw,15px);font-weight:500;line-height:1.3}
-.albasri-stack{position:relative;width:100%;aspect-ratio:1;margin-inline:auto;touch-action:pan-y;user-select:none;isolation:isolate}
+.albasri-stack{position:relative;width:80%;aspect-ratio:1;margin-inline:auto;touch-action:pan-y;user-select:none;isolation:isolate}
 .albasri-stack figure{position:absolute;inset:0;margin:0;overflow:hidden;border:6px solid #F1F3F7;border-radius:24px;background:#F1F3F7;box-shadow:0 18px 34px rgba(13,13,13,.14);will-change:transform,opacity;transition:transform .5s cubic-bezier(.22,.61,.36,1),opacity .36s ease,filter .36s ease;cursor:grab}
 .albasri-stack figure:active{cursor:grabbing}
 .albasri-stack img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
@@ -719,9 +719,9 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .project-image-lightbox__close{position:fixed;top:max(18px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));display:grid;place-items:center;width:38px;height:38px;padding:0;border:0;border-radius:999px;background:#fff;color:var(--ink);font-size:24px;line-height:1;cursor:pointer;opacity:0;transform:translateY(-8px);transition:opacity .28s ease,transform .28s ease}
 .project-image-lightbox.is-open .project-image-lightbox__close{opacity:1;transform:none}
 html[dir=rtl] .albasri-intro h1,html[dir=rtl] .albasri-section-copy h2,html[dir=rtl] .albasri-intro p,html[dir=rtl] .albasri-section-copy p{font-family:var(--font-arabic);letter-spacing:0}
-@media (max-width:768px){.albasri-intro-section,.albasri-gallery-section{padding-top:54px;padding-bottom:81px}.albasri-intro{padding:24px 20px;border-radius:18px}.albasri-intro h1,.albasri-section-copy h2{font-size:clamp(24px,7vw,32px)}.albasri-intro>p:last-child,.albasri-section-copy>p:last-child{margin-top:10px;font-size:11px}.albasri-stack{width:100%}.albasri-stack figure{border-radius:18px}.albasri-stack figure.is-middle{transform:translate(-5%,3%) rotate(-4deg)}.albasri-stack figure.is-back{transform:translate(5%,5%) rotate(4deg)}}
+@media (max-width:768px){.albasri-intro-section,.albasri-gallery-section{padding-top:54px;padding-bottom:81px}.albasri-intro{padding:24px 20px;border-radius:18px}.albasri-intro h1,.albasri-section-copy h2{font-size:clamp(24px,7vw,32px)}.albasri-intro>p:last-child,.albasri-section-copy>p:last-child{margin-top:10px;font-size:11px}.albasri-stack{width:80%}.albasri-stack figure{border-radius:18px}.albasri-stack figure.is-middle{transform:translate(-5%,3%) rotate(-4deg)}.albasri-stack figure.is-back{transform:translate(5%,5%) rotate(4deg)}}
 @media (max-width:768px){.albasri-project-panel{padding-top:54px;padding-bottom:81px}.albasri-project-panel.is-compacted{padding-bottom:40px}}
-@media (max-width:768px){.albasri-project-panel[data-project-panel="mall"] .albasri-stack{width:100%}.project-image-lightbox__image{width:calc(100vw - 40px);border-radius:18px}.project-image-lightbox__close{top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}}
+@media (max-width:768px){.albasri-project-panel[data-project-panel="mall"] .albasri-stack{width:80%}.project-image-lightbox__image{width:calc(100vw - 40px);border-radius:18px}}
 
 /* Final shared plan, navigation, service-detail, and footer polish. */
 .plans-page .price-hero-section .section-title{display:inline-flex;align-items:baseline;justify-content:center;gap:.16em;font-family:var(--font-main);font-weight:700;line-height:.9}
@@ -739,6 +739,22 @@ html[dir=rtl] .albasri-intro h1,html[dir=rtl] .albasri-section-copy h2,html[dir=
 .plans-page .note-layout .section-copy,.plans-page .plans-cta .section-copy,.plans-page .plans-hero .hero-copy{font-size:clamp(12px,1.05vw,15px);line-height:1.35;text-align:justify;text-align-last:center}
 .project-image-lightbox__close{display:grid!important;place-items:center!important;padding:0!important;font-family:Arial,sans-serif!important;font-size:0!important;line-height:1!important;text-align:center!important}
 .project-image-lightbox__close::before{content:"×";display:block;font-size:26px;line-height:1;transform:translateY(-1px)}
+.project-image-lightbox__close{display:none!important}
+
+/* Portfolio copy and contact controls share the plan-page supporting-text rhythm. */
+.plans-page .price-hero-section .section-title{gap:.08em}
+.plans-page .price-period{font-weight:400}
+.portfolio-page .section-intro>.section-copy,.portfolio-page .consultation-layout>.section-copy{max-width:720px;font-size:clamp(12px,1.05vw,15px);line-height:1.35;text-align:justify;text-align-last:left}
+html[dir=rtl] .portfolio-page .section-intro>.section-copy,html[dir=rtl] .portfolio-page .consultation-layout>.section-copy{text-align:justify;text-align-last:right}
+.contact-icon img{display:block!important;width:18px!important;height:18px!important;max-width:none!important;opacity:1!important;visibility:visible!important;filter:none!important}
+@media (max-width:768px){
+  .portfolio-page .portfolio-section{display:flex;min-height:160svh;padding-block:46px}
+  .portfolio-page .section-intro,.portfolio-page .consultation-layout{display:flex;flex:1;flex-direction:column;align-items:flex-start}
+  .portfolio-page .section-intro>.section-copy,.portfolio-page .consultation-layout>.section-copy{font-size:12px;line-height:1.35}
+  .portfolio-page .card-grid,.portfolio-page .consultation-layout>.primary-button,.portfolio-page .contact-actions{margin-top:auto}
+  .portfolio-page .see-more-wrap{margin-top:22px}
+  .contact-icon img{width:16px!important;height:16px!important}
+}
 .card-arrow{display:grid;place-items:center;background:none!important}
 .card-arrow::before{width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;content:"";transform:rotate(-45deg);transition:transform .25s ease}
 .content-card:hover .card-arrow{transform:none!important}.content-card:hover .card-arrow::before{transform:rotate(-45deg) translate(2px,2px)}
