@@ -10,20 +10,16 @@
     trigger.className='icon-control menu-toggle';
     trigger.setAttribute('aria-label','Open menu');
     trigger.setAttribute('aria-expanded','false');
-    trigger.innerHTML='<span class="sidebar-icon" aria-hidden="true"></span>';
+    trigger.innerHTML='<img class="menu-icon" src="assets/icons/menu.png" alt="" />';
     legacy.replaceWith(trigger);
   }
-  if(!trigger.querySelector('.sidebar-icon')){
-    const image=trigger.querySelector('img');
-    if(image)image.remove();
-    trigger.insertAdjacentHTML('afterbegin','<span class="sidebar-icon" aria-hidden="true"></span>');
-  }
+  if(!trigger.querySelector('.menu-icon'))trigger.innerHTML='<img class="menu-icon" src="assets/icons/menu.png" alt="" />';
   let menu=document.querySelector('.site-menu');
   if(!menu){
     menu=document.createElement('nav');
     menu.className='site-menu ooxme-sidebar';
     menu.setAttribute('aria-label','Primary navigation');
-    menu.innerHTML='<div class="sidebar-intro"><p>Hello, you are in OOXME.</p><span>Make your next move meaningful.</span></div><div class="sidebar-links"><a href="index.html">Home</a><a href="portfolio.html">Portfolio</a><a href="services.html">Services</a><a href="consultation.html">Consultation</a></div>';
+    menu.innerHTML='<div class="sidebar-intro"><p>Hello</p><span>Make your next move meaningful.</span></div><div class="sidebar-links"><a href="index.html">Home</a><a href="portfolio.html">Portfolio</a><a href="services.html">Services</a><a href="consultation.html">Consultation</a></div>';
     document.body.append(menu);
   }
   const close=()=>{menu.classList.remove('is-open');trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-label','Open menu');document.body.classList.remove('menu-open')};
