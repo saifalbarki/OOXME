@@ -558,6 +558,15 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .project-promo-cta:focus-visible{outline:2px solid var(--brand);outline-offset:4px}
 @media (max-width:768px){.project-promo-content{height:25%;min-height:25%;padding:16px}.project-promo-cta{min-height:34px;margin-top:5px;font-size:12px}}
 
+/* Zone Restaurant: balanced project preview and compact placeholder hero. */
+.detail-page[data-detail="project-zone-restaurant"] .page-hero h1{font-size:clamp(32px,6.98vw,66px)}
+.detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-copy{max-width:520px;font-size:clamp(9px,.8vw,10px);line-height:1.3}
+.project-promo-card{display:grid;grid-template-rows:minmax(0,3fr) minmax(0,1fr);aspect-ratio:1;background:none}
+.project-promo-image{grid-row:1;background:url('../assets/projects/Certificate/05.png') center/cover no-repeat}
+.project-promo-content{grid-row:2;height:auto;min-height:0;margin:0;padding:20px;background:#F1F3F7;align-items:center;justify-content:center}
+.project-promo-content h2{font-size:clamp(21px,4.2vw,31px);line-height:1.18}
+@media (max-width:768px){.detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-copy{font-size:9px}.project-promo-content{height:auto;min-height:0;padding:16px}.project-promo-content h2{font-size:clamp(21px,6vw,26px)}}
+
 /* Final-section emphasis and fixed-position CTA underline motion. */
 .app-page:not(.home-page) main>section:nth-last-child(-n+2) .section-copy{max-width:min(100%,720px);margin-inline:auto;text-align:center;text-align-last:auto}
 .app-page:not(.home-page) main>section:nth-last-child(-n+2) .section-title{width:100%;max-width:1100px}

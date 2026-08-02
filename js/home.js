@@ -38,7 +38,7 @@ if (dotCanvas) {
     context.setTransform(scale, 0, 0, scale, 0, 0);
     context.imageSmoothingEnabled = true;
     spacing = width < 680 ? 14 : 20;
-    radius = width < 680 ? 92 : 150;
+    radius = width < 680 ? 138 : 210;
 
     if (previousWidth && previousHeight) {
       sphere.x = sphere.x / previousWidth * width;
@@ -119,12 +119,14 @@ if (dotCanvas) {
     pointer.y = clamp(event.clientY - bounds.top, 0, bounds.height);
   }
 
-  dotCanvas.addEventListener('pointerdown', (event) => {
+  const interactionSurface = document.querySelector('.home-layout') || dotCanvas;
+
+  interactionSurface.addEventListener('pointerdown', (event) => {
     pointer.active = true;
     updatePointer(event);
-    dotCanvas.setPointerCapture?.(event.pointerId);
+    interactionSurface.setPointerCapture?.(event.pointerId);
   }, { passive: true });
-  dotCanvas.addEventListener('pointermove', (event) => {
+  interactionSurface.addEventListener('pointermove', (event) => {
     if (pointer.active) updatePointer(event);
   }, { passive: true });
   window.addEventListener('pointerup', () => {
