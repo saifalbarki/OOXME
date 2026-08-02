@@ -320,6 +320,69 @@ html[dir=rtl] .next-plan span{background-image:url('../assets/icons/arrow-left.p
   .secondary-button{min-height:42px;padding:9px 16px;font-size:10px}
 }
 
+/* Plan pages: consistent rounded surfaces, clear pricing, and side navigation. */
+.plans-page .plans-hero [data-plan-label]{display:none}
+.plans-page .plans-hero .hero-copy{margin-inline:auto;text-align:justify;text-align-last:center}
+.plans-page .plan-card{border-radius:24px;overflow:hidden;background:#fff}
+.plans-page .included-list{max-width:760px;padding:12px 36px;border-radius:24px;background:#fff;overflow:hidden}
+.plans-page .included-list li{font-family:var(--font-main)}
+.plans-page .plan-includes{font-family:var(--font-main);font-weight:600;letter-spacing:.04em}
+.plans-page .price-hero-section .section-title{display:inline-grid;grid-template-columns:auto auto;grid-template-rows:auto auto;column-gap:.05em;align-items:end;background:none;color:var(--ink);font-family:Playfair,serif;font-weight:600;letter-spacing:-.055em;line-height:.8}
+.plans-page .price-currency{grid-column:1;grid-row:1;align-self:start;font-family:var(--font-main);font-size:.27em;font-weight:700;line-height:1}
+.plans-page .price-number{grid-column:2;grid-row:1;font:inherit}
+.plans-page .price-currency,.plans-page .price-number{background:linear-gradient(90deg,var(--brand) 0%,var(--ink) 78%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.plans-page .price-period{grid-column:1 / -1;grid-row:2;margin-top:.45em;font-family:var(--font-main);font-size:.16em;font-weight:600;letter-spacing:.02em;line-height:1;text-align:center;text-transform:uppercase}
+.plans-page .next-plan-wrap{justify-content:space-between;gap:20px;width:100%;max-width:none;margin-inline:auto}
+.plans-page .plan-nav-link{display:inline-flex;align-items:center;gap:10px;min-height:42px;padding:8px 0;color:var(--ink);font-family:var(--font-main);font-size:13px;font-weight:700;letter-spacing:-.025em;transition:color .22s ease,transform .22s ease}
+.plans-page .plan-nav-link span{width:auto;height:auto;background:none!important}
+.plans-page .plan-nav-link i{display:block;width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(135deg);transition:transform .22s ease}
+.plans-page .next-plan i{transform:rotate(-45deg)}
+.plans-page .previous-plan:hover{transform:translateX(-3px);color:var(--brand)}
+.plans-page .next-plan:hover{transform:translateX(3px);color:var(--brand)}
+.plans-page .previous-plan:hover i{transform:rotate(135deg) translate(2px,-2px)}
+.plans-page .next-plan:hover i{transform:rotate(-45deg) translate(2px,-2px)}
+html[dir=rtl] .plans-page .previous-plan i{transform:rotate(-45deg)}
+html[dir=rtl] .plans-page .next-plan i{transform:rotate(135deg)}
+html[dir=rtl] .plans-page .previous-plan:hover{transform:translateX(3px)}
+html[dir=rtl] .plans-page .next-plan:hover{transform:translateX(-3px)}
+@media (max-width:768px){
+  .plans-page .plan-card,.plans-page .included-list{border-radius:18px}
+  .plans-page .included-list{padding:8px 18px}
+  .plans-page .next-plan-wrap{gap:14px}
+  .plans-page .plan-nav-link{font-size:12px}
+}
+
+/* Plan pages use one continuous white canvas with the same soft table surface. */
+.plans-page main>.plans-section{background:var(--paper)!important}
+.plans-page .plans-table,.plans-page .included-list{width:100%;max-width:none;margin-inline:auto}
+.plans-page .plan-card,.plans-page .included-list,.plans-page .note-layout,.plans-page .plans-cta .consultation-layout{background:#F1F3F7}
+.plans-page .plan-card{text-align:center}
+.plans-page .included-list li:last-child{border-bottom:0}
+.plans-page .note-layout,.plans-page .plans-cta .consultation-layout{width:min(calc(100% - var(--gutter)*2),1440px);margin-inline:auto;padding:clamp(28px,4vw,56px);border-radius:24px}
+.plans-page .note-layout .section-copy,.plans-page .plans-cta .section-copy{margin-inline:auto;text-align:center;text-align-last:auto}
+.plans-page .plans-cta .section-title{max-width:1100px}
+@media (max-width:768px){.plans-page .note-layout,.plans-page .plans-cta .consultation-layout{padding:28px 20px;border-radius:18px}}
+
+/* Shared navigation control and centered sidebar language. */
+.menu-toggle img{display:none!important}
+.menu-toggle::before,.sidebar-icon{display:block;width:18px;height:12px;background:linear-gradient(currentColor 0 0) 0 0/100% 2px no-repeat,linear-gradient(currentColor 0 0) 0 50%/100% 2px no-repeat,linear-gradient(currentColor 0 0) 0 100%/100% 2px no-repeat;border-radius:2px;color:var(--ink);content:"";transition:transform .22s ease}
+.menu-toggle .sidebar-icon{display:none}
+.menu-toggle[aria-expanded=true]::before,.menu-toggle[aria-expanded=true] .sidebar-icon{transform:rotate(90deg)}
+.site-menu{align-items:center;text-align:center}
+.site-menu::before{max-width:14ch;margin-bottom:8px;color:var(--ink);font-family:var(--font-main);font-size:clamp(30px,4vw,48px);font-weight:700;letter-spacing:-.065em;line-height:1.02;text-align:center;content:"Hello, you are in OOXME."}
+.site-menu::after{margin-bottom:22px;color:rgba(13,13,13,.62);font-size:13px;line-height:1.35;text-align:center;content:"Make your next move meaningful."}
+.site-menu a{font-size:clamp(15px,1.7vw,20px)!important;line-height:1.2;text-align:center}
+.ooxme-sidebar{justify-content:flex-start;padding-top:clamp(64px,11vh,130px)}
+.ooxme-sidebar .sidebar-intro{display:none}
+.ooxme-sidebar .sidebar-links{display:grid;gap:17px}
+@media (max-width:768px){.site-menu::before{font-size:30px}.site-menu::after{font-size:12px}.site-menu a{font-size:15px!important}}
+
+/* CTAs keep a fixed visual footprint; only their content and fixed underline travel together. */
+.primary-button,.secondary-button{transition:transform .24s cubic-bezier(.22,.61,.36,1),opacity .24s ease,filter .24s ease}
+.primary-button::after,.secondary-button::after{transition:transform .24s cubic-bezier(.22,.61,.36,1),opacity .24s ease}
+.primary-button:hover,.secondary-button:hover,.primary-button:focus-visible,.secondary-button:focus-visible{transform:translateY(-4px)}
+.primary-button:hover::after,.secondary-button:hover::after,.primary-button:focus-visible::after,.secondary-button:focus-visible::after{transform:translateX(-50%) translateY(-4px)}
+
 /* Home hero: a clean main line paired with a restrained editorial italic accent. */
 .home-hero h1{font-family:var(--font-main);font-style:normal;font-weight:700;letter-spacing:-.075em}
 .hero-headline-main,.hero-headline-accent{display:block}
@@ -625,7 +688,8 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 
 /* Hyper Albasri: responsive layered portfolio cards. */
 .albasri-project{background:var(--paper)}
-.albasri-intro-section,.albasri-gallery-section{padding:clamp(48px,7vw,104px) 0;border:0!important;outline:0!important;box-shadow:none!important;background:var(--paper)!important}
+.albasri-intro-section,.albasri-gallery-section{padding:clamp(72px,10.5vw,156px) 0;border:0!important;outline:0!important;box-shadow:none!important;background:var(--paper)!important}
+.albasri-intro-section,.albasri-gallery-section{padding-bottom:clamp(108px,15.75vw,234px)}
 .albasri-shell{display:grid;gap:clamp(28px,4vw,52px);max-width:980px}
 .albasri-intro,.albasri-section-copy{display:grid;justify-items:center;text-align:center}
 .albasri-intro{padding:clamp(28px,5vw,64px);border-radius:24px;background:#F1F3F7;color:var(--ink)}
@@ -639,8 +703,28 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .albasri-stack figure.is-middle{z-index:2;transform:translate(-6%,3%) rotate(-4deg);opacity:.94}
 .albasri-stack figure.is-back{z-index:1;transform:translate(7%,5%) rotate(4deg);opacity:.88}
 .albasri-stack figure.is-hidden{z-index:0;transform:translate(0,7%) scale(.92);opacity:0;pointer-events:none}
+.albasri-project-panel{padding:clamp(72px,10.5vw,156px) 0 clamp(108px,15.75vw,234px);border:0!important;outline:0!important;box-shadow:none!important;background:var(--paper)!important}
+.albasri-project-panel.is-compacted{padding-bottom:clamp(54px,7vw,96px)}
+.albasri-project-panel.is-compacted [data-project-content]{display:none!important}
+.project-next-control{display:grid;justify-items:center;gap:10px;margin:clamp(18px,3vw,30px) auto 0;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700;cursor:pointer;transition:transform .25s ease,opacity .25s ease}
+.project-next-control:hover{transform:translateY(3px)}
+.project-next-control:focus-visible{outline:2px solid var(--brand);outline-offset:8px;border-radius:8px}
+.project-next-control i{display:block;width:12px;height:12px;border-right:2px solid var(--brand);border-bottom:2px solid var(--brand);transform:rotate(45deg);animation:project-next-bob 1.8s ease-in-out infinite}
+@keyframes project-next-bob{50%{transform:translateY(4px) rotate(45deg)}}
+.albasri-project-panel[data-project-panel="mall"] .albasri-stack{aspect-ratio:9/16}
+.project-reopen-control{display:none;justify-items:center;gap:10px;margin:18px auto 0;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
+.project-reopen-control.is-visible{display:grid}
+.project-reopen-control i{display:block;width:12px;height:12px;border-right:2px solid var(--brand);border-bottom:2px solid var(--brand);transform:rotate(45deg);animation:project-next-bob 1.8s ease-in-out infinite}
+.project-image-lightbox{position:fixed;z-index:100;inset:0;display:grid;place-items:center;padding:20px;visibility:hidden;opacity:0;background:rgba(13,13,13,.2);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);transition:visibility 0s linear .28s,opacity .28s ease,backdrop-filter .28s ease}
+.project-image-lightbox.is-open{visibility:visible;opacity:1;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition-delay:0s}
+.project-image-lightbox__image{display:block;width:min(980px,calc(100vw - 40px));max-height:calc(100svh - 64px);object-fit:contain;border:6px solid #F1F3F7;border-radius:24px;background:#F1F3F7;box-shadow:0 20px 56px rgba(13,13,13,.24);opacity:0;transform:translateY(10px) scale(.985);transition:opacity .28s ease,transform .28s ease}
+.project-image-lightbox.is-open .project-image-lightbox__image{opacity:1;transform:none}
+.project-image-lightbox__close{position:fixed;top:max(18px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));display:grid;place-items:center;width:38px;height:38px;padding:0;border:0;border-radius:999px;background:#fff;color:var(--ink);font-size:24px;line-height:1;cursor:pointer;opacity:0;transform:translateY(-8px);transition:opacity .28s ease,transform .28s ease}
+.project-image-lightbox.is-open .project-image-lightbox__close{opacity:1;transform:none}
 html[dir=rtl] .albasri-intro h1,html[dir=rtl] .albasri-section-copy h2,html[dir=rtl] .albasri-intro p,html[dir=rtl] .albasri-section-copy p{font-family:var(--font-arabic);letter-spacing:0}
-@media (max-width:768px){.albasri-intro-section,.albasri-gallery-section{padding-block:36px}.albasri-intro{padding:24px 20px;border-radius:18px}.albasri-intro h1,.albasri-section-copy h2{font-size:clamp(24px,7vw,32px)}.albasri-intro>p:last-child,.albasri-section-copy>p:last-child{margin-top:10px;font-size:11px}.albasri-stack{width:min(50%,195px)}.albasri-stack figure{border-radius:18px}.albasri-stack figure.is-middle{transform:translate(-5%,3%) rotate(-4deg)}.albasri-stack figure.is-back{transform:translate(5%,5%) rotate(4deg)}}
+@media (max-width:768px){.albasri-intro-section,.albasri-gallery-section{padding-top:54px;padding-bottom:81px}.albasri-intro{padding:24px 20px;border-radius:18px}.albasri-intro h1,.albasri-section-copy h2{font-size:clamp(24px,7vw,32px)}.albasri-intro>p:last-child,.albasri-section-copy>p:last-child{margin-top:10px;font-size:11px}.albasri-stack{width:min(50%,195px)}.albasri-stack figure{border-radius:18px}.albasri-stack figure.is-middle{transform:translate(-5%,3%) rotate(-4deg)}.albasri-stack figure.is-back{transform:translate(5%,5%) rotate(4deg)}}
+@media (max-width:768px){.albasri-project-panel{padding-top:54px;padding-bottom:81px}.albasri-project-panel.is-compacted{padding-bottom:40px}}
+@media (max-width:768px){.albasri-project-panel[data-project-panel="mall"] .albasri-stack{width:min(50%,195px)}.project-image-lightbox__image{width:calc(100vw - 40px);border-radius:18px}.project-image-lightbox__close{top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}}
 html[dir=rtl] .alfayha-intro h1,html[dir=rtl] .alfayha-intro h2,html[dir=rtl] .alfayha-logo-copy h2,html[dir=rtl] .alfayha-intro p,html[dir=rtl] .alfayha-logo-copy p,html[dir=rtl] .alfayha-slide figcaption{font-family:var(--font-arabic);letter-spacing:0}
 html[dir=rtl] .sawa-intro h1,html[dir=rtl] .sawa-intro p{font-family:var(--font-arabic);letter-spacing:0}
 html[dir=rtl] .sawa-intro h2{font-family:var(--font-arabic);letter-spacing:0}

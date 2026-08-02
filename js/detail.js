@@ -59,9 +59,61 @@ if(detailKey==='project-zone-restaurant'){
 }
 if(detailKey==='project-albasri-commercial-group'){
  const albasriCopy={en:{label:'Brands We Created',title:'Hyper Albasri',intro:'A complete identity and content system that gives Hyper Albasri a clear, active, and recognisable presence across every customer touchpoint.',brandLabel:'Brand',brandTitle:'The identity',brandText:'A confident visual system that keeps the Hyper Albasri experience familiar, modern, and easy to recognise.',designLabel:'Design',designTitle:'Everyday communication',designText:'A flexible set of visual pieces designed to keep messages clear and the brand consistently present.',photoLabel:'Photography',photoTitle:'The store in motion',photoText:'Photography captures the energy, products, and people that shape the Hyper Albasri customer experience.'},ar:{label:'العلامات التي أنشأناها',title:'هايبر البصري',intro:'هوية ونظام محتوى متكاملان يمنحان هايبر البصري حضوراً واضحاً ونشطاً وسهل التعرّف عليه في كل نقطة تواصل مع العملاء.',brandLabel:'الهوية',brandTitle:'هوية متكاملة',brandText:'نظام بصري واثق يحافظ على تجربة هايبر البصري مألوفة وعصرية وسهلة التمييز.',designLabel:'التصميم',designTitle:'تواصل يومي',designText:'مجموعة مرنة من القطع البصرية المصممة لإبقاء الرسائل واضحة والعلامة حاضرة باستمرار.',photoLabel:'التصوير',photoTitle:'المتجر في حركة',photoText:'يلتقط التصوير الطاقة والمنتجات والأشخاص الذين يشكلون تجربة عملاء هايبر البصري.'}};
+ const albasriIntro=document.querySelector('[data-project-intro="hyper"]');
+ const albasriGalleries=[...document.querySelectorAll('[data-project-gallery="hyper"]')];
+ const albasriFields={
+  label:albasriIntro?.querySelector('.eyebrow'),title:albasriIntro?.querySelector('h1'),intro:albasriIntro?.querySelector('article>p:last-child'),
+  brandLabel:albasriGalleries[0]?.querySelector('.eyebrow'),brandTitle:albasriGalleries[0]?.querySelector('h2'),brandText:albasriGalleries[0]?.querySelector('.albasri-section-copy>p:last-child'),
+  designLabel:albasriGalleries[1]?.querySelector('.eyebrow'),designTitle:albasriGalleries[1]?.querySelector('h2'),designText:albasriGalleries[1]?.querySelector('.albasri-section-copy>p:last-child'),
+  photoLabel:albasriGalleries[2]?.querySelector('.eyebrow'),photoTitle:albasriGalleries[2]?.querySelector('h2'),photoText:albasriGalleries[2]?.querySelector('.albasri-section-copy>p:last-child')
+ };
+ Object.entries(albasriFields).forEach(([key,node])=>{if(node)node.dataset.albasriCopy=key});
  const setAlbasriLanguage=()=>{const language=detailRoot.lang==='ar'?'ar':'en';const copy=albasriCopy[language];document.title=`${copy.title} — OOXME`;document.querySelectorAll('[data-albasri-copy]').forEach(node=>{const value=copy[node.dataset.albasriCopy];if(value)node.textContent=value})};
  setAlbasriLanguage();detailLanguageButton?.addEventListener('click',()=>requestAnimationFrame(setAlbasriLanguage));
  document.querySelectorAll('[data-albasri-stack]').forEach(stack=>{const cards=[...stack.querySelectorAll('figure')];let active=0;let startX=0;const render=()=>{const next=(active+1)%cards.length;const previous=(active-1+cards.length)%cards.length;cards.forEach((card,index)=>{card.classList.toggle('is-front',index===active);card.classList.toggle('is-middle',index===next);card.classList.toggle('is-back',index===previous);card.classList.toggle('is-hidden',index!==active&&index!==next&&index!==previous)})};const move=direction=>{active=(active+direction+cards.length)%cards.length;render()};stack.tabIndex=0;stack.setAttribute('role','group');stack.setAttribute('aria-label','Swipe through project images');stack.addEventListener('pointerdown',event=>{startX=event.clientX;stack.setPointerCapture?.(event.pointerId)});stack.addEventListener('pointerup',event=>{const distance=event.clientX-startX;if(Math.abs(distance)>28)move(distance<0?1:-1)});stack.addEventListener('keydown',event=>{if(event.key==='ArrowRight'){event.preventDefault();move(1)}if(event.key==='ArrowLeft'){event.preventDefault();move(-1)}});render()});
+ const lightbox=document.createElement('div');
+ lightbox.className='project-image-lightbox';
+ lightbox.setAttribute('aria-hidden','true');
+ lightbox.innerHTML='<button class="project-image-lightbox__close" type="button" aria-label="Close image">×</button><img class="project-image-lightbox__image" alt="" />';
+ document.body.append(lightbox);
+ const lightboxImage=lightbox.querySelector('img');
+ const closeLightbox=()=>{lightbox.classList.remove('is-open');lightbox.setAttribute('aria-hidden','true')};
+ lightbox.addEventListener('click',event=>{if(event.target===lightbox)closeLightbox()});
+ lightbox.querySelector('button').addEventListener('click',closeLightbox);
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeLightbox()});
+ document.querySelectorAll('[data-albasri-stack]').forEach(stack=>{
+  let tapStartX=0;
+  stack.addEventListener('pointerdown',event=>{tapStartX=event.clientX},{passive:true});
+  stack.querySelectorAll('figure').forEach(figure=>figure.addEventListener('click',event=>{
+   if(Math.abs(event.clientX-tapStartX)>28)return;
+   const image=figure.querySelector('img');
+   lightboxImage.src=image.currentSrc||image.src;
+   lightboxImage.alt=image.alt;
+   lightbox.classList.add('is-open');
+   lightbox.setAttribute('aria-hidden','false');
+  }));
+ });
+ const addSeeMore=(key,container,reopen)=>{
+  let control=container.querySelector(`[data-project-reopen="${key}"]`);
+  if(!control){control=document.createElement('button');control.type='button';control.className='project-reopen-control';control.dataset.projectReopen=key;control.innerHTML='<span>See More</span><i aria-hidden="true"></i>';container.append(control);control.addEventListener('click',reopen)}
+  control.classList.add('is-visible');
+ };
+ document.querySelectorAll('[data-open-project]').forEach(button=>button.addEventListener('click',()=>{
+  const nextPanel=document.querySelector(`[data-project-panel="${button.dataset.openProject}"]`);
+  if(!nextPanel)return;
+  const currentPanel=button.closest('[data-project-panel]');
+  if(currentPanel){
+   const key=currentPanel.dataset.projectPanel;
+   currentPanel.classList.add('is-compacted');
+   addSeeMore(key,currentPanel.querySelector('.albasri-shell'),()=>{currentPanel.classList.remove('is-compacted')});
+  }else{
+   const intro=document.querySelector('[data-project-intro="hyper"]');
+   document.querySelectorAll('[data-project-gallery="hyper"]').forEach(section=>{section.hidden=true});
+   addSeeMore('hyper',intro.querySelector('.albasri-shell'),()=>{document.querySelectorAll('[data-project-gallery="hyper"]').forEach(section=>{section.hidden=false})});
+  }
+  nextPanel.hidden=false;
+  requestAnimationFrame(()=>nextPanel.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'}));
+ }));
 }
 if(detailKey==='project-alfayha-eyewear'){
  const alfayhaCopy={en:{projectLabel:'Project',title:'Alfayha Eyewear',intro:'We created a recognizable identity and content system for an established eyewear business—bringing its service, expertise, and personality into one clear visual presence.',logoLabel:'The logo',logoTitle:'A human symbol for better vision.',logoText:'The mark combines a face, glasses, and a direct expression to make the brand immediately approachable. Its bold orange color gives every touchpoint a confident, consistent signature.',portraitTitle:'Portrait photography',portraitText:'Photography brings the people behind the eyewear service into focus, making the brand feel personal and trustworthy.',campaignTitle:'Campaign system',campaignText:'A flexible social media system balances product, education, and customer stories with one distinctive visual language.',identityTitle:'Visual identity system',identityText:'Prescription forms, cards, and branded materials carry the logo and orange palette consistently across everyday interactions.',printTitle:'Printed touchpoints',printText:'Business cards turn the identity into a practical, memorable object—combining contact details, QR access, and brand recognition.',fatimahLabel:'Project',fatimahTitle:'Fatima Floss Dental Clinic',fatimahIntro:'A friendly dental-clinic identity built around care, confidence, and a bright visual system that feels welcoming at every touchpoint.',fatimahImage1Title:'Clinic uniforms',fatimahImage1Text:'Colour-led uniforms carry the clinic identity naturally into the day-to-day patient experience.',fatimahImage2Title:'Branded material',fatimahImage2Text:'A clear, approachable visual language makes each clinic touchpoint feel considered and familiar.',fatimahImage3Title:'Identity applications',fatimahImage3Text:'The mark and colour palette stay consistent across the clinic’s practical brand applications.',fatimahImage4Title:'A caring system',fatimahImage4Text:'Every detail supports a calm, professional experience for patients and the clinic team.',arjwanLabel:'Project',arjwanTitle:'Arjwan',arjwanIntro:'A botanical identity shaped to feel distinctive, memorable, and closely connected to the natural character of the brand.',arjwanImage1Title:'Botanical mark',arjwanImage1Text:'The logo turns the brand’s floral inspiration into a simple, confident signature.',arjwanImage2Title:'Visual language',arjwanImage2Text:'Soft purple tones and a distinctive form create a memorable, coherent identity.',arjwanImage3Title:'Brand touchpoints',arjwanImage3Text:'The system keeps each expression recognisable while allowing room for the brand to grow.',arjwanImage4Title:'A coherent presence',arjwanImage4Text:'Every asset works together to create one clear, premium brand presence.'},ar:{projectLabel:'مشروع',title:'نظارات الفيحاء',intro:'طورنا هوية ونظام محتوى مميزين لمشروع نظارات قائم، يجمعان خدمته وخبرته وشخصيته في حضور بصري واضح.',logoLabel:'الشعار',logoTitle:'رمز إنساني لرؤية أوضح.',logoText:'يجمع الشعار بين الوجه والنظارات والتعبير المباشر ليكون قريباً وسهل التذكّر. ويمنح اللون البرتقالي كل نقطة تواصل توقيعاً واثقاً ومتسقاً.',portraitTitle:'تصوير شخصي',portraitText:'يُبرز التصوير الأشخاص وراء خدمة النظارات ويجعل العلامة أكثر قرباً وثقة.',campaignTitle:'نظام الحملات',campaignText:'ينظم نظام مرن للمحتوى المنتجات والتوعية وقصص العملاء ضمن لغة بصرية واحدة.',identityTitle:'نظام الهوية البصرية',identityText:'تحمل النماذج والبطاقات والمواد المطبوعة الشعار والألوان باستمرار في كل تفاعل يومي.',printTitle:'نقاط تواصل مطبوعة',printText:'تحول البطاقات الهوية إلى قطعة عملية لا تُنسى تجمع المعلومات والوصول السريع والتعرّف على العلامة.',fatimahLabel:'مشروع',fatimahTitle:'عيادة فاطمة فلوس لطب الأسنان',fatimahIntro:'هوية ودودة لعيادة أسنان تتمحور حول الرعاية والثقة ونظام بصري مشرق يرحّب بالزوار في كل نقطة تواصل.',fatimahImage1Title:'أزياء العيادة',fatimahImage1Text:'تُدخل الأزياء الملوّنة هوية العيادة إلى تجربة المرضى اليومية بصورة طبيعية.',fatimahImage2Title:'مواد العلامة',fatimahImage2Text:'تجعل اللغة البصرية الواضحة والقريبة كل نقطة تواصل مدروسة ومألوفة.',fatimahImage3Title:'تطبيقات الهوية',fatimahImage3Text:'يبقى الشعار ولوحة الألوان متسقين عبر تطبيقات العيادة العملية.',fatimahImage4Title:'نظام يهتم بالتفاصيل',fatimahImage4Text:'تدعم كل التفاصيل تجربة هادئة واحترافية للمرضى وفريق العيادة.',arjwanLabel:'مشروع',arjwanTitle:'أرجوان',arjwanIntro:'هوية نباتية صُممت لتكون مميزة وسهلة التذكر ومرتبطة بالطابع الطبيعي للعلامة.',arjwanImage1Title:'رمز نباتي',arjwanImage1Text:'يحوّل الشعار الإلهام الزهري للعلامة إلى توقيع بسيط وواثق.',arjwanImage2Title:'لغة بصرية',arjwanImage2Text:'تنتج الدرجات البنفسجية الناعمة والشكل المميز هوية متماسكة ولا تُنسى.',arjwanImage3Title:'نقاط تواصل العلامة',arjwanImage3Text:'يحافظ النظام على تميّز كل تطبيق مع إتاحة المجال لنمو العلامة.',arjwanImage4Title:'حضور متماسك',arjwanImage4Text:'تعمل كل الأصول معاً لصناعة حضور راقٍ وواضح للعلامة.'}};
