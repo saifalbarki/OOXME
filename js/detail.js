@@ -60,7 +60,8 @@ if(detailKey==='project-zone-restaurant'){
 if(detailKey==='project-sawa-university'){
  const sawaTitle=document.querySelector('[data-sawa-title]');
  const sawaDescription=document.querySelector('[data-sawa-description]');
- const updateSawaDetail=()=>{const arabic=detailRoot.lang==='ar';document.title=arabic?'جامعة ساوا — اوكسوم':'Sawa University — OOXME';if(sawaTitle)sawaTitle.textContent=arabic?'جامعة ساوا':'Sawa University';if(sawaDescription)sawaDescription.textContent=arabic?'هوية بصرية راقية لجامعة ساوا، تجمع بين التميّز الأكاديمي ولغة بصرية معاصرة وواضحة.':'A refined visual identity created for Sawa University, blending academic distinction with a clear, contemporary visual language.'};
+ const sawaNext=document.querySelector('[data-sawa-next]');
+ const updateSawaDetail=()=>{const arabic=detailRoot.lang==='ar';document.title=arabic?'جامعة ساوا — اوكسوم':'Sawa University — OOXME';if(sawaTitle)sawaTitle.textContent=arabic?'جامعة ساوا':'Sawa University';if(sawaDescription)sawaDescription.textContent=arabic?'هوية بصرية راقية لجامعة ساوا، تجمع بين التميّز الأكاديمي ولغة بصرية معاصرة وواضحة.':'A refined visual identity created for Sawa University, blending academic distinction with a clear, contemporary visual language.';if(sawaNext)sawaNext.textContent=arabic?'التالي':'Next'};
  updateSawaDetail();
  detailLanguageButton.addEventListener('click',()=>window.setTimeout(updateSawaDetail,0));
  const sawaCarousel=document.querySelector('.sawa-carousel');
