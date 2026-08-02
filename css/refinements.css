@@ -321,7 +321,6 @@ html[dir=rtl] .next-plan span{background-image:url('../assets/icons/arrow-left.p
 }
 
 /* Home hero: a clean main line paired with a restrained editorial italic accent. */
-.hero-copy,.section-copy{text-align:justify;text-align-last:center}
 .home-hero h1{font-family:var(--font-main);font-style:normal;font-weight:700;letter-spacing:-.075em}
 .hero-headline-main,.hero-headline-accent{display:block}
 .hero-headline-accent{font-family:var(--font-main);font-style:normal;font-weight:700;letter-spacing:-.06em}
@@ -497,3 +496,29 @@ body::after{bottom:0;height:env(safe-area-inset-bottom)}
 .detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-inner{text-align:center}
 .detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-copy{margin-inline:auto;text-align:center}
 @media (max-width:768px){.detail-page[data-detail="project-zone-restaurant"] .page-hero{min-height:300px;padding:42px 0}}
+
+/* Global layout system: one compact type, spacing, and action language. */
+:root{--section-space:clamp(48px,6vw,88px);--copy-line-height:1.5}
+.app-page:not(.home-page) main>section{border:0!important;background:var(--paper)}
+.app-page:not(.home-page) main>section:nth-of-type(even){background:#F1F3F7}
+.app-page:not(.home-page) main>section:last-child{background:var(--paper)}
+.app-page:not(.home-page) .portfolio-section{padding-block:var(--section-space)}
+.app-page:not(.home-page) .page-hero,.app-page:not(.home-page) .booking-intro{min-height:0;padding-block:var(--section-space)}
+.hero h1,.section-title,.booking-intro h1,.page-hero h1{font-family:var(--font-main);font-weight:700;color:var(--ink);line-height:1;letter-spacing:-.075em}
+html[dir=rtl] .hero h1,html[dir=rtl] .section-title,html[dir=rtl] .booking-intro h1,html[dir=rtl] .page-hero h1{font-family:var(--font-arabic);font-weight:600;letter-spacing:0;line-height:1.25}
+.hero-copy,.section-copy{font-family:var(--font-main);font-weight:500;color:var(--ink);line-height:var(--copy-line-height);text-align:start;text-align-last:auto}
+html[dir=rtl] .hero-copy,html[dir=rtl] .section-copy{font-family:var(--font-arabic);font-weight:400;line-height:1.75;text-align:start;text-align-last:auto}
+.section-intro>.section-copy,.section-intro>.eyebrow,.section-intro>.section-title{max-width:650px}
+.card-title,.plan-features strong,.service-item strong{font-family:var(--font-main);font-weight:700;color:var(--ink);line-height:1.18}
+html[dir=rtl] .card-title,html[dir=rtl] .plan-features strong,html[dir=rtl] .service-item strong{font-family:var(--font-arabic);font-weight:600;line-height:1.45}
+.primary-button,.secondary-button{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;color:var(--brand)!important;font-family:var(--font-main);font-size:clamp(12px,1.1vw,15px);font-weight:700;letter-spacing:-.025em;transition:opacity .22s ease,transform .22s ease,filter .22s ease}
+.primary-button::after,.secondary-button::after{position:absolute;right:0;bottom:2px;left:0;height:3px;border-radius:999px;content:"";background:currentColor;opacity:.72;transform:scaleX(.9);transition:transform .22s ease,opacity .22s ease}
+.primary-button:hover,.secondary-button:hover{background:transparent!important;box-shadow:none!important;color:var(--brand)!important;transform:translateY(-2px)}
+.primary-button:hover::after,.secondary-button:hover::after{opacity:1;transform:scaleX(1)}
+.primary-button:active,.secondary-button:active{transform:translateY(0) scale(.97)}
+.primary-button:focus-visible,.secondary-button:focus-visible{outline:2px solid var(--brand);outline-offset:4px}
+html[dir=rtl] .primary-button,html[dir=rtl] .secondary-button{font-family:var(--font-arabic);font-weight:600}
+.contact-section .consultation-layout{align-items:start}
+.site-copyright{margin:clamp(34px,5vw,56px) 0 0;color:rgba(13,13,13,.62);font-family:var(--font-main);font-size:12px;line-height:1.4}
+html[dir=rtl] .site-copyright{font-family:var(--font-arabic)}
+@media (max-width:768px){:root{--section-space:clamp(38px,10vw,56px)}.app-page:not(.home-page) .page-hero,.app-page:not(.home-page) .booking-intro{padding-block:var(--section-space)}.hero-copy,.section-copy{line-height:1.45}html[dir=rtl] .hero-copy,html[dir=rtl] .section-copy{line-height:1.7}.primary-button,.secondary-button{min-height:44px;font-size:12px}}

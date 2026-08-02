@@ -9,7 +9,7 @@ if (dotCanvas) {
   const context = dotCanvas.getContext('2d');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pointer = { x: 0, y: 0, active: false };
-  const sphere = { x: 0, y: 0, targetX: 0, targetY: 0 };
+  const sphere = { x: 0, y: 0, targetX: 0, targetY: 0, velocityX: 0, velocityY: 0 };
   let width = 0;
   let height = 0;
   let scale = 1;
@@ -77,21 +77,29 @@ if (dotCanvas) {
 
   function updateSphere(delta) {
     if (pointer.active) {
-      sphere.x += (pointer.x - sphere.x) * 0.15;
-      sphere.y += (pointer.y - sphere.y) * 0.15;
+      sphere.x += (pointer.x - sphere.x) * 0.16;
+      sphere.y += (pointer.y - sphere.y) * 0.16;
+      sphere.velocityX = 0;
+      sphere.velocityY = 0;
       return;
     }
 
     const dx = sphere.targetX - sphere.x;
     const dy = sphere.targetY - sphere.y;
     const distance = Math.hypot(dx, dy);
-    if (distance < 8) chooseTarget();
+    if (distance < radius * 0.24) chooseTarget();
 
-    const speed = reducedMotion ? 0.022 : 0.042;
-    const organicX = Math.sin(time * 0.71) * 0.52 + Math.sin(time * 0.23 + 1.9) * 0.34;
-    const organicY = Math.cos(time * 0.59) * 0.48 + Math.cos(time * 0.31 + 0.8) * 0.36;
-    sphere.x += dx * speed * delta + organicX * delta;
-    sphere.y += dy * speed * delta + organicY * delta;
+    const attraction = reducedMotion ? 0.00034 : 0.00072;
+    const drag = reducedMotion ? 0.91 : 0.94;
+    const driftX = Math.sin(time * 0.73) * 0.12 + Math.sin(time * 0.19 + 1.4) * 0.08;
+    const driftY = Math.cos(time * 0.61) * 0.11 + Math.cos(time * 0.27 + 0.7) * 0.08;
+    sphere.velocityX = (sphere.velocityX + dx * attraction * delta + driftX * delta) * Math.pow(drag, delta);
+    sphere.velocityY = (sphere.velocityY + dy * attraction * delta + driftY * delta) * Math.pow(drag, delta);
+    sphere.x += sphere.velocityX * delta;
+    sphere.y += sphere.velocityY * delta;
+
+    if (sphere.x < 0 || sphere.x > width) sphere.velocityX *= -0.45;
+    if (sphere.y < 0 || sphere.y > height) sphere.velocityY *= -0.45;
     sphere.x = clamp(sphere.x, 0, width);
     sphere.y = clamp(sphere.y, 0, height);
   }
