@@ -476,15 +476,17 @@ html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:
 
 /* Zone Restaurant: image-led next project preview. */
 .project-promo-section{padding:0 0 100px}
-.project-promo-card{position:relative;isolation:isolate;display:flex;min-height:clamp(300px,48vw,620px);overflow:hidden;border:1px solid var(--line);border-radius:24px;background:url('../assets/projects/Certificate/05.png') center/cover no-repeat;color:#fff}
-.project-promo-card::before{position:absolute;z-index:0;inset:68% -20px -24px;content:"";background:url('../assets/projects/Certificate/05.png') center/cover no-repeat;filter:blur(14px);transform:scale(1.05)}
+.project-promo-card{position:relative;isolation:isolate;display:flex;aspect-ratio:1;min-height:0;overflow:hidden;border:0;border-radius:24px;background:url('../assets/projects/Certificate/05.png') center/cover no-repeat;color:#fff}
+.project-promo-card::before{position:absolute;z-index:0;inset:60% -20px -24px;content:"";background:url('../assets/projects/Certificate/05.png') center/cover no-repeat;filter:blur(7px);transform:scale(1.05);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.3) 30%,#000 66%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.3) 30%,#000 66%)}
 .project-promo-card::after{position:absolute;z-index:0;inset:63% 0 0;content:"";background:linear-gradient(to bottom,rgba(13,13,13,0),rgba(13,13,13,.16) 38%,rgba(13,13,13,.84) 100%)}
 .project-promo-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:100%;min-height:30%;padding:32px;text-align:center}
 .project-promo-content h2{margin:0;font-size:clamp(28px,4.5vw,58px);font-weight:700;letter-spacing:-.065em;line-height:1}
 .project-promo-content a{margin-top:12px;font-size:14px;font-weight:700;transition:opacity .25s ease,transform .25s ease}
 .project-promo-content a:hover{opacity:.72;transform:translateY(-2px)}
-@media (max-width:768px){.project-promo-section{padding-bottom:64px}.project-promo-card{min-height:320px;border-radius:18px}.project-promo-content{padding:22px}.project-promo-content h2{font-size:28px}.project-promo-content a{margin-top:9px;font-size:12px}}
+@media (max-width:768px){.project-promo-section{padding-bottom:64px}.project-promo-card{min-height:0;border-radius:18px}.project-promo-content{padding:22px}.project-promo-content h2{font-size:28px}.project-promo-content a{margin-top:9px;font-size:12px}}
 
 /* Zone Restaurant keeps this project preview page centered. */
+.detail-page[data-detail="project-zone-restaurant"] .page-hero{min-height:390px;padding:52px 0;border:0!important}
 .detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-inner{text-align:center}
 .detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-copy{margin-inline:auto;text-align:center}
+@media (max-width:768px){.detail-page[data-detail="project-zone-restaurant"] .page-hero{min-height:300px;padding:42px 0}}
