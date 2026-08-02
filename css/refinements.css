@@ -574,3 +574,15 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .primary-button::after,.secondary-button::after{animation:ctaUnderlineDrift 2.4s cubic-bezier(.22,.61,.36,1) infinite}
 @keyframes ctaUnderlineDrift{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-2px)}}
 @media (prefers-reduced-motion:reduce){.primary-button::after,.secondary-button::after{animation:none}}
+
+/* Zone Restaurant: compact hero grouping with intentional space before the project preview. */
+.detail-page[data-detail="project-zone-restaurant"] .page-hero{padding-block:clamp(32px,4vw,48px) 0}
+.detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-inner{position:relative;top:-10px}
+.detail-page[data-detail="project-zone-restaurant"] .page-hero h1+.hero-copy{margin-top:10px}
+.detail-page[data-detail="project-zone-restaurant"] .project-promo-section{padding-top:clamp(72px,9vw,132px)}
+@media (max-width:768px){
+  .detail-page[data-detail="project-zone-restaurant"] .page-hero{padding-top:28px}
+  .detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-inner{top:-6px}
+  .detail-page[data-detail="project-zone-restaurant"] .page-hero h1+.hero-copy{margin-top:8px}
+  .detail-page[data-detail="project-zone-restaurant"] .project-promo-section{padding-top:72px}
+}

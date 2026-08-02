@@ -122,6 +122,7 @@ if (dotCanvas) {
   const interactionSurface = document.querySelector('.home-layout') || dotCanvas;
 
   interactionSurface.addEventListener('pointerdown', (event) => {
+    if (event.target.closest('a, button, input, select, textarea')) return;
     pointer.active = true;
     updatePointer(event);
     interactionSurface.setPointerCapture?.(event.pointerId);
