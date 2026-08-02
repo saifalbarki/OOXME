@@ -5,6 +5,7 @@ if(homeReveal){requestAnimationFrame(()=>homeReveal.classList.add('is-visible'))
 
 if(dotCanvas){
   const context=dotCanvas.getContext('2d');
+  const prefersReducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let width=0;
   let height=0;
   let scale=1;
@@ -54,7 +55,9 @@ if(dotCanvas){
         const distance=Math.hypot(x-orb.x,y-orb.y);
         if(distance>=radius)continue;
         const fade=1-distance/radius;
-        context.globalAlpha=Math.pow(fade,1.85);
+        const opacity=width<768?mobileWaveOpacity(distance,fade):Math.pow(fade,1.85);
+        if(opacity<.01)continue;
+        context.globalAlpha=opacity;
         context.fillStyle='#000000';
         context.beginPath();
         context.arc(x,y,width<680?3.75:4.5,0,Math.PI*2);
@@ -64,8 +67,24 @@ if(dotCanvas){
     context.globalAlpha=1;
   }
 
+  function mobileWaveOpacity(distance,fade){
+    const bandWidth=radius*.115;
+    const waveFront=(phase,weight)=>{
+      const front=radius*.5*(1+Math.sin(wave*phase[0]+phase[1]));
+      const offset=(distance-front)/bandWidth;
+      return Math.exp(-.5*offset*offset)*weight;
+    };
+    const frontOpacity=Math.max(
+      waveFront([.31,0],1),
+      waveFront([.27,2.1],.78),
+      waveFront([.23,4.2],.56)
+    );
+    const ambient=Math.pow(fade,3)*.1;
+    return Math.min(1,ambient+frontOpacity*(.3+.7*fade));
+  }
+
   function animate(now){
-    wave+=.054;
+    wave+=prefersReducedMotion ? .008 : .054;
     const pointerControlled=now<pointer.activeUntil;
     if(pointerControlled){
       orb.x+=(pointer.x-orb.x)*.14;
