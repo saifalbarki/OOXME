@@ -9,18 +9,27 @@
     <link rel="stylesheet" href="css/styles.css" />
     <script src="js/home.js" defer></script>
     <style>
-      html{min-height:100%;background:#fff}
-      .home-page{min-width:320px;min-height:100svh;min-height:100dvh;margin:0;background:#fff;color:#0d0d0d;font-family:var(--font-main)}
+      html{min-height:100%;background:#F1F3F7}
+      .home-page{min-width:320px;min-height:100svh;min-height:100dvh;margin:0;background:#F1F3F7;color:#0d0d0d;font-family:var(--font-main)}
       .home-layout{display:grid;grid-template-rows:minmax(0,72svh) minmax(28svh,1fr);min-height:100svh;min-height:100dvh;border:0;outline:0}
       .home-stage{position:relative;min-height:0;overflow:hidden;border:0;outline:0;background:#fff}
       .home-top{position:relative;z-index:1;display:grid;place-items:center;height:calc(15svh);min-height:78px}
       .home-logo{display:block;width:30px;height:auto}
       .dot-field{position:absolute;inset:0;display:block;width:100%;height:100%;background:#fff;pointer-events:auto}
-      .home-bottom{display:grid;place-items:center;min-height:28svh;padding:24px 20px 28px;border:0;outline:0;background:#fff;text-align:center}
+      .home-bottom{display:grid;place-items:center;min-height:28svh;padding:24px 20px calc(28px + env(safe-area-inset-bottom));border:0;outline:0;background:#F1F3F7;text-align:center}
       .home-bottom-inner{position:relative;top:clamp(8px,1.5svh,16px);display:flex;flex-direction:column;align-items:center;width:min(100%,560px)}
+      .home-slot{display:grid;width:100%;place-items:center}
+      .home-heading-slot{min-height:clamp(46px,7vw,88px)}
+      .home-description-slot{min-height:clamp(80px,11vw,112px);margin-top:16px}
+      .home-cta-slot{min-height:31px;margin-top:17px}
       .home-bottom h1{margin:0;color:#0d0d0d;font-size:clamp(42px,6.8vw,82px);font-weight:700;letter-spacing:-.075em;line-height:.95}
-      .home-description{max-width:520px;margin:16px 0 0;color:#7f8185;font-size:clamp(13px,1.25vw,17px);font-weight:500;letter-spacing:-.02em;line-height:1.45;text-align:center}
-      .home-discover{position:relative;margin-top:17px;color:#7f8185;font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,transform .22s ease;animation:discoverNudge 2.4s cubic-bezier(.22,.61,.36,1) infinite}
+      .home-description{max-width:520px;margin:0;color:#7f8185;font-size:clamp(13px,1.25vw,17px);font-weight:500;letter-spacing:-.02em;line-height:1.45;text-align:justify;text-align-last:center}
+      .home-translatable{transition:opacity .14s ease,transform .14s cubic-bezier(.22,.61,.36,1)}
+      .home-translatable[lang=ar]{font-family:var(--font-arabic);font-weight:500;letter-spacing:0;line-height:1.72}
+      .home-bottom h1.home-translatable[lang=ar]{font-weight:600;line-height:1.15}
+      .home-translatable.language-out{opacity:0;transform:translateY(-8px)}
+      .home-translatable.language-enter{opacity:0;transform:translateY(-8px)}
+      .home-discover{position:relative;margin:0;color:#7f8185;font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,transform .22s ease,opacity .14s ease;animation:discoverNudge 2.4s cubic-bezier(.22,.61,.36,1) infinite}
       .home-discover::after{content:'';position:absolute;right:-16%;bottom:-9px;left:-16%;height:3px;border-radius:999px;background:currentColor;transform:scaleX(.76);transform-origin:center;opacity:.55;transition:transform .22s ease,opacity .22s ease}
       .home-discover:hover{color:#0d0d0d;transform:translateY(-2px);animation-play-state:paused}
       .home-discover:hover::after{transform:scaleX(1);opacity:1}
@@ -29,8 +38,8 @@
       .home-reveal.is-visible{opacity:1;transform:none}
       @keyframes discoverNudge{0%,100%{transform:translateY(0)}48%{transform:translateY(-3px)}56%{transform:translateY(-3px)}70%{transform:translateY(0)}}
       @media (min-width:769px){.home-top{min-height:100px}.home-logo{width:38px}.home-bottom{padding:34px 30px 38px}.home-description{margin-top:20px}.home-discover{margin-top:22px}}
-      @media (max-height:720px){.home-bottom{padding-top:16px;padding-bottom:18px}.home-bottom-inner{top:5px}.home-bottom h1{font-size:clamp(36px,6vw,54px)}.home-description{margin-top:10px;line-height:1.35}.home-discover{margin-top:11px}}
-      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}.home-discover{animation:none}}
+      @media (max-height:720px){.home-bottom{padding-top:16px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}.home-bottom-inner{top:5px}.home-description-slot{min-height:66px;margin-top:10px}.home-cta-slot{margin-top:11px}.home-bottom h1{font-size:clamp(36px,6vw,54px)}.home-description{line-height:1.35}}
+      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}.home-discover{animation:none}.home-translatable,.home-translatable.language-out,.home-translatable.language-enter{transform:none;transition:opacity .1s linear}}
     </style>
   </head>
   <body class="app-page home-page">
@@ -43,9 +52,9 @@
       </section>
       <section class="home-bottom" aria-labelledby="home-heading">
         <div class="home-bottom-inner home-reveal">
-          <h1 id="home-heading">Hello</h1>
-          <p class="home-description">OOXME is a premium brand management and business development partner, helping ambitious businesses build clarity, momentum, and lasting value.</p>
-          <a class="home-discover" href="portfolio.html">Let's Discover</a>
+          <div class="home-slot home-heading-slot"><h1 id="home-heading" class="home-translatable" data-home-copy="heading" lang="en" dir="ltr">Hello</h1></div>
+          <div class="home-slot home-description-slot"><p class="home-description home-translatable" data-home-copy="description" lang="en" dir="ltr">OOXME is a premium brand management and business development partner, helping ambitious businesses build clarity, momentum, and lasting value.</p></div>
+          <div class="home-slot home-cta-slot"><a class="home-discover home-translatable" data-home-copy="cta" href="portfolio.html" lang="en" dir="ltr">Let's Discover</a></div>
         </div>
       </section>
     </main>

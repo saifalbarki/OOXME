@@ -1,7 +1,44 @@
 const dotCanvas=document.querySelector('.dot-field');
 const homeReveal=document.querySelector('.home-reveal');
+const homeCopy={
+  en:{heading:'Hello',description:'OOXME is a premium brand management and business development partner, helping ambitious businesses build clarity, momentum, and lasting value.',cta:"Let's Discover"},
+  ar:{heading:'مرحباً',description:'أوكسوم شريك متميز لإدارة العلامات التجارية وتطوير الأعمال، يساعد الشركات الطموحة على بناء الوضوح والزخم والقيمة المستدامة.',cta:'لنكتشف'}
+};
+const homeCopyElements=[...document.querySelectorAll('[data-home-copy]')];
+const reduceLanguageMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let homeLanguage='en';
+let homeLanguageTransitioning=false;
+
+const wait=(duration)=>new Promise((resolve)=>setTimeout(resolve,duration));
+
+async function rotateHomeLanguage(){
+  if(homeLanguageTransitioning||!homeCopyElements.length)return;
+  homeLanguageTransitioning=true;
+  const next=homeLanguage==='en'?'ar':'en';
+  const outDuration=reduceLanguageMotion?80:120;
+  const gap=reduceLanguageMotion?15:20;
+  const stagger=reduceLanguageMotion?25:40;
+  for(const element of homeCopyElements){
+    element.classList.add('language-out');
+    await wait(outDuration);
+    element.textContent=homeCopy[next][element.dataset.homeCopy];
+    element.lang=next;
+    element.dir=next==='ar'?'rtl':'ltr';
+    element.classList.remove('language-out');
+    element.classList.add('language-enter');
+    await wait(gap);
+    requestAnimationFrame(()=>element.classList.remove('language-enter'));
+    await wait(outDuration);
+    if(element!==homeCopyElements.at(-1))await wait(stagger);
+  }
+  homeLanguage=next;
+  document.documentElement.lang=next;
+  document.documentElement.dir=next==='ar'?'rtl':'ltr';
+  homeLanguageTransitioning=false;
+}
 
 if(homeReveal){requestAnimationFrame(()=>homeReveal.classList.add('is-visible'))}
+if(homeCopyElements.length){window.setInterval(rotateHomeLanguage,1000)}
 
 if(dotCanvas){
   const context=dotCanvas.getContext('2d');
@@ -17,6 +54,8 @@ if(dotCanvas){
   let wasPointerControlled=false;
   let mobilePhase=Math.random()*Math.PI*2;
   let mobileWaves=[];
+  let mobilePauseUntil=0;
+  let mobileInitialWave=true;
 
   function chooseTarget(){
     const edge=radius*.55;
@@ -70,19 +109,20 @@ if(dotCanvas){
   }
 
   function createMobileWave(initial=false){
-    const angle=initial?Math.PI/2:Math.random()*Math.PI*2;
+    const directions=[0,Math.PI,Math.PI*.22,Math.PI*.38,Math.PI*.62,Math.PI*.78];
+    const angle=initial?Math.PI/2:directions[Math.floor(Math.random()*directions.length)]+(Math.random()-.5)*.18;
     const shortest=Math.min(width,height);
     return {
       nx:Math.cos(angle),
       ny:Math.sin(angle),
       progress:0,
-      speed:initial ? .0055 : .0042+Math.random()*.002,
+      speed:initial ? .0029 : .0023+Math.random()*.0012,
       curvature:initial?shortest*.2:shortest*(.08+Math.random()*.15)*(Math.random()>.5?1:-1),
-      amplitude:shortest*(.018+Math.random()*.035),
-      frequency:1.2+Math.random()*1.8,
+      amplitude:shortest*(.014+Math.random()*.025),
+      frequency:1+Math.random()*1.4,
       phase:Math.random()*Math.PI*2,
       distortion:Math.random()*Math.PI*2,
-      strength:initial?1:.74+Math.random()*.2,
+      strength:initial?1:.82+Math.random()*.14,
       shift:0,
       initial
     };
@@ -103,29 +143,43 @@ if(dotCanvas){
       const organic=current.amplitude*.42*Math.sin(tangentRatio*Math.PI*(current.frequency*1.73)+current.distortion-mobilePhase*.31);
       const front=-normalSpan*.5-radius*1.25+current.progress*(normalSpan+radius*2.5)+current.shift;
       const distance=normal-(front+arch+undulation+organic);
-      const bandWidth=radius*.22;
+      const bandWidth=radius*.28;
       const offset=distance/bandWidth;
-      strongest=Math.max(strongest,Math.exp(-.5*offset*offset)*current.strength);
+      const fadeIn=smoothStep((current.progress-.04)/.26);
+      const fadeOut=1-smoothStep((current.progress-.7)/.3);
+      strongest=Math.max(strongest,Math.exp(-.5*offset*offset)*current.strength*fadeIn*fadeOut);
     }
     return Math.min(1,strongest);
   }
 
-  function updateMobileWaves(pointerControlled){
+  function smoothStep(value){
+    const clamped=Math.max(0,Math.min(1,value));
+    return clamped*clamped*(3-clamped*2);
+  }
+
+  function updateMobileWaves(pointerControlled,now){
     mobilePhase+=prefersReducedMotion ? .006 : .026;
-    if(!mobileWaves.length)mobileWaves.push(createMobileWave(true));
-    for(const current of mobileWaves){
-      current.progress+=current.speed*(prefersReducedMotion ? .32 : 1);
-      if(pointerControlled){
-        const pointerNormal=(pointer.x-width*.5)*current.nx+(pointer.y-height*.5)*current.ny;
-        const normalSpan=Math.abs(current.nx)*width+Math.abs(current.ny)*height;
-        const naturalFront=-normalSpan*.5-radius*1.25+current.progress*(normalSpan+radius*2.5);
-        current.shift+=(pointerNormal-naturalFront-current.shift)*.08;
-      }else{
-        current.shift*=.94;
+    if(!mobileWaves.length){
+      if(now>=mobilePauseUntil){
+        mobileWaves.push(createMobileWave(mobileInitialWave));
+        mobileInitialWave=false;
       }
+      return;
     }
-    if(mobileWaves.length<2&&mobileWaves.some((current)=>current.progress>.48))mobileWaves.push(createMobileWave(false));
-    mobileWaves=mobileWaves.filter((current)=>current.progress<1.08);
+    const current=mobileWaves[0];
+    current.progress+=current.speed*(prefersReducedMotion ? .32 : 1);
+    if(pointerControlled){
+      const pointerNormal=(pointer.x-width*.5)*current.nx+(pointer.y-height*.5)*current.ny;
+      const normalSpan=Math.abs(current.nx)*width+Math.abs(current.ny)*height;
+      const naturalFront=-normalSpan*.5-radius*1.25+current.progress*(normalSpan+radius*2.5);
+      current.shift+=(pointerNormal-naturalFront-current.shift)*.08;
+    }else{
+      current.shift*=.94;
+    }
+    if(current.progress>1.06){
+      mobileWaves=[];
+      mobilePauseUntil=now+2500+Math.random()*3500;
+    }
   }
 
   function animate(now){
@@ -143,7 +197,7 @@ if(dotCanvas){
       if(Math.hypot(orb.targetX-orb.x,orb.targetY-orb.y)<8)chooseTarget();
     }
     wasPointerControlled=pointerControlled;
-    if(width<768)updateMobileWaves(pointerControlled);
+    if(width<768)updateMobileWaves(pointerControlled,now);
     draw();
     requestAnimationFrame(animate);
   }
