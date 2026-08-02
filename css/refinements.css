@@ -485,6 +485,13 @@ html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:
 .project-promo-content a:hover{opacity:.72;transform:translateY(-2px)}
 @media (max-width:768px){.project-promo-section{padding-bottom:48px;border:0!important}.project-promo-card{width:100%;aspect-ratio:1;min-height:0;border:0;border-radius:18px}.project-promo-card::before{inset:60% -12px -14px;filter:blur(7px)}.project-promo-card::after{inset:63% 0 0}.project-promo-content{min-height:30%;padding:22px}.project-promo-content h2{font-size:28px}.project-promo-content a{margin-top:9px;font-size:12px}}
 
+/* Safe-area surfaces inherit the existing page backgrounds without changing layout. */
+html{background:var(--paper)}
+body::before,body::after{position:fixed;z-index:2147483647;right:0;left:0;display:block;content:"";pointer-events:none;background:inherit}
+body::before{top:0;height:env(safe-area-inset-top)}
+body::after{bottom:0;height:env(safe-area-inset-bottom)}
+.home-page::before{background:var(--paper)}
+
 /* Zone Restaurant keeps this project preview page centered. */
 .detail-page[data-detail="project-zone-restaurant"] .page-hero{min-height:390px;padding:52px 0;border:0!important}
 .detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-inner{text-align:center}

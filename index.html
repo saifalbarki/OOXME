@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="OOXME is a premium brand management and business development partner." />
     <meta name="theme-color" content="#ffffff" />
     <title>OOXME</title>
@@ -24,12 +24,13 @@
       .home-cta-slot{min-height:31px;margin-top:17px}
       .home-bottom h1{margin:0;color:#0d0d0d;font-size:clamp(42px,6.8vw,82px);font-weight:700;letter-spacing:-.075em;line-height:.95}
       .home-description{max-width:520px;margin:0;color:#7f8185;font-size:clamp(13px,1.25vw,17px);font-weight:500;letter-spacing:-.02em;line-height:1.45;text-align:justify;text-align-last:center}
-      .home-translatable{transition:opacity .14s ease,transform .14s cubic-bezier(.22,.61,.36,1)}
+      .home-translatable{filter:blur(0);transition:opacity .28s ease,filter .28s ease,transform .28s cubic-bezier(.22,.61,.36,1)}
       .home-translatable[lang=ar]{font-family:var(--font-arabic);font-weight:500;letter-spacing:0;line-height:1.72}
       .home-bottom h1.home-translatable[lang=ar]{font-weight:600;line-height:1.15}
-      .home-translatable.language-out{opacity:0;transform:translateY(-8px)}
-      .home-translatable.language-enter{opacity:0;transform:translateY(-8px)}
-      .home-discover{position:relative;margin:0;color:#7f8185;font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,transform .22s ease,opacity .14s ease;animation:discoverNudge 2.4s cubic-bezier(.22,.61,.36,1) infinite}
+      .home-translatable.language-out{opacity:0;filter:blur(8px);transform:translateY(-8px)}
+      .home-translatable.language-enter{opacity:0;filter:blur(8px);transform:translateY(-8px)}
+      .home-discover.language-out,.home-discover.language-enter{animation:none}
+      .home-discover{position:relative;margin:0;color:#7f8185;font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,opacity .28s ease,filter .28s ease,transform .28s cubic-bezier(.22,.61,.36,1);animation:discoverNudge 2.4s cubic-bezier(.22,.61,.36,1) infinite}
       .home-discover::after{content:'';position:absolute;right:-16%;bottom:-9px;left:-16%;height:3px;border-radius:999px;background:currentColor;transform:scaleX(.76);transform-origin:center;opacity:.55;transition:transform .22s ease,opacity .22s ease}
       .home-discover:hover{color:#0d0d0d;transform:translateY(-2px);animation-play-state:paused}
       .home-discover:hover::after{transform:scaleX(1);opacity:1}
@@ -39,7 +40,7 @@
       @keyframes discoverNudge{0%,100%{transform:translateY(0)}48%{transform:translateY(-3px)}56%{transform:translateY(-3px)}70%{transform:translateY(0)}}
       @media (min-width:769px){.home-top{min-height:100px}.home-logo{width:38px}.home-bottom{padding:34px 30px 38px}.home-description{margin-top:20px}.home-discover{margin-top:22px}}
       @media (max-height:720px){.home-bottom{padding-top:16px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}.home-bottom-inner{top:5px}.home-description-slot{min-height:66px;margin-top:10px}.home-cta-slot{margin-top:11px}.home-bottom h1{font-size:clamp(36px,6vw,54px)}.home-description{line-height:1.35}}
-      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}.home-discover{animation:none}.home-translatable,.home-translatable.language-out,.home-translatable.language-enter{transform:none;transition:opacity .1s linear}}
+      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}.home-discover{animation:none}.home-translatable,.home-translatable.language-out,.home-translatable.language-enter{transform:none;transition:opacity .16s linear,filter .16s linear}}
     </style>
   </head>
   <body class="app-page home-page">

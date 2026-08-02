@@ -15,12 +15,19 @@ async function rotateHomeLanguage(){
   if(homeLanguageTransitioning||!homeCopyElements.length)return;
   homeLanguageTransitioning=true;
   const next=homeLanguage==='en'?'ar':'en';
-  const outDuration=reduceLanguageMotion?80:120;
-  const gap=reduceLanguageMotion?15:20;
-  const stagger=reduceLanguageMotion?25:40;
+  const outDuration=reduceLanguageMotion?150:240;
+  const gap=reduceLanguageMotion?55:100;
+  const inDuration=reduceLanguageMotion?180:280;
+  const stagger=reduceLanguageMotion?55:80;
   for(const element of homeCopyElements){
     element.classList.add('language-out');
     await wait(outDuration);
+    if(element!==homeCopyElements.at(-1))await wait(stagger);
+  }
+  await wait(gap);
+  document.documentElement.lang=next;
+  document.documentElement.dir=next==='ar'?'rtl':'ltr';
+  for(const element of homeCopyElements){
     element.textContent=homeCopy[next][element.dataset.homeCopy];
     element.lang=next;
     element.dir=next==='ar'?'rtl':'ltr';
@@ -28,17 +35,15 @@ async function rotateHomeLanguage(){
     element.classList.add('language-enter');
     await wait(gap);
     requestAnimationFrame(()=>element.classList.remove('language-enter'));
-    await wait(outDuration);
+    await wait(inDuration);
     if(element!==homeCopyElements.at(-1))await wait(stagger);
   }
   homeLanguage=next;
-  document.documentElement.lang=next;
-  document.documentElement.dir=next==='ar'?'rtl':'ltr';
   homeLanguageTransitioning=false;
 }
 
 if(homeReveal){requestAnimationFrame(()=>homeReveal.classList.add('is-visible'))}
-if(homeCopyElements.length){window.setInterval(rotateHomeLanguage,1000)}
+if(homeCopyElements.length){window.setInterval(rotateHomeLanguage,3000)}
 
 if(dotCanvas){
   const context=dotCanvas.getContext('2d');
