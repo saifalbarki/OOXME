@@ -436,7 +436,7 @@ html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:
 .calendar-day.booked{color:#0d0d0d}
 .calendar-day.unavailable{color:#8c9198}
 .choice-button{border-color:#0d0d0d;color:#0d0d0d;background:#fff}
-.choice-button:hover,.choice-button.is-selected{border-color:#0d0d0d;background:#0d0d0d;color:#fff}
+.choice-button:hover,.choice-button.is-selected{border-color:var(--brand);background:var(--brand);color:#fff}
 
 /* Payment selection. */
 .payment-shell{max-width:720px;margin-inline:auto;text-align:center}
@@ -498,7 +498,7 @@ body::after{bottom:0;height:env(safe-area-inset-bottom)}
 @media (max-width:768px){.detail-page[data-detail="project-zone-restaurant"] .page-hero{min-height:300px;padding:42px 0}}
 
 /* Global layout system: one compact type, spacing, and action language. */
-:root{--section-space:clamp(48px,6vw,88px);--copy-line-height:1.5}
+:root{--section-space:clamp(48px,6vw,88px);--copy-line-height:1.28}
 .app-page:not(.home-page) main>section{border:0!important;background:var(--paper)}
 .app-page:not(.home-page) main>section:nth-of-type(even){background:#F1F3F7}
 .app-page:not(.home-page) main>section:last-child{background:var(--paper)}
@@ -521,7 +521,7 @@ html[dir=rtl] .primary-button,html[dir=rtl] .secondary-button{font-family:var(--
 .contact-section .consultation-layout{align-items:start}
 .site-copyright{margin:clamp(34px,5vw,56px) 0 0;color:rgba(13,13,13,.62);font-family:var(--font-main);font-size:12px;line-height:1.4}
 html[dir=rtl] .site-copyright{font-family:var(--font-arabic)}
-@media (max-width:768px){:root{--section-space:clamp(38px,10vw,56px)}.app-page:not(.home-page) .page-hero,.app-page:not(.home-page) .booking-intro{padding-block:var(--section-space)}.hero-copy,.section-copy{line-height:1.45}html[dir=rtl] .hero-copy,html[dir=rtl] .section-copy{line-height:1.7}.primary-button,.secondary-button{min-height:44px;font-size:12px}}
+@media (max-width:768px){:root{--section-space:clamp(38px,10vw,56px)}.app-page:not(.home-page) .page-hero,.app-page:not(.home-page) .booking-intro{padding-block:var(--section-space)}.hero-copy,.section-copy{line-height:var(--copy-line-height)}html[dir=rtl] .hero-copy,html[dir=rtl] .section-copy{line-height:1.5}.primary-button,.secondary-button{min-height:44px;font-size:12px}}
 
 /* Fixed CTA underline and compact service-supporting copy. */
 :root{--cta-underline-width:72px;--cta-underline-height:3px}
@@ -533,3 +533,35 @@ html[dir=rtl] .service-description,html[dir=rtl] .service-copy,html[dir=rtl] .pl
 html[dir=rtl] .service-description,html[dir=rtl] .service-copy{text-align:start;text-align-last:auto}
 .section-intro>.section-title+.section-copy,.consultation-layout>.section-title+.section-copy{margin-top:clamp(14px,2vw,22px)}
 .section-copy+.primary-button,.section-copy+.secondary-button{margin-top:clamp(18px,2.5vw,28px)}
+
+/* Shared 13px supporting copy uses a compact fixed 12px row rhythm. */
+.section-copy{line-height:12px}
+
+/* Consultation booking hierarchy. */
+.booking-step .eyebrow{font-family:var(--font-main);font-weight:600;letter-spacing:.04em}
+.booking-intro .hero-copy{margin-inline:auto;text-align:center;text-align-last:auto}
+html[dir=rtl] .booking-step .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
+
+/* Section labels use the shared Plus Jakarta typography. */
+.eyebrow{font-family:var(--font-main);font-weight:600;letter-spacing:.04em}
+html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
+
+/* Clean image preview with a dedicated bottom information panel. */
+.project-promo-card{color:var(--ink)}
+.project-promo-card::before,.project-promo-card::after{display:none}
+.project-promo-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:25%;min-height:25%;margin-top:auto;padding:20px;background:#F1F3F7;text-align:center}
+.project-promo-content h2{color:var(--ink)}
+.project-promo-cta{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:38px;margin-top:8px;padding:4px 12px;color:var(--brand);font-family:var(--font-main);font-size:14px;font-weight:700;letter-spacing:-.025em;transition:opacity .22s ease,transform .22s ease}
+.project-promo-cta::after{position:absolute;bottom:0;left:50%;width:var(--cta-underline-width);height:var(--cta-underline-height);border-radius:999px;content:"";background:currentColor;opacity:.72;transform:translateX(-50%);transition:opacity .22s ease,transform .22s ease;animation:ctaUnderlineDrift 2.4s cubic-bezier(.22,.61,.36,1) infinite}
+.project-promo-cta:hover{opacity:1;transform:translateY(-2px)}
+.project-promo-cta:hover::after{opacity:1}
+.project-promo-cta:focus-visible{outline:2px solid var(--brand);outline-offset:4px}
+@media (max-width:768px){.project-promo-content{height:25%;min-height:25%;padding:16px}.project-promo-cta{min-height:34px;margin-top:5px;font-size:12px}}
+
+/* Final-section emphasis and fixed-position CTA underline motion. */
+.app-page:not(.home-page) main>section:nth-last-child(-n+2) .section-copy{max-width:min(100%,720px);margin-inline:auto;text-align:center;text-align-last:auto}
+.app-page:not(.home-page) main>section:nth-last-child(-n+2) .section-title{width:100%;max-width:1100px}
+.primary-button,.secondary-button{overflow:visible}
+.primary-button::after,.secondary-button::after{animation:ctaUnderlineDrift 2.4s cubic-bezier(.22,.61,.36,1) infinite}
+@keyframes ctaUnderlineDrift{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-2px)}}
+@media (prefers-reduced-motion:reduce){.primary-button::after,.secondary-button::after{animation:none}}
