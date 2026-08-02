@@ -15,6 +15,8 @@ if(dotCanvas){
   let orb={x:0,y:0,targetX:0,targetY:0};
   let pointer={x:0,y:0,activeUntil:0};
   let wasPointerControlled=false;
+  let mobilePhase=Math.random()*Math.PI*2;
+  let mobileWaves=[];
 
   function chooseTarget(){
     const edge=radius*.55;
@@ -55,7 +57,7 @@ if(dotCanvas){
         const distance=Math.hypot(x-orb.x,y-orb.y);
         if(distance>=radius)continue;
         const fade=1-distance/radius;
-        const opacity=width<768?mobileWaveOpacity(distance,fade):Math.pow(fade,1.85);
+        const opacity=width<768?mobileWaveOpacity(x,y):Math.pow(fade,1.85);
         if(opacity<.01)continue;
         context.globalAlpha=opacity;
         context.fillStyle='#000000';
@@ -67,20 +69,63 @@ if(dotCanvas){
     context.globalAlpha=1;
   }
 
-  function mobileWaveOpacity(distance,fade){
-    const bandWidth=radius*.115;
-    const waveFront=(phase,weight)=>{
-      const front=radius*.5*(1+Math.sin(wave*phase[0]+phase[1]));
-      const offset=(distance-front)/bandWidth;
-      return Math.exp(-.5*offset*offset)*weight;
+  function createMobileWave(initial=false){
+    const angle=initial?Math.PI/2:Math.random()*Math.PI*2;
+    const shortest=Math.min(width,height);
+    return {
+      nx:Math.cos(angle),
+      ny:Math.sin(angle),
+      progress:0,
+      speed:initial ? .0055 : .0042+Math.random()*.002,
+      curvature:initial?shortest*.2:shortest*(.08+Math.random()*.15)*(Math.random()>.5?1:-1),
+      amplitude:shortest*(.018+Math.random()*.035),
+      frequency:1.2+Math.random()*1.8,
+      phase:Math.random()*Math.PI*2,
+      distortion:Math.random()*Math.PI*2,
+      strength:initial?1:.74+Math.random()*.2,
+      shift:0,
+      initial
     };
-    const frontOpacity=Math.max(
-      waveFront([.31,0],1),
-      waveFront([.27,2.1],.78),
-      waveFront([.23,4.2],.56)
-    );
-    const ambient=Math.pow(fade,3)*.1;
-    return Math.min(1,ambient+frontOpacity*(.3+.7*fade));
+  }
+
+  function mobileWaveOpacity(x,y){
+    let strongest=0;
+    for(const current of mobileWaves){
+      const px=x-width*.5;
+      const py=y-height*.5;
+      const tangent=px*-current.ny+py*current.nx;
+      const normal=px*current.nx+py*current.ny;
+      const normalSpan=Math.abs(current.nx)*width+Math.abs(current.ny)*height;
+      const tangentSpan=Math.abs(current.ny)*width+Math.abs(current.nx)*height;
+      const tangentRatio=Math.max(-1,Math.min(1,tangent/(tangentSpan*.5||1)));
+      const arch=current.curvature*(1-tangentRatio*tangentRatio);
+      const undulation=current.amplitude*Math.sin(tangentRatio*Math.PI*current.frequency+current.phase+mobilePhase*.45);
+      const organic=current.amplitude*.42*Math.sin(tangentRatio*Math.PI*(current.frequency*1.73)+current.distortion-mobilePhase*.31);
+      const front=-normalSpan*.5-radius*1.25+current.progress*(normalSpan+radius*2.5)+current.shift;
+      const distance=normal-(front+arch+undulation+organic);
+      const bandWidth=radius*.22;
+      const offset=distance/bandWidth;
+      strongest=Math.max(strongest,Math.exp(-.5*offset*offset)*current.strength);
+    }
+    return Math.min(1,strongest);
+  }
+
+  function updateMobileWaves(pointerControlled){
+    mobilePhase+=prefersReducedMotion ? .006 : .026;
+    if(!mobileWaves.length)mobileWaves.push(createMobileWave(true));
+    for(const current of mobileWaves){
+      current.progress+=current.speed*(prefersReducedMotion ? .32 : 1);
+      if(pointerControlled){
+        const pointerNormal=(pointer.x-width*.5)*current.nx+(pointer.y-height*.5)*current.ny;
+        const normalSpan=Math.abs(current.nx)*width+Math.abs(current.ny)*height;
+        const naturalFront=-normalSpan*.5-radius*1.25+current.progress*(normalSpan+radius*2.5);
+        current.shift+=(pointerNormal-naturalFront-current.shift)*.08;
+      }else{
+        current.shift*=.94;
+      }
+    }
+    if(mobileWaves.length<2&&mobileWaves.some((current)=>current.progress>.48))mobileWaves.push(createMobileWave(false));
+    mobileWaves=mobileWaves.filter((current)=>current.progress<1.08);
   }
 
   function animate(now){
@@ -98,6 +143,7 @@ if(dotCanvas){
       if(Math.hypot(orb.targetX-orb.x,orb.targetY-orb.y)<8)chooseTarget();
     }
     wasPointerControlled=pointerControlled;
+    if(width<768)updateMobileWaves(pointerControlled);
     draw();
     requestAnimationFrame(animate);
   }
