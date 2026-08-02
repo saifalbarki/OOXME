@@ -582,7 +582,7 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .sawa-grid{display:grid;gap:var(--gutter)}
 .sawa-intro,.sawa-tile{overflow:hidden;border-radius:24px}
 .sawa-intro{display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:3/1;padding:clamp(24px,4vw,56px);background:#F1F3F7;color:var(--ink);text-align:center}
-.sawa-intro h1{max-width:100%;margin:0;font-family:var(--font-main);font-size:clamp(28px,4.2vw,52px);font-weight:700;letter-spacing:-.07em;line-height:1}
+.sawa-intro h1,.sawa-intro h2{max-width:100%;margin:0;font-family:var(--font-main);font-size:clamp(28px,4.2vw,52px);font-weight:700;letter-spacing:-.07em;line-height:1}
 .sawa-intro p{max-width:550px;margin:12px 0 0;font-family:var(--font-main);font-size:clamp(10px,.9vw,13px);font-weight:500;line-height:1.3}
 .sawa-carousel{display:grid;grid-auto-flow:column;grid-auto-columns:100%;gap:var(--gutter);overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:inline mandatory;scrollbar-width:none;touch-action:pan-x}
 .sawa-carousel::-webkit-scrollbar{display:none}
@@ -592,21 +592,22 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .sawa-carousel-dots button.is-active{width:26px;background:var(--brand)}
 .sawa-carousel-dots button:hover{background:var(--brand);transform:scale(1.08)}
 .sawa-carousel-dots button:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
-.sawa-next{position:relative;display:inline-flex;justify-self:center;align-items:center;justify-content:center;min-height:31px;margin:0;color:var(--brand);font-family:var(--font-main);font-size:clamp(15px,1.35vw,19px);font-weight:700;letter-spacing:-.03em;transition:color .22s ease,opacity .28s ease,filter .28s ease,transform .28s cubic-bezier(.22,.61,.36,1)}
-.sawa-next::after{position:absolute;bottom:-9px;left:50%;width:var(--cta-underline-width);height:var(--cta-underline-height);border-radius:999px;content:"";background:currentColor;opacity:.55;transform:translateX(-50%);transition:transform .22s ease,opacity .22s ease;animation:ctaUnderlineDrift 2.4s cubic-bezier(.22,.61,.36,1) infinite}
-.sawa-next:hover{color:var(--brand);transform:translateY(-2px)}
-.sawa-next:hover::after{opacity:1;transform:translateX(-50%) translateY(-1px)}
+.sawa-next{display:inline-grid;justify-self:center;place-items:center;width:31px;height:31px;margin:10px 0 0;color:var(--brand);font-family:var(--font-main);font-size:clamp(19px,1.65vw,24px);font-weight:700;line-height:1;transition:color .22s ease,opacity .28s ease,filter .28s ease,transform .28s cubic-bezier(.22,.61,.36,1)}
+.sawa-next:hover{color:var(--brand);transform:translateY(3px)}
 .sawa-next:focus-visible{outline:2px solid var(--ink);outline-offset:5px;border-radius:2px}
 .sawa-tile{aspect-ratio:3/1;margin:0;background:#F1F3F7;scroll-snap-align:start}
 .sawa-tile img{display:block;width:100%;height:100%;object-fit:cover}
+.sawa-project--next{scroll-margin-top:84px}
 html[dir=rtl] .sawa-intro h1,html[dir=rtl] .sawa-intro p{font-family:var(--font-arabic);letter-spacing:0}
+html[dir=rtl] .sawa-intro h2{font-family:var(--font-arabic);letter-spacing:0}
 html[dir=rtl] .sawa-intro h1{font-weight:600;line-height:1.25}
+html[dir=rtl] .sawa-intro h2{font-weight:600;line-height:1.25}
 html[dir=rtl] .sawa-intro p{font-weight:400;line-height:1.6}
 @media (max-width:768px){
   :root{--default-safe-frame-height:682px}
   .sawa-project{padding-block:36px calc(36px + env(safe-area-inset-bottom))}
   .sawa-intro{aspect-ratio:3/1;padding:18px 20px;border-radius:18px}
-  .sawa-intro h1{font-size:clamp(22px,7vw,30px)}
+  .sawa-intro h1,.sawa-intro h2{font-size:clamp(22px,7vw,30px)}
   .sawa-intro p{max-width:310px;margin-top:7px;font-size:10px}
   .sawa-carousel{grid-auto-columns:100%;gap:var(--gutter)}
   .sawa-tile{border-radius:18px}

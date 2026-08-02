@@ -64,11 +64,11 @@ if(detailKey==='project-sawa-university'){
  const updateSawaDetail=()=>{const arabic=detailRoot.lang==='ar';document.title=arabic?'جامعة ساوا — اوكسوم':'Sawa University — OOXME';if(sawaTitle)sawaTitle.textContent=arabic?'جامعة ساوا':'Sawa University';if(sawaDescription)sawaDescription.textContent=arabic?'هوية بصرية راقية لجامعة ساوا، تجمع بين التميّز الأكاديمي ولغة بصرية معاصرة وواضحة.':'A refined visual identity created for Sawa University, blending academic distinction with a clear, contemporary visual language.';if(sawaNext)sawaNext.textContent=arabic?'التالي':'Next'};
  updateSawaDetail();
  detailLanguageButton.addEventListener('click',()=>window.setTimeout(updateSawaDetail,0));
- const sawaCarousel=document.querySelector('.sawa-carousel');
- const sawaDots=[...document.querySelectorAll('.sawa-carousel-dots button')];
- if(sawaCarousel&&sawaDots.length){
+ const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ document.querySelectorAll('.sawa-project-gallery').forEach((gallery)=>{
+  const sawaCarousel=gallery.querySelector('.sawa-carousel');
+  const sawaDots=[...gallery.querySelectorAll('.sawa-carousel-dots button')];
   const sawaSlides=[...sawaCarousel.querySelectorAll('.sawa-tile')];
-  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let sawaIndex=0;
   let scrollFrame=0;
   const setSawaDot=(index)=>{sawaIndex=(index+sawaSlides.length)%sawaSlides.length;sawaDots.forEach((dot,dotIndex)=>{const active=dotIndex===sawaIndex;dot.classList.toggle('is-active',active);dot.setAttribute('aria-current',String(active))})};
@@ -76,5 +76,5 @@ if(detailKey==='project-sawa-university'){
   sawaDots.forEach((dot,index)=>dot.addEventListener('click',()=>showSawaSlide(index)));
   sawaCarousel.addEventListener('scroll',()=>{if(scrollFrame)return;scrollFrame=requestAnimationFrame(()=>{scrollFrame=0;const edge=sawaCarousel.getBoundingClientRect().left;let nearest=0;let distance=Infinity;sawaSlides.forEach((slide,index)=>{const nextDistance=Math.abs(slide.getBoundingClientRect().left-edge);if(nextDistance<distance){distance=nextDistance;nearest=index}});setSawaDot(nearest)})},{passive:true});
   window.setInterval(()=>showSawaSlide(sawaIndex+1),3000);
- }
+ });
 }
