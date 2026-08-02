@@ -96,3 +96,15 @@ if(detailKey==='project-sawa-university'){
   window.setInterval(()=>showSawaSlide(sawaIndex+1),3000);
  });
 }
+if(detailKey==='project-alfayha-eyewear'){
+ document.title='Alfayha Eyewear — OOXME';
+ const alfayhaCarousel=document.querySelector('.alfayha-carousel');
+ const alfayhaSlides=alfayhaCarousel?[...alfayhaCarousel.querySelectorAll('.alfayha-slide')]:[];
+ const alfayhaDots=[...document.querySelectorAll('.alfayha-carousel-dots button')];
+ let alfayhaIndex=0;
+ let alfayhaScrollFrame=0;
+ const setAlfayhaDot=(index)=>{alfayhaIndex=(index+alfayhaSlides.length)%alfayhaSlides.length;alfayhaDots.forEach((dot,dotIndex)=>{const active=dotIndex===alfayhaIndex;dot.classList.toggle('is-active',active);dot.setAttribute('aria-current',String(active))})};
+ const showAlfayhaSlide=(index)=>{if(!alfayhaCarousel||!alfayhaSlides.length)return;setAlfayhaDot(index);alfayhaCarousel.scrollTo({left:alfayhaSlides[alfayhaIndex].offsetLeft-alfayhaCarousel.offsetLeft,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})};
+ alfayhaDots.forEach((dot,index)=>dot.addEventListener('click',()=>showAlfayhaSlide(index)));
+ if(alfayhaCarousel)alfayhaCarousel.addEventListener('scroll',()=>{if(alfayhaScrollFrame)return;alfayhaScrollFrame=requestAnimationFrame(()=>{alfayhaScrollFrame=0;const edge=alfayhaCarousel.getBoundingClientRect().left;let nearest=0;let distance=Infinity;alfayhaSlides.forEach((slide,index)=>{const nextDistance=Math.abs(slide.getBoundingClientRect().left-edge);if(nextDistance<distance){distance=nextDistance;nearest=index}});setAlfayhaDot(nearest)})},{passive:true});
+}
