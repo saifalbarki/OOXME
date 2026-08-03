@@ -388,6 +388,12 @@ html[dir=rtl] .plans-page .next-plan:hover{transform:translateX(-3px)}
 .site-menu::before{max-width:14ch;margin-bottom:8px;color:var(--ink);font-family:var(--font-main);font-size:clamp(30px,4vw,48px);font-weight:700;letter-spacing:-.065em;line-height:1.02;text-align:center;content:"Hello"}
 .site-menu::after{margin-bottom:22px;color:rgba(13,13,13,.62);font-size:13px;line-height:1.35;text-align:center;content:"Make your next move meaningful."}
 .site-menu a{font-size:clamp(15px,1.7vw,20px)!important;line-height:1.2;text-align:center}
+/* The legacy menu is shared by pages that render their links independently.
+   Keep its generated greeting in sync with the document language as well. */
+html[lang="en"] .site-menu:not(.ooxme-sidebar)::before{content:"Hello"}
+html[lang="en"] .site-menu:not(.ooxme-sidebar)::after{content:"Make your next move meaningful."}
+html[lang="ar"] .site-menu:not(.ooxme-sidebar)::before{content:"\0645\0631\062D\0628\064B\0627";font-family:var(--font-arabic);letter-spacing:0;direction:rtl}
+html[lang="ar"] .site-menu:not(.ooxme-sidebar)::after{content:"\062E\0637\0648\062A\0643 \0627\0644\0642\0627\062F\0645\0629 \062A\0628\062F\0623 \0628\0648\0636\0648\062D.";font-family:var(--font-arabic);letter-spacing:0;direction:rtl}
 .ooxme-sidebar{justify-content:flex-start;padding-top:clamp(64px,11vh,130px)}
 .ooxme-sidebar .sidebar-intro{display:none}
 .ooxme-sidebar .sidebar-links{display:grid;gap:17px}
@@ -612,8 +618,8 @@ html[dir=rtl] .service-description,html[dir=rtl] .service-copy{text-align:start;
 .section-intro>.section-title+.section-copy,.consultation-layout>.section-title+.section-copy{margin-top:clamp(14px,2vw,22px)}
 .section-copy+.primary-button,.section-copy+.secondary-button{margin-top:clamp(18px,2.5vw,28px)}
 
-/* Shared 13px supporting copy uses a compact fixed 12px row rhythm. */
-.section-copy{line-height:12px}
+/* Shared supporting copy keeps a compact, font-safe row rhythm. */
+.section-copy{line-height:1.3}
 
 /* Consultation booking hierarchy. */
 .booking-step .eyebrow{font-family:var(--font-main);font-weight:600;letter-spacing:.04em}
@@ -915,4 +921,60 @@ html[dir=rtl] .ooxme-sidebar *{
   .portfolio-page #contact .contact-actions{
     margin:26px auto 0!important;
   }
+}
+
+/* Text safety and refined glass surfaces.  These shared rules deliberately give
+   custom-font overhangs, descenders, and Arabic marks room at every breakpoint. */
+:where(h1,h2,h3,h4,p,button,a,label,dt,dd,li){
+  min-width:0;
+  text-rendering:optimizeLegibility;
+}
+:where(.hero h1,.section-title,.booking-intro h1,.page-hero h1,.card-title,.project-promo-content h2,.sawa-intro h1,.sawa-intro h2,.alfayha-intro h1,.alfayha-intro h2,.albasri-intro h1,.albasri-section-copy h2,.service-detail-card h2){
+  height:auto!important;
+  min-height:0;
+  overflow:visible!important;
+  padding-block:.1em .14em;
+}
+:where(.hero-copy,.section-copy,.service-description,.service-copy,.plan-features small,.payment-option-copy,.payment-note){
+  height:auto!important;
+  overflow:visible!important;
+  line-height:1.3;
+}
+.text-reveal{overflow:visible!important}
+.primary-button,.secondary-button,.choice-button,.payment-option,.project-promo-cta{
+  height:auto;
+  line-height:1.2;
+  overflow:visible;
+}
+.primary-button,.secondary-button{padding-block:max(8px,.55em)}
+html[dir=rtl] :where(.hero h1,.section-title,.booking-intro h1,.page-hero h1,.card-title,.project-promo-content h2,.sawa-intro h1,.sawa-intro h2,.alfayha-intro h1,.alfayha-intro h2,.albasri-intro h1,.albasri-section-copy h2,.service-detail-card h2){
+  line-height:1.3;
+  padding-block:.14em .2em;
+}
+html[dir=rtl] :where(.hero-copy,.section-copy,.service-description,.service-copy,.plan-features small,.payment-option-copy,.payment-note){line-height:1.55}
+/* A selective visual Kashida is limited to the decorative, generated greeting;
+   the accessible navigation label remains the normal spelling in the DOM. */
+html[lang="ar"] .site-menu:not(.ooxme-sidebar)::before{content:"\0645\0631\062D\0628\0640\0640\0640\064B\0627"}
+
+.site-header{
+  background:rgba(255,255,255,.76);
+  border-bottom-color:rgba(13,13,13,.09);
+  -webkit-backdrop-filter:blur(12px) saturate(1.08);
+  backdrop-filter:blur(12px) saturate(1.08);
+  box-shadow:inset 0 1px rgba(255,255,255,.72),0 6px 20px rgba(13,13,13,.035);
+}
+.site-menu.ooxme-sidebar{
+  background:rgba(241,243,247,.58)!important;
+  border:1px solid rgba(255,255,255,.55);
+  -webkit-backdrop-filter:blur(9px) saturate(1.06)!important;
+  backdrop-filter:blur(9px) saturate(1.06)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.7),0 12px 28px rgba(13,13,13,.055);
+}
+.project-image-lightbox.is-open{
+  -webkit-backdrop-filter:blur(10px) saturate(1.04);
+  backdrop-filter:blur(10px) saturate(1.04);
+}
+@media (max-width:768px){
+  :where(.hero-copy,.section-copy,.service-description,.service-copy,.plan-features small,.payment-option-copy,.payment-note){line-height:1.32}
+  html[dir=rtl] :where(.hero-copy,.section-copy,.service-description,.service-copy,.plan-features small,.payment-option-copy,.payment-note){line-height:1.58}
 }

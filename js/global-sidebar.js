@@ -70,7 +70,8 @@
     menu.querySelector('.sidebar-intro p').textContent=copy.greeting;
     menu.querySelector('.sidebar-phrase').textContent=copy.phrase;
     menu.querySelectorAll('.sidebar-links a').forEach((link)=>{
-      link.textContent=copy[link.getAttribute('href')]||copy['portfolio.html'];
+      const label=copy[link.getAttribute('href')];
+      if(label)link.textContent=label;
     });
     trigger.setAttribute('aria-label',menu.classList.contains('is-open')?(language==='ar'?'\u0625\u063a\u0644\u0627\u0642 \u0627\u0644\u0642\u0627\u0626\u0645\u0629':'Close menu'):(language==='ar'?'\u0641\u062a\u062d \u0627\u0644\u0642\u0627\u0626\u0645\u0629':'Open menu'));
   };
