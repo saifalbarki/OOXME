@@ -816,3 +816,93 @@ html[dir=rtl] .sawa-intro p{font-weight:400;line-height:1.6}
   .detail-page[data-detail="project-zone-restaurant"] .project-promo-content{border-radius:0 0 18px 18px;transform:translateY(-60px)}
   .detail-page[data-detail="project-zone-restaurant"] .project-promo-content .project-promo-cta{margin-top:3px}
 }
+
+/* Final RTL rules for plans: mirror header controls and preserve Arabic typography. */
+html[dir=rtl] .site-header .shell.header-inner{direction:rtl!important}
+html[dir=rtl] .site-header .menu-toggle,
+html[dir=rtl] .site-header .home-control{grid-column:3!important;justify-self:end!important}
+html[dir=rtl] .site-header .language-toggle{grid-column:1!important;justify-self:start!important}
+html[dir=rtl] .plans-page .included-list li,
+html[dir=rtl] .plans-page .plan-card,
+html[dir=rtl] .plans-page .plan-includes,
+html[dir=rtl] .plans-page .plan-features small{font-family:var(--font-arabic)!important;letter-spacing:0!important}
+html[dir=rtl] .plans-page .plan-card,
+html[dir=rtl] .plans-page .plan-features,
+html[dir=rtl] .plans-page .plan-features li,
+html[dir=rtl] .plans-page .plan-features strong,
+html[dir=rtl] .plans-page .plan-features small{text-align:center!important}
+@media (max-width:768px){html[dir=rtl] .site-header .shell.header-inner{flex-direction:row-reverse!important}}
+
+/* Sidebar: keep the greeting at the top, navigation at the bottom, and the middle intentionally clear. */
+.site-menu.ooxme-sidebar{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:space-between!important;
+  align-items:center!important;
+  padding:calc(32px + env(safe-area-inset-top)) var(--gutter) calc(34px + env(safe-area-inset-bottom))!important;
+  background:rgba(241,243,247,.76)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.06)!important;
+  backdrop-filter:blur(22px) saturate(1.06)!important;
+}
+.site-menu.ooxme-sidebar::before{content:none!important;display:none!important}
+.ooxme-sidebar .sidebar-intro{
+  width:100%;
+  margin:0!important;
+  text-align:center;
+}
+.ooxme-sidebar .sidebar-intro p{
+  margin:0;
+  color:var(--ink);
+  font-size:clamp(2rem,8vw,3.25rem);
+  font-weight:700;
+  line-height:1;
+}
+.ooxme-sidebar .sidebar-links{
+  width:100%;
+  margin:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  gap:clamp(.7rem,2.2vh,1.1rem)!important;
+  text-align:center;
+}
+.ooxme-sidebar .sidebar-links a{
+  margin:0!important;
+  text-align:center!important;
+}
+.ooxme-sidebar .sidebar-phrase{
+  display:block;
+  margin-top:clamp(.5rem,2vh,1rem);
+  color:var(--muted);
+  font-size:var(--type-small);
+  line-height:1.25;
+  text-align:center;
+}
+html[dir=rtl] .ooxme-sidebar,
+html[dir=rtl] .ooxme-sidebar *{
+  font-family:var(--font-arabic)!important;
+  letter-spacing:0!important;
+}
+
+/* Portfolio sections use a generous, consistent vertical canvas: copy stays at the top and actions sit at the base. */
+.portfolio-page main>.portfolio-section{
+  min-height:160svh;
+  display:flex;
+  align-items:stretch;
+}
+.portfolio-page main>.portfolio-section>.shell{
+  width:min(calc(100% - var(--gutter)*2),1440px);
+  display:flex;
+  flex-direction:column;
+}
+.portfolio-page .section-intro>.card-grid,
+.portfolio-page .consultation-layout>.primary-button,
+.portfolio-page .consultation-layout>.contact-actions{
+  margin-top:auto!important;
+}
+.portfolio-page #services .section-intro>.service-grid{margin-bottom:0!important}
+.portfolio-page #services .see-more-wrap{margin-top:clamp(18px,3vw,32px)!important}
+.portfolio-page .consultation-layout>.section-copy{margin-bottom:0!important}
+@media (max-width:768px){
+  .portfolio-page main>.portfolio-section{min-height:100svh}
+}
