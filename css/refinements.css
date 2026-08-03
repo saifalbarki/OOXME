@@ -904,5 +904,5 @@ html[dir=rtl] .ooxme-sidebar *{
 .portfolio-page #services .see-more-wrap{margin-top:clamp(18px,3vw,32px)!important}
 .portfolio-page .consultation-layout>.section-copy{margin-bottom:0!important}
 @media (max-width:768px){
-  .portfolio-page main>.portfolio-section{min-height:100svh}
+  .portfolio-page main>.portfolio-section{min-height:calc(100svh - 104px)}
 }

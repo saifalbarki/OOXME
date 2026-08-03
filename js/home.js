@@ -9,8 +9,9 @@ const homeHeading=document.querySelector('#home-heading');
 const homeDescription=document.querySelector('.home-description');
 const homeDiscover=document.querySelector('.home-discover');
 let homeLanguage='en';
+let homeLanguageTransition=false;
 try{homeLanguage=localStorage.getItem('ooxme-language')==='ar'?'ar':'en'}catch(error){}
-function setHomeLanguage(next){
+function applyHomeLanguage(next){
   homeLanguage=next;
   const copy=homeLanguageCopy[next];
   homeRoot.lang=next;
@@ -20,9 +21,27 @@ function setHomeLanguage(next){
   homeDiscover.textContent=copy.cta;
   try{localStorage.setItem('ooxme-language',next)}catch(error){}
 }
+function setHomeLanguage(next,animate=false){
+  if(!animate||homeLanguageTransition||window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    applyHomeLanguage(next);
+    return;
+  }
+  homeLanguageTransition=true;
+  const elements=[homeHeading,homeDescription,homeDiscover];
+  elements.forEach((element,index)=>window.setTimeout(()=>element.classList.add('home-language-leaving'),index*55));
+  window.setTimeout(()=>{
+    applyHomeLanguage(next);
+    elements.forEach((element,index)=>{
+      element.classList.remove('home-language-leaving');
+      element.classList.add('home-language-entering');
+      window.setTimeout(()=>element.classList.remove('home-language-entering'),index*55+20);
+    });
+    homeLanguageTransition=false;
+  },300);
+}
 setHomeLanguage(homeLanguage);
 homeDiscover?.addEventListener('click',()=>{try{localStorage.setItem('ooxme-language',homeLanguage)}catch(error){}});
-window.setInterval(()=>setHomeLanguage(homeLanguage==='en'?'ar':'en'),3000);
+window.setInterval(()=>setHomeLanguage(homeLanguage==='en'?'ar':'en',true),3000);
 
 if (homeReveal) {
   requestAnimationFrame(() => homeReveal.classList.add('is-visible'));

@@ -31,9 +31,12 @@
       .home-discover:focus-visible{outline:2px solid #0d0d0d;outline-offset:5px;border-radius:2px}
       .home-reveal{opacity:0;transform:translateY(12px);transition:opacity .75s ease,transform .75s cubic-bezier(.22,.61,.36,1)}
       .home-reveal.is-visible{opacity:1;transform:none}
+      #home-heading,.home-description,.home-discover{transition:opacity .22s ease,filter .22s ease,transform .22s cubic-bezier(.22,.61,.36,1)}
+      .home-language-leaving{opacity:0!important;filter:blur(6px);transform:translateY(-8px)!important}
+      .home-language-entering{opacity:0;filter:blur(6px);transform:translateY(-8px)}
       @media (min-width:769px){.home-top{min-height:100px}.home-logo{width:38px}.home-bottom{padding:22px 30px 24px}.home-description{margin-top:20px}.home-discover{margin-top:14px}}
       @media (max-height:720px){.home-bottom{padding-top:16px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}.home-bottom-inner{top:0;padding:20px}.home-description-slot{min-height:66px;margin-top:10px}.home-cta-slot{margin-top:11px}.home-bottom h1{font-size:clamp(36px,6vw,54px)}}
-      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}.home-discover::after{animation:none}}
+      @media (prefers-reduced-motion:reduce){.home-reveal{opacity:1;transform:none;transition:none}.home-discover::after{animation:none}#home-heading,.home-description,.home-discover{transition:opacity .18s ease!important}.home-language-leaving,.home-language-entering{filter:none;transform:none!important}}
     </style>
   </head>
   <body class="app-page home-page">
