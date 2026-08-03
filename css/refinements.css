@@ -736,9 +736,9 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .project-image-lightbox__close{position:fixed;top:max(18px,env(safe-area-inset-top));right:max(18px,env(safe-area-inset-right));display:grid;place-items:center;width:38px;height:38px;padding:0;border:0;border-radius:999px;background:#fff;color:var(--ink);font-size:24px;line-height:1;cursor:pointer;opacity:0;transform:translateY(-8px);transition:opacity .28s ease,transform .28s ease}
 .project-image-lightbox.is-open .project-image-lightbox__close{opacity:1;transform:none}
 html[dir=rtl] .albasri-intro h1,html[dir=rtl] .albasri-section-copy h2,html[dir=rtl] .albasri-intro p,html[dir=rtl] .albasri-section-copy p{font-family:var(--font-arabic);letter-spacing:0}
-@media (max-width:768px){.albasri-intro-section,.albasri-gallery-section{padding-top:54px;padding-bottom:81px}.albasri-intro{padding:24px 20px;border-radius:18px}.albasri-intro h1,.albasri-section-copy h2{font-size:clamp(24px,7vw,32px)}.albasri-intro>p:last-child,.albasri-section-copy>p:last-child{margin-top:10px;font-size:11px}.albasri-stack{width:100%}.albasri-stack figure{border-radius:18px}.albasri-stack figure.is-middle{transform:translate(-5%,3%) rotate(-4deg)}.albasri-stack figure.is-back{transform:translate(5%,5%) rotate(4deg)}}
+@media (max-width:768px){.albasri-intro-section,.albasri-gallery-section{padding-top:54px;padding-bottom:81px}.albasri-intro{padding:24px 20px;border-radius:18px}.albasri-intro h1,.albasri-section-copy h2{font-size:clamp(24px,7vw,32px)}.albasri-intro>p:last-child,.albasri-section-copy>p:last-child{margin-top:10px;font-size:11px}.albasri-stack{width:80%}.albasri-stack figure{border-radius:18px}.albasri-stack figure.is-middle{transform:translate(-5%,3%) rotate(-4deg)}.albasri-stack figure.is-back{transform:translate(5%,5%) rotate(4deg)}}
 @media (max-width:768px){.albasri-project-panel{padding-top:54px;padding-bottom:81px}.albasri-project-panel.is-compacted{padding-bottom:40px}}
-@media (max-width:768px){.albasri-project-panel[data-project-panel="mall"] .albasri-stack{width:100%}.project-image-lightbox__image{width:calc(100vw - 40px);border-radius:18px}.project-image-lightbox__close{top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}}
+@media (max-width:768px){.albasri-project-panel[data-project-panel="mall"] .albasri-stack{width:80%}.project-image-lightbox__image{width:calc(100vw - 40px);border-radius:18px}.project-image-lightbox__close{top:max(14px,env(safe-area-inset-top));right:max(14px,env(safe-area-inset-right))}}
 
 /* Final shared plan, navigation, service-detail, and footer polish. */
 .plans-page .price-hero-section .section-title{display:inline-flex;align-items:baseline;justify-content:center;gap:.16em;font-family:var(--font-main);font-weight:700;line-height:.9}
@@ -840,9 +840,9 @@ html[dir=rtl] .plans-page .plan-features small{text-align:center!important}
   justify-content:space-between!important;
   align-items:center!important;
   padding:calc(32px + env(safe-area-inset-top)) var(--gutter) calc(34px + env(safe-area-inset-bottom))!important;
-  background:rgba(241,243,247,.76)!important;
-  -webkit-backdrop-filter:blur(22px) saturate(1.06)!important;
-  backdrop-filter:blur(22px) saturate(1.06)!important;
+  background:rgba(241,243,247,.48)!important;
+  -webkit-backdrop-filter:blur(10px) saturate(1.03)!important;
+  backdrop-filter:blur(10px) saturate(1.03)!important;
 }
 .site-menu.ooxme-sidebar::before{content:none!important;display:none!important}
 .ooxme-sidebar .sidebar-intro{
@@ -905,4 +905,14 @@ html[dir=rtl] .ooxme-sidebar *{
 .portfolio-page .consultation-layout>.section-copy{margin-bottom:0!important}
 @media (max-width:768px){
   .portfolio-page main>.portfolio-section{min-height:calc(100svh - 104px)}
+  .portfolio-page #consultation .consultation-layout,
+  .portfolio-page #contact .consultation-layout{
+    align-items:center;
+    text-align:center;
+  }
+  .portfolio-page #consultation .section-copy,
+  .portfolio-page #contact .section-copy{text-align:center}
+  .portfolio-page #contact .contact-actions{
+    margin:26px auto 0!important;
+  }
 }
