@@ -884,6 +884,14 @@ html[dir=rtl] .plans-page .plan-features small{text-align:center!important}
   line-height:1.25;
   text-align:center;
 }
+html[dir=rtl] .ooxme-sidebar .sidebar-phrase{
+  direction:rtl;
+  unicode-bidi:plaintext;
+  margin-top:clamp(.75rem,2.5vh,1.25rem);
+  padding-inline:.5rem;
+  line-height:1.6;
+  word-spacing:.12em;
+}
 html[dir=rtl] .ooxme-sidebar,
 html[dir=rtl] .ooxme-sidebar *{
   font-family:var(--font-arabic)!important;
@@ -978,3 +986,16 @@ html[lang="ar"] .site-menu:not(.ooxme-sidebar)::before{content:"\0645\0631\062D\
   :where(.hero-copy,.section-copy,.service-description,.service-copy,.plan-features small,.payment-option-copy,.payment-note){line-height:1.32}
   html[dir=rtl] :where(.hero-copy,.section-copy,.service-description,.service-copy,.plan-features small,.payment-option-copy,.payment-note){line-height:1.58}
 }
+
+/* Global language typography: every rendered UI surface inherits the active
+   language face.  Plan prices are the sole intentional exception. */
+:root{--font-price:Playfair,serif}
+html[lang="en"] :where(.app-page,.site-menu,.site-menu *,button,input,select,textarea,option){font-family:var(--font-main)!important}
+html[lang="ar"] :where(.app-page,.site-menu,.site-menu *,button,input,select,textarea,option){font-family:var(--font-arabic)!important;letter-spacing:0!important}
+html[lang="ar"] :where(input,textarea,select){direction:rtl;text-align:start}
+html[lang="en"] :where(input,textarea,select){direction:ltr;text-align:start}
+.plans-page .price-hero-section .section-title,
+.plans-page .price-hero-section .price-currency,
+.plans-page .price-hero-section .price-number{font-family:var(--font-price)!important}
+.plans-page .price-period{font-family:var(--font-main)!important}
+html[lang="ar"] .plans-page .price-period{font-family:var(--font-arabic)!important}
