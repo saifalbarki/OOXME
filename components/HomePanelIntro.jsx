@@ -87,10 +87,6 @@ export default function HomePanelIntro() {
 
   return (
     <main className="home-panel-intro" aria-label="OOXME introduction">
-      <a className="home-panel-logo" href="/" aria-label="OOXME home">
-        <img src="/assets/logo/OX-001-LOGO-black.png" alt="OOXME" />
-      </a>
-
       <section
         className={`home-swipe-panel${isDragging ? ' is-dragging' : ''}${isCompleting ? ' is-completing' : ''}`}
         style={{ '--panel-lift': `${offset}px`, '--panel-progress': progress }}
@@ -108,6 +104,9 @@ export default function HomePanelIntro() {
           if (event.key === 'Enter' || event.key === ' ') complete();
         }}
       >
+        <div className="home-panel-logo" aria-label="OOXME">
+          <img src="/assets/logo/OX-001-LOGO-black.png" alt="OOXME" />
+        </div>
         <div className="home-panel-handle" aria-hidden="true" />
         <p>Swipe up for more</p>
       </section>

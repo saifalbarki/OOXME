@@ -1,5 +1,6 @@
 /* Refined type scale, consultation focus, and consistent reveal behaviour. */
 .home-panel-intro{
+  --home-safe:clamp(20px,4vw,48px);
   position:relative;
   isolation:isolate;
   min-height:100svh;
@@ -9,34 +10,27 @@
   touch-action:none;
 }
 .home-panel-logo{
-  position:absolute;
-  z-index:1;
-  top:calc(7.5svh - 15px);
-  left:50%;
   display:block;
   width:30px;
   line-height:0;
-  transform:translateX(-50%);
+  margin-inline:auto;
 }
 .home-panel-logo img{display:block;width:100%;height:auto}
 .home-swipe-panel{
   position:absolute;
-  left:50%;
-  bottom:calc(-29svh + env(safe-area-inset-bottom));
+  inset:var(--home-safe);
   display:flex;
   flex-direction:column;
   align-items:center;
-  width:min(92vw,760px);
-  height:58svh;
-  min-height:260px;
-  padding:24px 28px 34px;
+  min-height:0;
+  padding:var(--home-safe);
   border:0;
-  border-radius:32px;
+  border-radius:clamp(28px,4vw,44px);
   background:#f1f3f7;
   color:var(--ink);
   cursor:grab;
   outline:0;
-  transform:translate(-50%,calc(var(--panel-lift) * -1));
+  transform:translateY(calc(var(--panel-lift) * -1));
   transition:transform .52s cubic-bezier(.22,.61,.36,1);
   will-change:transform;
   user-select:none;
@@ -51,7 +45,7 @@
   align-self:center;
   width:min(112px,30vw);
   height:7px;
-  margin-inline:auto;
+  margin:auto auto 0;
   border-radius:999px;
   background:var(--brand);
   animation:homeHandleLift 2.4s ease-in-out infinite;
@@ -75,8 +69,8 @@
   50%{opacity:1;transform:translateY(-4px)}
 }
 @media (min-width:769px){
-  .home-panel-logo{top:calc(7.5svh - 19px);width:38px}
-  .home-swipe-panel{border-radius:36px;padding-top:28px}
+  .home-panel-logo{width:38px}
+  .home-swipe-panel{border-radius:44px}
 }
 @media (prefers-reduced-motion:reduce){
   .home-swipe-panel{transition-duration:.18s}
