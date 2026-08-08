@@ -1,6 +1,5 @@
-import LegacyPage from '../components/LegacyPage';
-import { getLegacyPage } from '../utilities/legacy-page';
+import HomePanelIntro from '../components/HomePanelIntro';
 
 export default function HomePage() {
-  return <LegacyPage pageId="index" initialPage={getLegacyPage('index')} />;
+  return <HomePanelIntro />;
 }
