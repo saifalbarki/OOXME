@@ -217,7 +217,7 @@ html[dir=rtl] .calendar-heading p{text-align:left}html[dir=rtl] .booking-summary
 .content-card .card-arrow{flex:0 0 auto;margin-left:auto;margin-right:0;transform:none}
 html[dir=rtl] .content-card{direction:ltr}
 html[dir=rtl] .content-card>span:first-child{direction:rtl;text-align:left}
-html[dir=rtl] .content-card .card-arrow{background-image:url('../assets/icons/arrow-right.png');transform:none}
+html[dir=rtl] .content-card .card-arrow{background-image:url('/assets/icons/arrow-right.png');transform:none}
 html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(4px)}
 @media (max-width:679px){.content-card{padding:15px 0!important}}
 
@@ -230,7 +230,7 @@ html[dir=rtl] .content-card:hover .card-arrow{transform:translateX(4px)}
 /* Arabic keeps the natural RTL arrangement: title at right, left-facing arrow at left. */
 html[dir=rtl] .card-line{direction:rtl}
 html[dir=rtl] .card-line .card-title{direction:rtl;text-align:right}
-html[dir=rtl] .card-line .card-arrow{margin-left:0;margin-right:auto;background-image:url('../assets/icons/arrow-left.png')}
+html[dir=rtl] .card-line .card-arrow{margin-left:0;margin-right:auto;background-image:url('/assets/icons/arrow-left.png')}
 
 /* Keep the compact home-header control geometry identical on every page and language. */
 .header-inner{direction:ltr}
@@ -285,8 +285,8 @@ main>section+section{border-top:1px solid var(--line)}
 .next-plan-name{min-width:120px;font-size:13px;font-weight:700;letter-spacing:-.025em;text-align:center}
 .plan-nav-arrow{display:grid;place-items:center;width:32px;height:32px;transition:transform .25s ease}
 .plan-nav-arrow span{width:16px;height:16px;background:center/contain no-repeat}
-.previous-plan span{background-image:url('../assets/icons/arrow-left.png')}
-.next-plan span{background-image:url('../assets/icons/arrow-right.png')}
+.previous-plan span{background-image:url('/assets/icons/arrow-left.png')}
+.next-plan span{background-image:url('/assets/icons/arrow-right.png')}
 .previous-plan:hover{transform:translateX(-3px)}
 .next-plan:hover{transform:translateX(3px)}
 .price-hero-section{display:grid;min-height:42svh;place-items:center;padding:88px 0}
@@ -310,8 +310,8 @@ html[dir=rtl] .plan-price span,html[dir=rtl] .plan-includes{font-family:var(--fo
 html[dir=rtl] .plan-features li{display:block}
 html[dir=rtl] .included-list li{padding:17px 0;text-align:center}
 html[dir=rtl] .included-list li::before{position:static;margin:0 0 0 10px}
-html[dir=rtl] .previous-plan span{background-image:url('../assets/icons/arrow-right.png')}
-html[dir=rtl] .next-plan span{background-image:url('../assets/icons/arrow-left.png')}
+html[dir=rtl] .previous-plan span{background-image:url('/assets/icons/arrow-right.png')}
+html[dir=rtl] .next-plan span{background-image:url('/assets/icons/arrow-left.png')}
 @media (max-width:979px){.plan-card{padding:26px 22px}.plans-section{padding:78px 0}}
 @media (max-width:768px){
   .plans-hero{padding:80px 0 56px}
@@ -460,8 +460,8 @@ html[dir=rtl] .hero-headline-accent{font-family:inherit;font-style:normal;font-w
 .calendar-nav:active:not(:disabled){transform:scale(.92)}
 .calendar-nav:disabled{cursor:default;opacity:.24}
 .calendar-nav span{width:12px;height:12px;background:center/contain no-repeat}
-.previous-month span{background-image:url('../assets/icons/arrow-left.png')}
-.next-month span{background-image:url('../assets/icons/arrow-right.png')}
+.previous-month span{background-image:url('/assets/icons/arrow-left.png')}
+.next-month span{background-image:url('/assets/icons/arrow-right.png')}
 .calendar-weekdays{font-family:var(--font-main);font-size:11px;font-weight:700;color:var(--ink)}
 .calendar-day{font-weight:700;color:var(--ink)}
 html[dir=rtl] .calendar-heading{direction:rtl}
@@ -560,8 +560,8 @@ html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:
 
 /* Zone Restaurant: image-led next project preview. */
 .project-promo-section{padding:0 0 100px;border:0!important}
-.project-promo-card{position:relative;isolation:isolate;display:flex;aspect-ratio:1;min-height:0;overflow:hidden;border:0;border-radius:24px;background:url('../assets/projects/Certificate/05.png') center/cover no-repeat;color:#fff}
-.project-promo-card::before{position:absolute;z-index:0;inset:60% -20px -24px;content:"";background:url('../assets/projects/Certificate/05.png') center/cover no-repeat;filter:blur(7px);transform:scale(1.05);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.3) 30%,#000 66%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.3) 30%,#000 66%)}
+.project-promo-card{position:relative;isolation:isolate;display:flex;aspect-ratio:1;min-height:0;overflow:hidden;border:0;border-radius:24px;background:url('/assets/projects/Certificate/05.png') center/cover no-repeat;color:#fff}
+.project-promo-card::before{position:absolute;z-index:0;inset:60% -20px -24px;content:"";background:url('/assets/projects/Certificate/05.png') center/cover no-repeat;filter:blur(7px);transform:scale(1.05);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.3) 30%,#000 66%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,.3) 30%,#000 66%)}
 .project-promo-card::after{position:absolute;z-index:0;inset:63% 0 0;content:"";background:linear-gradient(to bottom,rgba(13,13,13,0),rgba(13,13,13,.16) 38%,rgba(13,13,13,.84) 100%)}
 .project-promo-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;width:100%;min-height:30%;padding:32px;text-align:center}
 .project-promo-content h2{margin:0;font-size:clamp(28px,4.5vw,58px);font-weight:700;letter-spacing:-.065em;line-height:1}
@@ -646,7 +646,7 @@ html[dir=rtl] .eyebrow{font-family:var(--font-arabic);letter-spacing:0}
 .detail-page[data-detail="project-zone-restaurant"] .page-hero h1{font-size:clamp(32px,6.98vw,66px)}
 .detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-copy{max-width:520px;font-size:clamp(9px,.8vw,10px);line-height:1.3}
 .project-promo-card{display:grid;grid-template-rows:minmax(0,3fr) minmax(0,1fr);aspect-ratio:1;background:none}
-.project-promo-image{grid-row:1;background:url('../assets/projects/Certificate/05.png') center/cover no-repeat}
+.project-promo-image{grid-row:1;background:url('/assets/projects/Certificate/05.png') center/cover no-repeat}
 .project-promo-content{grid-row:2;height:auto;min-height:0;margin:0;padding:20px;background:#F1F3F7;align-items:center;justify-content:center}
 .project-promo-content h2{font-size:clamp(21px,4.2vw,31px);line-height:1.18}
 @media (max-width:768px){.detail-page[data-detail="project-zone-restaurant"] .page-hero .hero-copy{font-size:9px}.project-promo-content{height:auto;min-height:0;padding:16px}.project-promo-content h2{font-size:clamp(21px,6vw,26px)}}
@@ -999,3 +999,4 @@ html[lang="en"] :where(input,textarea,select){direction:ltr;text-align:start}
 .plans-page .price-hero-section .price-number{font-family:var(--font-price)!important}
 .plans-page .price-period{font-family:var(--font-main)!important}
 html[lang="ar"] .plans-page .price-period{font-family:var(--font-arabic)!important}
+
