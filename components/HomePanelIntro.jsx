@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import GlobalPanelHeader from './GlobalPanelHeader';
 
 const COMPLETION_THRESHOLD = 0.22;
 
@@ -87,6 +88,7 @@ export default function HomePanelIntro() {
 
   return (
     <main className="home-panel-intro" aria-label="OOXME introduction">
+      <GlobalPanelHeader home />
       <section
         className={`home-swipe-panel${isDragging ? ' is-dragging' : ''}${isCompleting ? ' is-completing' : ''}`}
         style={{ '--panel-lift': `${offset}px`, '--panel-progress': progress }}
@@ -104,9 +106,6 @@ export default function HomePanelIntro() {
           if (event.key === 'Enter' || event.key === ' ') complete();
         }}
       >
-        <div className="home-panel-logo" aria-label="OOXME">
-          <img src="/assets/logo/OX-001-LOGO-black.png" alt="OOXME" />
-        </div>
         <p>Swipe up for more</p>
         <div className="home-panel-handle" aria-hidden="true" />
       </section>

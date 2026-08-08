@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import GlobalPanelHeader from './GlobalPanelHeader';
 import { pageScripts } from '../config/pages';
 
 function loadScript(source) {
@@ -73,6 +74,7 @@ export default function LegacyPage({ pageId, initialPage }) {
   return (
     <>
       {initialPage.pageStyle && <style dangerouslySetInnerHTML={{ __html: initialPage.pageStyle }} />}
+      <GlobalPanelHeader pageId={pageId} />
       <div data-ooxme-page={pageId} dangerouslySetInnerHTML={{ __html: initialPage.markup }} />
     </>
   );
