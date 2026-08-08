@@ -2,6 +2,7 @@ import { pages } from './config/pages.js';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  devIndicators: false,
   async redirects() {
     return pages.map((page) => ({
       source: `/${page}.html`,

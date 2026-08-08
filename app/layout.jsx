@@ -5,10 +5,12 @@ export const metadata = {
   description: 'OOXME is a premium brand management and business development partner.',
   icons: {
     icon: [
+      { url: '/favicon.ico', type: 'image/x-icon', sizes: 'any' },
       { url: '/icon-32.png', type: 'image/png', sizes: '32x32' },
       { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
       { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
     ],
+    shortcut: ['/favicon.ico'],
     apple: [{ url: '/apple-icon.png', type: 'image/png', sizes: '180x180' }],
   },
 };
