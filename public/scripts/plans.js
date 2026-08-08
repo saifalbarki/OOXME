@@ -35,7 +35,7 @@ const plansCopy={
 const plansRoot=document.documentElement;
 const plansLanguageButton=document.querySelector('.language-toggle');
 const plansHomeButton=document.querySelector('.home-control');
-const planPagePaths={starter:'plan-starter.html',standard:'plan-standard.html',premium:'plan-plus.html'};
+const planPagePaths={starter:'/plan-starter',standard:'/plan-standard',premium:'/plan-plus'};
 let plansLanguage='en';
 try{plansLanguage=localStorage.getItem('ooxme-language')==='ar'?'ar':'en'}catch(error){}
 

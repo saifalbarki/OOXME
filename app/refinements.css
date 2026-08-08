@@ -31,14 +31,14 @@
   cursor:grab;
   outline:0;
   transform:translateY(calc(var(--panel-lift) * -1));
-  transition:transform .52s cubic-bezier(.22,.61,.36,1);
+  transition:transform .62s cubic-bezier(.22,.61,.36,1);
   will-change:transform;
   user-select:none;
   -webkit-user-select:none;
   text-align:center;
 }
 .home-swipe-panel.is-dragging{cursor:grabbing;transition:none}
-.home-swipe-panel.is-completing{transition-duration:.36s}
+.home-swipe-panel.is-completing{transition-duration:.62s}
 .home-swipe-panel:focus-visible{box-shadow:inset 0 0 0 2px var(--brand)}
 .home-panel-handle{
   flex:0 0 auto;
@@ -1250,6 +1250,8 @@ html[lang="ar"] .site-menu:not(.ooxme-sidebar)::before{content:"\0645\0631\062D\
 :root{--font-price:Playfair,serif}
 html[lang="en"] :where(.app-page,.site-menu,.site-menu *,button,input,select,textarea,option){font-family:var(--font-main)!important}
 html[lang="ar"] :where(.app-page,.site-menu,.site-menu *,button,input,select,textarea,option){font-family:var(--font-arabic)!important;letter-spacing:0!important}
+html[lang="ar"] body,
+html[lang="ar"] body *{font-family:var(--font-arabic)!important;letter-spacing:0!important}
 html[lang="ar"] :where(input,textarea,select){direction:rtl;text-align:start}
 html[lang="en"] :where(input,textarea,select){direction:ltr;text-align:start}
 .plans-page .price-hero-section .section-title,
@@ -1263,6 +1265,207 @@ html[lang="ar"] .plans-page .price-period{font-family:var(--font-arabic)!importa
 .home-panel-intro{--home-safe:var(--space)}
 .portfolio-panel-experience{--portfolio-safe:var(--space)}
 .portfolio-section-content{grid-template-rows:auto auto auto minmax(0,1fr);align-content:stretch;padding-top:var(--space);padding-bottom:var(--space)}
+.portfolio-panel-footer{
+  min-height:0;
+  padding:0 var(--space) var(--space);
+  align-items:flex-end;
+}
+.portfolio-continue-control{
+  gap:8px;
+  min-width:0;
+  font-size:clamp(14px,1.35vw,18px);
+  font-weight:600;
+  letter-spacing:-.035em;
+  animation:homePromptLift 2.4s ease-in-out infinite;
+}
+.portfolio-continue-control i{
+  width:min(112px,30vw);
+  height:6px;
+  margin:8px auto 0;
+  animation:homeHandleLift 2.4s ease-in-out infinite;
+}
+
+/* Plan information surfaces should fit their real content instead of
+   reserving a full viewport when a shorter table or note is shown. */
+.plans-page [data-ooxme-page] main>.plans-section{
+  min-height:0!important;
+  padding-block:calc(var(--space) * 2)!important;
+}
+.plans-page .plans-table,
+.plans-page .included-list,
+.plans-page .note-layout,
+.plans-page .plans-cta .consultation-layout{
+  min-height:0!important;
+}
+
+/* Restored service and portfolio collections: shared with the current panel system. */
+.collection-page{
+  min-height:100dvh;
+  padding:var(--space);
+  background:#fff;
+}
+.collection-page .global-panel-header{
+  position:relative;
+  inset:auto;
+  width:100%;
+  max-width:1120px;
+  margin:0 auto;
+  transform:none;
+}
+.collection-panel{
+  width:100%;
+  max-width:1120px;
+  min-height:calc(100dvh - (var(--space) * 2));
+  margin:0 auto;
+  padding:calc(var(--space) * 4) var(--space) var(--space);
+  border-radius:calc(var(--space) * 1.35);
+  background:#f1f3f7;
+}
+.collection-content{
+  width:min(100%, 920px);
+  margin:0 auto;
+  text-align:center;
+}
+.collection-label{
+  margin:0 0 var(--space-half);
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  opacity:.72;
+}
+.collection-content h1{
+  max-width:760px;
+  margin:0 auto var(--space-half);
+  font-size:clamp(2rem,5vw,4.8rem);
+  line-height:.98;
+  letter-spacing:-.06em;
+}
+.collection-description{
+  max-width:610px;
+  margin:0 auto calc(var(--space) * 2);
+  font-size:clamp(.85rem,1.5vw,1rem);
+  line-height:1.35;
+}
+.collection-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:var(--space-half);
+  text-align:start;
+}
+.collection-grid-services{
+  grid-template-columns:repeat(auto-fit,minmax(245px,1fr));
+}
+.collection-card{
+  display:grid;
+  min-height:160px;
+  overflow:hidden;
+  border-radius:calc(var(--space) * .9);
+  background:#fff;
+  color:#0d0d0d;
+  text-decoration:none;
+  transition:transform .22s ease,box-shadow .22s ease;
+}
+.collection-grid-services .collection-card{
+  min-height:64px;
+}
+.collection-card:hover,.collection-card:focus-visible{
+  transform:translateY(-2px);
+  box-shadow:0 14px 25px rgba(13,13,13,.08);
+  outline:0;
+}
+.collection-card img{
+  width:100%;
+  height:118px;
+  object-fit:cover;
+  background:#f1f3f7;
+}
+.collection-card-copy{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--space-half);
+  min-width:0;
+  padding:var(--space-half) var(--space);
+}
+.collection-card-copy strong{font-size:.94rem;line-height:1.2}
+.collection-card-arrow{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.8}
+html[dir="rtl"] .collection-card-arrow{transform:scaleX(-1)}
+html[dir="rtl"] .collection-label{letter-spacing:0;text-transform:none}
+@media (max-width:640px){
+  .collection-page{padding:var(--space)}
+  .collection-panel{min-height:calc(100dvh - (var(--space) * 2));padding:calc(var(--space) * 4) var(--space) var(--space)}
+  .collection-content h1{font-size:clamp(2rem,10vw,3.3rem)}
+  .collection-description{margin-bottom:calc(var(--space) * 1.5)}
+  .collection-grid,.collection-grid-services{grid-template-columns:1fr}
+  .collection-card{min-height:132px}
+  .collection-card img{height:92px}
+  .collection-grid-services .collection-card{min-height:48px}
+}
+
+/* Internal routes use the same panel language as the primary experience, but
+   their surfaces are content-led: no short page reserves an empty viewport. */
+[data-ooxme-page]:not([data-ooxme-page="consultation"]):not([data-ooxme-page="booking-summary"]):not([data-ooxme-page="payment"]) main>section{
+  min-height:0!important;
+  padding-block:calc(var(--space) * 2)!important;
+}
+[data-ooxme-page]:not([data-ooxme-page="consultation"]):not([data-ooxme-page="booking-summary"]):not([data-ooxme-page="payment"]) main>section>.shell,
+[data-ooxme-page] .booking-shell,
+[data-ooxme-page] .summary-shell,
+[data-ooxme-page] .content-safe-shell{
+  width:min(100%,1120px);
+}
+
+/* Keep booking and payment flows composed from short, rounded content panels. */
+[data-ooxme-page="consultation"] main,
+[data-ooxme-page="booking-summary"] main,
+[data-ooxme-page="payment"] main{
+  display:grid;
+  gap:var(--space);
+  padding:calc(var(--space) * 2) var(--space) var(--space);
+  background:var(--paper);
+}
+[data-ooxme-page="consultation"] .booking-intro,
+[data-ooxme-page="consultation"] .booking-section,
+[data-ooxme-page="booking-summary"] .booking-intro,
+[data-ooxme-page="booking-summary"] .booking-section,
+[data-ooxme-page="payment"] .booking-intro,
+[data-ooxme-page="payment"] .booking-section{
+  min-height:0!important;
+  margin:0!important;
+  padding:calc(var(--space) * 1.5)!important;
+  border-radius:calc(var(--space) * 1.35)!important;
+  background:#f1f3f7!important;
+}
+[data-ooxme-page="consultation"] :where(.booking-intro-inner,.calendar-panel,.booking-step),
+[data-ooxme-page="booking-summary"] :where(.booking-intro-inner,.booking-summary),
+[data-ooxme-page="payment"] :where(.booking-intro-inner,.payment-options){
+  width:min(100%,760px);
+  margin-inline:auto;
+}
+
+/* Desktop surfaces stay deliberately grouped rather than scaling like a
+   mobile viewport.  Images and forms retain their native proportions. */
+@media (min-width:769px){
+  [data-ooxme-page]:not([data-ooxme-page="consultation"]):not([data-ooxme-page="booking-summary"]):not([data-ooxme-page="payment"]) main{
+    gap:calc(var(--space) * 1.25);
+    padding:calc(var(--space) * 1.25);
+  }
+  [data-ooxme-page]:not([data-ooxme-page="consultation"]):not([data-ooxme-page="booking-summary"]):not([data-ooxme-page="payment"]) main>section{
+    padding-block:calc(var(--space) * 2.25)!important;
+  }
+  [data-ooxme-page] :where(.section-copy,.hero-copy){max-width:680px;}
+  [data-ooxme-page] :where(.card-grid,.plan-grid,.service-grid,.all-services-grid){max-width:1120px;}
+  [data-ooxme-page] :where(.calendar-panel,.booking-step,.booking-summary,.payment-options,.plans-table,.included-list,.note-layout){max-width:860px;margin-inline:auto;}
+}
+
+/* Project galleries should grow with their real assets rather than an old
+   fixed mobile frame. */
+@media (max-width:480px){
+  .sawa-project{height:auto!important;min-height:0!important;}
+  .sawa-project .content-safe-shell,.sawa-project .sawa-grid{height:auto!important;}
+  .sawa-project .sawa-grid{grid-template-rows:none!important;}
+}
 .portfolio-section-content .compact-links,.portfolio-section-content .portfolio-solid-action,.portfolio-section-content .portfolio-contact-links,.portfolio-section-content .portfolio-contact-cards{align-self:end}
 
 .portfolio-contact-cards{
@@ -1309,8 +1512,9 @@ html[lang="ar"] .plans-page .price-period{font-family:var(--font-arabic)!importa
 }
 
 .portfolio-contact-copy{
-  display:grid;
-  gap:0;
+  display:flex;
+  align-items:center;
+  gap:var(--space-half);
   min-width:0;
   text-align:start;
 }
@@ -1321,6 +1525,10 @@ html[lang="ar"] .plans-page .price-period{font-family:var(--font-arabic)!importa
 }
 
 .portfolio-contact-copy small{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
   font-size:9px;
   color:rgba(13,13,13,.58);
   direction:ltr;
@@ -1377,6 +1585,7 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 [data-ooxme-page="payment"] main{
   display:grid;
   align-content:start;
+  gap:var(--space);
   min-height:calc(100dvh - var(--flow-safe) * 2);
   margin:var(--flow-safe);
   padding:calc(var(--flow-safe) * 4) var(--flow-safe) var(--flow-safe);
@@ -1394,6 +1603,17 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 [data-ooxme-page="booking-summary"] .booking-section,
 [data-ooxme-page="payment"] .booking-section{
   padding:0 var(--flow-safe) var(--flow-safe);
+}
+
+[data-ooxme-page="consultation"] .booking-intro,
+[data-ooxme-page="consultation"] .booking-section,
+[data-ooxme-page="booking-summary"] .booking-intro,
+[data-ooxme-page="booking-summary"] .booking-section,
+[data-ooxme-page="payment"] .booking-intro,
+[data-ooxme-page="payment"] .booking-section{
+  overflow:hidden;
+  border-radius:calc(var(--flow-safe) * .9);
+  background:#fff;
 }
 
 [data-ooxme-page="consultation"] .booking-intro-inner,
@@ -1478,6 +1698,7 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 }
 .global-header-logo{grid-column:2;display:block;width:30px;line-height:0;pointer-events:auto}
 .global-header-logo img{display:block;width:100%;height:auto}
+.global-panel-header.is-search-open{opacity:0;pointer-events:none}
 .global-header-icon{
   display:grid;
   place-items:center;
@@ -1507,19 +1728,34 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
   position:relative;
   display:grid;
   grid-template-rows:auto 1fr auto;
+  justify-items:center;
+  text-align:center;
   min-height:0;
   padding:var(--space);
   border-radius:calc(var(--space) * 1.35);
   background:rgba(241,243,247,.88);
 }
 .global-search-content>.global-header-logo{margin-inline:auto}
+.global-search-content>.global-header-logo{
+  position:absolute;
+  grid-column:auto;
+  margin:0;
+  top:var(--space);
+  left:50%;
+  transform:translateX(-50%);
+}
 .global-search-links{display:grid;align-content:center;justify-items:center;gap:var(--space-half)}
 .global-search-links a{font-size:clamp(17px,2vw,23px);font-weight:700;letter-spacing:-.04em;transition:opacity .2s ease,transform .2s ease}
 .global-search-links a:hover,.global-search-links a:focus-visible{opacity:.62;transform:translateY(-1px);outline:0}
-.global-search-input{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:var(--space-half);width:100%;min-height:48px;padding:0 var(--space);border-radius:calc(var(--space) * .9);background:#fff;color:var(--ink)}
-.global-search-input input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit;font-size:14px}
+.global-search-input{position:absolute;inset-inline:var(--space);bottom:var(--space);display:grid;grid-template-columns:auto minmax(0,300px);justify-content:center;align-items:center;gap:var(--space-half);height:48px;min-height:48px;padding:0 var(--space);border-radius:calc(var(--space) * .9);background:#fff;color:var(--ink)}
+.global-search-input input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit;font-size:14px;text-align:center}
 .global-search-close{position:absolute;inset:var(--space) var(--space) auto auto;display:grid;place-items:center;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.7);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
 html[dir=rtl] .global-search-close{inset-inline:auto var(--space)}
+.global-panel-header-consultation,
+.global-panel-header-booking-summary,
+.global-panel-header-payment{
+  position:absolute;
+}
 @keyframes globalSearchIn{from{opacity:0;filter:blur(3px)}to{opacity:1;filter:blur(0)}}
 @media (max-width:768px){
   .global-panel-header{top:calc(var(--space) * 2);inset-inline:calc(var(--space) * 2)}
@@ -1536,4 +1772,17 @@ html[dir=rtl] .global-search-close{inset-inline:auto var(--space)}
 .portfolio-search-input{display:flex;align-items:center;gap:var(--space-half);width:min(100%,760px);min-height:clamp(62px,9vh,82px);margin-inline:auto;padding:var(--space-half) var(--space);border-radius:calc(var(--space) * .9);background:rgba(255,255,255,.88);box-shadow:0 8px 20px rgba(13,13,13,.035)}
 .portfolio-search-input svg{width:21px;height:21px;flex:0 0 auto;fill:none;stroke:var(--ink);stroke-linecap:round;stroke-width:1.8}.portfolio-search-input input{width:100%;min-width:0;margin:0;padding:0;border:0;background:transparent;color:var(--ink);font:inherit;font-size:clamp(16px,2vw,21px);outline:0}.portfolio-search-input input::placeholder{color:rgba(13,13,13,.45)}
 @keyframes portfolioSearchIn{from{opacity:0;backdrop-filter:blur(0)}to{opacity:1;backdrop-filter:blur(5px)}}
+
+/* Plan information surfaces should fit their actual content instead of
+   reserving a full viewport when a shorter table or note is shown. */
+.plans-page [data-ooxme-page] main>.plans-section{
+  min-height:0!important;
+  padding-block:calc(var(--space) * 2)!important;
+}
+.plans-page .plans-table,
+.plans-page .included-list,
+.plans-page .note-layout,
+.plans-page .plans-cta .consultation-layout{
+  min-height:0!important;
+}
 

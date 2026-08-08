@@ -58,7 +58,7 @@ function enhanceServiceDetail(){
  if(detailDescription)detailDescription.textContent=localized[2];
  document.title=`${localized[1]} — OOXME`;
  placeholder.classList.add('service-detail-card');
- placeholder.innerHTML=`<p class="eyebrow">${isArabic?'كيف نساعد':'How we help'}</p><h2>${localized[1]}</h2><ul>${items.map(item=>`<li>${item}</li>`).join('')}</ul><a class="primary-button" href="consultation.html">${isArabic?'ابدأ محادثة':'Start a conversation'}</a>`;
+ placeholder.innerHTML=`<p class="eyebrow">${isArabic?'كيف نساعد':'How we help'}</p><h2>${localized[1]}</h2><ul>${items.map(item=>`<li>${item}</li>`).join('')}</ul><a class="primary-button" href="/consultation">${isArabic?'ابدأ محادثة':'Start a conversation'}</a>`;
 }
 enhanceServiceDetail();
 detailLanguageButton.addEventListener('click',()=>window.setTimeout(enhanceServiceDetail,0));

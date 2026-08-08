@@ -49,7 +49,7 @@ export default function GlobalPanelHeader({ pageId, home = false }) {
 
   return (
     <>
-      <header className={`global-panel-header${home ? ' global-panel-header-home' : ''}`}>
+      <header className={`global-panel-header${home ? ' global-panel-header-home' : ''}${pageId ? ` global-panel-header-${pageId}` : ''}${searchOpen ? ' is-search-open' : ''}`}>
         <button className="global-header-icon" type="button" onClick={toggleLanguage} aria-label={isArabic ? 'Switch to English' : 'التبديل إلى العربية'}><GlobeIcon /></button>
         <Link className="global-header-logo" href="/" aria-label="OOXME home"><img src="/assets/logo/OX-001-LOGO-black.png" alt="OOXME" /></Link>
         <button className="global-header-icon" type="button" onClick={() => setSearchOpen(true)} aria-label={isArabic ? 'بحث' : 'Search'}><SearchIcon /></button>

@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GlobalPanelHeader from './GlobalPanelHeader';
 
-const COMPLETION_THRESHOLD = 0.22;
+// Keep the landing-panel gesture calibrated to the stacked portfolio panels.
+const TRANSITION_THRESHOLD = 86;
 
 export default function HomePanelIntro() {
   const router = useRouter();
@@ -28,11 +29,11 @@ export default function HomePanelIntro() {
     setIsDragging(false);
     setIsCompleting(true);
     setOffset(maxOffset());
-    window.setTimeout(() => router.push('/portfolio'), 360);
+    window.setTimeout(() => router.push('/portfolio'), 240);
   }, [maxOffset, router]);
 
   const settle = useCallback((value) => {
-    if (value >= window.innerHeight * COMPLETION_THRESHOLD) {
+    if (value >= TRANSITION_THRESHOLD) {
       complete();
       return;
     }
@@ -58,7 +59,7 @@ export default function HomePanelIntro() {
     if (startY.current == null || isNavigating.current) return;
     const dragDistance = startY.current - event.clientY;
     if (Math.abs(dragDistance) > 6) didDrag.current = true;
-    updateOffset(dragDistance);
+    updateOffset(dragDistance * 0.52);
   };
 
   const onPointerEnd = () => {
@@ -71,13 +72,13 @@ export default function HomePanelIntro() {
     const onWheel = (event) => {
       if (isNavigating.current || event.deltaY <= 0) return;
       event.preventDefault();
-      wheelOffset.current = Math.min(maxOffset(), wheelOffset.current + event.deltaY * 0.72);
+      wheelOffset.current = Math.min(maxOffset(), wheelOffset.current + event.deltaY);
       updateOffset(wheelOffset.current);
       window.clearTimeout(onWheel.timeout);
       onWheel.timeout = window.setTimeout(() => {
         settle(wheelOffset.current);
         wheelOffset.current = 0;
-      }, 130);
+      }, 120);
     };
 
     window.addEventListener('wheel', onWheel, { passive: false });

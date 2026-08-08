@@ -273,9 +273,9 @@ export default function PortfolioPanels() {
             <p className="portfolio-panel-label">{text.portfolio}</p>
             <h1>{text.statement}</h1>
             <nav className="portfolio-primary-links" aria-label={text.portfolio}>
-              <Card href="/project-albasri-commercial-group">{text.manage}</Card>
-              <Card href="/project-alfayha-eyewear">{text.designed}</Card>
-              <Card href="/project-sawa-university">{text.featured}</Card>
+              <Card href="/businesses-we-managed">{text.manage}</Card>
+              <Card href="/brands-we-designed">{text.designed}</Card>
+              <Card href="/visual-identities">{text.featured}</Card>
             </nav>
           </div>
         </PanelFrame>

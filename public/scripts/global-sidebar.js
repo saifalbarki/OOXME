@@ -29,10 +29,10 @@
     key:link.getAttribute('data-i18n')
   }));
   const fallbackLinks=[
-    {href:'index.html'},
-    {href:'portfolio.html'},
-    {href:'services.html'},
-    {href:'consultation.html'}
+    {href:'/'},
+    {href:'/portfolio'},
+    {href:'/services'},
+    {href:'/consultation'}
   ];
   const links=originalLinks.length?originalLinks:fallbackLinks;
   menu.classList.add('ooxme-sidebar');
@@ -51,14 +51,14 @@
   const labels={
     en:{
       greeting:'Hello', phrase:'Make your next move meaningful.', aria:'Primary navigation',
-      'index.html':'Home','portfolio.html':'Portfolio','#work':'Previous Work','#plans':'Plans',
-      'services.html':'Services','#services':'Services','consultation.html':'Consultation',
+      '/':'Home','/portfolio':'Portfolio','#work':'Previous Work','#plans':'Plans',
+      '/services':'Services','#services':'Services','/consultation':'Consultation',
       '#consultation':'Consultation','#contact':'Contact'
     },
     ar:{
       greeting:'\u0645\u0631\u062d\u0628\u064b\u0627', phrase:'\u062e\u0637\u0648\u062a\u0643 \u0627\u0644\u0642\u0627\u062f\u0645\u0629 \u062a\u0628\u062f\u0623 \u0628\u0648\u0636\u0648\u062d.', aria:'\u0627\u0644\u062a\u0646\u0642\u0644 \u0627\u0644\u0631\u0626\u064a\u0633\u064a',
-      'index.html':'\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629','portfolio.html':'\u0627\u0644\u0645\u0639\u0631\u0636','#work':'\u0623\u0639\u0645\u0627\u0644 \u0633\u0627\u0628\u0642\u0629','#plans':'\u0627\u0644\u0628\u0627\u0642\u0627\u062a',
-      'services.html':'\u0627\u0644\u062e\u062f\u0645\u0627\u062a','#services':'\u0627\u0644\u062e\u062f\u0645\u0627\u062a','consultation.html':'\u0627\u0633\u062a\u0634\u0627\u0631\u0629',
+      '/':'\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629','/portfolio':'\u0627\u0644\u0645\u0639\u0631\u0636','#work':'\u0623\u0639\u0645\u0627\u0644 \u0633\u0627\u0628\u0642\u0629','#plans':'\u0627\u0644\u0628\u0627\u0642\u0627\u062a',
+      '/services':'\u0627\u0644\u062e\u062f\u0645\u0627\u062a','#services':'\u0627\u0644\u062e\u062f\u0645\u0627\u062a','/consultation':'\u0627\u0633\u062a\u0634\u0627\u0631\u0629',
       '#consultation':'\u0627\u0633\u062a\u0634\u0627\u0631\u0629','#contact':'\u062a\u0648\u0627\u0635\u0644'
     }
   };
