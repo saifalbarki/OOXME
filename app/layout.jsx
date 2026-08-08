@@ -4,7 +4,12 @@ export const metadata = {
   title: 'OOXME',
   description: 'OOXME is a premium brand management and business development partner.',
   icons: {
-    icon: [{ url: '/assets/logo/OX-001-LOGO-black.png', type: 'image/png' }],
+    icon: [
+      { url: '/icon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icon-512.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [{ url: '/apple-icon.png', type: 'image/png', sizes: '180x180' }],
   },
 };
 
