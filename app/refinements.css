@@ -1,4 +1,87 @@
 /* Refined type scale, consultation focus, and consistent reveal behaviour. */
+.home-panel-intro{
+  position:relative;
+  isolation:isolate;
+  min-height:100svh;
+  min-height:100dvh;
+  overflow:hidden;
+  background:#fff;
+  touch-action:none;
+}
+.home-panel-logo{
+  position:absolute;
+  z-index:1;
+  top:calc(7.5svh - 15px);
+  left:50%;
+  display:block;
+  width:30px;
+  line-height:0;
+  transform:translateX(-50%);
+}
+.home-panel-logo img{display:block;width:100%;height:auto}
+.home-swipe-panel{
+  position:absolute;
+  left:50%;
+  bottom:calc(-29svh + env(safe-area-inset-bottom));
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  width:min(92vw,760px);
+  height:58svh;
+  min-height:260px;
+  padding:24px 28px 34px;
+  border:0;
+  border-radius:32px;
+  background:#f1f3f7;
+  color:var(--ink);
+  cursor:grab;
+  outline:0;
+  transform:translate(-50%,calc(var(--panel-lift) * -1));
+  transition:transform .52s cubic-bezier(.22,.61,.36,1);
+  will-change:transform;
+  user-select:none;
+  -webkit-user-select:none;
+  text-align:center;
+}
+.home-swipe-panel.is-dragging{cursor:grabbing;transition:none}
+.home-swipe-panel.is-completing{transition-duration:.36s}
+.home-swipe-panel:focus-visible{box-shadow:inset 0 0 0 2px var(--brand)}
+.home-panel-handle{
+  flex:0 0 auto;
+  align-self:center;
+  width:min(112px,30vw);
+  height:7px;
+  margin-inline:auto;
+  border-radius:999px;
+  background:var(--brand);
+  animation:homeHandleLift 2.4s ease-in-out infinite;
+}
+.home-swipe-panel p{
+  align-self:stretch;
+  width:100%;
+  margin:10px 0 0;
+  text-align:center;
+  font-size:clamp(14px,1.35vw,18px);
+  font-weight:600;
+  letter-spacing:-.035em;
+  animation:homePromptLift 2.4s ease-in-out infinite;
+}
+@keyframes homeHandleLift{
+  0%,100%{opacity:.58;transform:translateY(0)}
+  50%{opacity:1;transform:translateY(-9px)}
+}
+@keyframes homePromptLift{
+  0%,100%{opacity:.68;transform:translateY(0)}
+  50%{opacity:1;transform:translateY(-4px)}
+}
+@media (min-width:769px){
+  .home-panel-logo{top:calc(7.5svh - 19px);width:38px}
+  .home-swipe-panel{border-radius:36px;padding-top:28px}
+}
+@media (prefers-reduced-motion:reduce){
+  .home-swipe-panel{transition-duration:.18s}
+  .home-panel-handle,.home-swipe-panel p{animation:none}
+}
 .icon-control img{width:16px;height:16px}
 .site-menu a{font-size:clamp(23px,6.75vw,36px)}
 .eyebrow{font-size:8px}
