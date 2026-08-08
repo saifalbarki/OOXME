@@ -44,8 +44,8 @@
   flex:0 0 auto;
   align-self:center;
   width:min(112px,30vw);
-  height:7px;
-  margin:auto auto 0;
+  height:6px;
+  margin:8px auto 0;
   border-radius:999px;
   background:var(--brand);
   animation:homeHandleLift 2.4s ease-in-out infinite;
@@ -53,7 +53,7 @@
 .home-swipe-panel p{
   align-self:stretch;
   width:100%;
-  margin:10px 0 0;
+  margin:auto 0 0;
   text-align:center;
   font-size:clamp(14px,1.35vw,18px);
   font-weight:600;
@@ -62,11 +62,11 @@
 }
 @keyframes homeHandleLift{
   0%,100%{opacity:.58;transform:translateY(0)}
-  50%{opacity:1;transform:translateY(-9px)}
+  50%{opacity:1;transform:translateY(-5px)}
 }
 @keyframes homePromptLift{
   0%,100%{opacity:.68;transform:translateY(0)}
-  50%{opacity:1;transform:translateY(-4px)}
+  50%{opacity:1;transform:translateY(-10px)}
 }
 @media (min-width:769px){
   .home-panel-logo{width:38px}

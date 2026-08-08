@@ -107,8 +107,8 @@ export default function HomePanelIntro() {
         <div className="home-panel-logo" aria-label="OOXME">
           <img src="/assets/logo/OX-001-LOGO-black.png" alt="OOXME" />
         </div>
-        <div className="home-panel-handle" aria-hidden="true" />
         <p>Swipe up for more</p>
+        <div className="home-panel-handle" aria-hidden="true" />
       </section>
     </main>
   );
