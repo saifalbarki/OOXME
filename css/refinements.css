@@ -1709,6 +1709,23 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
   padding-block:0;
 }
 
+/* Homepage section cards share one logical arrow position in both languages. */
+.portfolio-primary-links .portfolio-nav-card{
+  align-items:center;
+  padding-inline-end:11.5px;
+}
+
+.portfolio-primary-links .portfolio-panel-arrow{
+  flex:0 0 17px;
+  width:17px;
+  height:17px;
+  transform:none!important;
+}
+
+.portfolio-primary-links .portfolio-nav-card:hover .portfolio-panel-arrow{
+  transform:none!important;
+}
+
 .portfolio-solid-action{
   height:40px;
   min-height:40px;
