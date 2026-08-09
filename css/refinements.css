@@ -1726,6 +1726,37 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
   transform:none!important;
 }
 
+/* Services use the same white safe margin and rounded panel frame as home. */
+:is(.services-page,.detail-page[data-detail^="service-"]) main{
+  display:grid;
+  gap:var(--space);
+  padding:var(--space);
+  background:var(--paper);
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"]) main>section{
+  display:grid;
+  align-content:start;
+  min-height:calc(100dvh - var(--space) * 2);
+  margin:0!important;
+  padding:calc(var(--space) * 4) var(--space) var(--space)!important;
+  border:0!important;
+  border-radius:calc(var(--space) * 1.35)!important;
+  background:#f1f3f7!important;
+}
+
+.app-page.detail-page[data-detail^="service-"] main>.page-hero{
+  min-height:calc(100dvh - var(--space) * 2);
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"]) main>section>.shell{
+  width:min(100%,1440px);
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"]) main>section :where(.content-card,.detail-placeholder,.service-detail-card){
+  border-radius:calc(var(--space) * .9);
+}
+
 .portfolio-solid-action{
   height:40px;
   min-height:40px;
