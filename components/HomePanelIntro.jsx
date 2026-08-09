@@ -3,9 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GlobalPanelHeader from './GlobalPanelHeader';
-
-// Keep the landing-panel gesture calibrated to the stacked portfolio panels.
-const TRANSITION_THRESHOLD = 86;
+import SwipeDownControl from './SwipeDownControl';
+import { SECTION_TRANSITION, viewportHeight } from '../utilities/section-transition';
 
 export default function HomePanelIntro() {
   const router = useRouter();
@@ -18,22 +17,17 @@ export default function HomePanelIntro() {
   const [isDragging, setIsDragging] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
 
-  const maxOffset = useCallback(() => {
-    if (typeof window === 'undefined') return 600;
-    return Math.round(window.innerHeight * 0.52);
-  }, []);
-
   const complete = useCallback(() => {
     if (isNavigating.current) return;
     isNavigating.current = true;
     setIsDragging(false);
     setIsCompleting(true);
-    setOffset(maxOffset());
-    window.setTimeout(() => router.push('/portfolio'), 240);
-  }, [maxOffset, router]);
+    setOffset(viewportHeight());
+    window.setTimeout(() => router.push('/portfolio'), SECTION_TRANSITION.duration);
+  }, [router]);
 
   const settle = useCallback((value) => {
-    if (value >= TRANSITION_THRESHOLD) {
+    if (value >= SECTION_TRANSITION.threshold) {
       complete();
       return;
     }
@@ -42,10 +36,10 @@ export default function HomePanelIntro() {
   }, [complete]);
 
   const updateOffset = useCallback((nextOffset) => {
-    const clamped = Math.max(0, Math.min(nextOffset, maxOffset()));
+    const clamped = Math.max(0, Math.min(nextOffset, viewportHeight()));
     currentOffset.current = clamped;
     setOffset(clamped);
-  }, [maxOffset]);
+  }, []);
 
   const onPointerDown = (event) => {
     if (isNavigating.current) return;
@@ -59,7 +53,7 @@ export default function HomePanelIntro() {
     if (startY.current == null || isNavigating.current) return;
     const dragDistance = startY.current - event.clientY;
     if (Math.abs(dragDistance) > 6) didDrag.current = true;
-    updateOffset(dragDistance * 0.52);
+    updateOffset(dragDistance * SECTION_TRANSITION.dragMultiplier);
   };
 
   const onPointerEnd = () => {
@@ -72,20 +66,19 @@ export default function HomePanelIntro() {
     const onWheel = (event) => {
       if (isNavigating.current || event.deltaY <= 0) return;
       event.preventDefault();
-      wheelOffset.current = Math.min(maxOffset(), wheelOffset.current + event.deltaY);
-      updateOffset(wheelOffset.current);
+      wheelOffset.current += event.deltaY;
       window.clearTimeout(onWheel.timeout);
       onWheel.timeout = window.setTimeout(() => {
         settle(wheelOffset.current);
         wheelOffset.current = 0;
-      }, 120);
+      }, SECTION_TRANSITION.wheelSettleDelay);
     };
 
     window.addEventListener('wheel', onWheel, { passive: false });
     return () => window.removeEventListener('wheel', onWheel);
-  }, [maxOffset, settle, updateOffset]);
+  }, [settle]);
 
-  const progress = Math.min(1, offset / maxOffset());
+  const progress = Math.min(1, offset / Math.max(viewportHeight(), 1));
 
   return (
     <main className="home-panel-intro" aria-label="OOXME introduction">
@@ -107,8 +100,7 @@ export default function HomePanelIntro() {
           if (event.key === 'Enter' || event.key === ' ') complete();
         }}
       >
-        <p>Swipe up for more</p>
-        <div className="home-panel-handle" aria-hidden="true" />
+        <SwipeDownControl label="Swipe up for more" />
       </section>
     </main>
   );

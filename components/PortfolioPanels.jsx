@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-const transitionThreshold = 86;
+import SwipeDownControl from './SwipeDownControl';
+import GlobalSearchOverlay from './GlobalSearchOverlay';
+import { SECTION_TRANSITION, viewportHeight } from '../utilities/section-transition';
 
 const copy = {
   en: {
@@ -29,9 +30,6 @@ const copy = {
     next: 'Continue',
     previous: 'Back',
     search: 'Search',
-    close: 'Close',
-    searchPlaceholder: 'Search OOXME',
-    noResults: 'No matching pages found.',
   },
   ar: {
     portfolio: 'المعرض',
@@ -55,20 +53,8 @@ const copy = {
     next: 'متابعة',
     previous: 'رجوع',
     search: 'بحث',
-    close: 'إغلاق',
-    searchPlaceholder: 'ابحث في أوكسوم',
-    noResults: 'لا توجد صفحات مطابقة.',
   },
 };
-
-const searchLinks = [
-  { href: '/project-albasri-commercial-group', en: 'Brands We Manage', ar: 'علامات نديرها' },
-  { href: '/project-alfayha-eyewear', en: 'Brands We Designed', ar: 'علامات صممناها' },
-  { href: '/project-sawa-university', en: 'Featured Work', ar: 'أعمال مميزة' },
-  { href: '/plan-starter', en: 'Growth Plans', ar: 'باقات النمو' },
-  { href: '/services', en: 'Services', ar: 'الخدمات' },
-  { href: '/consultation', en: 'Consultation', ar: 'استشارة' },
-];
 
 function Arrow() {
   return (
@@ -129,8 +115,7 @@ function PanelFrame({ children, language, index, onLanguage, onSearch, onNext, o
         <footer className="portfolio-panel-footer">
           {index < total - 1 && (
             <button className="portfolio-continue-control" onClick={onNext}>
-              <span>{text.next}</span>
-              <i aria-hidden="true" />
+              <SwipeDownControl label={text.next} />
             </button>
           )}
         </footer>
@@ -147,13 +132,27 @@ export default function PortfolioPanels() {
   const [dragging, setDragging] = useState(false);
   const [isReturningHome, setIsReturningHome] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [searchClosing, setSearchClosing] = useState(false);
   const startY = useRef(null);
   const dragDistance = useRef(0);
   const wheelTimer = useRef(null);
   const wheelDistance = useRef(0);
   const isReturningHomeRef = useRef(false);
   const panelCount = 5;
+
+  const openSearch = () => {
+    setSearchClosing(false);
+    setSearchOpen(true);
+  };
+
+  const closeSearch = () => {
+    if (!searchOpen || searchClosing) return;
+    setSearchClosing(true);
+    window.setTimeout(() => {
+      setSearchOpen(false);
+      setSearchClosing(false);
+    }, 200);
+  };
 
   useEffect(() => {
     const saved = window.localStorage.getItem('ooxme-language');
@@ -175,9 +174,9 @@ export default function PortfolioPanels() {
       if (isReturningHomeRef.current) return;
       isReturningHomeRef.current = true;
       setDragging(false);
-      setDragOffset(0);
+      setDragOffset(viewportHeight());
       setIsReturningHome(true);
-      window.setTimeout(() => router.push('/'), 240);
+      window.setTimeout(() => router.push('/'), SECTION_TRANSITION.duration);
       return;
     }
     setPanel(Math.max(0, Math.min(panelCount - 1, next)));
@@ -186,8 +185,8 @@ export default function PortfolioPanels() {
   }, [router]);
 
   const finishDrag = useCallback((distance) => {
-    if (distance <= -transitionThreshold) moveTo(panel + 1);
-    else if (distance >= transitionThreshold) moveTo(panel - 1);
+    if (distance <= -SECTION_TRANSITION.threshold) moveTo(panel + 1);
+    else if (distance >= SECTION_TRANSITION.threshold) moveTo(panel - 1);
     else {
       setDragOffset(0);
       setDragging(false);
@@ -206,7 +205,7 @@ export default function PortfolioPanels() {
     const rawDistance = event.clientY - startY.current;
     const atStart = panel === 0 && rawDistance > 0;
     const atEnd = panel === panelCount - 1 && rawDistance < 0;
-    const offset = (atStart || atEnd) ? rawDistance * 0.18 : rawDistance * 0.52;
+    const offset = (atStart || atEnd) ? rawDistance * SECTION_TRANSITION.edgeResistance : rawDistance * SECTION_TRANSITION.dragMultiplier;
     dragDistance.current = rawDistance;
     setDragOffset(offset);
   };
@@ -226,10 +225,10 @@ export default function PortfolioPanels() {
       wheelDistance.current += event.deltaY;
       window.clearTimeout(wheelTimer.current);
       wheelTimer.current = window.setTimeout(() => {
-        if (wheelDistance.current > transitionThreshold) moveTo(panel + 1);
-        if (wheelDistance.current < -transitionThreshold) moveTo(panel - 1);
+        if (wheelDistance.current > SECTION_TRANSITION.threshold) moveTo(panel + 1);
+        if (wheelDistance.current < -SECTION_TRANSITION.threshold) moveTo(panel - 1);
         wheelDistance.current = 0;
-      }, 120);
+      }, SECTION_TRANSITION.wheelSettleDelay);
     };
     window.addEventListener('wheel', onWheel, { passive: false });
     return () => {
@@ -239,7 +238,6 @@ export default function PortfolioPanels() {
   }, [moveTo, panel, searchOpen]);
 
   const text = copy[language];
-  const results = searchLinks.filter((item) => item[language].toLowerCase().includes(query.toLowerCase()));
   const transform = `translate3d(0, calc(${-panel * 100}dvh + ${dragOffset}px), 0)`;
   const contacts = language === 'en' ? [
     ['WhatsApp Business', '+964 772 111 7110', 'whatsapp.png', 'https://wa.me/9647721117110'],
@@ -268,7 +266,7 @@ export default function PortfolioPanels() {
       onPointerCancel={onPointerEnd}
     >
       <div className="portfolio-panel-track" style={{ transform }}>
-        <PanelFrame language={language} index={0} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={() => setSearchOpen(true)} onNext={() => moveTo(1)} onPrevious={() => moveTo(-1)}>
+        <PanelFrame language={language} index={0} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(1)} onPrevious={() => moveTo(-1)}>
           <div className="portfolio-intro-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.portfolio}</p>
             <h1>{text.statement}</h1>
@@ -280,7 +278,7 @@ export default function PortfolioPanels() {
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={1} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={() => setSearchOpen(true)} onNext={() => moveTo(2)} onPrevious={() => moveTo(0)}>
+        <PanelFrame language={language} index={1} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(2)} onPrevious={() => moveTo(0)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.plans}</p>
             <h2>{text.plansTitle}</h2>
@@ -293,7 +291,7 @@ export default function PortfolioPanels() {
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={2} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={() => setSearchOpen(true)} onNext={() => moveTo(3)} onPrevious={() => moveTo(1)}>
+        <PanelFrame language={language} index={2} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(3)} onPrevious={() => moveTo(1)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.services}</p>
             <h2>{text.servicesTitle}</h2>
@@ -306,7 +304,7 @@ export default function PortfolioPanels() {
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={3} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={() => setSearchOpen(true)} onNext={() => moveTo(4)} onPrevious={() => moveTo(2)}>
+        <PanelFrame language={language} index={3} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(4)} onPrevious={() => moveTo(2)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.consultation}</p>
             <h2>{text.consultationTitle}</h2>
@@ -315,7 +313,7 @@ export default function PortfolioPanels() {
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={4} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={() => setSearchOpen(true)} onNext={() => moveTo(4)} onPrevious={() => moveTo(3)}>
+        <PanelFrame language={language} index={4} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(4)} onPrevious={() => moveTo(3)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.contact}</p>
             <h2>{text.contactTitle}</h2>
@@ -333,26 +331,7 @@ export default function PortfolioPanels() {
         </PanelFrame>
       </div>
 
-      {searchOpen && (
-        <div className="portfolio-search-layer" role="dialog" aria-modal="true" aria-label={text.search}>
-          <div className="portfolio-search-shell">
-            <header className="portfolio-search-header">
-              <Link className="portfolio-panel-logo" href="/" aria-label="OOXME home" onClick={() => setSearchOpen(false)}>
-                <img src="/assets/logo/OX-001-LOGO-black.png" alt="OOXME" />
-              </Link>
-              <button className="portfolio-search-close" onClick={() => setSearchOpen(false)} aria-label={text.close}>×</button>
-            </header>
-            <nav className="portfolio-search-results" aria-label={text.search}>
-              {results.length ? results.map((item) => <Link key={item.href} href={item.href} onClick={() => setSearchOpen(false)}>{item[language]}<Arrow /></Link>) : <p>{text.noResults}</p>}
-            </nav>
-            <label className="portfolio-search-input">
-              <span className="sr-only">{text.search}</span>
-              <SearchIcon />
-              <input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder={text.searchPlaceholder} />
-            </label>
-          </div>
-        </div>
-      )}
+      {searchOpen && <GlobalSearchOverlay language={language} closing={searchClosing} onClose={closeSearch} />}
     </main>
   );
 }
