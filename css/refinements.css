@@ -994,6 +994,11 @@ html[dir=rtl] .albasri-intro h1,html[dir=rtl] .albasri-section-copy h2,html[dir=
 .card-arrow::before{width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;content:"";transform:rotate(-45deg);transition:transform .25s ease}
 .content-card:hover .card-arrow{transform:none!important}.content-card:hover .card-arrow::before{transform:rotate(-45deg) translate(2px,2px)}
 html[dir=rtl] .card-arrow{background:none!important}html[dir=rtl] .card-arrow::before{transform:rotate(135deg)}html[dir=rtl] .content-card:hover .card-arrow::before{transform:rotate(135deg) translate(2px,2px)}
+.portfolio-panel-arrow{display:grid;place-items:center;width:17px;height:17px;background:none;font-size:0}
+.portfolio-panel-arrow::before{width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;content:"";transform:rotate(-45deg);transition:transform .25s ease}
+.portfolio-nav-card:hover .portfolio-panel-arrow::before{transform:rotate(-45deg) translate(2px,2px)}
+html[dir=rtl] .portfolio-panel-arrow::before{transform:rotate(135deg)}
+html[dir=rtl] .portfolio-nav-card:hover .portfolio-panel-arrow::before{transform:rotate(135deg) translate(2px,2px)}
 .plans-page .plan-nav-link i{display:grid;place-items:center;width:15px;height:15px;border:0!important;transform:none!important}.plans-page .plan-nav-link i::before{width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;content:"";transform:rotate(-45deg)}.plans-page .previous-plan i::before{transform:rotate(135deg)}html[dir=rtl] .plans-page .next-plan i::before{transform:rotate(135deg)}html[dir=rtl] .plans-page .previous-plan i::before{transform:rotate(-45deg)}
 .menu-toggle{border:0!important;outline:0!important;box-shadow:none!important}
 html[dir=rtl] .plans-page .next-plan-wrap,
