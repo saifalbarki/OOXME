@@ -12,26 +12,28 @@
   <body class="service-page" data-service="businesses-we-managed">
     <header class="site-header">
       <div class="shell header-inner">
+        <button class="global-header-icon language-toggle" type="button" aria-label="Switch language"><img class="globe-icon" src="assets/icons/globe.png" alt="" aria-hidden="true" /></button>
         <a class="brand-logo" href="index.html#home" aria-label="OOXME home"><img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME logo" /></a>
-        <div class="header-actions">
-          <button class="language-toggle" type="button" aria-label="Switch language"><img class="globe-icon" src="assets/icons/globe.png" alt="" aria-hidden="true" /></button>
-          <a class="home-icon" href="index.html#home" aria-label="Home"><img src="assets/icons/home.png" alt="" aria-hidden="true" /></a>
-        </div>
+        <button class="global-header-icon" type="button" data-service-search aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button>
       </div>
     </header>
-    <main>
+    <main class="business-panel-experience">
+      <div class="business-panel-track" data-business-panel-track>
       <section class="hero page-hero">
         <div class="shell hero-inner">
           <p class="eyebrow mono page-text" data-page-label>OOXME</p>
           <h1 class="page-text" data-page-heading></h1>
           <p class="hero-intro page-text" data-page-description></p>
         </div>
+        <footer class="portfolio-panel-footer"><button class="portfolio-continue-control" type="button"><span class="swipe-down-control"><span class="swipe-down-label" data-page-continue>Continue</span><span class="swipe-down-line"></span></span></button></footer>
       </section>
-      <section class="content-section page-detail">
+      <section id="business-detail" class="content-section page-detail">
         <div class="shell">
           <div class="page-placeholder page-text" data-page-placeholder>Image and case study coming soon</div>
         </div>
       </section>
+      </div>
     </main>
+    <div class="global-search-overlay" data-service-search-overlay hidden><div class="global-search-content"><header class="global-search-header"><button class="global-header-icon language-toggle" type="button" aria-label="Switch language"><img src="assets/icons/globe.png" alt="" aria-hidden="true" /></button><a class="global-header-logo" href="index.html#home"><img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME" /></a><button class="global-header-icon" type="button" data-service-search aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg></button></header><nav class="global-search-links"><a href="index.html#intro">Intro</a><a href="index.html#portfolio">Portfolio</a><a href="index.html#plans">Growth Plans</a><a href="index.html#services">Services</a><a href="index.html#consultation">Consultation</a><a href="index.html#contact">Contact</a></nav><label class="global-search-input"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input type="search" placeholder="Search OOXME" aria-label="Search OOXME" /></label></div></div>
   </body>
 </html>

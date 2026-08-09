@@ -21,7 +21,8 @@ let serviceLanguage='en';
 try{serviceLanguage=localStorage.getItem('ooxme-language')==='ar'?'ar':'en'}catch(error){}
 const serviceKey=document.body.dataset.service;
 const content=serviceContent[serviceKey]||serviceContent['brand-strategy'];
-const languageButton=document.querySelector('.language-toggle');
+const serviceHeader=document.querySelector('.site-header');const servicePanel=serviceKey==='businesses-we-managed'?document.querySelector('[data-business-panel-track]>section'):document.querySelector('main>section');if(serviceKey==='businesses-we-managed'&&serviceHeader&&servicePanel){servicePanel.prepend(serviceHeader);serviceHeader.classList.add('service-panel-header')}
+const languageButtons=[...document.querySelectorAll('.language-toggle')];
 
 function setServiceLanguage(next){
   serviceLanguage=next;
@@ -33,11 +34,36 @@ function setServiceLanguage(next){
   document.querySelector('[data-page-heading]').textContent=value[0];
   document.querySelector('[data-page-description]').textContent=value[2];
   document.querySelector('[data-page-placeholder]').textContent=next==='ar'?'صورة ومحتوى قادم قريبًا':'Image and case study coming soon';
-  languageButton.setAttribute('aria-label',next==='en'?'Switch to Arabic':'التبديل إلى الإنجليزية');
+  const continueLabel=document.querySelector('[data-page-continue]');if(continueLabel)continueLabel.textContent=next==='ar'?'متابعة':'Continue';
+  languageButtons.forEach(button=>button.setAttribute('aria-label',next==='en'?'Switch to Arabic':'التبديل إلى الإنجليزية'));
   try{localStorage.setItem('ooxme-language',next)}catch(error){}
 }
 
-languageButton.addEventListener('click',()=>setServiceLanguage(serviceLanguage==='en'?'ar':'en'));
+languageButtons.forEach(button=>button.addEventListener('click',()=>setServiceLanguage(serviceLanguage==='en'?'ar':'en')));
+const serviceSearchOverlay=document.querySelector('[data-service-search-overlay]');
+const serviceSearchButtons=[...document.querySelectorAll('[data-service-search]')];
+function setServiceSearch(open){if(!serviceSearchOverlay)return;serviceSearchOverlay.hidden=!open;document.body.classList.toggle('search-open',open)}
+serviceSearchButtons.forEach(button=>button.addEventListener('click',()=>setServiceSearch(serviceSearchOverlay?.hidden)));
+document.addEventListener('keydown',event=>{if(event.key==='Escape')setServiceSearch(false)});
+if(serviceKey==='businesses-we-managed'){
+  const panelTrack=document.querySelector('[data-business-panel-track]');
+  const panelExperience=document.querySelector('.business-panel-experience');
+  let panelIndex=location.hash==='#business-detail'?1:0;
+  let wheelLocked=false;
+  const moveToPanel=next=>{
+    if(!panelTrack)return;
+    panelIndex=Math.max(0,Math.min(1,next));
+    window.scrollTo({top:0,behavior:'auto'});
+    panelTrack.style.transform=`translateY(${-panelIndex*100}dvh)`;
+    history.replaceState(null,'',location.pathname);
+  };
+  moveToPanel(panelIndex);
+  document.querySelector('.portfolio-continue-control')?.addEventListener('click',event=>{event.preventDefault();moveToPanel(1)});
+  panelExperience?.addEventListener('wheel',event=>{if(wheelLocked||Math.abs(event.deltaY)<20)return;wheelLocked=true;moveToPanel(panelIndex+(event.deltaY>0?1:-1));window.setTimeout(()=>{wheelLocked=false},620)},{passive:true});
+  let panelStartY=null;
+  panelExperience?.addEventListener('pointerdown',event=>{if(!event.target.closest('a,button,input'))panelStartY=event.clientY});
+  panelExperience?.addEventListener('pointerup',event=>{if(panelStartY===null)return;const distance=panelStartY-event.clientY;if(Math.abs(distance)>60)moveToPanel(panelIndex+(distance>0?1:-1));panelStartY=null});
+}
 document.documentElement.classList.add('js');
 document.querySelectorAll('.page-text').forEach((element,index)=>{element.classList.add('text-reveal');element.style.transitionDelay=`${index*70}ms`});
 setServiceLanguage(serviceLanguage);

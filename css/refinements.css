@@ -1322,6 +1322,27 @@ html[lang="ar"] .plans-page .price-period{font-family:var(--font-arabic)!importa
   min-height:0!important;
 }
 
+/* Language controls use the same 19px outline language mark everywhere. */
+:is(.language-toggle,[data-static-language]){
+  position:relative;
+  color:var(--ink);
+  font-size:0;
+}
+
+:is(.language-toggle,[data-static-language])>img{
+  display:none!important;
+}
+
+:is(.language-toggle,[data-static-language])::before{
+  width:19px;
+  height:19px;
+  background:currentColor;
+  -webkit-mask:url('../assets/icons/globe-outline.svg') center/contain no-repeat;
+  mask:url('../assets/icons/globe-outline.svg') center/contain no-repeat;
+  content:"";
+}
+
+
 /* One shared header-icon system. Search defines the visual reference size,
    and every language control uses that same size and centerline. */
 :root{--global-header-icon-size:19px;--global-chrome-icon:19px!important}
@@ -1727,14 +1748,14 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 }
 
 /* Services use the same white safe margin and rounded panel frame as home. */
-:is(.services-page,.detail-page[data-detail^="service-"]) main{
+:is(.services-page,.detail-page[data-detail^="service-"],.service-page[data-service="businesses-we-managed"]) main{
   display:grid;
   gap:var(--space);
   padding:var(--space);
   background:var(--paper);
 }
 
-:is(.services-page,.detail-page[data-detail^="service-"]) main>section{
+:is(.services-page,.detail-page[data-detail^="service-"],.service-page[data-service="businesses-we-managed"]) main>section{
   position:relative;
   display:grid;
   align-content:start;
@@ -1750,7 +1771,7 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
   min-height:calc(100dvh - var(--space) * 2);
 }
 
-:is(.services-page,.detail-page[data-detail^="service-"]) .service-panel-header{
+:is(.services-page,.detail-page[data-detail^="service-"],.service-page[data-service="businesses-we-managed"]) .service-panel-header{
   position:absolute;
   z-index:2;
   top:var(--space);
@@ -1758,22 +1779,84 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
   border:0;
   background:transparent;
   backdrop-filter:none;
+  box-shadow:none;
 }
 
-:is(.services-page,.detail-page[data-detail^="service-"]) .service-panel-header .shell.header-inner{
+:is(.services-page,.detail-page[data-detail^="service-"],.service-page[data-service="businesses-we-managed"]) .service-panel-header .shell.header-inner{
   width:100%;
   min-height:72px;
 }
 
-:is(.services-page,.detail-page[data-detail^="service-"]) main>section:first-child{
+.service-page[data-service="businesses-we-managed"] .service-panel-header .brand-logo{
+  width:var(--global-chrome-logo)!important;
+}
+
+.service-page[data-service="businesses-we-managed"] .service-panel-header .brand-logo img{
+  width:100%!important;
+  max-width:none!important;
+  height:auto!important;
+}
+
+.service-page[data-service="businesses-we-managed"] main>.page-hero{
+  grid-template-rows:minmax(0,1fr) auto;
+}
+
+.service-page[data-service="businesses-we-managed"] .portfolio-panel-footer{
+  margin-top:auto;
+}
+
+.service-page[data-service="businesses-we-managed"]{
+  overflow:hidden;
+}
+
+.service-page[data-service="businesses-we-managed"] .business-panel-experience{
+  display:block;
+  height:100dvh;
+  padding:0;
+  overflow:clip;
+}
+
+.service-page[data-service="businesses-we-managed"] .business-panel-track{
+  display:grid;
+  height:200dvh;
+  grid-template-rows:repeat(2,100dvh);
+  transition:transform .62s cubic-bezier(.22,.61,.36,1);
+  will-change:transform;
+}
+
+.service-page[data-service="businesses-we-managed"] .business-panel-track>section{
+  align-self:center;
+  width:auto;
+  height:calc(100dvh - var(--space) * 2);
+  min-height:calc(100dvh - var(--space) * 2);
+  margin:0 var(--space)!important;
+  padding:calc(var(--space) * 4) var(--space) var(--space)!important;
+  border:0!important;
+  border-radius:calc(var(--space) * 1.35)!important;
+  background:#f1f3f7!important;
+}
+
+.service-page[data-service="businesses-we-managed"] .business-panel-track>section:first-child{
   padding-top:calc(var(--space) * 7)!important;
 }
 
-:is(.services-page,.detail-page[data-detail^="service-"]) main>section>.shell{
+.service-page[data-service="businesses-we-managed"] .business-panel-track>section>.shell{
   width:min(100%,1440px);
 }
 
-:is(.services-page,.detail-page[data-detail^="service-"]) main>section :where(.content-card,.detail-placeholder,.service-detail-card){
+@media (prefers-reduced-motion:reduce){
+  .service-page[data-service="businesses-we-managed"] .business-panel-track{transition-duration:.18s;}
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"],.service-page[data-service="businesses-we-managed"]) main>section:first-child{
+  padding-top:calc(var(--space) * 7)!important;
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"],.service-page[data-service="businesses-we-managed"]) main>section>.shell{
+  width:min(100%,1440px);
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"],.service-page[data-service="businesses-we-managed"]) main>section :where(.content-card,.detail-placeholder,.service-detail-card,.page-placeholder){
   border-radius:calc(var(--space) * .9);
 }
 
