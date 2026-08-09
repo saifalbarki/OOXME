@@ -1991,6 +1991,9 @@ html[dir=rtl] .booking-information-grid label,html[dir=rtl] .booking-confirmed-s
   backdrop-filter:blur(5px);
   animation:globalSearchIn .2s ease both;
 }
+/* The browser's hidden attribute must win over the overlay display rule.
+   Without this, the search layer remains visible after it is closed. */
+.global-search-overlay[hidden]{display:none!important}
 .global-search-content{
   position:relative;
   display:grid;

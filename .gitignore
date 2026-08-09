@@ -1,5 +1,6 @@
 node_modules/
 .next/
 .vercel/
+.next-preview.*
 *.log
 .env*
