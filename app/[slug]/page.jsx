@@ -5,6 +5,7 @@ import { pages } from '../../config/pages';
 import { collectionPageIds } from '../../config/collection-pages';
 import { obsoleteRouteRedirects } from '../../config/site-structure';
 import CollectionPage from '../../components/CollectionPage';
+import BookingConfirmed from '../../components/BookingConfirmed';
 import { getLegacyPage } from '../../utilities/legacy-page';
 
 export function generateStaticParams() {
@@ -18,5 +19,6 @@ export default async function LegacyRoute({ params }) {
   if (obsoleteRouteRedirects[pageId]) redirect(obsoleteRouteRedirects[pageId]);
   if (pageId === 'portfolio') return <PortfolioPanels initialPanel={1} basePath="/portfolio" />;
   if (collectionPageIds.includes(pageId)) return <CollectionPage pageId={pageId} />;
+  if (pageId === 'booking-confirmed') return <BookingConfirmed />;
   return <LegacyPage pageId={pageId} initialPage={getLegacyPage(pageId)} />;
 }

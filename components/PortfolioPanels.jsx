@@ -300,7 +300,7 @@ export default function PortfolioPanels({ initialPanel = 1, basePath = '/portfol
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={3} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => window.location.assign('/services')}>
+        <PanelFrame language={language} index={3} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(4)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.services}</p>
             <h2>{text.servicesTitle}</h2>

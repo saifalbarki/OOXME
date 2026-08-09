@@ -1,5 +1,5 @@
 export const pages = [
-  'index', 'portfolio', 'services', 'consultation', 'booking-summary', 'payment', 'coming-soon',
+  'index', 'portfolio', 'services', 'consultation', 'booking-summary', 'booking-confirmed', 'payment', 'coming-soon',
   'plan-starter', 'plan-standard', 'plan-plus',
   'art-direction', 'brand-strategy', 'brands-we-designed', 'businesses-we-managed', 'unique-works', 'services-business-development', 'services-brand-strategy', 'services-creative-digital', 'define', 'deliver',
   'design', 'digital-design', 'discover', 'logos-we-designed', 'visual-identities', 'visual-identity',

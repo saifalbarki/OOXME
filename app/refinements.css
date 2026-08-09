@@ -732,7 +732,7 @@ html[dir=rtl] .booking-intro h1{font-family:var(--font-arabic);font-weight:600;l
 /* Booking confirmation: centered hierarchy matching the time selector. */
 .booking-summary{text-align:center}
 .booking-summary div{grid-template-columns:1fr;gap:8px;justify-items:center}
-.booking-summary dt{font-family:var(--font-main);font-size:11px;font-weight:700;letter-spacing:.04em}
+.booking-summary dt{font-family:var(--font-main);font-size:11px;font-weight:500;letter-spacing:.04em}
 .booking-summary dd{font-size:18px;font-weight:700;line-height:1.1;text-align:center}
 html[dir=rtl] .booking-summary div{grid-template-columns:1fr}
 html[dir=rtl] .booking-summary dt,html[dir=rtl] .booking-summary dd{grid-column:auto;grid-row:auto;text-align:center}
@@ -1784,6 +1784,11 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
   padding:var(--booking-flow-space)!important;
 }
 
+/* The final total ends the summary cleanly, without a trailing divider. */
+[data-ooxme-page="booking-summary"] .booking-summary>div:last-child{
+  border-bottom:0;
+}
+
 /* Promo entry keeps the same white-card rhythm as the time and duration steps. */
 [data-ooxme-page="consultation"] .booking-promo-step{
   grid-column:1 / -1;
@@ -1840,9 +1845,12 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 }
 [data-ooxme-page="consultation"] .promo-continue::after,
 [data-ooxme-page="booking-summary"] .confirm-pay::after{
+  position:static;
+  inset:auto;
   display:block;
   width:112px;
   height:6px;
+  margin-top:2px;
   border-radius:999px;
   background:currentColor;
   content:'';
@@ -1850,6 +1858,33 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 }
 [data-ooxme-page="consultation"] .promo-continue:focus-visible,
 [data-ooxme-page="booking-summary"] .confirm-pay:focus-visible{outline:2px solid var(--brand);outline-offset:5px}
+
+/* No-payment booking completion keeps the established booking panel language. */
+.booking-confirmed-page{
+  min-height:100dvh;
+  margin:0;
+  padding:var(--space);
+  background:#fff;
+}
+.booking-confirmed-panel{
+  position:relative;
+  display:grid;
+  min-height:calc(100dvh - var(--space) * 2);
+  place-items:center;
+  padding:calc(var(--space) * 4) var(--space) var(--space);
+  border-radius:calc(var(--space) * 1.35);
+  background:#f1f3f7;
+  text-align:center;
+}
+.booking-confirmed-page .global-panel-header{
+  position:absolute;
+  top:var(--space);
+  inset-inline:var(--space);
+}
+.booking-confirmed-content{display:grid;justify-items:center;gap:var(--space);max-width:560px;padding:var(--space)}
+.booking-confirmed-label{margin:0;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em}
+.booking-confirmed-content h1{margin:0;font-size:clamp(42px,8vw,88px);line-height:.95;letter-spacing:-.07em}
+.booking-confirmed-content p:last-child{margin:0;font-size:clamp(16px,2vw,20px);line-height:1.35}
 
 @media (max-width:768px){
   [data-ooxme-page="consultation"] main,
