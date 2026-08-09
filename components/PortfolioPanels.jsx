@@ -33,12 +33,12 @@ const copy = {
   },
   ar: {
     portfolio: 'المعرض',
-    statement: 'أعمال صُممت لدفع الأعمال إلى الأمام.',
+    statement: 'أعمال صُممت لدفع الأعمال الى الأمام.',
     manage: 'علامات نديرها',
     designed: 'علامات صممناها',
     featured: 'أعمال مميزة',
     plans: 'الباقات',
-    plansTitle: 'باقات نمو شهرية مرنة',
+    plansTitle: 'باقات نمو شهرية مرنــــة',
     plansText: 'اختر مستوى الشراكة الذي يناسب احتياجات عملك.',
     services: 'الخدمات',
     servicesTitle: 'كل ما يحتاجه عملك للنمو',
@@ -300,7 +300,7 @@ export default function PortfolioPanels({ initialPanel = 1, basePath = '/portfol
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={3} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(4)}>
+        <PanelFrame language={language} index={3} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => window.location.assign('/services')}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.services}</p>
             <h2>{text.servicesTitle}</h2>
@@ -318,7 +318,7 @@ export default function PortfolioPanels({ initialPanel = 1, basePath = '/portfol
             <p className="portfolio-panel-label">{text.consultation}</p>
             <h2>{text.consultationTitle}</h2>
             <p>{text.consultationText}</p>
-            <Link className="portfolio-solid-action" href="/consultation">{text.schedule}</Link>
+            <Link className="portfolio-solid-action" href="/consultation" onClick={(event) => event.stopPropagation()}>{text.schedule}</Link>
           </div>
         </PanelFrame>
 

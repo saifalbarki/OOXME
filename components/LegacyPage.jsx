@@ -71,6 +71,25 @@ export default function LegacyPage({ pageId, initialPage }) {
     };
   }, [initialPage.markup, pageId]);
 
+  useEffect(() => {
+    const revealHashTarget = () => {
+      const hash = window.location.hash.slice(1);
+      if (!hash) return;
+      const target = document.getElementById(decodeURIComponent(hash));
+      if (!target) return;
+      target.hidden = false;
+      target.removeAttribute('hidden');
+      requestAnimationFrame(() => target.scrollIntoView({ block: 'start' }));
+    };
+
+    const timer = window.setTimeout(revealHashTarget, 80);
+    window.addEventListener('hashchange', revealHashTarget);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('hashchange', revealHashTarget);
+    };
+  }, [pageId, initialPage.markup]);
+
   return (
     <>
       {initialPage.pageStyle && <style dangerouslySetInnerHTML={{ __html: initialPage.pageStyle }} />}

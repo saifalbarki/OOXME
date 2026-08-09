@@ -22,6 +22,7 @@ export default function CollectionPage({ pageId }) {
   }, []);
 
   const text = page[language];
+  const hasProjectCards = page.cards.some(([, , , image]) => Boolean(image));
   return (
     <main className="collection-page" data-collection-page={pageId}>
       <GlobalPanelHeader />
@@ -30,7 +31,7 @@ export default function CollectionPage({ pageId }) {
           <p className="collection-label">{text.label}</p>
           <h1>{text.title}</h1>
           <p className="collection-description">{text.description}</p>
-          <div className={`collection-grid${pageId === 'services' ? ' collection-grid-services' : ''}`}>
+          <div className={`collection-grid${pageId === 'services' ? ' collection-grid-services' : ''}${hasProjectCards ? ' collection-grid-projects' : ''}`}>
             {page.cards.map(([href, english, arabic, image]) => (
               <Link key={`${href}-${english}`} className="collection-card" href={`/${href}`}>
                 {image && <img src={image} alt="" />}

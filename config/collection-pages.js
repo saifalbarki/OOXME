@@ -13,7 +13,7 @@ export const collectionPages = {
     ar: { label: 'أعمال العلامات', title: 'علامات صممناها', description: 'منظومات علامات مميزة مبنية من أعمال أوكسوم الأصلية.' },
     cards: [
       ['project-alfayha-eyewear', 'Alfayha Eyewear', 'نظارات الفيحاء', '/assets/projects/alfayhaa/optimized/01.webp'],
-      ['project-viir', 'VIIR', 'فيير', '/assets/projects/viir/optimized/01.webp'],
+      ['project-sawa-university#next-project', 'VIIR', 'فيير', '/assets/projects/viir/optimized/01.webp'],
       ['project-alfayha-eyewear#fatimah-project', 'Fatimah Floss', 'فاطمة فلوس', '/assets/projects/fatimah/optimized/01.webp'],
     ],
   },
@@ -31,7 +31,7 @@ export const collectionPages = {
     ar: { label: 'تطوير الأعمال', title: 'علامات نديرها', description: 'إدارة مستمرة للأعمال والمحتوى والعلامة من معرض أوكسوم الأصلي.' },
     cards: [
       ['project-albasri-commercial-group', 'Albasri', 'البصري', '/assets/projects/hyper%20albasri/brand/optimized/01.webp'],
-      ['project-albasri-commercial-group#hfadhi-project', 'Alhafadhi', 'الحفظي', '/assets/projects/hfadhi/optimized/01.webp'],
+      ['project-albasri-commercial-group#hfadhi-project', 'Alhafadhi', 'الحفاظي', '/assets/projects/hfadhi/optimized/01.webp'],
       ['project-albasri-commercial-group#lccd-project', 'LCCD', 'إل سي سي دي', '/assets/projects/lccd/optimized/01.webp'],
     ],
   },
