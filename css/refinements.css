@@ -1322,6 +1322,23 @@ html[lang="ar"] .plans-page .price-period{font-family:var(--font-arabic)!importa
   min-height:0!important;
 }
 
+/* One shared header-icon system. Search defines the visual reference size,
+   and every language control uses that same size and centerline. */
+:root{--global-header-icon-size:19px;--global-chrome-icon:19px!important}
+.site-header .header-inner,
+.portfolio-panel-header,
+.global-panel-header,
+.global-search-header{align-items:center!important}
+.site-header .brand-logo,
+.portfolio-panel-logo,
+.global-header-logo{align-self:center}
+.site-header .header-inner>:is(.menu-toggle,.home-control,.brand-logo,.language-toggle,.header-actions){grid-row:1;align-self:center}
+.site-header .header-actions{grid-column:3;justify-self:end;display:flex;align-items:center}
+.site-header .header-actions>:is(a,button){display:grid;place-items:center;width:40px;height:40px;padding:0}
+.site-header .language-toggle :is(img,svg),
+.portfolio-panel-icon :is(img,svg),
+.global-header-icon :is(img,svg){width:var(--global-header-icon-size)!important;max-width:var(--global-header-icon-size)!important;height:var(--global-header-icon-size)!important;max-height:var(--global-header-icon-size)!important;object-fit:contain}
+
 /* Shared global chrome: panel headers, overlays, and standard page headers
    use the same control, logo, and safe-spacing tokens. */
 :root{

@@ -7,6 +7,8 @@
   try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; booking = JSON.parse(sessionStorage.getItem('ooxme-booking') || 'null'); } catch (_) {}
   const languageButton = document.querySelector('.language-toggle');
   languageButton.innerHTML = '<img src="assets/icons/globe.png" alt="" aria-hidden="true" />';
+  const searchButton = document.querySelector('.global-header-icon:last-child');
+  searchButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>';
   const render = () => {
     const text = copy[language]; const root = document.documentElement;
     root.lang = language; root.dir = language === 'ar' ? 'rtl' : 'ltr';
