@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import GlobalSearchOverlay from './GlobalSearchOverlay';
 
 function GlobeIcon() {
@@ -16,8 +17,10 @@ export default function GlobalPanelHeader({ pageId, home = false }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchClosing, setSearchClosing] = useState(false);
   const [language, setLanguage] = useState('en');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const syncLanguage = () => setLanguage(document.documentElement.dir === 'rtl' ? 'ar' : 'en');
     syncLanguage();
     const observer = new MutationObserver(syncLanguage);
@@ -61,7 +64,10 @@ export default function GlobalPanelHeader({ pageId, home = false }) {
         <button className="global-header-icon" type="button" onClick={openSearch} aria-label={isArabic ? 'بحث' : 'Search'}><SearchIcon /></button>
       </header>
 
-      {searchOpen && <GlobalSearchOverlay language={language} closing={searchClosing} onClose={closeSearch} />}
+      {mounted && searchOpen && createPortal(
+        <GlobalSearchOverlay language={language} closing={searchClosing} onClose={closeSearch} onToggleLanguage={toggleLanguage} />,
+        document.body,
+      )}
     </>
   );
 }

@@ -6,6 +6,14 @@ export const SECTION_TRANSITION = {
   wheelSettleDelay: 120,
 };
 
+export function gestureOffset(distance, atBoundary = false) {
+  return distance * (atBoundary ? SECTION_TRANSITION.edgeResistance : SECTION_TRANSITION.dragMultiplier);
+}
+
+export function crossesSectionThreshold(distance) {
+  return Math.abs(distance) >= SECTION_TRANSITION.threshold;
+}
+
 export function viewportHeight() {
   return typeof window === 'undefined' ? 0 : window.innerHeight;
 }

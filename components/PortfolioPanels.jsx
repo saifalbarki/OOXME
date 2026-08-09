@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import SwipeDownControl from './SwipeDownControl';
 import GlobalSearchOverlay from './GlobalSearchOverlay';
-import { SECTION_TRANSITION, viewportHeight } from '../utilities/section-transition';
+import { crossesSectionThreshold, gestureOffset, SECTION_TRANSITION, viewportHeight } from '../utilities/section-transition';
+import { portfolioPanelSections } from '../config/site-structure';
 
 const copy = {
   en: {
@@ -13,7 +14,7 @@ const copy = {
     statement: 'Work designed to move businesses forward.',
     manage: 'Brands We Manage',
     designed: 'Brands We Designed',
-    featured: 'Featured Work',
+    featured: 'Unique Works',
     plans: 'Plans',
     plansTitle: 'Flexible Monthly Growth Plans',
     plansText: 'Choose the partnership level that best matches your business needs.',
@@ -138,7 +139,19 @@ export default function PortfolioPanels() {
   const wheelTimer = useRef(null);
   const wheelDistance = useRef(0);
   const isReturningHomeRef = useRef(false);
-  const panelCount = 5;
+  const panelCount = portfolioPanelSections.length;
+
+  useEffect(() => {
+    const syncPanelFromUrl = () => {
+      const requestedPanel = portfolioPanelSections.indexOf(new URLSearchParams(window.location.search).get('section'));
+      setPanel(Math.max(0, requestedPanel));
+      setDragOffset(0);
+      setDragging(false);
+    };
+    syncPanelFromUrl();
+    window.addEventListener('popstate', syncPanelFromUrl);
+    return () => window.removeEventListener('popstate', syncPanelFromUrl);
+  }, []);
 
   const openSearch = () => {
     setSearchClosing(false);
@@ -179,14 +192,17 @@ export default function PortfolioPanels() {
       window.setTimeout(() => router.push('/'), SECTION_TRANSITION.duration);
       return;
     }
-    setPanel(Math.max(0, Math.min(panelCount - 1, next)));
+    const safePanel = Math.max(0, Math.min(panelCount - 1, next));
+    setPanel(safePanel);
+    const section = portfolioPanelSections[safePanel];
+    window.history.replaceState(null, '', section === 'portfolio' ? '/portfolio' : `/portfolio?section=${section}`);
     setDragOffset(0);
     setDragging(false);
   }, [router]);
 
   const finishDrag = useCallback((distance) => {
-    if (distance <= -SECTION_TRANSITION.threshold) moveTo(panel + 1);
-    else if (distance >= SECTION_TRANSITION.threshold) moveTo(panel - 1);
+    if (crossesSectionThreshold(distance) && distance > 0) moveTo(panel + 1);
+    else if (crossesSectionThreshold(distance) && distance < 0) moveTo(panel - 1);
     else {
       setDragOffset(0);
       setDragging(false);
@@ -202,12 +218,11 @@ export default function PortfolioPanels() {
 
   const onPointerMove = (event) => {
     if (startY.current == null) return;
-    const rawDistance = event.clientY - startY.current;
-    const atStart = panel === 0 && rawDistance > 0;
-    const atEnd = panel === panelCount - 1 && rawDistance < 0;
-    const offset = (atStart || atEnd) ? rawDistance * SECTION_TRANSITION.edgeResistance : rawDistance * SECTION_TRANSITION.dragMultiplier;
-    dragDistance.current = rawDistance;
-    setDragOffset(offset);
+    const distance = startY.current - event.clientY;
+    const atStart = panel === 0 && distance < 0;
+    const atEnd = panel === panelCount - 1 && distance > 0;
+    dragDistance.current = distance;
+    setDragOffset(-gestureOffset(distance, atStart || atEnd));
   };
 
   const onPointerEnd = () => {
@@ -225,8 +240,8 @@ export default function PortfolioPanels() {
       wheelDistance.current += event.deltaY;
       window.clearTimeout(wheelTimer.current);
       wheelTimer.current = window.setTimeout(() => {
-        if (wheelDistance.current > SECTION_TRANSITION.threshold) moveTo(panel + 1);
-        if (wheelDistance.current < -SECTION_TRANSITION.threshold) moveTo(panel - 1);
+        if (crossesSectionThreshold(wheelDistance.current) && wheelDistance.current > 0) moveTo(panel + 1);
+        if (crossesSectionThreshold(wheelDistance.current) && wheelDistance.current < 0) moveTo(panel - 1);
         wheelDistance.current = 0;
       }, SECTION_TRANSITION.wheelSettleDelay);
     };
@@ -273,7 +288,7 @@ export default function PortfolioPanels() {
             <nav className="portfolio-primary-links" aria-label={text.portfolio}>
               <Card href="/businesses-we-managed">{text.manage}</Card>
               <Card href="/brands-we-designed">{text.designed}</Card>
-              <Card href="/visual-identities">{text.featured}</Card>
+              <Card href="/unique-works">{text.featured}</Card>
             </nav>
           </div>
         </PanelFrame>
@@ -297,9 +312,9 @@ export default function PortfolioPanels() {
             <h2>{text.servicesTitle}</h2>
             <p>{text.servicesText}</p>
             <div className="portfolio-primary-links compact-links">
-              <Card href="/service-business-development">{language === 'en' ? 'Business Development' : 'تطوير الأعمال'}</Card>
-              <Card href="/service-brand-strategy">{language === 'en' ? 'Brand Strategy' : 'استراتيجية العلامة'}</Card>
-              <Card href="/services">{language === 'en' ? 'Explore Services' : 'استكشف الخدمات'}</Card>
+              <Card href="/services-business-development">{language === 'en' ? 'Business Development' : 'تطوير الأعمال'}</Card>
+              <Card href="/services-brand-strategy">{language === 'en' ? 'Brand Strategy' : 'استراتيجية العلامة'}</Card>
+              <Card href="/services-creative-digital">{language === 'en' ? 'Creative & Digital Services' : 'الخدمات الإبداعية والرقمية'}</Card>
             </div>
           </div>
         </PanelFrame>
@@ -331,7 +346,7 @@ export default function PortfolioPanels() {
         </PanelFrame>
       </div>
 
-      {searchOpen && <GlobalSearchOverlay language={language} closing={searchClosing} onClose={closeSearch} />}
+      {searchOpen && <GlobalSearchOverlay language={language} closing={searchClosing} onClose={closeSearch} onToggleLanguage={() => setLanguage((current) => current === 'en' ? 'ar' : 'en')} />}
     </main>
   );
 }

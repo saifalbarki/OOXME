@@ -4,18 +4,26 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import GlobalPanelHeader from './GlobalPanelHeader';
 import SwipeDownControl from './SwipeDownControl';
-import { SECTION_TRANSITION, viewportHeight } from '../utilities/section-transition';
+import { crossesSectionThreshold, gestureOffset, SECTION_TRANSITION, viewportHeight } from '../utilities/section-transition';
 
 export default function HomePanelIntro() {
   const router = useRouter();
   const startY = useRef(null);
-  const currentOffset = useRef(0);
+  const dragDistance = useRef(0);
   const wheelOffset = useRef(0);
   const isNavigating = useRef(false);
-  const didDrag = useRef(false);
   const [offset, setOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [language, setLanguage] = useState('en');
+
+  useEffect(() => {
+    const syncLanguage = () => setLanguage(document.documentElement.dir === 'rtl' ? 'ar' : 'en');
+    syncLanguage();
+    const observer = new MutationObserver(syncLanguage);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['dir'] });
+    return () => observer.disconnect();
+  }, []);
 
   const complete = useCallback(() => {
     if (isNavigating.current) return;
@@ -36,30 +44,29 @@ export default function HomePanelIntro() {
   }, [complete]);
 
   const updateOffset = useCallback((nextOffset) => {
-    const clamped = Math.max(0, Math.min(nextOffset, viewportHeight()));
-    currentOffset.current = clamped;
+    const clamped = Math.max(-viewportHeight() * SECTION_TRANSITION.edgeResistance, Math.min(nextOffset, viewportHeight()));
     setOffset(clamped);
   }, []);
 
   const onPointerDown = (event) => {
-    if (isNavigating.current) return;
+    if (isNavigating.current || event.target.closest('button,a,input')) return;
     startY.current = event.clientY;
-    didDrag.current = false;
     setIsDragging(true);
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const onPointerMove = (event) => {
     if (startY.current == null || isNavigating.current) return;
-    const dragDistance = startY.current - event.clientY;
-    if (Math.abs(dragDistance) > 6) didDrag.current = true;
-    updateOffset(dragDistance * SECTION_TRANSITION.dragMultiplier);
+    const distance = startY.current - event.clientY;
+    dragDistance.current = distance;
+    updateOffset(gestureOffset(distance, distance < 0));
   };
 
   const onPointerEnd = () => {
     if (startY.current == null) return;
     startY.current = null;
-    settle(currentOffset.current);
+    settle(dragDistance.current);
+    dragDistance.current = 0;
   };
 
   useEffect(() => {
@@ -78,29 +85,20 @@ export default function HomePanelIntro() {
     return () => window.removeEventListener('wheel', onWheel);
   }, [settle]);
 
-  const progress = Math.min(1, offset / Math.max(viewportHeight(), 1));
-
   return (
     <main className="home-panel-intro" aria-label="OOXME introduction">
-      <GlobalPanelHeader home />
       <section
         className={`home-swipe-panel${isDragging ? ' is-dragging' : ''}${isCompleting ? ' is-completing' : ''}`}
-        style={{ '--panel-lift': `${offset}px`, '--panel-progress': progress }}
+        style={{ '--panel-lift': `${offset}px` }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerEnd}
         onPointerCancel={onPointerEnd}
-        onClick={() => {
-          if (!didDrag.current) complete();
-        }}
-        role="button"
-        tabIndex={0}
-        aria-label="Swipe up for more"
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') complete();
-        }}
       >
-        <SwipeDownControl label="Swipe up for more" />
+        <GlobalPanelHeader home />
+        <button className="home-swipe-continue-control" type="button" onClick={complete} aria-label={language === 'ar' ? 'اسحب للأعلى للمزيد' : 'Swipe up for more'}>
+          <SwipeDownControl label={language === 'ar' ? 'اسحب للأعلى للمزيد' : 'Swipe up for more'} />
+        </button>
       </section>
     </main>
   );
