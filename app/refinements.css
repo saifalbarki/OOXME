@@ -100,9 +100,8 @@
   overscroll-behavior:none;
   transition:opacity .24s ease,filter .24s ease,transform .24s cubic-bezier(.22,.61,.36,1);
 }
-.portfolio-panel-experience.is-returning-home{pointer-events:none}
 .portfolio-panel-track{
-  height:500dvh;
+  height:calc(var(--panel-count, 6) * 100dvh);
   transition:transform .62s cubic-bezier(.22,.61,.36,1);
   will-change:transform;
 }
@@ -1550,7 +1549,13 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 [data-ooxme-page="consultation"],
 [data-ooxme-page="booking-summary"],
 [data-ooxme-page="payment"]{
-  --flow-safe:var(--space);
+  /* The panel width is the viewport less its two outer gaps. Derive the
+     reusable inner gap from that relationship instead of introducing a
+     second, independent booking spacing value. */
+  --booking-main-panel-width:calc(100vw - (var(--space) * 2));
+  --booking-default-spacing:calc((100vw - var(--booking-main-panel-width)) / 2);
+  --flow-safe:var(--booking-default-spacing);
+  --booking-flow-space:var(--booking-default-spacing);
 }
 
 [data-ooxme-page="consultation"] .site-header,
@@ -1576,7 +1581,7 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 [data-ooxme-page="payment"] main{
   display:grid;
   align-content:start;
-  gap:var(--space);
+  gap:var(--booking-flow-space);
   min-height:calc(100dvh - var(--flow-safe) * 2);
   margin:var(--flow-safe);
   padding:calc(var(--flow-safe) * 4) var(--flow-safe) var(--flow-safe);
@@ -1629,16 +1634,95 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
   box-shadow:none;
 }
 
+/* Booking flow: one spacing unit for panel-safe edges, cards, and choices. */
+
+[data-ooxme-page="consultation"] main,
+[data-ooxme-page="booking-summary"] main,
+[data-ooxme-page="payment"] main{
+  gap:var(--booking-flow-space);
+  margin:var(--booking-flow-space);
+  padding-inline:var(--booking-flow-space);
+  padding-bottom:var(--booking-flow-space);
+}
+
+[data-ooxme-page="consultation"] .booking-intro,
+[data-ooxme-page="consultation"] .booking-section,
+[data-ooxme-page="booking-summary"] .booking-intro,
+[data-ooxme-page="booking-summary"] .booking-section,
+[data-ooxme-page="payment"] .booking-intro,
+[data-ooxme-page="payment"] .booking-section{
+  /* These are structural wrappers. The main panel supplies the one shared
+     outer gap, so a wrapper must not add a second horizontal gutter before a
+     white card begins. */
+  padding:0!important;
+  background:transparent!important;
+}
+
+[data-ooxme-page="consultation"] .booking-shell,
+[data-ooxme-page="booking-summary"] .summary-shell,
+[data-ooxme-page="payment"] .summary-shell,
+[data-ooxme-page="consultation"] .booking-choices,
+[data-ooxme-page="payment"] .payment-options{
+  gap:var(--booking-flow-space)!important;
+}
+
+/* A white booking card begins exactly one calculated spacing unit from the
+   gray panel, including at wider desktop widths. */
+[data-ooxme-page="consultation"] .booking-shell,
+[data-ooxme-page="booking-summary"] .summary-shell,
+[data-ooxme-page="payment"] .summary-shell,
+[data-ooxme-page="consultation"] .calendar-panel,
+[data-ooxme-page="consultation"] .booking-step,
+[data-ooxme-page="booking-summary"] .booking-summary,
+[data-ooxme-page="payment"] .payment-options,
+[data-ooxme-page="payment"] .payment-option{
+  width:100%!important;
+  max-width:none!important;
+  margin-inline:0!important;
+}
+
+[data-ooxme-page="consultation"] .calendar-panel,
+[data-ooxme-page="consultation"] .booking-step,
+[data-ooxme-page="booking-summary"] .booking-summary,
+[data-ooxme-page="payment"] .payment-option{
+  margin:0;
+  padding:var(--booking-flow-space)!important;
+}
+
+/* Promo entry keeps the same white-card rhythm as the time and duration steps. */
+[data-ooxme-page="consultation"] .booking-promo-step{
+  grid-column:1 / -1;
+  display:grid;
+  gap:var(--booking-flow-space);
+}
+[data-ooxme-page="consultation"] .promo-code-field{display:block}
+[data-ooxme-page="consultation"] .promo-code-field input{
+  width:100%;
+  min-height:45px;
+  padding:0 var(--booking-flow-space);
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  color:var(--ink);
+  font:inherit;
+  text-align:center;
+}
+[data-ooxme-page="consultation"] .promo-code-field input:focus{outline:2px solid var(--brand);outline-offset:2px}
+[data-ooxme-page="consultation"] .promo-code-message{min-height:1.3em;margin:0;font-size:12px;line-height:1.3;text-align:center;color:rgba(13,13,13,.62)}
+[data-ooxme-page="consultation"] .promo-code-message[data-status="valid"]{color:var(--brand)}
+[data-ooxme-page="consultation"] .promo-code-message[data-status="invalid"]{color:#9d2525}
+[data-ooxme-page="consultation"] .promo-continue{justify-self:center;min-width:160px;margin:0}
+
 @media (max-width:768px){
   [data-ooxme-page="consultation"] main,
   [data-ooxme-page="booking-summary"] main,
   [data-ooxme-page="payment"] main{padding-top:calc(var(--flow-safe) * 4)}
   [data-ooxme-page="consultation"] .booking-intro,
   [data-ooxme-page="booking-summary"] .booking-intro,
-  [data-ooxme-page="payment"] .booking-intro{padding-inline:0}
+  [data-ooxme-page="payment"] .booking-intro{padding-inline:var(--booking-flow-space)}
   [data-ooxme-page="consultation"] .booking-section,
   [data-ooxme-page="booking-summary"] .booking-section,
-  [data-ooxme-page="payment"] .booking-section{padding-inline:0}
+  [data-ooxme-page="payment"] .booking-section{padding-inline:var(--booking-flow-space)}
 }
 
 /* Shared panel treatment for every remaining legacy route and its sections. */

@@ -16,7 +16,7 @@ export default async function LegacyRoute({ params }) {
   const pageId = resolvedParams.slug;
   if (!pageId || !pages.includes(pageId) || pageId === 'index') notFound();
   if (obsoleteRouteRedirects[pageId]) redirect(obsoleteRouteRedirects[pageId]);
-  if (pageId === 'portfolio') return <PortfolioPanels />;
+  if (pageId === 'portfolio') return <PortfolioPanels initialPanel={1} basePath="/portfolio" />;
   if (collectionPageIds.includes(pageId)) return <CollectionPage pageId={pageId} />;
   return <LegacyPage pageId={pageId} initialPage={getLegacyPage(pageId)} />;
 }

@@ -1,5 +1,5 @@
-import HomePanelIntro from '../components/HomePanelIntro';
+import PortfolioPanels from '../components/PortfolioPanels';
 
 export default function HomePage() {
-  return <HomePanelIntro />;
+  return <PortfolioPanels initialPanel={0} basePath="/" />;
 }

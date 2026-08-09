@@ -1,11 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import SwipeDownControl from './SwipeDownControl';
 import GlobalSearchOverlay from './GlobalSearchOverlay';
-import { crossesSectionThreshold, gestureOffset, SECTION_TRANSITION, viewportHeight } from '../utilities/section-transition';
+import { crossesSectionThreshold, gestureOffset, SECTION_TRANSITION } from '../utilities/section-transition';
 import { portfolioPanelSections } from '../config/site-structure';
 
 const copy = {
@@ -94,7 +93,7 @@ function Card({ href, children }) {
   );
 }
 
-function PanelFrame({ children, language, index, onLanguage, onSearch, onNext, onPrevious, total }) {
+function PanelFrame({ children, language, index, onLanguage, onSearch, onNext, total, continueLabel }) {
   const text = copy[language];
   return (
     <section className="portfolio-viewport-section" aria-label={`${text.portfolio} ${index + 1}`}>
@@ -116,7 +115,7 @@ function PanelFrame({ children, language, index, onLanguage, onSearch, onNext, o
         <footer className="portfolio-panel-footer">
           {index < total - 1 && (
             <button className="portfolio-continue-control" onClick={onNext}>
-              <SwipeDownControl label={text.next} />
+              <SwipeDownControl label={continueLabel || text.next} />
             </button>
           )}
         </footer>
@@ -125,33 +124,31 @@ function PanelFrame({ children, language, index, onLanguage, onSearch, onNext, o
   );
 }
 
-export default function PortfolioPanels() {
-  const router = useRouter();
+export default function PortfolioPanels({ initialPanel = 1, basePath = '/portfolio' }) {
   const [language, setLanguage] = useState('en');
-  const [panel, setPanel] = useState(0);
+  const [panel, setPanel] = useState(initialPanel);
   const [dragOffset, setDragOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const [isReturningHome, setIsReturningHome] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchClosing, setSearchClosing] = useState(false);
   const startY = useRef(null);
   const dragDistance = useRef(0);
   const wheelTimer = useRef(null);
   const wheelDistance = useRef(0);
-  const isReturningHomeRef = useRef(false);
-  const panelCount = portfolioPanelSections.length;
+  const panelCount = portfolioPanelSections.length + 1;
 
   useEffect(() => {
     const syncPanelFromUrl = () => {
-      const requestedPanel = portfolioPanelSections.indexOf(new URLSearchParams(window.location.search).get('section'));
-      setPanel(Math.max(0, requestedPanel));
+      const requestedSection = new URLSearchParams(window.location.search).get('section');
+      const requestedPanel = portfolioPanelSections.indexOf(requestedSection);
+      setPanel(requestedPanel >= 0 ? requestedPanel + 1 : initialPanel);
       setDragOffset(0);
       setDragging(false);
     };
     syncPanelFromUrl();
     window.addEventListener('popstate', syncPanelFromUrl);
     return () => window.removeEventListener('popstate', syncPanelFromUrl);
-  }, []);
+  }, [initialPanel]);
 
   const openSearch = () => {
     setSearchClosing(false);
@@ -183,22 +180,15 @@ export default function PortfolioPanels() {
   }, [language]);
 
   const moveTo = useCallback((next) => {
-    if (next < 0) {
-      if (isReturningHomeRef.current) return;
-      isReturningHomeRef.current = true;
-      setDragging(false);
-      setDragOffset(viewportHeight());
-      setIsReturningHome(true);
-      window.setTimeout(() => router.push('/'), SECTION_TRANSITION.duration);
-      return;
-    }
     const safePanel = Math.max(0, Math.min(panelCount - 1, next));
     setPanel(safePanel);
-    const section = portfolioPanelSections[safePanel];
-    window.history.replaceState(null, '', section === 'portfolio' ? '/portfolio' : `/portfolio?section=${section}`);
+    const section = portfolioPanelSections[safePanel - 1];
+    if (basePath === '/portfolio' && safePanel > 0) {
+      window.history.replaceState(null, '', section === 'portfolio' ? '/portfolio' : `/portfolio?section=${section}`);
+    }
     setDragOffset(0);
     setDragging(false);
-  }, [router]);
+  }, [basePath, panelCount]);
 
   const finishDrag = useCallback((distance) => {
     if (crossesSectionThreshold(distance) && distance > 0) moveTo(panel + 1);
@@ -274,14 +264,18 @@ export default function PortfolioPanels() {
 
   return (
     <main
-      className={`portfolio-panel-experience${dragging ? ' is-dragging' : ''}${isReturningHome ? ' is-returning-home' : ''}`}
+      className={`portfolio-panel-experience${dragging ? ' is-dragging' : ''}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
     >
-      <div className="portfolio-panel-track" style={{ transform }}>
-        <PanelFrame language={language} index={0} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(1)} onPrevious={() => moveTo(-1)}>
+      <div className="portfolio-panel-track" style={{ transform, '--panel-count': panelCount }}>
+        <PanelFrame language={language} index={0} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(1)} continueLabel={language === 'en' ? 'Swipe up for more' : 'اسحب للأعلى للمزيد'}>
+          <div className="portfolio-home-content" aria-hidden="true" />
+        </PanelFrame>
+
+        <PanelFrame language={language} index={1} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(2)}>
           <div className="portfolio-intro-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.portfolio}</p>
             <h1>{text.statement}</h1>
@@ -293,7 +287,7 @@ export default function PortfolioPanels() {
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={1} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(2)} onPrevious={() => moveTo(0)}>
+        <PanelFrame language={language} index={2} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(3)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.plans}</p>
             <h2>{text.plansTitle}</h2>
@@ -306,7 +300,7 @@ export default function PortfolioPanels() {
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={2} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(3)} onPrevious={() => moveTo(1)}>
+        <PanelFrame language={language} index={3} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(4)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.services}</p>
             <h2>{text.servicesTitle}</h2>
@@ -319,7 +313,7 @@ export default function PortfolioPanels() {
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={3} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(4)} onPrevious={() => moveTo(2)}>
+        <PanelFrame language={language} index={4} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(5)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.consultation}</p>
             <h2>{text.consultationTitle}</h2>
@@ -328,7 +322,7 @@ export default function PortfolioPanels() {
           </div>
         </PanelFrame>
 
-        <PanelFrame language={language} index={4} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(4)} onPrevious={() => moveTo(3)}>
+        <PanelFrame language={language} index={5} total={panelCount} onLanguage={() => setLanguage(language === 'en' ? 'ar' : 'en')} onSearch={openSearch} onNext={() => moveTo(5)}>
           <div className="portfolio-section-content portfolio-panel-reveal">
             <p className="portfolio-panel-label">{text.contact}</p>
             <h2>{text.contactTitle}</h2>
