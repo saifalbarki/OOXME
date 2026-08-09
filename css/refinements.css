@@ -143,6 +143,7 @@
 .portfolio-panel-icon:first-child{grid-column:1;justify-self:start}
 .portfolio-panel-icon:last-child{grid-column:3;justify-self:end}
 .portfolio-panel-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-linecap:round;stroke-width:1.9}
+.portfolio-panel-icon img,.global-header-icon img{width:18px;height:18px;object-fit:contain}
 .portfolio-language-symbol{font-family:var(--font-arabic);font-size:18px;font-weight:800;line-height:1}
 .portfolio-panel-content{
   display:grid;
@@ -1315,6 +1316,62 @@ html[lang="ar"] .plans-page .price-period{font-family:var(--font-arabic)!importa
 .plans-page .plans-cta .consultation-layout{
   min-height:0!important;
 }
+
+/* Shared global chrome: panel headers, overlays, and standard page headers
+   use the same control, logo, and safe-spacing tokens. */
+:root{
+  --global-chrome-safe:var(--space);
+  --global-chrome-control:24px;
+  --global-chrome-icon:18px;
+  --global-chrome-logo:30px;
+  --global-bottom-control:40px;
+}
+.portfolio-panel-experience{--portfolio-safe:var(--global-chrome-safe)}
+.portfolio-panel-header,
+.global-panel-header,
+.global-search-header{
+  grid-template-columns:1fr var(--global-chrome-logo) 1fr;
+  align-items:center;
+}
+.portfolio-panel-logo,
+.global-header-logo{width:var(--global-chrome-logo)!important}
+.portfolio-panel-icon,
+.global-header-icon{
+  width:var(--global-chrome-control)!important;
+  height:var(--global-chrome-control)!important;
+}
+.portfolio-panel-icon :is(svg,img),
+.global-header-icon :is(svg,img),
+.global-search-input svg,
+.site-header .icon-control img,
+.site-header .globe-icon{
+  width:var(--global-chrome-icon)!important;
+  height:var(--global-chrome-icon)!important;
+  object-fit:contain;
+}
+.site-header .brand-logo img{
+  width:var(--global-chrome-logo)!important;
+  height:var(--global-chrome-logo)!important;
+  object-fit:contain;
+}
+.portfolio-panel-footer{padding:0 var(--global-chrome-safe) var(--global-chrome-safe)}
+.portfolio-continue-control .swipe-down-control{min-height:var(--global-bottom-control)}
+
+/* Opening the overlay only changes visibility. The input remains unfocused
+   until the visitor deliberately taps it, avoiding the mobile keyboard/zoom. */
+.global-search-input{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"field icon"!important;
+  justify-content:stretch!important;
+}
+.global-search-input input{
+  grid-area:field;
+  font-size:16px!important;
+  text-align:start!important;
+  direction:inherit;
+}
+.global-search-input svg{grid-area:icon}
+html[dir=rtl] .global-search-input{grid-template-areas:"icon field"!important}
 
 /* RTL headings are tuned independently so their visual rhythm matches the
    approved English hierarchy without changing the English type scale. */

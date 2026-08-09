@@ -5,6 +5,8 @@
   };
   let language = 'en'; let booking = null;
   try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; booking = JSON.parse(sessionStorage.getItem('ooxme-booking') || 'null'); } catch (_) {}
+  const languageButton = document.querySelector('.language-toggle');
+  languageButton.innerHTML = '<img src="assets/icons/globe.png" alt="" aria-hidden="true" />';
   const render = () => {
     const text = copy[language]; const root = document.documentElement;
     root.lang = language; root.dir = language === 'ar' ? 'rtl' : 'ltr';
@@ -18,6 +20,6 @@
     const rows = [[text.id, booking.bookingId], [text.date, date], [text.time, booking.time], [text.duration, `${booking.durationMinutes} ${language === 'ar' ? 'دقيقة' : 'min'}`], [text.promo, booking.promoCode || text.noPromo], [text.original, `$${booking.originalPrice}`], [text.discount, `${booking.discountPercent || 0}%`], [text.final, `$${booking.finalPrice}`]];
     summary.innerHTML = rows.map(([label, value]) => `<div><dt>${label}</dt><dd>${value || '—'}</dd></div>`).join('');
   };
-  document.querySelector('.language-toggle').addEventListener('click', () => { language = language === 'en' ? 'ar' : 'en'; try { localStorage.setItem('ooxme-language', language); } catch (_) {} render(); });
+  languageButton.addEventListener('click', () => { language = language === 'en' ? 'ar' : 'en'; try { localStorage.setItem('ooxme-language', language); } catch (_) {} render(); });
   render();
 })();

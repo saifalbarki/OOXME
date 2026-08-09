@@ -10,6 +10,10 @@
     try { localStorage.setItem('ooxme-language', language); } catch (_) {}
   };
   try { applyLanguage(localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'); } catch (_) { applyLanguage('en'); }
+  const contactAction = document.querySelector('#contact .portfolio-solid-action');
+  if (contactAction) {
+    contactAction.outerHTML = `<nav class="contact-actions" aria-label="OOXME contact links"><a class="contact-icon" href="https://www.linkedin.com/in/ooxme/" target="_blank" rel="noreferrer" aria-label="OOXME LinkedIn"><img src="assets/icons/linkedin.png" alt="" /></a><a class="contact-icon" href="https://www.instagram.com/ooxme/" target="_blank" rel="noreferrer" aria-label="OOXME Instagram"><img src="assets/icons/instagram.png" alt="" /></a><a class="contact-icon" href="https://www.facebook.com/share/18hpFHdJDv/?mibextid=wwXIfr" target="_blank" rel="noreferrer" aria-label="OOXME Facebook"><img src="assets/icons/facebook.png" alt="" /></a><a class="contact-icon" href="https://wa.me/9647840440011" target="_blank" rel="noreferrer" aria-label="WhatsApp OOXME"><img src="assets/icons/whatsapp.png" alt="" /></a><a class="contact-icon" href="tel:+9647721117110" aria-label="Call OOXME"><img src="assets/icons/call.png" alt="" /></a><a class="contact-icon" href="mailto:hello@ooxme.com" aria-label="Email OOXME"><img src="assets/icons/mail.png" alt="" /></a><a class="contact-icon" href="https://ooxme.com" target="_blank" rel="noreferrer" aria-label="OOXME website"><img src="assets/icons/globe.png" alt="" /></a></nav>`;
+  }
 
   const track = document.querySelector('[data-static-track]');
   const experience = document.querySelector('[data-static-panels]');
@@ -22,7 +26,10 @@
     track.style.transform = `translateY(${-index * 100}dvh)`;
   };
   document.querySelectorAll('[data-next-panel]').forEach((button) => button.addEventListener('click', () => goTo(index + 1)));
-  document.querySelectorAll('[data-static-language]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); applyLanguage(isArabic() ? 'en' : 'ar'); }));
+  document.querySelectorAll('[data-static-language]').forEach((button) => {
+    button.innerHTML = '<img src="assets/icons/globe.png" alt="" aria-hidden="true" />';
+    button.addEventListener('click', (event) => { event.stopPropagation(); applyLanguage(isArabic() ? 'en' : 'ar'); });
+  });
   document.querySelectorAll('a[href^="#"]').forEach((link) => link.addEventListener('click', (event) => {
     const section = document.querySelector(link.getAttribute('href'));
     if (!section || !track) return;
