@@ -34,6 +34,7 @@ const detailContent={
 const detailRoot=document.documentElement;
 const detailKey=document.body.dataset.detail;
 const detail=detailContent[detailKey]||detailContent.consultation;
+const detailHeader=document.querySelector('.site-header');const detailPanel=document.querySelector('main>section');if(detailKey?.startsWith('service-')&&detailHeader&&detailPanel){detailPanel.prepend(detailHeader);detailHeader.classList.add('service-panel-header')}
 const detailLabel=document.querySelector('[data-detail-label]');
 const detailHeading=document.querySelector('[data-detail-heading]');
 const detailDescription=document.querySelector('[data-detail-description]');

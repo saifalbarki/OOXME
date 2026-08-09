@@ -1735,6 +1735,7 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 }
 
 :is(.services-page,.detail-page[data-detail^="service-"]) main>section{
+  position:relative;
   display:grid;
   align-content:start;
   min-height:calc(100dvh - var(--space) * 2);
@@ -1747,6 +1748,25 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 
 .app-page.detail-page[data-detail^="service-"] main>.page-hero{
   min-height:calc(100dvh - var(--space) * 2);
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"]) .service-panel-header{
+  position:absolute;
+  z-index:2;
+  top:var(--space);
+  inset-inline:var(--space);
+  border:0;
+  background:transparent;
+  backdrop-filter:none;
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"]) .service-panel-header .shell.header-inner{
+  width:100%;
+  min-height:72px;
+}
+
+:is(.services-page,.detail-page[data-detail^="service-"]) main>section:first-child{
+  padding-top:calc(var(--space) * 7)!important;
 }
 
 :is(.services-page,.detail-page[data-detail^="service-"]) main>section>.shell{
