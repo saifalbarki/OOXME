@@ -13,11 +13,28 @@
     <main>
       <section class="booking-intro"><div class="shell booking-intro-inner"><p class="eyebrow text-reveal" data-booking-label>Consultation</p><h1 class="text-reveal" data-booking-heading>Book a Consultation</h1><p class="hero-copy text-reveal" data-booking-copy>Choose a date, time, and session length that works for you.</p><div class="calendar-legend text-reveal" data-calendar-legend></div></div></section>
       <section class="booking-section"><div class="shell booking-shell">
-        <div class="calendar-panel text-reveal"><div class="calendar-heading"><h2 data-calendar-year></h2><div class="month-switcher"><button class="calendar-nav previous-month" type="button" data-previous-month aria-label="Previous month"><span aria-hidden="true"></span></button><p data-calendar-month></p><button class="calendar-nav next-month" type="button" data-next-month aria-label="Next month"><span aria-hidden="true"></span></button></div></div><div class="calendar-weekdays" data-calendar-weekdays></div><div class="calendar-grid" role="grid" data-calendar-grid></div></div>
-        <div class="booking-choices">
-          <section class="booking-step text-reveal is-disabled" data-time-step aria-live="polite"><p class="eyebrow" data-time-label>Choose a Time</p><div class="choice-grid" data-time-options></div></section>
-          <section class="booking-step text-reveal is-disabled" data-duration-step aria-live="polite"><p class="eyebrow" data-duration-label>Choose a Session Length</p><div class="choice-grid" data-duration-options></div></section>
-          <section class="booking-step booking-promo-step text-reveal" data-promo-step aria-live="polite"><p class="eyebrow" data-promo-label>Do you have a promo code? Enter it here.</p><label class="promo-code-field"><span class="sr-only" data-promo-input-label>Promo code</span><input type="text" data-promo-input autocomplete="off" spellcheck="false" placeholder="Promo code" /></label><p class="promo-code-message" data-promo-message></p><button class="primary-button promo-continue" type="button" data-booking-continue>Continue</button></section>
+        <section class="booking-step booking-information-step text-reveal" data-information-step aria-live="polite">
+          <p class="eyebrow" data-information-label>Consultation information</p>
+          <div class="booking-information-grid">
+            <label><span data-field-name>Name</span><input data-booking-name type="text" autocomplete="name" required /></label>
+            <label><span data-field-phone>Phone</span><input data-booking-phone type="tel" autocomplete="tel" required /></label>
+            <label><span data-field-email>Email</span><input data-booking-email type="email" autocomplete="email" required /></label>
+            <label><span data-field-business>Business or project name</span><input data-booking-business type="text" autocomplete="organization" required /></label>
+            <label><span data-field-type>Business type</span><input data-booking-type type="text" required /></label>
+            <label class="booking-information-full"><span data-field-topic>Consultation topic or problem</span><textarea data-booking-topic rows="3" required></textarea></label>
+            <label class="booking-information-full"><span data-field-notes>Additional notes</span><textarea data-booking-notes rows="3"></textarea></label>
+          </div>
+          <p class="promo-code-message" data-information-message></p>
+          <button class="primary-button promo-continue" type="button" data-information-continue>Do you have a promo code?</button>
+        </section>
+        <section class="booking-step booking-promo-step text-reveal" data-promo-step aria-live="polite" hidden><p class="eyebrow" data-promo-label>Do you have a promo code? Enter it here.</p><label class="promo-code-field"><span class="sr-only" data-promo-input-label>Promo code</span><input type="text" data-promo-input autocomplete="off" spellcheck="false" placeholder="Promo code" /></label><p class="promo-code-message" data-promo-message></p><button class="primary-button promo-continue" type="button" data-promo-continue>Move to appointment selection</button></section>
+        <div data-appointment-step hidden>
+          <div class="calendar-panel text-reveal"><div class="calendar-heading"><h2 data-calendar-year></h2><div class="month-switcher"><button class="calendar-nav previous-month" type="button" data-previous-month aria-label="Previous month"><span aria-hidden="true"></span></button><p data-calendar-month></p><button class="calendar-nav next-month" type="button" data-next-month aria-label="Next month"><span aria-hidden="true"></span></button></div></div><div class="calendar-weekdays" data-calendar-weekdays></div><div class="calendar-grid" role="grid" data-calendar-grid></div></div>
+          <div class="booking-choices">
+            <section class="booking-step text-reveal is-disabled" data-time-step aria-live="polite"><p class="eyebrow" data-time-label>Choose a Time</p><div class="choice-grid" data-time-options></div></section>
+            <section class="booking-step text-reveal is-disabled" data-duration-step aria-live="polite"><p class="eyebrow" data-duration-label>Choose a Session Length</p><div class="choice-grid" data-duration-options></div></section>
+            <section class="booking-step booking-complete-step text-reveal is-disabled" data-complete-step aria-live="polite"><p class="promo-code-message" data-booking-message></p><button class="primary-button promo-continue" type="button" data-booking-continue>Payment &amp; Confirmation</button></section>
+          </div>
         </div>
       </div></section>
     </main>

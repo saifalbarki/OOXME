@@ -62,6 +62,19 @@ export default function LegacyPage({ pageId, initialPage }) {
           if (!active) return;
           await loadScript(source);
         }
+        if (!active) return;
+
+        // Legacy scripts are loaded once for the lifetime of the Next.js app.
+        // Page-specific initializers reconnect them to the newly rendered markup
+        // after client-side navigation.
+        if (pageId === 'consultation' && typeof window.__ooxmeBookingInit === 'function') {
+          // The legacy markup is rendered by React. Wait until it is committed
+          // before connecting the booking controls, including after a client-side
+          // return to this route.
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          if (!active) return;
+          window.__ooxmeBookingInit();
+        }
       } catch (error) {
         console.error(error);
       }

@@ -1885,6 +1885,20 @@ html[dir=rtl] .portfolio-contact-card .portfolio-panel-arrow{transform:scaleX(-1
 .booking-confirmed-label{margin:0;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em}
 .booking-confirmed-content h1{margin:0;font-size:clamp(42px,8vw,88px);line-height:.95;letter-spacing:-.07em}
 .booking-confirmed-content p:last-child{margin:0;font-size:clamp(16px,2vw,20px);line-height:1.35}
+.booking-information-step{display:grid;gap:var(--booking-flow-space)}
+.booking-information-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--booking-flow-space)}
+.booking-information-grid label{display:grid;gap:6px;min-width:0;font-size:12px;font-weight:600;text-align:start}
+.booking-information-grid input,.booking-information-grid textarea{width:100%;min-width:0;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 12px;color:var(--ink);font:inherit;font-weight:400;resize:vertical}
+.booking-information-grid input{min-height:42px}.booking-information-full{grid-column:1/-1}
+.booking-step[hidden],[data-appointment-step][hidden]{display:none!important}
+.booking-confirmed-panel{grid-template-rows:1fr auto;align-items:center}
+.booking-confirmed-content{align-self:center;max-height:calc(100dvh - var(--space) * 8);overflow:auto}
+.booking-confirmed-summary{display:grid;width:min(100%,480px);margin:0;padding:0;border-radius:calc(var(--space) * .9);background:#fff;overflow:hidden}
+.booking-confirmed-summary>div{display:grid;justify-items:center;gap:4px;padding:12px var(--space);border-bottom:1px solid var(--line)}
+.booking-confirmed-summary>div:last-child{border-bottom:0}.booking-confirmed-summary dt{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}.booking-confirmed-summary dd{margin:0;font-size:15px;font-weight:700}
+.booking-confirmed-home{display:grid;justify-items:center;gap:6px;min-width:112px;margin:0 auto var(--space);padding:0;border:0;background:transparent;color:var(--brand);font:inherit;font-size:12px;font-weight:700;cursor:pointer}.booking-confirmed-home::after{display:block;width:112px;height:6px;border-radius:999px;background:currentColor;content:'';animation:swipeDownLine 1.8s cubic-bezier(.22,.61,.36,1) infinite}
+html[dir=rtl] .booking-information-grid label,html[dir=rtl] .booking-confirmed-summary{font-family:var(--font-arabic)}
+@media (max-width:640px){.booking-information-grid{grid-template-columns:1fr}.booking-information-full{grid-column:auto}.booking-confirmed-content{gap:calc(var(--space) * .7)}.booking-confirmed-summary>div{padding-block:9px}}
 
 @media (max-width:768px){
   [data-ooxme-page="consultation"] main,
