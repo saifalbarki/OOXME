@@ -89,6 +89,21 @@ window.OOXMEMasterPanelDrag = {
   }
 };
 
+// Temporary switch: set to true to restore Subscribe Now across all Growth Plans.
+const GROWTH_PLAN_SUBSCRIPTIONS_ENABLED = false;
+const blockGrowthPlanSubscription = (event) => {
+  if (
+    GROWTH_PLAN_SUBSCRIPTIONS_ENABLED ||
+    !document.querySelector('[data-growth-track]') ||
+    !event.target.closest('.plan-detail-cta')
+  ) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+};
+document.addEventListener('click', blockGrowthPlanSubscription, true);
+document.addEventListener('auxclick', blockGrowthPlanSubscription, true);
+
 window.addEventListener('DOMContentLoaded', () => {
   try {
     if (document.querySelector('[data-growth-track]')) {

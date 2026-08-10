@@ -15,11 +15,12 @@
   --logo-width: calc(var(--header-element-size) * .743);
   --header-control-size: 24px;
   --header-icon-size: var(--header-element-size);
-  --bottom-control-area-height: clamp(65px, 12vh, 112px);
-  --pagination-dot-area-size: 6px;
+  --bottom-control-line-thickness: 5px;
+  --bottom-control-area-height: calc((var(--panel-safe) * 2) + var(--bottom-control-line-thickness));
+  --pagination-dot-area-size: var(--bottom-control-line-thickness);
   --previous-page-last-card-height: clamp(24px, 3.5vh, 36px);
   --homepage-white-card-height: clamp(48px, 7vh, 72px);
-  --portfolio-final-card-bottom-guide-inset: calc(var(--bottom-control-area-height) + var(--panel-safe));
+  --portfolio-final-card-bottom-guide-inset: var(--bottom-control-area-height);
   --homepage-standard-card-bottom-inset: var(--portfolio-final-card-bottom-guide-inset);
   --panel-motion: 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
   --type-label-line-height: 1.4;
