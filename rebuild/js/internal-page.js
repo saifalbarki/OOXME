@@ -19,6 +19,7 @@ const page = pages[target] ?? pages['brands-we-manage'];
 const applyLanguage = (language) => {
   root.lang = language;
   root.dir = language === 'ar' ? 'rtl' : 'ltr';
+  document.title = `${page[language][1]} | ${language === 'ar' ? 'اوكسوم' : 'OOXME'}`;
   document.querySelector('[data-internal-label]').textContent = page[language][0];
   document.querySelector('[data-internal-title]').textContent = page[language][1];
   document.querySelector('[data-internal-description]').textContent = language === 'ar' ? 'هذه البنية المشتركة جاهزة للمحتوى التفصيلي.' : 'This shared page structure is ready for its detailed content.';

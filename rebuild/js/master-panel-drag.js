@@ -98,3 +98,58 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   } catch (_) {}
 });
+
+const productionMetadata = {
+  '/index.html': {
+    en: ['OOXME | Brand Management & Business Development', 'OOXME provides brand management and business development for ambitious businesses.'],
+    ar: ['اوكسوم | إدارة العلامة التجارية وتطوير الأعمال', 'اوكسوم تقدم إدارة العلامة التجارية وتطوير الأعمال للشركات الطموحة.']
+  },
+  '/project-gallery.html': { en: ['Portfolio | OOXME', 'Selected OOXME brand-management work.'], ar: ['الأعمال | اوكسوم', 'أعمال مختارة من اوكسوم.'] },
+  '/brands-designed-gallery.html': { en: ['Portfolio | OOXME', 'Selected OOXME brand-design work.'], ar: ['الأعمال | اوكسوم', 'أعمال مختارة من اوكسوم.'] },
+  '/unique-works-gallery.html': { en: ['Portfolio | OOXME', 'Selected unique OOXME work.'], ar: ['الأعمال | اوكسوم', 'أعمال مميزة من اوكسوم.'] },
+  '/growth-plan.html': { en: ['Growth Plans | OOXME', 'OOXME growth plans for focused business support.'], ar: ['خطط النمو | اوكسوم', 'خطط نمو من اوكسوم لدعم الأعمال.'] },
+  '/service-page.html': { en: ['Brand Management | OOXME', 'OOXME brand-management services.'], ar: ['إدارة العلامة التجارية | اوكسوم', 'خدمات إدارة العلامة التجارية من اوكسوم.'] },
+  '/booking.html': { en: ['Consultation | OOXME', 'Book a consultation with OOXME.'], ar: ['استشارة | اوكسوم', 'احجز استشارة مع اوكسوم.'] }
+};
+const setHeadMeta = (selector, attribute, content) => {
+  let element = document.head.querySelector(selector);
+  if (!element) {
+    element = document.createElement('meta');
+    Object.entries(attribute).forEach(([key, value]) => element.setAttribute(key, value));
+    document.head.append(element);
+  }
+  element.content = content;
+};
+const ensureHeadLink = (rel, href, type = '') => {
+  if (document.head.querySelector(`link[rel="${rel}"]`)) return;
+  const link = document.createElement('link');
+  link.rel = rel;
+  link.href = href;
+  if (type) link.type = type;
+  document.head.append(link);
+};
+const applyProductionMetadata = () => {
+  const copy = productionMetadata[window.location.pathname];
+  if (!copy) return;
+  const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+  const [title, description] = copy[language];
+  const canonicalPath = window.location.pathname === '/index.html' ? '/' : window.location.pathname;
+  document.title = title;
+  setHeadMeta('meta[name="description"]', { name: 'description' }, description);
+  setHeadMeta('meta[property="og:title"]', { property: 'og:title' }, title);
+  setHeadMeta('meta[property="og:description"]', { property: 'og:description' }, description);
+  setHeadMeta('meta[property="og:site_name"]', { property: 'og:site_name' }, 'OOXME');
+  setHeadMeta('meta[property="og:image"]', { property: 'og:image' }, 'https://ooxme.com/assets/logo/OX-001-LOGO-black.png');
+  setHeadMeta('meta[name="twitter:card"]', { name: 'twitter:card' }, 'summary_large_image');
+  setHeadMeta('meta[name="twitter:title"]', { name: 'twitter:title' }, title);
+  setHeadMeta('meta[name="twitter:description"]', { name: 'twitter:description' }, description);
+  setHeadMeta('meta[name="twitter:image"]', { name: 'twitter:image' }, 'https://ooxme.com/assets/logo/OX-001-LOGO-black.png');
+  ensureHeadLink('icon', '/favicon.svg', 'image/svg+xml');
+  ensureHeadLink('apple-touch-icon', '/favicon.svg');
+  ensureHeadLink('manifest', '/site.webmanifest');
+  let canonical = document.head.querySelector('link[rel="canonical"]');
+  if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.append(canonical); }
+  canonical.href = `https://ooxme.com${canonicalPath}`;
+};
+applyProductionMetadata();
+new MutationObserver(applyProductionMetadata).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
