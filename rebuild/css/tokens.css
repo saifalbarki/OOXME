@@ -3,6 +3,7 @@
   --color-paper: #ffffff;
   --color-panel: #f1f3f7;
   --color-brand: #071478;
+  --color-secondary-control: #9aa0aa;
   --color-line: rgba(13, 13, 13, 0.17);
   --space: clamp(16px, 4vw, 48px);
   --space-half: calc(var(--space) / 2);

@@ -15,12 +15,17 @@ window.OOXMEMasterPanelDrag = {
 
     const finish = (event, cancelled = false) => {
       if (!drag || event.pointerId !== drag.pointerId) return;
+      const travel = event.clientY - drag.startY;
       const elapsed = Math.max(1, performance.now() - drag.lastTime);
-      const velocity = (event.clientY - drag.lastY) / elapsed;
-      const nearest = Math.round(-drag.position / window.innerHeight);
-      const fastFlick = !cancelled && Math.abs(velocity) > 0.55;
+      const releaseVelocity = (event.clientY - drag.lastY) / elapsed;
+      const velocity = Math.abs(releaseVelocity) > .01 ? releaseVelocity : drag.velocity;
+      const direction = travel === 0 ? 0 : (travel < 0 ? 1 : -1);
+      const intentionalDistance = Math.max(30, window.innerHeight * .08);
+      const intentionalFlick = Math.abs(velocity) > .18;
       const target = clamp(
-        fastFlick ? drag.index + (velocity < 0 ? 1 : -1) : nearest,
+        !cancelled && direction && (Math.abs(travel) >= intentionalDistance || intentionalFlick)
+          ? drag.index + direction
+          : drag.index,
         0,
         panels.length - 1
       );
@@ -44,9 +49,11 @@ window.OOXMEMasterPanelDrag = {
         startY: event.clientY,
         lastY: event.clientY,
         lastTime: performance.now(),
-        position: offsetFor(index)
+        position: offsetFor(index),
+        velocity: 0
       };
       track.classList.add('is-dragging');
+      track.style.transition = 'none';
       experience.setPointerCapture?.(event.pointerId);
       event.stopImmediatePropagation();
     }, true);
@@ -60,9 +67,10 @@ window.OOXMEMasterPanelDrag = {
         offsetFor(panels.length - 1),
         0
       );
+      const now = performance.now();
+      drag.velocity = (event.clientY - drag.lastY) / Math.max(1, now - drag.lastTime);
       drag.lastY = event.clientY;
-      drag.lastTime = performance.now();
-      track.style.transition = 'none';
+      drag.lastTime = now;
       track.style.transform = `translateY(${drag.position}px)`;
     }, { capture: true, passive: false });
 
