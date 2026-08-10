@@ -67,6 +67,11 @@ html[dir="rtl"] .portfolio-option-arrow::after { transform: translateY(-50%) rot
 .project-panel--al-basri-primary .master-panel-content h1,
 .project-panel--al-basri-primary .master-panel-content > p:not(.master-panel-label) { display: none; }
 .project-panel--al-basri-primary .project-gallery { position: absolute; inset-inline: var(--panel-safe); bottom: calc(var(--portfolio-final-card-bottom-guide-inset) - (var(--pagination-dot-area-size) / 2)); width: auto; }
+@media (max-aspect-ratio: 4 / 3) {
+  .project-panel--al-basri-primary .project-gallery {
+    bottom: var(--bottom-control-area-height);
+  }
+}
 @media (min-aspect-ratio: 4 / 3) { .project-panel--al-basri-primary .project-gallery-viewport { width: min(100%, 30dvh); } }
 @media (min-aspect-ratio: 4 / 3) {
   .project-panel--al-basri-primary .project-gallery { translate: 0 var(--homepage-white-card-height); }
@@ -227,10 +232,6 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 /* Visible gallery dots use the same thickness reference as the bottom line. */
 .project-gallery-dots { min-height: var(--pagination-dot-area-size); }
 .project-gallery-dot { width: var(--pagination-dot-area-size); height: var(--pagination-dot-area-size); border-radius: 50%; }
-
-/* The first Al Basri Mall gallery shares the established project-gallery baseline. */
-.project-panel--al-basri-primary .project-gallery { translate: 0 calc(var(--pagination-dot-area-size) * 2); }
-@media (min-aspect-ratio: 4 / 3) { .project-panel--al-basri-primary .project-gallery { translate: 0 calc(var(--homepage-white-card-height) + (var(--pagination-dot-area-size) * 2)); } }
 
 /* Shared bottom-anchored content occupies the space directly above the bottom control zone. */
 :is(.booking-card, .booking-fields, .booking-selectors, .payment-options, .booking-promo-cards, .plan-detail-cards) { margin-bottom: 0; }
