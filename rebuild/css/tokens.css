@@ -9,9 +9,10 @@
   --panel-radius: calc(var(--space) * 1.35);
   --card-radius: calc(var(--space) * 0.9);
   --panel-safe: clamp(20px, 4vw, 48px);
-  --logo-width: 30px;
+  --header-element-size: clamp(16px, 1.45vw, 19px);
+  --logo-width: calc(var(--header-element-size) * .743);
   --header-control-size: 24px;
-  --header-icon-size: 19px;
+  --header-icon-size: var(--header-element-size);
   --bottom-control-area-height: clamp(65px, 12vh, 112px);
   --pagination-dot-area-size: 6px;
   --previous-page-last-card-height: clamp(24px, 3.5vh, 36px);

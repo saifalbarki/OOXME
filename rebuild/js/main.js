@@ -1,4 +1,11 @@
 const track = document.querySelector('[data-master-track]');
+const SERVICES_AND_CONSULTATION_NAVIGATION_ENABLED = false;
+const serviceAndConsultationActions = document.querySelectorAll('[data-service-option], [data-consultation-option]');
+serviceAndConsultationActions.forEach((action) => action.addEventListener('click', (event) => {
+  if (SERVICES_AND_CONSULTATION_NAVIGATION_ENABLED) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true));
 const brandsWeDesignedLink = document.querySelector('[data-portfolio-option="brands-we-designed"]');
 if (brandsWeDesignedLink) brandsWeDesignedLink.href = 'brands-designed-gallery.html';
 const uniqueWorksLink = document.querySelector('[data-portfolio-option="unique-works"]');

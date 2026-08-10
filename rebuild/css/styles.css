@@ -18,9 +18,9 @@ button { font: inherit; }
 .master-panel-control { display: grid; place-items: center; width: var(--header-control-size); height: var(--header-control-size); padding: 0; border: 0; background: transparent; color: var(--color-ink); cursor: pointer; }
 .master-panel-control:first-child { grid-column: 1; justify-self: left; }
 .master-panel-control:last-child { grid-column: 3; justify-self: right; }
-.master-panel-control img, .master-panel-control svg { width: var(--header-icon-size); height: var(--header-icon-size); }
+.master-panel-control img, .master-panel-control svg { width: var(--header-icon-size); height: var(--header-icon-size); opacity: .5; }
 .master-panel-logo { grid-column: 2; display: block; width: var(--logo-width); line-height: 0; }
-.master-panel-logo img { display: block; width: 100%; height: auto; }
+.master-panel-logo img { display: block; width: 100%; height: var(--header-element-size); object-fit: contain; }
 .master-panel-content { --master-spacing: var(--panel-safe); --homepage-three-card-row-width: 100%; display: grid; align-content: start; justify-items: center; row-gap: calc(var(--master-spacing) / 2); padding: var(--master-spacing) var(--panel-safe) 0; text-align: center; }
 .master-panel-screen .master-panel-content > * { min-inline-size: 0; overflow: visible; opacity: 0; filter: blur(8px); transform: translateY(10px); }
 .master-panel-screen.is-active .master-panel-content > * { animation: panel-content-reveal .48s cubic-bezier(.22, .61, .36, 1) both; }
@@ -135,7 +135,6 @@ html[dir="rtl"] .master-panel-label { font-size: 10px; letter-spacing: 0; text-t
 @media (max-aspect-ratio: 4 / 3) { :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .master-panel-content h1, :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .master-panel-content > p:not(.master-panel-label) { display: block; } :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .project-gallery { position: static; inset: auto; bottom: auto; width: 100%; translate: none; } :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .project-gallery-viewport { width: min(100%, clamp(180px, 52dvh, 460px)); aspect-ratio: 1; } }
 html[dir="rtl"] .master-panel-content h1 { font-size: clamp(27px, 5.7vw, 52px); font-weight: 600; letter-spacing: 0; line-height: var(--type-heading-arabic-line-height); }
 html[dir="rtl"] .master-panel-content p:not(.master-panel-label) { font-size: clamp(13.5px, 1.45vw, 15.5px); font-weight: 500; letter-spacing: 0; line-height: var(--type-body-line-height); }
-@media (min-width: 769px) { .master-panel-logo { width: 38px; } }
 @media (prefers-reduced-motion: reduce) { .master-panel-track { transition-duration: .01ms; } .master-panel-screen.is-active .master-panel-content > *, .swipe-control-line { animation-duration: .01ms; animation-iteration-count: 1; } .search-overlay { transition-duration: .01ms; } }
 
 /* Booking flow: panel-internal controls only; the Master Panel remains shared. */
