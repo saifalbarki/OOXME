@@ -1,0 +1,38 @@
+:root {
+  --color-ink: #0d0d0d;
+  --color-paper: #ffffff;
+  --color-panel: #f1f3f7;
+  --color-brand: #071478;
+  --color-line: rgba(13, 13, 13, 0.17);
+  --space: clamp(16px, 4vw, 48px);
+  --space-half: calc(var(--space) / 2);
+  --panel-radius: calc(var(--space) * 1.35);
+  --card-radius: calc(var(--space) * 0.9);
+  --panel-safe: clamp(20px, 4vw, 48px);
+  --logo-width: 30px;
+  --header-control-size: 24px;
+  --header-icon-size: 19px;
+  --bottom-control-area-height: clamp(65px, 12vh, 112px);
+  --pagination-dot-area-size: 6px;
+  --previous-page-last-card-height: clamp(24px, 3.5vh, 36px);
+  --homepage-white-card-height: clamp(48px, 7vh, 72px);
+  --portfolio-final-card-bottom-guide-inset: calc(var(--bottom-control-area-height) + var(--panel-safe));
+  --homepage-standard-card-bottom-inset: var(--portfolio-final-card-bottom-guide-inset);
+  --panel-motion: 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+  --font-english: OOXMEEnglish, Arial, sans-serif;
+  --font-arabic: OOXMEArabic, Tahoma, sans-serif;
+}
+
+@font-face {
+  font-family: OOXMEEnglish;
+  src: url('../assets/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: OOXMEArabic;
+  src: url('../assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
