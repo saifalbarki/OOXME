@@ -83,6 +83,7 @@ const moveTo = (next) => {
   window.clearTimeout(panelTransitionTimer);
   panelTransitionTimer = window.setTimeout(() => revealPanel(panelIndex), 620);
 };
+window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => panelIndex, moveTo });
 revealPanel(panelIndex);
 document.querySelectorAll('[data-next-panel]').forEach((button) => button.addEventListener('click', () => moveTo(panelIndex + 1)));
 document.querySelectorAll('[data-home-panel]').forEach((button) => button.addEventListener('click', () => moveTo(0)));

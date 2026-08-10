@@ -120,6 +120,7 @@ const moveToPanel = (index) => {
   window.clearTimeout(panelTimer);
   panelTimer = window.setTimeout(() => revealPanel(currentPanel), 620);
 };
+window.OOXMEMasterPanelDrag?.register({ experience, track: panelTrack, panels, getIndex: () => currentPanel, moveTo: moveToPanel });
 revealPanel(currentPanel);
 document.querySelectorAll('[data-next-project]').forEach((button) => button.addEventListener('click', () => moveToPanel(currentPanel + 1)));
 const galleries = new Map();
@@ -262,7 +263,7 @@ document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
         if (gallery === primaryGallery || isSecondaryCollection || window.matchMedia('(min-aspect-ratio: 4 / 3)').matches) galleries.get(gallery).manualDirection = direction;
         setGalleryImage(gallery, galleries.get(gallery).index + direction);
       }
-      else moveToPanel(currentPanel + (dy < 0 ? 1 : -1));
+      else return;
     }
     galleryGesture = null;
   });

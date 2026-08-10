@@ -7,7 +7,9 @@
 html, body { min-height: 100%; }
 body { margin: 0; overflow: hidden; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-english); }
 button { font: inherit; }
-.master-panel-experience { position: relative; height: 100dvh; overflow: hidden; isolation: isolate; background: transparent; }
+.master-panel-experience { position: relative; height: 100dvh; overflow: hidden; isolation: isolate; background: transparent; touch-action: pan-x; }
+.project-experience { touch-action: pan-x; }
+.master-panel-track.is-dragging, .project-panel-track.is-dragging { transition: none !important; }
 .master-panel-track { position: relative; z-index: 1; height: 200dvh; transition: transform var(--panel-motion); will-change: transform; }
 .master-panel-screen { height: 100dvh; padding: var(--panel-safe); }
 .master-panel { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; overflow: hidden; border-radius: var(--panel-radius); background: var(--color-panel); }
