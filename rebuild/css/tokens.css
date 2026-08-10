@@ -19,6 +19,11 @@
   --portfolio-final-card-bottom-guide-inset: calc(var(--bottom-control-area-height) + var(--panel-safe));
   --homepage-standard-card-bottom-inset: var(--portfolio-final-card-bottom-guide-inset);
   --panel-motion: 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
+  --type-label-line-height: 1.4;
+  --type-heading-line-height: 1.2;
+  --type-heading-arabic-line-height: 1.3;
+  --type-body-line-height: 1.5;
+  --type-control-line-height: 1.35;
   --font-english: OOXMEEnglish, Arial, sans-serif;
   --font-arabic: OOXMEArabic, Tahoma, sans-serif;
 }

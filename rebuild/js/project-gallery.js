@@ -274,7 +274,7 @@ experience.addEventListener('pointerup', (event) => { if (panelStartY === null) 
 let wheelLocked = false;
 window.addEventListener('wheel', (event) => { if (wheelLocked || Math.abs(event.deltaY) < 20) return; wheelLocked = true; moveToPanel(currentPanel + (event.deltaY > 0 ? 1 : -1)); window.setTimeout(() => { wheelLocked = false; }, 620); }, { passive: true });
 let searchCloseTimer;
-const resizeSearchInput = () => { searchInput.style.height = '20px'; searchInput.style.height = `${searchInput.scrollHeight}px`; searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 28)}px`; };
+const resizeSearchInput = () => { searchInput.style.height = '24px'; searchInput.style.height = `${searchInput.scrollHeight}px`; searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 24)}px`; };
 const updateSearchState = () => { const query = searchInput.value.trim(); searchOverlay.classList.toggle('is-typing', Boolean(query)); searchSuggestion.hidden = !query; if (query) searchSuggestion.textContent = root.lang === 'ar' ? `اقتراح: «${query}»` : `Search for “${query}”`; resizeSearchInput(); };
 const setSearchOpen = (open) => { window.clearTimeout(searchCloseTimer); if (open) { searchOverlay.hidden = false; updateSearchState(); window.requestAnimationFrame(() => searchOverlay.classList.add('is-open')); return; } searchOverlay.classList.remove('is-open'); searchCloseTimer = window.setTimeout(() => { searchOverlay.hidden = true; }, 1450); };
 document.querySelectorAll('[data-search-toggle]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); setSearchOpen(searchOverlay.hidden); }));

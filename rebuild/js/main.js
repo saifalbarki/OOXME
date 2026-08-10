@@ -26,9 +26,9 @@ const initialVisualViewportHeight = visualViewport?.height ?? window.innerHeight
 let searchCloseTimer;
 const searchOverlayCloseDuration = 1450;
 const resizeSearchInput = () => {
-  searchInput.style.height = '20px';
+  searchInput.style.height = '24px';
   searchInput.style.height = `${searchInput.scrollHeight}px`;
-  searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 28)}px`;
+  searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 24)}px`;
 };
 const updateKeyboardSafeArea = () => {
   if (!visualViewport) return;

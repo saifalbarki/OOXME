@@ -56,9 +56,9 @@ const updateKeyboardSafeArea = () => {
   searchOverlay.classList.toggle('is-keyboard-open', keyboardOpen);
 };
 const resizeSearchInput = () => {
-  searchInput.style.height = '20px';
+  searchInput.style.height = '24px';
   searchInput.style.height = `${searchInput.scrollHeight}px`;
-  searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 28)}px`;
+  searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 24)}px`;
 };
 searchInput.addEventListener('input', () => {
   const query = searchInput.value.trim();
