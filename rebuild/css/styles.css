@@ -217,7 +217,7 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 
 /* Shared bottom anchor: content → X → line → X → panel edge. */
 .master-panel-footer { position: relative; height: var(--bottom-control-area-height); min-height: var(--bottom-control-area-height); padding: 0; }
-.master-panel-continue { position: absolute; inset: 0; min-height: 0; padding: 0 0 var(--panel-safe); }
+.master-panel-continue { position: absolute; inset: 0; min-height: 0; padding: 0 0 8px; }
 .swipe-control { min-height: 0; }
 
 /* Main homepage cards inherit the Master Panel curvature without exceeding their geometry. */
@@ -227,6 +227,10 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 /* Visible gallery dots use the same thickness reference as the bottom line. */
 .project-gallery-dots { min-height: var(--pagination-dot-area-size); }
 .project-gallery-dot { width: var(--pagination-dot-area-size); height: var(--pagination-dot-area-size); border-radius: 50%; }
+
+/* The first Al Basri Mall gallery shares the established project-gallery baseline. */
+.project-panel--al-basri-primary .project-gallery { translate: 0 calc(var(--pagination-dot-area-size) * 2); }
+@media (min-aspect-ratio: 4 / 3) { .project-panel--al-basri-primary .project-gallery { translate: 0 calc(var(--homepage-white-card-height) + (var(--pagination-dot-area-size) * 2)); } }
 
 /* Shared bottom-anchored content occupies the space directly above the bottom control zone. */
 :is(.booking-card, .booking-fields, .booking-selectors, .payment-options, .booking-promo-cards, .plan-detail-cards) { margin-bottom: 0; }
