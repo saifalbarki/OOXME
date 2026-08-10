@@ -45,8 +45,175 @@ window.OOXMEMasterPanelDrag = {
       '.booking-summary', '.payment-options'
     ].join(',');
     let drag = null;
+    let bottomGesture = null;
+    let bottomReleaseTimer;
+    let bottomFrame;
+    let suppressBottomClick = false;
+    let bottomLocked = false;
     const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
     const offsetFor = (index) => -index * window.innerHeight;
+    const bottomTapThreshold = 7;
+    const bottomGestureThreshold = 12;
+    const bottomActionThreshold = clamp(window.innerWidth * .095, 32, 44);
+    const bottomFlickVelocity = .48;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const setBottomVisual = (gesture, event) => {
+      if (bottomFrame) window.cancelAnimationFrame(bottomFrame);
+      bottomFrame = window.requestAnimationFrame(() => {
+        const line = gesture.line;
+        if (reducedMotion) {
+          line.style.transform = 'translate3d(0, 0, 0)';
+          return;
+        }
+        const dx = event.clientX - gesture.startX;
+        const dy = event.clientY - gesture.startY;
+        const dominantHorizontal = Math.abs(dx) > Math.abs(dy);
+        const distance = dominantHorizontal ? Math.abs(dx) : Math.abs(dy);
+        const resistance = 72;
+        const ratio = 1 - Math.exp(-distance / resistance);
+        let transform = 'translate3d(0, 0, 0) scale(1.08)';
+        line.style.transformOrigin = 'center center';
+        if (distance > bottomGestureThreshold && dominantHorizontal) {
+          const scaleX = 1 + (.32 * ratio);
+          const scaleY = 1 + (.04 * ratio);
+          const translate = Math.min(5, distance * .05) * (dx > 0 ? 1 : -1);
+          line.style.transformOrigin = dx > 0 ? 'left center' : 'right center';
+          transform = `translate3d(${translate}px, 0, 0) scaleX(${scaleX}) scaleY(${scaleY})`;
+        } else if (distance > bottomGestureThreshold && dy < 0) {
+          const scaleY = 1 + (.16 * ratio);
+          const scaleX = 1 - (.045 * ratio);
+          transform = `translate3d(0, ${-Math.min(5, distance * .06)}px, 0) scaleX(${scaleX}) scaleY(${scaleY})`;
+        } else if (distance > bottomGestureThreshold && dy > 0) {
+          const scaleY = 1 + (.06 * ratio);
+          transform = `translate3d(0, ${Math.min(2, distance * .025)}px, 0) scaleY(${scaleY})`;
+        }
+        line.style.transform = transform;
+      });
+    };
+
+    const springBottomLine = (line) => {
+      if (bottomFrame) window.cancelAnimationFrame(bottomFrame);
+      line.style.transition = 'transform 220ms cubic-bezier(.22, 1.22, .36, 1)';
+      line.style.transform = 'translate3d(0, 0, 0) scale(1)';
+      window.setTimeout(() => {
+        line.style.transition = '';
+        line.style.transform = '';
+        line.style.transformOrigin = '';
+      }, 230);
+    };
+
+    const firstAvailableSubpage = () => {
+      const panel = panels[getIndex()];
+      if (!panel) return null;
+      return [...panel.querySelectorAll('a[href]')].find((link) => {
+        if (
+          link.matches('.master-panel-continue, .plan-detail-cta, [aria-disabled="true"], [data-service-option], [data-consultation-option]') ||
+          link.hasAttribute('disabled') ||
+          link.target === '_blank'
+        ) return false;
+        const destination = new URL(link.href, window.location.href);
+        return destination.origin === window.location.origin && destination.pathname !== window.location.pathname;
+      }) || null;
+    };
+
+    const releaseBottomAction = (action) => {
+      const activeIndex = getIndex();
+      if (action === 'tap') {
+        moveTo(activeIndex === panels.length - 1 ? 0 : activeIndex + 1);
+      } else if (action === 'right' && window.history.length > 1) {
+        window.history.back();
+      } else if (action === 'left') {
+        const destination = firstAvailableSubpage();
+        if (destination) window.location.assign(destination.href);
+      } else if (action === 'up' && activeIndex > 0) {
+        moveTo(0);
+      }
+    };
+
+    const bindBottomControl = (control) => {
+      const line = control.querySelector('.swipe-control-line');
+      if (!line) return;
+      control.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0 || bottomLocked) return;
+        bottomGesture = {
+          pointerId: event.pointerId,
+          control,
+          line,
+          startX: event.clientX,
+          startY: event.clientY,
+          lastX: event.clientX,
+          lastY: event.clientY,
+          lastTime: performance.now(),
+          locked: false
+        };
+        control.setPointerCapture?.(event.pointerId);
+        setBottomVisual(bottomGesture, event);
+        event.stopImmediatePropagation();
+      }, true);
+      control.addEventListener('pointermove', (event) => {
+        if (!bottomGesture || event.pointerId !== bottomGesture.pointerId) return;
+        bottomGesture.lastX = event.clientX;
+        bottomGesture.lastY = event.clientY;
+        bottomGesture.lastTime = performance.now();
+        setBottomVisual(bottomGesture, event);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }, { capture: true, passive: false });
+      const release = (event, cancelled = false) => {
+        if (!bottomGesture || event.pointerId !== bottomGesture.pointerId) return;
+        const gesture = bottomGesture;
+        const dx = event.clientX - gesture.startX;
+        const dy = event.clientY - gesture.startY;
+        const distance = Math.hypot(dx, dy);
+        const elapsed = Math.max(1, performance.now() - gesture.lastTime);
+        const velocity = Math.hypot(event.clientX - gesture.lastX, event.clientY - gesture.lastY) / elapsed;
+        const horizontal = Math.abs(dx) > Math.abs(dy);
+        let action = null;
+        if (!cancelled && distance < bottomTapThreshold) action = 'tap';
+        else if (!cancelled && distance >= bottomGestureThreshold) {
+          const qualifies = (horizontal ? Math.abs(dx) : Math.abs(dy)) >= bottomActionThreshold || velocity >= bottomFlickVelocity;
+          if (qualifies) {
+            if (horizontal) action = dx > 0 ? 'right' : 'left';
+            else if (dy < 0) action = 'up';
+          }
+        }
+        suppressBottomClick = true;
+        springBottomLine(gesture.line);
+        bottomLocked = true;
+        bottomGesture = null;
+        if (gesture.control.hasPointerCapture?.(event.pointerId)) gesture.control.releasePointerCapture(event.pointerId);
+        window.clearTimeout(bottomReleaseTimer);
+        if (action) bottomReleaseTimer = window.setTimeout(() => releaseBottomAction(action), 70);
+        window.setTimeout(() => { suppressBottomClick = false; bottomLocked = false; }, 260);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      };
+      control.addEventListener('pointerup', release, true);
+      control.addEventListener('pointercancel', (event) => release(event, true), true);
+      control.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (suppressBottomClick || bottomLocked) return;
+        bottomLocked = true;
+        springBottomLine(line);
+        window.clearTimeout(bottomReleaseTimer);
+        bottomReleaseTimer = window.setTimeout(() => releaseBottomAction('tap'), 70);
+        window.setTimeout(() => { bottomLocked = false; }, 260);
+      }, true);
+      control.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (bottomLocked) return;
+        bottomLocked = true;
+        springBottomLine(line);
+        window.clearTimeout(bottomReleaseTimer);
+        bottomReleaseTimer = window.setTimeout(() => releaseBottomAction('tap'), 70);
+        window.setTimeout(() => { bottomLocked = false; }, 260);
+      }, true);
+    };
+    experience.querySelectorAll('.master-panel-continue').forEach(bindBottomControl);
 
     const finish = (event, cancelled = false) => {
       if (!drag || event.pointerId !== drag.pointerId) return;

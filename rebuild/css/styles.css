@@ -242,6 +242,8 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 .master-panel-control { position: relative; }
 .master-panel-control::after { position: absolute; top: 50%; left: 50%; width: 48px; height: 48px; content: ''; transform: translate(-50%, -50%); }
 .master-panel-continue::after { position: absolute; inset-inline: 0; top: 50%; height: 48px; content: ''; transform: translateY(-50%); }
+.master-panel-continue { touch-action: none; }
+.swipe-control-line { will-change: transform; }
 .project-gallery-dots { position: relative; margin-block: -20px; padding-block: 20px; touch-action: manipulation; }
 .project-gallery-dot { position: relative; z-index: 1; }
 
