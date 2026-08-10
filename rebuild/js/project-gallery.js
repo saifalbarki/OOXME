@@ -158,6 +158,19 @@ panels.forEach((panel) => {
   const state = { images: [], index: 0, physicalIndex: 0, cloneOffset: 0, rail, dots, viewport: gallery.querySelector('.project-gallery-viewport'), manualDirection: null, wrapTimer: null };
   galleries.set(gallery, state);
   populateGallery(gallery, images, state);
+  dots.addEventListener('pointerdown', (event) => dots.setPointerCapture?.(event.pointerId));
+  dots.addEventListener('pointerup', (event) => {
+    if (event.target.closest('.project-gallery-dot')) return;
+    const dot = [...dots.children].reduce((nearest, candidate) => {
+      const currentDistance = Math.abs(candidate.getBoundingClientRect().left + candidate.getBoundingClientRect().width / 2 - event.clientX);
+      const nearestDistance = nearest ? Math.abs(nearest.getBoundingClientRect().left + nearest.getBoundingClientRect().width / 2 - event.clientX) : Infinity;
+      return currentDistance < nearestDistance ? candidate : nearest;
+    }, null);
+    if (dot) setGalleryImage(gallery, [...dots.children].indexOf(dot));
+  });
+  dots.addEventListener('pointercancel', (event) => {
+    if (dots.hasPointerCapture?.(event.pointerId)) dots.releasePointerCapture(event.pointerId);
+  });
 });
 const placeGalleryAtPhysicalIndex = (gallery, physicalIndex, smooth = true) => {
   const state = galleries.get(gallery);
@@ -257,7 +270,7 @@ document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
     if (!galleryGesture || galleryGesture.pointerId !== event.pointerId) return;
     const dx = event.clientX - galleryGesture.x;
     const dy = event.clientY - galleryGesture.y;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) > 35) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) > 12) {
       if (Math.abs(dx) > Math.abs(dy)) {
         const direction = dx < 0 ? 1 : -1;
         if (gallery === primaryGallery || isSecondaryCollection || window.matchMedia('(min-aspect-ratio: 4 / 3)').matches) galleries.get(gallery).manualDirection = direction;

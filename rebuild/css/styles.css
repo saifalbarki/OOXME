@@ -237,6 +237,14 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 :is(.booking-card, .booking-fields, .booking-selectors, .payment-options, .booking-promo-cards, .plan-detail-cards) { margin-bottom: 0; }
 .contact-actions { align-items: flex-end; margin-bottom: 0; }
 
+/* Shared interaction geometry: expanded hit zones stay fully transparent. */
+:where(button, a, input, select, textarea, label) { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.master-panel-control { position: relative; }
+.master-panel-control::after { position: absolute; top: 50%; left: 50%; width: 48px; height: 48px; content: ''; transform: translate(-50%, -50%); }
+.master-panel-continue::after { position: absolute; inset-inline: 0; top: 50%; height: 48px; content: ''; transform: translateY(-50%); }
+.project-gallery-dots { position: relative; margin-block: -20px; padding-block: 20px; touch-action: manipulation; }
+.project-gallery-dot { position: relative; z-index: 1; }
+
 /* Closing uses the existing Fade + Blur + collapse language at a shorter pace. */
 .search-overlay:not(.is-open) { transition: opacity .22s ease .12s, visibility 0s linear .34s, background-color .22s ease .12s, backdrop-filter .22s ease .12s, -webkit-backdrop-filter .22s ease .12s; }
 .search-overlay:not(.is-open) .search-overlay-links a { transition: opacity .16s ease .12s, filter .16s ease .12s, transform .16s ease .12s; }

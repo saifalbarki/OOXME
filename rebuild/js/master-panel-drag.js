@@ -1,3 +1,38 @@
+const interactionTarget = 'button, a, input, select, textarea, label, [data-project-gallery], .booking-card, .booking-fields, .booking-selectors, .calendar-card, .booking-summary, .payment-options';
+let activeInteraction = null;
+
+document.addEventListener('pointerdown', (event) => {
+  if (event.button !== 0) return;
+  const target = event.target.closest(interactionTarget);
+  if (!target) return;
+  activeInteraction = {
+    pointerId: event.pointerId,
+    target,
+    startX: event.clientX,
+    startY: event.clientY,
+    dragging: false
+  };
+  target.dataset.pointerPressed = 'true';
+  target.setPointerCapture?.(event.pointerId);
+}, true);
+
+document.addEventListener('pointermove', (event) => {
+  if (!activeInteraction || activeInteraction.pointerId !== event.pointerId) return;
+  const moved = Math.hypot(event.clientX - activeInteraction.startX, event.clientY - activeInteraction.startY);
+  if (moved <= 10 || activeInteraction.dragging) return;
+  activeInteraction.dragging = true;
+  delete activeInteraction.target.dataset.pointerPressed;
+}, true);
+
+const clearInteraction = (event) => {
+  if (!activeInteraction || activeInteraction.pointerId !== event.pointerId) return;
+  delete activeInteraction.target.dataset.pointerPressed;
+  if (activeInteraction.target.hasPointerCapture?.(event.pointerId)) activeInteraction.target.releasePointerCapture(event.pointerId);
+  activeInteraction = null;
+};
+document.addEventListener('pointerup', clearInteraction, true);
+document.addEventListener('pointercancel', clearInteraction, true);
+
 window.OOXMEMasterPanelDrag = {
   register({ experience, track, panels, getIndex, moveTo }) {
     if (!experience || !track || track.dataset.masterPanelDragBound) return;
