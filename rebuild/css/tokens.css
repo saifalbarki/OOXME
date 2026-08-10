@@ -8,7 +8,7 @@
   --color-line: rgba(13, 13, 13, 0.17);
   --space: clamp(16px, 4vw, 48px);
   --space-half: calc(var(--space) / 2);
-  --panel-radius: calc(var(--space) * 1.35);
+  --panel-radius: clamp(36px, 10vmin, 88px);
   --card-radius: calc(var(--space) * 0.9);
   --panel-safe: clamp(20px, 4vw, 48px);
   --header-element-size: clamp(16px, 1.45vw, 19px);
