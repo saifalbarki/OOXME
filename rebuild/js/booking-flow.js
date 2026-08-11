@@ -455,11 +455,20 @@ paymentOptions.forEach(button => button.addEventListener('click', () => {
   }
   setOpenPaymentOption(button);
 }));
+let paymentClickToSuppress = null;
 document.addEventListener('pointerdown', event => {
   if (step !== 5 || !paymentOptions.some(option => option.classList.contains('is-open'))) return;
-  if (event.target.closest('.payment-option')) return;
+  if (event.target.closest('.payment-qr-placeholder > img, .site-image-preview')) return;
+  const option = event.target.closest('.payment-option');
+  if (option?.classList.contains('is-open')) paymentClickToSuppress = option;
   closeOpenPaymentOption();
 });
+paymentOptions.forEach(option => option.addEventListener('click', event => {
+  if (paymentClickToSuppress !== option) return;
+  paymentClickToSuppress = null;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true));
 let searchTimer;
 const searchOverlayField = searchOverlay.querySelector('.search-overlay-field');
 const searchMenuOptions = [...searchOverlay.querySelectorAll('.search-overlay-links a')];
@@ -532,14 +541,47 @@ const resizeSearch = () => {
 };
 const viewport=window.visualViewport;
 const fullViewport=viewport?.height??innerHeight;
-const updateKeyboard=()=>{if(!viewport)return;searchOverlay.style.setProperty('--visual-viewport-height',`${viewport.height}px`);searchOverlay.style.setProperty('--visual-viewport-top',`${viewport.offsetTop}px`);searchOverlay.classList.toggle('is-keyboard-open',document.activeElement===searchInput&&fullViewport-viewport.height>120)};
+let searchKeyboardShift=0;
+const resetSearchInputPosition=()=>{
+  searchKeyboardShift=0;
+  searchOverlay.classList.remove('is-keyboard-open');
+  searchOverlayField.style.removeProperty('--search-keyboard-shift');
+};
+const updateKeyboard=()=>{
+  if(!viewport) return;
+  const keyboardOpen=document.activeElement===searchInput&&fullViewport-viewport.height>120;
+  searchOverlay.classList.toggle('is-keyboard-open',keyboardOpen);
+  if(!keyboardOpen){
+    searchKeyboardShift=0;
+    searchOverlayField.style.removeProperty('--search-keyboard-shift');
+    return;
+  }
+  const safe=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--panel-safe'))||16;
+  const bounds=searchOverlayField.getBoundingClientRect();
+  const keyboardTop=viewport.offsetTop+viewport.height-safe;
+  const unshiftedBottom=bounds.bottom-searchKeyboardShift;
+  searchKeyboardShift=Math.min(0,keyboardTop-unshiftedBottom);
+  searchOverlayField.style.setProperty('--search-keyboard-shift',`${searchKeyboardShift}px`);
+};
 document.querySelectorAll('[data-search-toggle]').forEach(button=>button.addEventListener('click',event=>{
   event.stopPropagation();
   if (searchOverlay.hidden || !searchOverlay.classList.contains('is-open')) openSearch();
   else closeSearch();
 }));
-searchOverlay.addEventListener('click', closeSearch);
+searchOverlay.addEventListener('click', event => {
+  if (event.target !== searchInput) {
+    searchInput.blur();
+    resetSearchInputPosition();
+  }
+  closeSearch();
+});
 searchOverlayField.addEventListener('click', event => event.stopPropagation());
+searchOverlayField.addEventListener('pointerdown', event => {
+  if (event.target !== searchInput && document.activeElement === searchInput) {
+    searchInput.blur();
+    resetSearchInputPosition();
+  }
+});
 searchOverlay.querySelectorAll('.search-overlay-links a, [data-search-suggestion]').forEach(option=>option.addEventListener('click',event=>{
   event.stopPropagation();
   closeSearch();

@@ -133,7 +133,6 @@ html[dir="rtl"] .search-overlay-field { grid-template-columns: var(--header-icon
 html[dir="rtl"] .search-overlay-field textarea { direction: rtl; font-family: var(--font-arabic); }
 html[dir="rtl"] .search-overlay-links { font-family: var(--font-arabic); }
 html[dir="rtl"] .search-overlay-suggestion { font-family: var(--font-arabic); }
-@media (max-width: 768px) { .search-overlay.is-keyboard-open { top: var(--visual-viewport-top, 0px); bottom: auto; height: var(--visual-viewport-height, 100dvh); padding-bottom: 0; } }
 @media (min-aspect-ratio: 4 / 3) { .search-overlay-links { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-double); } }
 html[dir="rtl"] body { font-family: var(--font-arabic); }
 @media (max-aspect-ratio: 4 / 3) { :root { --portfolio-final-card-bottom-guide-inset: calc(var(--bottom-control-area-height) + var(--previous-page-last-card-height)); } }
@@ -508,6 +507,49 @@ html[dir="rtl"] .booking-card input, html[dir="rtl"] .booking-fields input, html
   .booking-panel[data-step="payment"] .payment-option--coming { --payment-expanded-height: 76px; }
   .booking-panel[data-step="payment"] .payment-option-detail-inner { gap: 4px; padding-bottom: 6px; }
 }
+
+/* Payment cards are a bottom-anchored accordion. An open card gains only the
+   space it needs above its fixed lower edge, with one shared inner rhythm. */
+.booking-panel[data-step="payment"] .payment-option.is-open {
+  --payment-expanded-height: max(
+    clamp(142px, 27dvh, 220px),
+    calc(var(--payment-qr-size) + (var(--payment-box-space) * 3) + 2.7em)
+  );
+  padding: 0;
+}
+.booking-panel[data-step="payment"] .payment-option.is-open .payment-option-detail-inner {
+  display: grid;
+  grid-template-rows: minmax(2.7em, auto) var(--payment-qr-size);
+  align-content: start;
+  justify-items: center;
+  box-sizing: border-box;
+  height: 100%;
+  padding: var(--payment-box-space);
+  gap: var(--payment-box-space);
+}
+.booking-panel[data-step="payment"] .payment-option.is-open .payment-qr-placeholder {
+  width: var(--payment-qr-size);
+  height: var(--payment-qr-size);
+}
+
+/* Only the Search field moves for keyboard safety; the overlay itself stays in
+   place and returns the field to its original position when focus ends. */
+.search-overlay-field {
+  transform: translate3d(0, 0, 0);
+  transition: opacity .2s ease, clip-path .2s cubic-bezier(.22, .61, .36, 1), transform 200ms cubic-bezier(.22, .61, .36, 1);
+}
+.search-overlay.is-keyboard-open .search-overlay-field {
+  transform: translate3d(0, var(--search-keyboard-shift, 0px), 0);
+}
+
+/* Panel 1's promo input is intentionally borderless while focused. Validation
+   feedback remains controlled by its existing invalid state. */
+.booking-panel[data-step="promo"] .promo-input-card > input:focus,
+.booking-panel[data-step="promo"] .promo-input-card > input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 /* Writable Consultation fields share the established Panel 1 action typography. */
 .booking-panel { --consultation-writable-font-size: 9px; }
 .booking-panel :is(.promo-input-card > input, .customer-writing-field) {
