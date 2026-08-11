@@ -1204,6 +1204,14 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-head select { directi
 .booking-panel[data-step="date"] .calendar-day.is-unavailable { color: rgba(13, 13, 13, .38); }
 .booking-panel[data-step="date"] .calendar-day.is-selected { color: var(--color-brand); font-weight: 800; }
 
+/* A selected available day remains in the displayed month and uses the calendar's
+   approved blue-circle selection state. */
+.booking-panel[data-step="date"] .calendar-day.is-selected {
+  background: var(--color-brand);
+  border-radius: 50%;
+  color: var(--color-paper);
+}
+
 /* Custom Month picker: follows the existing calendar-head grid without invoking a native select. */
 .booking-panel[data-step="date"] .calendar-month-picker {
   position: relative;
@@ -1335,7 +1343,7 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   padding-inline: var(--payment-box-space);
   transform: translateY(-50%);
   transform-origin: center;
-  transition: inset-block-start 380ms cubic-bezier(.22, .61, .36, 1), block-size 380ms cubic-bezier(.22, .61, .36, 1), transform 380ms cubic-bezier(.22, .61, .36, 1);
+  transition: inset-block-start 380ms cubic-bezier(.22, .61, .36, 1), block-size 380ms cubic-bezier(.22, .61, .36, 1), transform 380ms cubic-bezier(.22, .61, .36, 1), opacity 160ms ease, visibility 0s linear 160ms;
   z-index: 1;
 }
 .booking-panel[data-step="payment"] .payment-option.is-open .payment-option-label {
@@ -1343,6 +1351,10 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   block-size: calc(var(--consultation-writable-font-size) * var(--type-control-line-height));
   padding-inline: 0;
   transform: translateY(0);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 0s, 0s, 0s, 0s, 0s;
 }
 @media (prefers-reduced-motion: reduce) {
   .booking-panel[data-step="payment"] .payment-option-label { transition-duration: .01ms; }

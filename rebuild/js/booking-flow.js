@@ -10,13 +10,17 @@ if (bookingViewportMeta && !/maximum-scale/i.test(bookingViewportMeta.content)) 
   bookingViewportMeta.content = `${bookingViewportMeta.content}, maximum-scale=1`;
 }
 const copy = { en: { months:['January','February','March','April','May','June','July','August','September','October','November','December'], weekdays:['S','M','T','W','T','F','S'], summary:{name:'Customer name',email:'Email',phone:'Phone',topic:'Consultation topic',sector:'Business sector',date:'Selected date',time:'Selected time',duration:'Duration',promo:'Promo code',fee:'Consultation fee',discount:'Discount',total:'Final amount'}, confirmPay:'Confirm & Pay',confirm:'Confirm',promoValid:'Discount applied', promoInvalid:'Invalid code' }, ar: { months:['يناير','فبراير','مارس','ابريل','مايو','يونيو','يوليو','اغسطس','سبتمبر','اكتوبر','نوفمبر','ديسمبر'], weekdays:['ح','ن','ث','ر','خ','ج','س'], summary:{name:'اسم العميل',email:'البريد الالكتروني',phone:'الهاتف',topic:'موضوع الاستشارة',sector:'قطاع العمل',date:'التاريخ المختار',time:'الوقت المختار',duration:'المدة',promo:'كود الخصم',fee:'سعر الاستشارة',discount:'الخصم',total:'المبلغ النهائي'}, confirmPay:'تأكيد والدفع',confirm:'تأكيد',promoValid:'تم تطبيق الخصم',promoInvalid:'الكود غير صالح' } };
+copy.en.summary.additional = 'Additional information';
+copy.ar.summary.additional = '\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0625\u0636\u0627\u0641\u064A\u0629';
 const empty = { promo:'', name:'', email:'', phone:'', sector:'', topic:'', additional:'', date:'', time:'', duration:'', payment:'' };
 // Temporary design-review switch. Set to false to restore the full step-validation lock.
 const BOOKING_DESIGN_MODE = true;
 let state = {...empty};
 try { state = {...empty, ...JSON.parse(sessionStorage.getItem('ooxme-rebuild-booking') || '{}')}; } catch (_) {}
+let updateBookingSummary = () => {};
 const save = () => {
   try { sessionStorage.setItem('ooxme-rebuild-booking', JSON.stringify(state)); } catch (_) {}
+  updateBookingSummary();
   /* The final panel is a live projection of booking data, not a reached-step flag. */
   updateConfirmationPanel?.({ animate: step === panels.length - 1 });
 };
@@ -255,8 +259,9 @@ document.querySelector('[data-promo-form]').addEventListener('submit',e=>{e.prev
 const promoDescription = document.querySelector('[data-step="promo"] .master-panel-content > p');
 let consultationPromoSuccess = false;
 let consultationPromoSuccessTimer;
+const promoPlaceholder = 'اكتب كود الخصم هنا';
 const updateConsultationPromoCopy = () => {
-  promoInputField.placeholder = consultationCopy[language].promoPlaceholder;
+  promoInputField.placeholder = promoPlaceholder;
   if (promoDescription) promoDescription.textContent = consultationPromoSuccess ? 'تم تطبيق الخصم' : consultationCopy[language].promoDescription;
 };
 const clearConsultationPromoTimers = () => {
@@ -268,7 +273,7 @@ const showConsultationPromoFeedback = (message = '', clearAfter = false) => {
 };
 promoInputField.addEventListener('input', () => {
   promoInputCard.classList.remove('is-invalid');
-  promoInputField.placeholder = consultationCopy[language].promoPlaceholder;
+  promoInputField.placeholder = promoPlaceholder;
 });
 restoreConsultationPromoPanel = () => {
   clearConsultationPromoTimers();
@@ -277,56 +282,6 @@ restoreConsultationPromoPanel = () => {
   showConsultationPromoFeedback();
   updateConsultationPromoCopy();
 };
-const promoExampleCodes = ['OOXME25', 'START10', 'HELLO20', 'WELCOME', 'OOX15'];
-let promoPlaceholderTimer;
-let promoPlaceholderRunning = false;
-let promoPlaceholderIndex = -1;
-let promoPlaceholderStep = 0;
-let promoPlaceholderPhase = 'typing';
-const promoPlaceholderCanRun = () => !promoInputField.value && document.activeElement !== promoInputField && !promoInputCard.classList.contains('is-feedback');
-const stopPromoPlaceholderAnimation = (clear = true) => {
-  window.clearTimeout(promoPlaceholderTimer);
-  promoPlaceholderRunning = false;
-  if (clear && !promoInputField.value) promoInputField.placeholder = '';
-};
-const nextPromoExample = () => {
-  let next = promoPlaceholderIndex;
-  while (next === promoPlaceholderIndex) next = Math.floor(Math.random() * promoExampleCodes.length);
-  promoPlaceholderIndex = next;
-  return promoExampleCodes[next];
-};
-const runPromoPlaceholderAnimation = () => {
-  if (!promoPlaceholderCanRun()) return;
-  promoPlaceholderRunning = true;
-  const code = promoExampleCodes[promoPlaceholderIndex] || nextPromoExample();
-  if (promoPlaceholderPhase === 'typing') {
-    promoPlaceholderStep += 1;
-    promoInputField.placeholder = code.slice(0, promoPlaceholderStep);
-    if (promoPlaceholderStep < code.length) promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 55);
-    else { promoPlaceholderPhase = 'holding'; promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 600); }
-    return;
-  }
-  if (promoPlaceholderPhase === 'holding') { promoPlaceholderPhase = 'deleting'; promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 35); return; }
-  promoPlaceholderStep -= 1;
-  promoInputField.placeholder = code.slice(0, Math.max(0, promoPlaceholderStep));
-  if (promoPlaceholderStep > 0) { promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 35); return; }
-  promoPlaceholderPhase = 'typing';
-  nextPromoExample();
-  promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 200);
-};
-const startPromoPlaceholderAnimation = () => {
-  if (promoPlaceholderRunning || !promoPlaceholderCanRun()) return;
-  promoPlaceholderPhase = 'typing';
-  promoPlaceholderStep = 0;
-  nextPromoExample();
-  promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 260);
-};
-promoInputField.addEventListener('focus', () => stopPromoPlaceholderAnimation());
-promoInputField.addEventListener('input', () => stopPromoPlaceholderAnimation(false));
-promoInputField.addEventListener('blur', () => {
-  if (!promoInputField.value) window.setTimeout(startPromoPlaceholderAnimation, 260);
-});
-window.setTimeout(startPromoPlaceholderAnimation, 320);
 document.querySelector('[data-promo-form]').addEventListener('submit', (event) => {
   event.preventDefault();
   const code = promoInputField.value.trim();
@@ -370,7 +325,7 @@ const renderCalendar = () => {
   let html=`<div class="calendar-head"><div class="calendar-month-picker"><button type="button" class="calendar-month-trigger" data-month-trigger aria-haspopup="listbox" aria-expanded="false"><span>${t.months[month]}</span><span class="calendar-month-arrow" aria-hidden="true"></span></button><div class="calendar-month-menu" data-month-menu role="listbox" aria-label="Month" hidden>${monthOptions}</div></div><span class="calendar-year">${year}</span></div><div class="calendar-weekdays">${t.weekdays.map(d=>`<span class="calendar-weekday">${d}</span>`).join('')}</div><div class="calendar-grid">`;
   html+=Array(first).fill('<span></span>').join('');
   for(let day=1;day<=days;day++){
-    const date=new Date(year,month,day),key=date.toISOString().slice(0,10), unavailable=availableTimesForDate(key).length===0, cls=unavailable?'is-unavailable':state.date===key?'is-selected':'';
+    const key=`${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`, unavailable=availableTimesForDate(key).length===0, cls=unavailable?'is-unavailable':state.date===key?'is-selected':'';
     html+=`<button type="button" class="calendar-day ${cls}" data-date="${key}">${day}</button>`;
   }
   box.innerHTML=html+`</div>`;
@@ -421,7 +376,8 @@ const renderCalendar = () => {
 };
 const renderChoices = () => { const times=document.querySelector('[data-times]'),durations=document.querySelector('[data-durations]'); if(!times)return; const options=state.date?availableTimesForDate(state.date):['10:00','13:00','16:00']; times.innerHTML=options.map(value=>`<button type="button" class="${state.time===value?'is-selected':''}" data-time="${value}">${value}</button>`).join(''); durations.innerHTML=[45,60,90].map(value=>`<button type="button" class="${Number(state.duration)===value?'is-selected':''}" data-duration="${value}">${value} ${language==='ar'?'دقيقة':'minutes'}</button>`).join(''); times.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>{state.time=b.dataset.time;markInvalid(times.closest('.booking-card'),false);save();renderChoices();if(state.duration)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)}));durations.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{state.duration=b.dataset.duration;if(state.promo.trim().toUpperCase()==='R100')state.duration='45';markInvalid(durations.closest('.booking-card'),false);save();renderChoices();if(state.time)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)})); };
 const money = value => `${value} USD`;
-const renderSummary = () => { const box=document.querySelector('[data-summary]'); if(!box)return; const labels=copy[language].summary; const rows=[['name',state.name],['email',state.email],['phone',state.phone],['topic',state.topic],['sector',state.sector],['date',state.date],['time',state.time],['duration',state.duration?`${state.duration} ${language==='ar'?'دقيقة':'minutes'}`:''],['promo',state.promo||'—'],['fee',money(price())],['discount',money(discount())],['total',money(total())]]; box.innerHTML=rows.map(([key,value])=>`<div><dt>${labels[key]}</dt><dd>${value||'—'}</dd></div>`).join(''); document.querySelector('[data-confirm-label]').textContent=total()===0?copy[language].confirm:copy[language].confirmPay; };
+const renderSummary = () => { const box=document.querySelector('[data-summary]'); if(!box)return; const labels=copy[language].summary; const rows=[['name',state.name],['email',state.email],['phone',state.phone],['topic',state.topic],['sector',state.sector],['additional',state.additional],['date',state.date],['time',state.time],['duration',state.duration?`${state.duration} ${language==='ar'?'دقيقة':'minutes'}`:''],['promo',state.promo||'—'],['fee',money(price())],['discount',money(discount())],['total',money(total())]]; box.innerHTML=rows.map(([key,value])=>`<div><dt>${labels[key]}</dt><dd>${value||'—'}</dd></div>`).join(''); document.querySelector('[data-confirm-label]').textContent=total()===0?copy[language].confirm:copy[language].confirmPay; };
+updateBookingSummary = renderSummary;
 const paymentOptionsContainer = document.querySelector('[data-payment-options]');
 const superQiPaymentOption = paymentOptionsContainer?.querySelector('[data-payment="Qi"]');
 const comingSoonPaymentOption = paymentOptionsContainer?.querySelector('.payment-option--coming');
