@@ -1330,6 +1330,18 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   }
 }
 
+/* Panel 1 uses the same lower grid boundary as the calendar, summary, and
+   customer form. The two controls remain one intact group. */
+@media (max-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="promo"] .booking-promo-cards { margin-block-end: 0; }
+}
+
+/* Both final-state symbols occupy the existing confirmation content surface;
+   the shared end alignment places their visible SVG bottom on that same
+   Consultation content baseline without changing either drawing. */
+.confirmation-success-mark,
+.confirmation-incomplete-mark { place-items: end center; }
+
 /* Shared image preview uses the Master Panel width and Search-overlay backdrop. */
 .site-image-preview {
   position: fixed;
