@@ -1082,6 +1082,55 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-head select { directi
   .confirmation-success-mark.is-drawing svg { animation: none; }
 }
 
+/* The final Consultation panel uses the same centered drawing language for an
+   incomplete booking, without changing its geometry or the success state. */
+.confirmation-incomplete-mark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.confirmation-incomplete-mark svg {
+  width: clamp(52px, 9vmin, 90px);
+  height: clamp(52px, 9vmin, 90px);
+  overflow: visible;
+}
+.confirmation-incomplete-mark :is(.confirmation-incomplete-circle, .confirmation-incomplete-symbol) {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-linecap: round;
+  stroke-width: 3.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.confirmation-incomplete-mark .confirmation-incomplete-symbol { stroke-width: 4.5; }
+.confirmation-incomplete-mark .confirmation-incomplete-dot {
+  fill: var(--color-ink);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.confirmation-incomplete-mark.is-drawing :is(.confirmation-incomplete-circle, .confirmation-incomplete-symbol) {
+  animation: confirmation-incomplete-draw 900ms cubic-bezier(.35, .7, .3, 1) forwards;
+}
+.confirmation-incomplete-mark.is-drawing .confirmation-incomplete-dot {
+  animation: confirmation-incomplete-dot 280ms cubic-bezier(.35, .7, .3, 1) 620ms both;
+}
+@keyframes confirmation-incomplete-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes confirmation-incomplete-dot {
+  0% { opacity: 0; transform: scale(.4); }
+  45% { opacity: 1; transform: scale(1.32); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confirmation-incomplete-mark :is(.confirmation-incomplete-circle, .confirmation-incomplete-symbol) { stroke-dashoffset: 0; }
+  .confirmation-incomplete-mark .confirmation-incomplete-dot { opacity: 1; }
+  .confirmation-incomplete-mark.is-drawing :is(.confirmation-incomplete-circle, .confirmation-incomplete-symbol, .confirmation-incomplete-dot) { animation: none; }
+}
+
 /* Calendar header and day columns share the Month box's one horizontal inset. */
 .booking-panel[data-step="date"] .calendar-card {
   --calendar-horizontal-inset: var(--calendar-box-gap);
@@ -1250,6 +1299,35 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+}
+
+/* Keyboard focus shifts only the active Consultation form group, never the
+   Master Panel or its navigation track. */
+.booking-panel :is(.booking-promo-cards, .booking-fields) {
+  transform: translate3d(0, 0, 0);
+  transition: transform 200ms cubic-bezier(.22, .61, .36, 1);
+}
+.booking-panel :is(.booking-promo-cards, .booking-fields).is-keyboard-active {
+  transform: translate3d(0, var(--consultation-keyboard-shift, 0px), 0);
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .booking-panel :is(.booking-promo-cards, .booking-fields) { transition-duration: .01ms; }
+}
+
+/* Panel 2 is one bottom-anchored input group. The portrait content grid is its
+   containing block, so the group's lower edge uses the same safe baseline as
+   the date and summary boxes while its fields continue building upward. */
+@media (max-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="customer"] .master-panel-content { position: relative; }
+  .booking-panel[data-step="customer"] .booking-fields {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    grid-row: auto;
+    align-self: auto;
+    margin-block-end: 0;
+  }
 }
 
 /* Shared image preview uses the Master Panel width and Search-overlay backdrop. */

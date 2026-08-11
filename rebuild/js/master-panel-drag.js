@@ -1,5 +1,6 @@
 const interactionTarget = 'button, a, input, select, textarea, label, [data-project-gallery], .booking-card, .booking-fields, .booking-selectors, .calendar-card, .booking-summary, .payment-options';
 let activeInteraction = null;
+let suppressedClickTarget = null;
 
 const simplifyTextHierarchy = (scope = document) => {
   scope.querySelectorAll('.master-panel-content').forEach((content) => {
@@ -46,6 +47,7 @@ document.addEventListener('pointermove', (event) => {
   const moved = Math.hypot(event.clientX - activeInteraction.startX, event.clientY - activeInteraction.startY);
   if (moved <= 10 || activeInteraction.dragging) return;
   activeInteraction.dragging = true;
+  suppressedClickTarget = activeInteraction.target;
   delete activeInteraction.target.dataset.pointerPressed;
 }, true);
 
@@ -57,6 +59,15 @@ const clearInteraction = (event) => {
 };
 document.addEventListener('pointerup', clearInteraction, true);
 document.addEventListener('pointercancel', clearInteraction, true);
+document.addEventListener('click', (event) => {
+  if (!suppressedClickTarget) return;
+  const target = event.target;
+  const shouldSuppress = target === suppressedClickTarget || suppressedClickTarget.contains(target);
+  suppressedClickTarget = null;
+  if (!shouldSuppress) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true);
 
 window.OOXMEMasterPanelDrag = {
   register({ experience, track, panels, getIndex, moveTo }) {
@@ -107,10 +118,9 @@ window.OOXMEMasterPanelDrag = {
     updateBottomProgress();
 
     const interactiveSelector = [
-      'button', 'a', 'input', 'select', 'textarea', 'label',
+      '.master-panel-continue', 'input', 'select', 'textarea', '[contenteditable="true"]',
       '[data-project-gallery]', '[data-search-overlay]', '.search-overlay',
-      '.booking-card', '.booking-fields', '.booking-selectors', '.calendar-card',
-      '.booking-summary', '.payment-options'
+      '.site-image-preview', '.calendar-month-menu'
     ].join(',');
     let drag = null;
     let bottomGesture = null;
@@ -125,6 +135,18 @@ window.OOXMEMasterPanelDrag = {
     const bottomActionThreshold = clamp(window.innerWidth * .095, 32, 44);
     const bottomFlickVelocity = .48;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const wheelState = { locked: false, direction: 0, distance: 0, resetTimer: 0, unlockTimer: 0 };
+    const resetWheelIntent = () => {
+      wheelState.direction = 0;
+      wheelState.distance = 0;
+      window.clearTimeout(wheelState.resetTimer);
+    };
+    const wheelIsReserved = (event) => {
+      const active = document.activeElement;
+      if (active?.matches?.('input, textarea, select, [contenteditable="true"]')) return true;
+      if (document.querySelector('[data-search-overlay].is-open, .search-overlay.is-open, .site-image-preview.is-open')) return true;
+      return Boolean(event.target.closest('.calendar-month-menu:not([hidden])'));
+    };
 
     const setBottomVisual = (gesture, event) => {
       if (bottomFrame) window.cancelAnimationFrame(bottomFrame);
@@ -356,6 +378,33 @@ window.OOXMEMasterPanelDrag = {
         finish(event, true);
       }
     }, true);
+
+    /* Every page shares the same deliberate wheel / trackpad intent model.
+       Wheel events remain available in normal panel space and are reserved only
+       for actual text entry or an open, intentionally scrollable overlay. */
+    experience.addEventListener('wheel', (event) => {
+      if (event.ctrlKey || wheelIsReserved(event)) return;
+      const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : 1);
+      if (Math.abs(delta) < 1) return;
+      event.preventDefault();
+      if (wheelState.locked) return;
+      const direction = delta > 0 ? 1 : -1;
+      if (direction !== wheelState.direction) {
+        wheelState.direction = direction;
+        wheelState.distance = 0;
+      }
+      wheelState.distance += Math.abs(delta);
+      window.clearTimeout(wheelState.resetTimer);
+      wheelState.resetTimer = window.setTimeout(resetWheelIntent, 160);
+      if (wheelState.distance < 32) return;
+      resetWheelIntent();
+      const target = clamp(getIndex() + direction, 0, panels.length - 1);
+      if (target === getIndex()) return;
+      wheelState.locked = true;
+      moveTo(target);
+      window.clearTimeout(wheelState.unlockTimer);
+      wheelState.unlockTimer = window.setTimeout(() => { wheelState.locked = false; }, 620);
+    }, { passive: false });
   }
 };
 

@@ -665,11 +665,6 @@ document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
     galleryGesture = null;
   });
 });
-let panelStartY = null;
-experience.addEventListener('pointerdown', (event) => { if (!event.target.closest('button, textarea, a, [data-project-gallery]')) panelStartY = event.clientY; });
-experience.addEventListener('pointerup', (event) => { if (panelStartY === null) return; const distance = panelStartY - event.clientY; if (Math.abs(distance) > 60) moveToPanel(currentPanel + (distance > 0 ? 1 : -1)); panelStartY = null; });
-let wheelLocked = false;
-window.addEventListener('wheel', (event) => { if (wheelLocked || Math.abs(event.deltaY) < 20) return; wheelLocked = true; moveToPanel(currentPanel + (event.deltaY > 0 ? 1 : -1)); window.setTimeout(() => { wheelLocked = false; }, 620); }, { passive: true });
 let searchCloseTimer;
 const resizeSearchInput = () => { searchInput.style.height = '24px'; searchInput.style.height = `${searchInput.scrollHeight}px`; searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 24)}px`; };
 const updateSearchState = () => { const query = searchInput.value.trim(); searchOverlay.classList.toggle('is-typing', Boolean(query)); searchSuggestion.hidden = !query; if (query) searchSuggestion.textContent = root.lang === 'ar' ? `اقتراح: «${query}»` : `Search for “${query}”`; resizeSearchInput(); };

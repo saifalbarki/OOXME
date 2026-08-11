@@ -262,7 +262,6 @@ render();
 const panels = [...track.children];
 track.style.height = `${panels.length * 100}dvh`;
 let current = 0,
-  startY = null,
   timer;
 const applyLanguage = (next) => {
   language = next;
@@ -287,6 +286,7 @@ const moveTo = (next) => {
   clearTimeout(timer);
   timer = setTimeout(reveal, 620);
 };
+window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => current, moveTo });
 document
   .querySelectorAll("[data-language-toggle]")
   .forEach((x) =>
@@ -297,80 +297,6 @@ document
 document
   .querySelectorAll("[data-next-panel]")
   .forEach((x) => x.addEventListener("click", () => moveTo(current + 1)));
-experience.addEventListener("pointerdown", (e) => {
-  if (!e.target.closest("button,input,a")) startY = e.clientY;
-});
-experience.addEventListener("pointerup", (e) => {
-  if (startY === null) return;
-  const d = startY - e.clientY;
-  if (Math.abs(d) > 60) moveTo(current + (d > 0 ? 1 : -1));
-  startY = null;
-});
-const wheelState = {
-  locked: false,
-  direction: 0,
-  distance: 0,
-  resetTimer: null,
-  unlockTimer: null,
-};
-const wheelThreshold = 42;
-const wheelResetDelay = 160;
-const transitionDuration = 620;
-const hasAvailableNestedScroll = (target, deltaY) => {
-  for (let node = target; node && node !== experience; node = node.parentElement) {
-    if (!(node instanceof HTMLElement)) continue;
-    const { overflowY } = getComputedStyle(node);
-    if (!/(auto|scroll)/.test(overflowY) || node.scrollHeight <= node.clientHeight + 1)
-      continue;
-    if (deltaY > 0 && node.scrollTop + node.clientHeight < node.scrollHeight - 1)
-      return true;
-    if (deltaY < 0 && node.scrollTop > 1) return true;
-  }
-  return false;
-};
-const resetWheelIntent = () => {
-  wheelState.direction = 0;
-  wheelState.distance = 0;
-  clearTimeout(wheelState.resetTimer);
-};
-window.addEventListener(
-  "wheel",
-  (event) => {
-    if (
-      event.ctrlKey ||
-      searchOverlay.classList.contains("is-open") ||
-      event.target.closest("[data-search-overlay], input, textarea, select, option") ||
-      hasAvailableNestedScroll(event.target, event.deltaY)
-    )
-      return;
-
-    const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : 1);
-    if (Math.abs(delta) < 1) return;
-    event.preventDefault();
-    if (wheelState.locked) return;
-
-    const direction = delta > 0 ? 1 : -1;
-    if (direction !== wheelState.direction) {
-      wheelState.direction = direction;
-      wheelState.distance = 0;
-    }
-    wheelState.distance += Math.abs(delta);
-    clearTimeout(wheelState.resetTimer);
-    wheelState.resetTimer = setTimeout(resetWheelIntent, wheelResetDelay);
-    if (wheelState.distance < wheelThreshold) return;
-
-    const next = Math.max(0, Math.min(panels.length - 1, current + direction));
-    resetWheelIntent();
-    if (next === current) return;
-    wheelState.locked = true;
-    moveTo(next);
-    clearTimeout(wheelState.unlockTimer);
-    wheelState.unlockTimer = setTimeout(() => {
-      wheelState.locked = false;
-    }, transitionDuration);
-  },
-  { passive: false },
-);
 let closeTimer;
 const closeSearch = () => {
   searchOverlay.classList.remove("is-open");

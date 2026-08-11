@@ -77,8 +77,6 @@ track.style.height = `${panels.length * 100}dvh`;
 const requestedPanel = Number(new URLSearchParams(window.location.search).get('panel'));
 let panelIndex = Number.isInteger(requestedPanel) && requestedPanel >= 0 && requestedPanel < panels.length ? requestedPanel : 0;
 if (panelIndex) track.style.transform = `translateY(${-panelIndex * 100}dvh)`;
-let startY = null;
-let wheelLocked = false;
 let panelTransitionTimer;
 const revealPanel = (index) => {
   panels.forEach((panel, panelNumber) => panel.classList.toggle('is-active', panelNumber === index));
@@ -101,6 +99,3 @@ searchOverlay.querySelectorAll('[data-panel-index]').forEach((link) => link.addE
   setSearchOpen(false);
   moveTo(Number(link.dataset.panelIndex));
 }));
-experience.addEventListener('pointerdown', (event) => { if (!event.target.closest('button, input, a')) startY = event.clientY; });
-experience.addEventListener('pointerup', (event) => { if (startY === null) return; const distance = startY - event.clientY; if (Math.abs(distance) > 60) moveTo(panelIndex + (distance > 0 ? 1 : -1)); startY = null; });
-window.addEventListener('wheel', (event) => { if (wheelLocked || Math.abs(event.deltaY) < 20) return; wheelLocked = true; moveTo(panelIndex + (event.deltaY > 0 ? 1 : -1)); window.setTimeout(() => { wheelLocked = false; }, 620); }, { passive: true });

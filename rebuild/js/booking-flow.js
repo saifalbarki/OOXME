@@ -15,7 +15,11 @@ const empty = { promo:'', name:'', email:'', phone:'', sector:'', topic:'', addi
 const BOOKING_DESIGN_MODE = true;
 let state = {...empty};
 try { state = {...empty, ...JSON.parse(sessionStorage.getItem('ooxme-rebuild-booking') || '{}')}; } catch (_) {}
-const save = () => { try { sessionStorage.setItem('ooxme-rebuild-booking', JSON.stringify(state)); } catch (_) {} };
+const save = () => {
+  try { sessionStorage.setItem('ooxme-rebuild-booking', JSON.stringify(state)); } catch (_) {}
+  /* The final panel is a live projection of booking data, not a reached-step flag. */
+  updateConfirmationPanel?.({ animate: step === panels.length - 1 });
+};
 const price = () => ({45:25,60:40,90:60}[Number(state.duration)] || 0);
 const discount = () => state.promo.trim().toUpperCase() === 'R100' ? price() : 0;
 const total = () => Math.max(0, price() - discount());
@@ -35,19 +39,32 @@ const consultationCopy = {
 const landscapeStepCopy = { promo:{en:'Enter a promo code if you have one',ar:'ادخل كود الخصم اذا كان لديك'}, customer:{en:'Tell us the details we need for your consultation',ar:'ادخل المعلومات المطلوبة للاستشارة'}, date:{en:'Choose an available date for your consultation',ar:'اختر يوماً متاحاً للاستشارة'}, time:{en:'Choose the consultation time and duration',ar:'اختر وقت ومدة الاستشارة'}, summary:{en:'Review your booking details before confirming',ar:'راجع تفاصيل الحجز قبل التأكيد'}, payment:{en:'Choose your preferred payment method',ar:'اختر طريقة الدفع المناسبة'}, confirmation:{en:'Your consultation booking has been confirmed',ar:'تم تأكيد حجز الاستشارة'} };
 const applyLandscapeStepText = () => { const wide = window.matchMedia('(min-aspect-ratio: 4 / 3)').matches; panels.forEach(panel => { const label = panel.querySelector('.master-panel-label'); if (!label) return; label.textContent = wide ? landscapeStepCopy[panel.dataset.step][language] : label.dataset[language]; }); };
 const updateCustomerPlaceholders = () => { document.querySelectorAll('[data-customer-form] label').forEach(label => { const input = label.querySelector('input'); const labelText = label.querySelector('span'); if (input && !input.classList.contains('is-inline-error')) input.placeholder = labelText?.dataset[language] || ''; }); };
-const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); if (state.promo === 'R100' && promoInputCard?.classList.contains('is-feedback')) setPromoFeedback(next === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
+const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); updateConfirmationPanel(); if (state.promo === 'R100' && promoInputCard?.classList.contains('is-feedback')) setPromoFeedback(next === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
 document.querySelectorAll('[data-language-toggle]').forEach(x=>x.addEventListener('click',()=>applyLanguage(language==='en'?'ar':'en')));
 window.addEventListener('storage',e=>{if(e.key==='ooxme-language')applyLanguage(e.newValue==='ar'?'ar':'en')});
 window.addEventListener('resize', () => { applyLandscapeStepText(); updateCustomerPlaceholders(); });
 track.style.height=`${panels.length*100}dvh`;
 let step=0, transitionTimer;
 let restoreConsultationPromoPanel = () => {};
+let updateConfirmationPanel = () => {};
 const confirmationDescription = document.querySelector('.booking-panel[data-step="confirmation"] .master-panel-content > p:not(.master-panel-label)');
 if (confirmationDescription) {
   confirmationDescription.dataset.ar = '\u0633\u0648\u0641 \u062a\u0633\u062a\u0644\u0645 \u0627\u0644\u0627\u0631\u0634\u0627\u062f\u0627\u062a \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0629 \u0639\u0628\u0631 \u0627\u0644\u0627\u064a\u0645\u064a\u0644 \u0628\u0639\u062f \u062a\u0623\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0645\u062f\u0641\u0648\u0639\u0627\u062a\u0643';
   if (language === 'ar') confirmationDescription.textContent = confirmationDescription.dataset.ar;
 }
 const confirmationContent = document.querySelector('.booking-panel[data-step="confirmation"] .confirmation-content');
+const confirmationTitle = confirmationContent?.querySelector('h1');
+let confirmationWasComplete = null;
+const confirmationIncompleteCopy = {
+  en: {
+    title: 'Did you forget something?',
+    description: 'Review the required details about you and your project, then enter the consultation booking details that suit you to confirm your booking.'
+  },
+  ar: {
+    title: 'هل نسيت شيء؟',
+    description: 'راجع المعلومات المطلوبة عنك وعن مشروعك، وادخل جميع تفاصيل حجز الاستشارة حسب ما يناسبك لتأكيد حجزك'
+  }
+};
 const ensureConfirmationSuccessMark = () => {
   if (!confirmationContent || confirmationContent.querySelector('.confirmation-success-mark')) return confirmationContent?.querySelector('.confirmation-success-mark');
   const successMark = document.createElement('div');
@@ -57,12 +74,42 @@ const ensureConfirmationSuccessMark = () => {
   confirmationContent.append(successMark);
   return successMark;
 };
+const ensureConfirmationIncompleteMark = () => {
+  if (!confirmationContent || confirmationContent.querySelector('.confirmation-incomplete-mark')) return confirmationContent?.querySelector('.confirmation-incomplete-mark');
+  const incompleteMark = document.createElement('div');
+  incompleteMark.className = 'confirmation-incomplete-mark';
+  incompleteMark.setAttribute('aria-hidden', 'true');
+  incompleteMark.innerHTML = '<svg viewBox="0 0 100 100" focusable="false"><path class="confirmation-incomplete-circle" pathLength="1" d="M 50 14 A 36 36 0 1 1 49.999 14"/><path class="confirmation-incomplete-symbol" pathLength="1" d="M 50 39 L 50 67"/><circle class="confirmation-incomplete-dot" cx="50" cy="29" r="3.5"/></svg>';
+  confirmationContent.append(incompleteMark);
+  return incompleteMark;
+};
 const replayConfirmationSuccessMark = () => {
   const mark = ensureConfirmationSuccessMark();
   if (!mark) return;
   mark.classList.remove('is-drawing');
   void mark.offsetWidth;
   mark.classList.add('is-drawing');
+};
+const replayConfirmationIncompleteMark = () => {
+  const mark = ensureConfirmationIncompleteMark();
+  if (!mark) return;
+  mark.classList.remove('is-drawing');
+  void mark.offsetWidth;
+  mark.classList.add('is-drawing');
+};
+const consultationInformationComplete = () => customerComplete(false) && dateAvailable() && timeDurationComplete(false);
+updateConfirmationPanel = ({ animate = false } = {}) => {
+  if (!confirmationTitle || !confirmationDescription || !confirmationContent) return;
+  const complete = consultationInformationComplete();
+  const changed = confirmationWasComplete !== complete;
+  confirmationWasComplete = complete;
+  confirmationTitle.textContent = complete ? confirmationTitle.dataset[language] : confirmationIncompleteCopy[language].title;
+  confirmationDescription.textContent = complete ? confirmationDescription.dataset[language] : confirmationIncompleteCopy[language].description;
+  confirmationContent.classList.toggle('is-incomplete', !complete);
+  confirmationContent.querySelector(complete ? '.confirmation-incomplete-mark' : '.confirmation-success-mark')?.remove();
+  if (!animate && !(changed && step === panels.length - 1)) return;
+  if (complete) replayConfirmationSuccessMark();
+  else replayConfirmationIncompleteMark();
 };
 const reveal = () => panels.forEach((panel,i)=>panel.classList.toggle('is-active',i===step));
 const fieldsRequired = ['name','email','phone','topic','sector','additional'];
@@ -81,11 +128,70 @@ const dateAvailable = () => { if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date || ''))
 const timeDurationComplete = (show = false) => { const validTime = ['10:00','13:00','16:00'].includes(state.time); const validDuration = [45,60,90].includes(Number(state.duration)) && !(state.promo.toUpperCase() === 'R100' && Number(state.duration) !== 45); if (show) { markInvalid(document.querySelector('[data-times]')?.closest('.booking-card'), !validTime); markInvalid(document.querySelector('[data-durations]')?.closest('.booking-card'), !validDuration); } return validTime && validDuration; };
 const bookingComplete = () => promoValid(false) && customerComplete(false) && dateAvailable() && timeDurationComplete(false);
 const canProceed = (show = true) => { if (BOOKING_DESIGN_MODE) return true; if (step === 0) { const valid = promoValid(show); const code = promoInputField?.value.trim().toUpperCase() || state.promo.toUpperCase(); if (!valid) return false; if (code === 'R100') { state.promo = 'R100'; state.duration = '45'; save(); renderChoices(); if (show) setPromoFeedback(language === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); } else { state.promo = ''; save(); } return true; } if (step === 1) return customerComplete(show); if (step === 2) { const valid = dateAvailable(); if (show) markInvalid(document.querySelector('[data-calendar]'), !valid); return valid; } if (step === 3) return timeDurationComplete(show); if (step === 4) { const valid = bookingComplete(); if (show) markInvalid(document.querySelector('[data-summary]'), !valid); return valid; } if (step === 5) { const valid = total() === 0 || Boolean(state.payment); if (show) markInvalid(document.querySelector('[data-payment-options]'), !valid); return valid; } return true; };
-const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); const completingFlow = step === panels.length - 2 && next === panels.length - 1; if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; panels.forEach(p=>p.classList.remove('is-active')); track.style.transform=`translateY(${-step*100}dvh)`; clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (completingFlow) replayConfirmationSuccessMark();},620); };
+const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; panels.forEach(p=>p.classList.remove('is-active')); track.style.transform=`translateY(${-step*100}dvh)`; clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (step === panels.length - 1) updateConfirmationPanel({ animate: true });},620); };
 window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => step, moveTo });
 const continueStep = () => { if(!canProceed(true)) return; if(!BOOKING_DESIGN_MODE && step===4 && total()===0) moveTo(6); else moveTo(step+1); };
 document.querySelectorAll('[data-next]').forEach(x=>x.addEventListener('click',continueStep));
-document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save(); if(step===1&&customerComplete(false))setTimeout(()=>{if(step===1&&customerComplete(false))moveTo(2)},180)}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();if(step===1&&customerComplete(false))moveTo(2)}); field.addEventListener('focus',()=>field.scrollIntoView({block:'center',behavior:'smooth'})); });
+document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save(); if(step===1&&customerComplete(false))setTimeout(()=>{if(step===1&&customerComplete(false))moveTo(2)},180)}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();if(step===1&&customerComplete(false))moveTo(2)}); });
+const consultationViewport = window.visualViewport;
+const consultationWritableFields = [...document.querySelectorAll('.booking-panel :is(input, textarea)')];
+let activeConsultationField = null;
+let activeConsultationGroup = null;
+let consultationFocusShift = 0;
+const resetConsultationInputPosition = () => {
+  if (!activeConsultationGroup) return;
+  activeConsultationGroup.classList.remove('is-keyboard-active');
+  activeConsultationGroup.style.removeProperty('--consultation-keyboard-shift');
+  activeConsultationField = null;
+  activeConsultationGroup = null;
+  consultationFocusShift = 0;
+};
+const updateConsultationInputPosition = () => {
+  if (!activeConsultationField || !activeConsultationGroup || document.activeElement !== activeConsultationField) {
+    resetConsultationInputPosition();
+    return;
+  }
+  const viewport = consultationViewport;
+  if (!viewport || window.innerHeight - viewport.height <= 120) {
+    consultationFocusShift = 0;
+    activeConsultationGroup.classList.remove('is-keyboard-active');
+    activeConsultationGroup.style.removeProperty('--consultation-keyboard-shift');
+    return;
+  }
+  const panel = activeConsultationField.closest('.master-panel');
+  const panelSafe = parseFloat(getComputedStyle(panel || document.documentElement).getPropertyValue('--panel-safe')) || 16;
+  const inputBounds = activeConsultationField.getBoundingClientRect();
+  const baseTop = inputBounds.top - consultationFocusShift;
+  const baseBottom = inputBounds.bottom - consultationFocusShift;
+  const safeTop = viewport.offsetTop + panelSafe;
+  const safeBottom = viewport.offsetTop + viewport.height - panelSafe;
+  const requiredShift = Math.max(0, baseBottom - safeBottom);
+  const allowedShift = Math.max(0, baseTop - safeTop);
+  consultationFocusShift = -Math.min(requiredShift, allowedShift);
+  activeConsultationGroup.style.setProperty('--consultation-keyboard-shift', `${consultationFocusShift}px`);
+  activeConsultationGroup.classList.toggle('is-keyboard-active', consultationFocusShift !== 0);
+};
+consultationWritableFields.forEach(field => {
+  field.addEventListener('focus', () => {
+    const nextGroup = field.closest('[data-promo-form], [data-customer-form]');
+    if (activeConsultationGroup && activeConsultationGroup !== nextGroup) {
+      activeConsultationGroup.classList.remove('is-keyboard-active');
+      activeConsultationGroup.style.removeProperty('--consultation-keyboard-shift');
+    }
+    activeConsultationField = field;
+    activeConsultationGroup = nextGroup;
+    consultationFocusShift = 0;
+    window.requestAnimationFrame(updateConsultationInputPosition);
+    window.setTimeout(updateConsultationInputPosition, 80);
+  });
+  field.addEventListener('blur', () => {
+    window.setTimeout(() => {
+      if (!consultationWritableFields.includes(document.activeElement)) resetConsultationInputPosition();
+    });
+  });
+});
+consultationViewport?.addEventListener('resize', updateConsultationInputPosition);
+consultationViewport?.addEventListener('scroll', updateConsultationInputPosition);
 document.querySelectorAll('[data-customer-form] [data-field]').forEach((field) => {
   const key = field.dataset.field;
   field.addEventListener('input', () => {
@@ -443,4 +549,4 @@ searchInput.addEventListener('focus',updateKeyboard);
 searchInput.addEventListener('blur',()=>setTimeout(updateKeyboard));
 viewport?.addEventListener('resize',updateKeyboard);
 viewport?.addEventListener('scroll',updateKeyboard);
-applyLanguage(language);updateConsultationPromoCopy();renderCalendar();renderChoices();renderSummary();reveal();
+applyLanguage(language);updateConsultationPromoCopy();renderCalendar();renderChoices();renderSummary();updateConfirmationPanel();reveal();
