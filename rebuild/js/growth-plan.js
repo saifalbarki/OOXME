@@ -202,7 +202,7 @@ const header = () =>
 const footer = (final = false) =>
   `<footer class="master-panel-footer">${final ? '<a class="master-panel-continue" href="index.html?panel=2">' : '<button class="master-panel-continue" type="button" data-next-panel>'}<span class="swipe-control"><span ${text(final ? "Growth Plans" : "Next", final ? "باقات النمو" : "التالــــي")}>${final ? "Growth Plans" : "Next"}</span><span class="swipe-control-line"></span></span>${final ? "</a>" : "</button>"}</footer>`;
 const panel = (label, title, description, body, final = false) =>
-  `<section class="master-panel-screen"><div class="master-panel">${header()}<div class="master-panel-content"><p class="master-panel-label" ${text(label[0], label[1])}>${label[0]}</p><h1 ${text(title[0], title[1])}>${title[0]}</h1><p ${text(description[0], description[1])}>${description[0]}</p>${body}</div>${footer(final)}</div></section>`;
+  `<section class="master-panel-screen"><div class="master-panel">${header()}<div class="master-panel-content has-simplified-text-hierarchy"><h1 ${text(title[0], title[1])}>${title[0]}</h1><p ${text(description[0], description[1])}>${description[0]}</p>${body}</div>${footer(final)}</div></section>`;
 const render = () => {
   const en = selected.en,
     ar = selected.ar,

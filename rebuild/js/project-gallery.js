@@ -15,6 +15,7 @@ if (!isSecondaryCollection) {
   primaryAlBasriPanel.after(remainingAlBasriPanel);
 }
 const panels = [...document.querySelectorAll('.project-panel')];
+panels.forEach((panel) => panel.querySelector('.master-panel-content')?.classList.add('has-simplified-text-hierarchy'));
 const managedDescriptions = {
   'al-basri': { en: 'The opening visual for Al Basri Commercial Group, shown in its complete original composition.', ar: 'المشهد الافتتاحي لمجموعة البصري التجارية، ويعرض هوية المشروع بتكوينها الاصلي الكامل.' },
   'al-basri-remaining': { en: 'The remaining Al Basri visuals document the identity through supporting compositions and project applications.', ar: 'مشاهد البصري المتبقية توثق هوية المشروع عبر تكوينات مساندة وتطبيقات مختلفة.' },
@@ -36,7 +37,7 @@ const uniqueWorksDescriptions = {
 const descriptions = isDesignedCollection ? designedDescriptions : (isUniqueWorksCollection ? uniqueWorksDescriptions : managedDescriptions);
 panels.forEach((panel) => {
   const isMall = isAlBasriMallPanel(panel);
-  const label = panel.querySelector('.master-panel-label');
+  const label = panel.querySelector('.master-panel-label') || document.createElement('p');
   const title = panel.querySelector('h1');
   if (isMall) {
     label.dataset.en = 'Portfolio';

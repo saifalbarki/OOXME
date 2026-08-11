@@ -2,6 +2,12 @@ const root = document.documentElement;
 const searchInput = document.querySelector('[data-search-input]');
 const searchOverlay = document.querySelector('[data-search-overlay]');
 const searchSuggestion = document.querySelector('[data-search-suggestion]');
+const internalContent = document.querySelector('.master-panel-content');
+const internalLabel = internalContent?.querySelector(':scope > .master-panel-label');
+if (internalLabel) {
+  internalContent.classList.add('has-simplified-text-hierarchy');
+  internalLabel.remove();
+}
 const pages = {
   'brands-we-manage': { en: ['Portfolio', 'Brands We Manage'], ar: ['المعــــرض', 'العلامات التي نديرها'] },
   'brands-we-designed': { en: ['Portfolio', 'Brands We Designed'], ar: ['المعــــرض', 'العلامات التي صممناها'] },
@@ -20,7 +26,8 @@ const applyLanguage = (language) => {
   root.lang = language;
   root.dir = language === 'ar' ? 'rtl' : 'ltr';
   document.title = `${page[language][1]} | ${language === 'ar' ? 'اوكسوم' : 'OOXME'}`;
-  document.querySelector('[data-internal-label]').textContent = page[language][0];
+  const internalLabelTarget = document.querySelector('[data-internal-label]');
+  if (internalLabelTarget) internalLabelTarget.textContent = page[language][0];
   document.querySelector('[data-internal-title]').textContent = page[language][1];
   document.querySelector('[data-internal-description]').textContent = language === 'ar' ? 'هذه البنية المشتركة جاهزة للمحتوى التفصيلي.' : 'This shared page structure is ready for its detailed content.';
   document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[language]; });

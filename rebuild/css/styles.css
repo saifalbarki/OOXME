@@ -25,13 +25,19 @@ button { font: inherit; }
 .master-panel-logo { grid-column: 2; display: block; width: var(--logo-width); line-height: 0; }
 .master-panel-logo img { display: block; width: 100%; height: var(--header-element-size); object-fit: contain; }
 .master-panel-content { --master-spacing: var(--panel-safe); --homepage-three-card-row-width: 100%; display: grid; align-content: start; justify-items: center; row-gap: calc(var(--master-spacing) / 2); padding: var(--master-spacing) var(--panel-safe) 0; text-align: center; }
+.master-panel-content.has-simplified-text-hierarchy { --removed-label-top-margin: -.6px; }
+.master-panel-content.has-simplified-text-hierarchy > h1:first-child { margin-top: var(--removed-label-top-margin); }
 .master-panel-screen .master-panel-content > * { min-inline-size: 0; overflow: visible; opacity: 0; filter: blur(8px); transform: translateY(10px); }
 .master-panel-screen.is-active .master-panel-content > * { animation: panel-content-reveal .48s cubic-bezier(.22, .61, .36, 1) both; }
 .master-panel-screen.is-active .master-panel-content > :nth-child(2) { animation-delay: .09s; }
 .master-panel-screen.is-active .master-panel-content > :nth-child(3) { animation-delay: .18s; }
+.master-panel-screen.is-active .master-panel-content.has-simplified-text-hierarchy > h1:first-child { animation-delay: .09s; }
+.master-panel-screen.is-active .master-panel-content.has-simplified-text-hierarchy > h1:first-child + p { animation-delay: .18s; }
+.master-panel-screen.is-active .master-panel-content.has-simplified-text-hierarchy > h1:first-child + p + * { animation-delay: 0s; }
 .portfolio-panel.is-active .master-panel-content > :nth-child(4) { animation-delay: .27s; }
 .contact-panel.is-active .master-panel-content > :nth-child(4) { animation-delay: .27s; }
 .project-panel.is-active .master-panel-content > :nth-child(4) { animation-delay: .27s; }
+.portfolio-panel.is-active .master-panel-content.has-simplified-text-hierarchy > h1 + p + *, .contact-panel.is-active .master-panel-content.has-simplified-text-hierarchy > h1 + p + *, .project-panel.is-active .master-panel-content.has-simplified-text-hierarchy > h1 + p + * { animation-delay: .27s; }
 @keyframes panel-content-reveal { to { opacity: 1; filter: blur(0); transform: translateY(0); } }
 .master-panel-label { margin: -.08em 0; padding: .08em .05em; font-size: 7.5px; font-weight: 400; letter-spacing: .07em; line-height: var(--type-label-line-height); text-transform: uppercase; }
 .master-panel-content h1 { max-width: 12ch; margin: -.08em 0; padding: .08em .05em; font-size: clamp(28.5px, 6vw, 55.5px); letter-spacing: -.075em; line-height: var(--type-heading-line-height); overflow: visible; }
@@ -142,6 +148,7 @@ html[dir="rtl"] body { font-family: var(--font-arabic); }
 @media (max-aspect-ratio: 4 / 3) { :root { --portfolio-final-card-bottom-guide-inset: calc(var(--bottom-control-area-height) + var(--previous-page-last-card-height)); } }
 @media (max-aspect-ratio: 4 / 3) { .project-panel[data-project-key="al-basri-remaining"] .project-gallery { transform: translateY(calc(var(--panel-safe) / 2)); } }
 html[dir="rtl"] .master-panel-label { font-size: 10px; letter-spacing: 0; text-transform: none; }
+html[dir="rtl"] .master-panel-content.has-simplified-text-hierarchy { --removed-label-top-margin: -.8px; }
 @media (max-aspect-ratio: 4 / 3) { :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .master-panel-content h1, :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .master-panel-content > p:not(.master-panel-label) { display: block; } :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .project-gallery { position: static; inset: auto; bottom: auto; width: 100%; translate: none; } :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .project-gallery-viewport { width: min(100%, clamp(180px, 52dvh, 460px)); aspect-ratio: 1; } }
 html[dir="rtl"] .master-panel-content h1 { font-size: clamp(27px, 5.7vw, 52px); font-weight: 600; letter-spacing: 0; line-height: var(--type-heading-arabic-line-height); }
 html[dir="rtl"] .master-panel-content p:not(.master-panel-label) { font-size: clamp(13.5px, 1.45vw, 15.5px); font-weight: 500; letter-spacing: 0; line-height: var(--type-body-line-height); }
@@ -211,7 +218,7 @@ html[dir="rtl"] .booking-card input, html[dir="rtl"] .booking-fields input, html
 @media (max-width: 420px) { .booking-selectors { grid-template-columns: 1fr; } .booking-selectors .booking-card { padding: var(--space-half); } }
 /* Start plan: content only; the surrounding Master Panel remains shared. */
 .plan-detail-page .master-panel-content { grid-template-rows: auto auto auto minmax(0,1fr); }
-.plan-detail-cards { --plan-card-columns:1; display:flex; flex-wrap:wrap; align-self:end; justify-content:center; width:100%; margin-bottom:var(--panel-safe); gap:calc(var(--panel-safe) / 2); }
+.plan-detail-cards { --plan-card-columns:1; grid-row:4; display:flex; flex-wrap:wrap; align-self:end; justify-content:center; width:100%; margin-bottom:var(--panel-safe); gap:calc(var(--panel-safe) / 2); }
 .plan-detail-cards article,.plan-detail-cards .plan-service-card,.plan-detail-cta { display:grid; align-content:center; min-height:var(--homepage-white-card-height); padding:calc(var(--panel-safe) / 2) var(--panel-safe); border-radius:var(--card-radius); background:var(--color-paper); color:var(--color-ink); text-align:center; text-decoration:none; }
 .plan-detail-cards strong,.plan-detail-cards .service-name { font-size:clamp(11px,1.25vw,15px); font-weight:700; line-height:var(--type-control-line-height); overflow:visible; }
 .plan-detail-cards span,.plan-detail-cards .service-details { margin-top:4px; font-size:clamp(9px,1vw,12px); font-weight:500; line-height:var(--type-control-line-height); overflow:visible; }

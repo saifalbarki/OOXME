@@ -1,6 +1,31 @@
 const interactionTarget = 'button, a, input, select, textarea, label, [data-project-gallery], .booking-card, .booking-fields, .booking-selectors, .calendar-card, .booking-summary, .payment-options';
 let activeInteraction = null;
 
+const simplifyTextHierarchy = (scope = document) => {
+  scope.querySelectorAll('.master-panel-content').forEach((content) => {
+    const label = [...content.children].find((child) => child.classList.contains('master-panel-label'));
+    if (!label) return;
+
+    const title = label.nextElementSibling?.matches('h1')
+      ? label.nextElementSibling
+      : content.querySelector(':scope > h1');
+    const description = title?.nextElementSibling?.matches('p:not(.master-panel-label)')
+      ? title.nextElementSibling
+      : null;
+    if (!title || !description) return;
+
+    // Preserve the former label anchor, without retaining the label in layout.
+    content.classList.add('has-simplified-text-hierarchy');
+    label.remove();
+  });
+};
+
+simplifyTextHierarchy();
+new MutationObserver(() => simplifyTextHierarchy()).observe(document.documentElement, {
+  childList: true,
+  subtree: true
+});
+
 document.addEventListener('pointerdown', (event) => {
   if (event.button !== 0) return;
   const target = event.target.closest(interactionTarget);
