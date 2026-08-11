@@ -209,7 +209,7 @@ html[dir="rtl"] .booking-card input, html[dir="rtl"] .booking-fields input, html
 @media (max-width: 420px) { .booking-selectors { grid-template-columns: 1fr; } .booking-selectors .booking-card { padding: var(--space-half); } }
 /* Start plan: content only; the surrounding Master Panel remains shared. */
 .plan-detail-page .master-panel-content { grid-template-rows: auto auto auto minmax(0,1fr); }
-.plan-detail-cards { display:grid; grid-template-columns:1fr; align-self:end; width:100%; margin-bottom:var(--panel-safe); gap:calc(var(--panel-safe) / 2); }
+.plan-detail-cards { --plan-card-columns:1; display:flex; flex-wrap:wrap; align-self:end; justify-content:center; width:100%; margin-bottom:var(--panel-safe); gap:calc(var(--panel-safe) / 2); }
 .plan-detail-cards article,.plan-detail-cards .plan-service-card,.plan-detail-cta { display:grid; align-content:center; min-height:var(--homepage-white-card-height); padding:calc(var(--panel-safe) / 2) var(--panel-safe); border-radius:var(--card-radius); background:var(--color-paper); color:var(--color-ink); text-align:center; text-decoration:none; }
 .plan-detail-cards strong,.plan-detail-cards .service-name { font-size:clamp(11px,1.25vw,15px); font-weight:700; line-height:var(--type-control-line-height); overflow:visible; }
 .plan-detail-cards span,.plan-detail-cards .service-details { margin-top:4px; font-size:clamp(9px,1vw,12px); font-weight:500; line-height:var(--type-control-line-height); overflow:visible; }
@@ -217,8 +217,8 @@ html[dir="rtl"] .booking-card input, html[dir="rtl"] .booking-fields input, html
 .plan-overview strong { color:var(--color-brand); font-size:clamp(18px,2vw,25px); }
 .plan-detail-cta { min-height:var(--homepage-white-card-height); border:0; background:var(--color-brand); color:var(--color-paper); font:inherit; font-size:clamp(11px,1.2vw,14px); font-weight:700; }
 html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:rtl; }
-@media (min-aspect-ratio:4 / 3) { .plan-detail-cards { grid-template-columns:repeat(2,minmax(0,1fr)); width:calc(100% - (var(--panel-safe) * 2)); margin-bottom:var(--homepage-standard-card-bottom-inset); gap:var(--panel-safe); } .plan-detail-cards article,.plan-detail-cards .plan-service-card,.plan-detail-cta { min-height:var(--homepage-white-card-height); } .plan-overview { grid-template-columns:minmax(0,1fr); width:min(calc(100% - (var(--panel-safe) * 2)),520px); } .plan-final { grid-template-columns:minmax(0,1fr); width:min(calc(100% - (var(--panel-safe) * 2)),640px); } }
-@media (min-aspect-ratio:4 / 3) { .plan-detail-page .master-panel-content { row-gap:var(--panel-safe); } .plan-detail-page .plan-detail-cards { grid-auto-rows:minmax(var(--homepage-white-card-height),auto); justify-items:stretch; align-items:stretch; } .plan-detail-page .plan-detail-cards article,.plan-detail-page .plan-detail-cards .plan-service-card,.plan-detail-page .plan-detail-cards .plan-detail-cta { min-width:0; min-height:var(--homepage-white-card-height); height:100%; } .plan-detail-page .master-panel-screen:nth-of-type(3) .plan-detail-cards,.plan-detail-page .master-panel-screen:nth-of-type(4) .plan-detail-cards { grid-template-columns:repeat(3,minmax(0,1fr)); } .plan-detail-page .plan-final { grid-template-columns:repeat(2,minmax(0,1fr)); width:calc(100% - (var(--panel-safe) * 2)); } .plan-detail-page .plan-final article,.plan-detail-page .plan-final .plan-detail-cta { min-height:calc(var(--homepage-white-card-height) * 1.4); } }
+@media (min-aspect-ratio:4 / 3) { .plan-detail-cards { --plan-card-columns:2; width:calc(100% - (var(--panel-safe) * 2)); margin-bottom:var(--homepage-standard-card-bottom-inset); gap:var(--panel-safe); } .plan-detail-cards article,.plan-detail-cards .plan-service-card,.plan-detail-cta { min-height:var(--homepage-white-card-height); } .plan-overview { --plan-card-columns:1; width:min(calc(100% - (var(--panel-safe) * 2)),520px); } .plan-final { --plan-card-columns:1; width:min(calc(100% - (var(--panel-safe) * 2)),640px); } }
+@media (min-aspect-ratio:4 / 3) { .plan-detail-page .master-panel-content { row-gap:var(--panel-safe); } .plan-detail-page .plan-detail-cards { align-items:stretch; } .plan-detail-page .plan-detail-cards article,.plan-detail-page .plan-detail-cards .plan-service-card,.plan-detail-page .plan-detail-cards .plan-detail-cta { min-width:0; min-height:var(--homepage-white-card-height); height:100%; } .plan-detail-page .master-panel-screen:nth-of-type(3) .plan-detail-cards,.plan-detail-page .master-panel-screen:nth-of-type(4) .plan-detail-cards { --plan-card-columns:3; } .plan-detail-page .plan-final { --plan-card-columns:2; width:calc(100% - (var(--panel-safe) * 2)); } .plan-detail-page .plan-final article,.plan-detail-page .plan-final .plan-detail-cta { min-height:calc(var(--homepage-white-card-height) * 1.4); } }
 
 /* Shared bottom anchor: content → X → line → X → panel edge. */
 .master-panel-footer { position: relative; height: var(--bottom-control-area-height); min-height: var(--bottom-control-area-height); padding: 0; }
@@ -247,7 +247,296 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 .project-gallery-dots { position: relative; margin-block: -20px; padding-block: 20px; touch-action: manipulation; }
 .project-gallery-dot { position: relative; z-index: 1; }
 
+/* Al Basri Mall: landscape-only curved image wall. Portrait retains the approved vertical gallery. */
+@media (min-aspect-ratio: 4 / 3) {
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport {
+    width: 100%;
+    height: 30dvh;
+    overflow: hidden;
+    border-radius: 0;
+    cursor: grab;
+    perspective: 1100px;
+    perspective-origin: 50% 50%;
+    touch-action: pan-y;
+  }
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-track {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    transform-style: preserve-3d;
+  }
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-slide {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: clamp(118px, 17vw, 240px);
+    height: 100%;
+    max-width: 34%;
+    object-fit: contain;
+    border-radius: clamp(3px, .45vw, 6px);
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport:active { cursor: grabbing; }
+}
+
 /* Closing uses the existing Fade + Blur + collapse language at a shorter pace. */
 .search-overlay:not(.is-open) { transition: opacity .22s ease .12s, visibility 0s linear .34s, background-color .22s ease .12s, backdrop-filter .22s ease .12s, -webkit-backdrop-filter .22s ease .12s; }
 .search-overlay:not(.is-open) .search-overlay-links a { transition: opacity .16s ease .12s, filter .16s ease .12s, transform .16s ease .12s; }
 .search-overlay:not(.is-open) .search-overlay-field { transition: opacity .22s ease .1s, clip-path .22s cubic-bezier(.22, .61, .36, 1) .1s; }
+
+/* Shared constraint-based responsive layout: preserves the existing visual system. */
+.master-panel {
+  /* The primary safe frame always matches the established outer X gap.
+     Landscape only compacts gaps between components, never this boundary. */
+  --header-zone: calc(var(--header-element-size) + var(--layout-x));
+  --content-safe-inline: var(--layout-x);
+  --content-safe-block: var(--layout-x);
+}
+/* Retain the approved, pre-refactor header anchor exactly. */
+.master-panel-header { padding: var(--panel-safe) var(--panel-safe) 0; }
+.master-panel-content {
+  container-type: inline-size;
+  min-height: 0;
+  row-gap: var(--layout-major-gap);
+  padding: var(--content-safe-block) var(--content-safe-inline) 0;
+}
+.master-panel-content > :is(.portfolio-options, .contact-actions, .project-gallery, .plan-detail-cards) {
+  width: min(100%, var(--layout-content-max));
+  max-inline-size: var(--layout-content-max);
+}
+.master-panel-content :is(h1, p, strong, span, a, button) { min-inline-size: 0; overflow-wrap: anywhere; }
+.portfolio-options,
+.plan-detail-cards {
+  gap: var(--layout-major-gap);
+}
+.portfolio-options > :is(a, button),
+.plan-detail-cards > :is(article, .plan-service-card, .plan-detail-cta) {
+  flex: 0 1 calc((100% - (var(--plan-card-columns) - 1) * var(--layout-major-gap)) / var(--plan-card-columns));
+  min-inline-size: 0;
+  min-block-size: var(--homepage-white-card-height);
+  height: auto;
+  padding-block: clamp(8px, 1.2dvh, 14px);
+  padding-inline: clamp(12px, 1.5vw, 20px);
+}
+.project-gallery { gap: var(--layout-related-gap); }
+.project-gallery-viewport { max-height: var(--layout-gallery-height); }
+
+@container (min-width: 560px) {
+  .portfolio-options:not(.consultation-options) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .plan-detail-cards:not(.plan-overview):not(.plan-final) { --plan-card-columns:3; }
+}
+
+@media (min-aspect-ratio: 4 / 3) {
+  .master-panel-content {
+    /* Text occupies the top tracks; the flexible track keeps primary content
+       attached to the lower safe boundary rather than vertically centering it. */
+    align-content: stretch;
+    row-gap: var(--layout-major-gap);
+    padding-inline: var(--content-safe-inline);
+    padding-bottom: var(--content-safe-block);
+  }
+
+  /* Intro retains the approved top-start text anchor; unlike panels with a
+     lower content group, its three text tracks must never stretch vertically. */
+  .intro-panel .master-panel-content { align-content: start; }
+
+  :is(.portfolio-panel, .contact-panel, .project-panel, .plan-detail-page):not(.booking-panel)
+    .master-panel-content > :is(.portfolio-options, .contact-actions, .project-gallery, .plan-detail-cards) {
+    align-self: end;
+  }
+  .master-panel-content p:not(.master-panel-label) {
+    width: min(100%, 60dvw, 520px);
+    max-width: min(100%, 60dvw, 520px);
+  }
+  .portfolio-options,
+  .plan-detail-cards { gap: var(--layout-major-gap); }
+  .project-gallery-viewport,
+  .project-panel--al-basri-primary .project-gallery-viewport,
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport {
+    height: var(--layout-gallery-height);
+  }
+  .project-gallery-dots { margin-block: calc(var(--layout-compact-gap) * -1); padding-block: var(--layout-compact-gap); }
+
+  /* Project galleries participate in the content-safe grid on wide screens.
+     This replaces the former translated/absolute placement, which could push
+     dots into the bottom control on short landscape viewports. */
+  .project-panel .project-gallery,
+  .project-panel--al-basri-primary .project-gallery,
+  .project-panel:not(.project-panel--al-basri-primary) .project-gallery {
+    position: static;
+    inset: auto;
+    bottom: auto;
+    translate: none;
+    width: min(100%, var(--layout-content-max));
+    margin-inline: auto;
+  }
+}
+
+@media (min-aspect-ratio: 4 / 3) and (max-height: 480px) {
+  .master-panel-content { row-gap: var(--layout-compact-gap); }
+  .master-panel-content h1 { font-size: clamp(24px, 4vw, 40px); }
+  .master-panel-content p { font-size: clamp(10px, 1.15vw, 12px); }
+  .portfolio-options > :is(a, button),
+  .plan-detail-cards > :is(article, .plan-service-card, .plan-detail-cta) { padding-block: 7px; }
+}
+
+/* Shared Portfolio project composition: top text grows down; each gallery and
+   its dots occupy the bottom grid track. Project-specific gallery types still
+   own their image rendering and interaction, not their vertical anchor. */
+.project-panel .master-panel-content {
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+}
+.project-panel .master-panel-content > h1,
+.project-panel .master-panel-content > p:not(.master-panel-label) {
+  display: block;
+}
+.project-panel[data-project-key] .project-gallery {
+  position: static;
+  inset: auto;
+  bottom: auto;
+  grid-row: 4;
+  align-self: end;
+  width: min(100%, var(--layout-content-max));
+  margin: 0;
+  translate: none;
+  transform: none;
+}
+
+/* Gallery dots remain easy to hit without adding layout height around the
+   shared image-to-dots gap. */
+.project-gallery { gap: var(--layout-major-gap); }
+.project-gallery-dots { margin-block: 0; padding-block: 0; }
+.project-gallery-dot::before { position: absolute; inset: -22px; content: ''; }
+
+@media (min-aspect-ratio: 4 / 3) {
+  /* Wide panels use their full inline space before allowing a project title
+     to grow vertically, preserving the flexible gap above the gallery. */
+  .project-panel .master-panel-content h1 {
+    max-width: min(100%, 38ch);
+    max-inline-size: min(100%, 38ch);
+  }
+}
+
+@media (min-aspect-ratio: 4 / 3) and (max-height: 480px) {
+  /* Short landscape screens retain both groups by compacting the visual
+     viewport—not by overlaying it on the text group. */
+  .project-panel .master-panel-content h1 { font-size: clamp(21px, 3.1vw, 28px); }
+  .project-panel .master-panel-content > p:not(.master-panel-label) {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(9px, 1vw, 11px);
+  }
+  .project-panel .project-gallery-viewport,
+  .project-panel--al-basri-primary .project-gallery-viewport,
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport {
+    height: clamp(22px, 6dvh, 28px);
+  }
+}
+
+@media (min-aspect-ratio: 4 / 3) and (min-height: 481px) and (max-height: 760px) {
+  /* A shallow wide viewport keeps the lower group below copy without
+     changing its bottom anchor or the gallery's horizontal behavior. */
+  .project-panel .project-gallery-viewport,
+  .project-panel--al-basri-primary .project-gallery-viewport,
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport {
+    height: clamp(96px, 20dvh, 144px);
+  }
+}
+
+/* Portrait Consultation shares the three-row card track used by the main
+   panels, so its third-row CTA has the identical lowest-card baseline. */
+@media (max-aspect-ratio: 4 / 3) {
+  .consultation-options {
+    grid-template-rows: repeat(3, var(--homepage-white-card-height));
+    align-self: end;
+  }
+}
+
+/* Shared square-image Portfolio deck. Only galleries whose own project assets
+   confirm as 1:1 receive this presentation; Al Basri Mall retains its portrait
+   gallery and its separate landscape arc unchanged. */
+.project-gallery.is-square-depth-deck {
+  --square-deck-card-size: clamp(160px, 44dvh, 360px);
+  --square-deck-rise: clamp(32px, 8dvh, 56px);
+  --square-deck-viewport-ratio: 1.18;
+  --gallery-deck-image-radius: clamp(14px, 3.8vmin, 32px);
+  gap: var(--layout-major-gap);
+}
+.project-gallery.is-square-depth-deck .project-gallery-viewport {
+  position: relative;
+  width: min(100%, var(--square-deck-card-size));
+  height: auto;
+  max-height: none;
+  aspect-ratio: 1 / var(--square-deck-viewport-ratio);
+  overflow: visible;
+  border-radius: 0;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.project-gallery.is-square-depth-deck .project-gallery-viewport:active { cursor: grabbing; }
+.project-gallery.is-square-depth-deck .project-gallery-track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-style: preserve-3d;
+}
+.project-gallery.is-square-depth-deck .project-gallery-slide {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-end: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 1.25px solid rgba(0, 0, 0, .32);
+  border-radius: var(--gallery-deck-image-radius);
+  object-fit: contain;
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+.project-gallery.is-square-depth-deck .project-gallery-dots {
+  position: relative;
+  display: block;
+  width: clamp(52px, 8vw, 72px);
+  min-height: 0;
+  height: clamp(4px, .55vmin, 6px);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: #d5d8de;
+  touch-action: manipulation;
+}
+.project-gallery.is-square-depth-deck .project-gallery-progress-indicator {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 30%;
+  border-radius: inherit;
+  background: #4b5058;
+  transform: translateX(calc(var(--gallery-progress, 0) * 233.333%));
+  transition: transform .34s cubic-bezier(.22, .75, .3, 1);
+  will-change: transform;
+}
+
+@media (min-aspect-ratio: 4 / 3) {
+  .project-gallery.is-square-depth-deck {
+    --square-deck-card-size: clamp(110px, 28dvh, 260px);
+    --square-deck-rise: clamp(24px, 6dvh, 48px);
+    --square-deck-viewport-ratio: 1.25;
+  }
+}
+
+@media (min-aspect-ratio: 4 / 3) and (max-height: 480px) {
+  .project-gallery.is-square-depth-deck {
+    --square-deck-card-size: clamp(58px, 18dvh, 78px);
+    --square-deck-rise: clamp(16px, 5dvh, 24px);
+    --square-deck-viewport-ratio: 1.31;
+  }
+}

@@ -11,6 +11,13 @@
   --panel-radius: clamp(36px, 10vmin, 88px);
   --card-radius: calc(var(--space) * 0.9);
   --panel-safe: clamp(20px, 4vw, 48px);
+  /* Shared responsive geometry. X intentionally remains the current panel-safe outer gap. */
+  --layout-x: var(--panel-safe);
+  --layout-major-gap: var(--layout-x);
+  --layout-related-gap: calc(var(--layout-x) * .75);
+  --layout-compact-gap: calc(var(--layout-x) * .5);
+  --layout-content-max: 1280px;
+  --layout-gallery-height: clamp(132px, 30dvh, 320px);
   --header-element-size: clamp(16px, 1.45vw, 19px);
   --logo-width: calc(var(--header-element-size) * .743);
   --header-control-size: 24px;
@@ -19,7 +26,9 @@
   --bottom-control-area-height: calc((var(--panel-safe) * 2) + var(--bottom-control-line-thickness));
   --pagination-dot-area-size: var(--bottom-control-line-thickness);
   --previous-page-last-card-height: clamp(24px, 3.5vh, 36px);
-  --homepage-white-card-height: clamp(48px, 7vh, 72px);
+  /* Portrait's shared standard rectangle: cards and equivalent controls. */
+  --portrait-control-height: clamp(52px, 7.5vh, 76px);
+  --homepage-white-card-height: var(--portrait-control-height);
   --portfolio-final-card-bottom-guide-inset: var(--bottom-control-area-height);
   --homepage-standard-card-bottom-inset: var(--portfolio-final-card-bottom-guide-inset);
   --panel-motion: 0.62s cubic-bezier(0.22, 0.61, 0.36, 1);
@@ -30,6 +39,16 @@
   --type-control-line-height: 1.35;
   --font-english: OOXMEEnglish, Arial, sans-serif;
   --font-arabic: OOXMEArabic, Tahoma, sans-serif;
+}
+
+@media (min-aspect-ratio: 4 / 3) {
+  :root {
+    --layout-major-gap: calc(var(--layout-x) * .5);
+    --layout-related-gap: calc(var(--layout-x) * .5);
+    --layout-compact-gap: calc(var(--layout-x) * .25);
+    --layout-gallery-height: clamp(116px, 28dvh, 300px);
+    --homepage-white-card-height: clamp(42px, 7dvh, 60px);
+  }
 }
 
 @font-face {
