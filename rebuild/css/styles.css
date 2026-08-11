@@ -157,6 +157,7 @@ html[dir="rtl"] .master-panel-content p:not(.master-panel-label) { font-size: cl
 /* Booking flow: panel-internal controls only; the Master Panel remains shared. */
 .booking-panel .master-panel-content { grid-template-rows: auto auto auto minmax(0, 1fr); }
 .booking-panel .master-panel-content { --booking-master-container-width: 100%; }
+.booking-panel .master-panel-content > :is(.booking-card, .booking-fields, .booking-selectors, .payment-options) { grid-row: 4; align-self: end; }
 .booking-card, .booking-fields, .booking-selectors, .payment-options { align-self: end; width: min(100%, 620px); margin-bottom: var(--panel-safe); }
 .booking-card { display: grid; gap: var(--space-half); padding: var(--panel-safe); border-radius: var(--card-radius); background: var(--color-paper); text-align: start; }
 .promo-card { --promo-balanced-gap: var(--space-half); position: relative; justify-self: center; justify-items: center; gap: var(--promo-balanced-gap); padding-bottom: var(--promo-balanced-gap); text-align: center; }
@@ -215,6 +216,319 @@ html[dir="rtl"] .booking-card input, html[dir="rtl"] .booking-fields input, html
 @media (min-aspect-ratio: 4 / 3) { .booking-panel[data-step="customer"] .booking-fields { position: absolute; inset-inline: var(--panel-safe); bottom: var(--homepage-standard-card-bottom-inset); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(2, var(--homepage-white-card-height)); align-self: auto; width: calc(100% - (var(--panel-safe) * 2)); max-height: none; margin: 0; padding: 0; overflow: visible; gap: var(--panel-safe); text-align: center; } .booking-panel[data-step="customer"] .booking-fields label { display: grid; place-items: center; width: 100%; height: var(--homepage-white-card-height); min-height: 0; padding: 0 var(--panel-safe); border-radius: var(--card-radius); background: var(--color-paper); text-align: center; } .booking-panel[data-step="customer"] .booking-fields label > span { display: none; } .booking-panel[data-step="customer"] .booking-fields .customer-writing-field { width: 100%; min-height: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; color: var(--color-ink); text-align: center; line-height: normal; } .booking-panel[data-step="customer"] .booking-fields .customer-writing-field::placeholder { color: rgba(13, 13, 13, .42); opacity: 1; text-align: center; } html[dir="rtl"] .booking-panel[data-step="customer"] .booking-fields .customer-writing-field { direction: rtl; text-align: center; } }
 @media (min-aspect-ratio: 4 / 3) { .booking-panel[data-step="date"] .calendar-card { position: absolute; inset-inline: 0; bottom: var(--homepage-standard-card-bottom-inset); justify-self: center; width: min(calc(100% - (var(--panel-safe) * 2)), 460px); min-height: 260px; height: 260px; margin: 0; padding: var(--panel-safe); } .booking-panel[data-step="time"] .booking-selectors { position: absolute; inset-inline: var(--panel-safe); bottom: var(--homepage-standard-card-bottom-inset); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-self: auto; width: calc(100% - (var(--panel-safe) * 2)); height: calc(var(--homepage-white-card-height) + (var(--panel-safe) * 2)); margin: 0; gap: var(--panel-safe); } .booking-panel[data-step="time"] .booking-selectors .booking-card { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; width: 100%; height: 100%; min-height: 0; margin: 0; padding: var(--panel-safe); border-radius: var(--card-radius); background: var(--color-paper); } .booking-panel[data-step="time"] .booking-selectors h2 { margin: 0 var(--space-half) 0 0; font-size: 13px; } .booking-panel[data-step="time"] .booking-selectors .choice-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--panel-safe); } html[dir="rtl"] .booking-panel[data-step="time"] .booking-selectors h2 { margin: 0 0 0 var(--space-half); } .booking-panel[data-step="time"] .booking-selectors .choice-row button { min-height: 30px; } .booking-panel[data-step="summary"] .booking-summary { position: absolute; inset-inline: 0; bottom: var(--homepage-standard-card-bottom-inset); justify-self: center; grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(calc(100% - (var(--panel-safe) * 2)), 760px); max-height: 360px; margin: 0; padding: var(--panel-safe); overflow: auto; gap: var(--panel-safe); border-radius: var(--card-radius); background: var(--color-paper); } .booking-panel[data-step="summary"] .booking-summary > div { gap: 3px; padding: 0; border: 0; text-align: center; } .booking-panel[data-step="confirmation"] .master-panel-content > p:not(.master-panel-label) { display: block; text-align: center; } }
 @media (min-aspect-ratio: 4 / 3) { .booking-panel[data-step="promo"] .booking-promo-cards .booking-promo-card { box-sizing: border-box; min-width: 0; width: 100%; min-height: var(--homepage-white-card-height); max-height: var(--homepage-white-card-height); height: var(--homepage-white-card-height); } .booking-panel[data-step="date"] .calendar-card { width: min(calc(100% - (var(--panel-safe) * 2)), 400px); min-height: 390px; height: 390px; overflow: hidden; } .booking-panel[data-step="time"] .booking-selectors { height: calc(var(--homepage-white-card-height) + (var(--panel-safe) * 3)); } .booking-panel[data-step="time"] .booking-selectors .booking-card { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); align-items: start; gap: var(--panel-safe); } .booking-panel[data-step="time"] .booking-selectors h2, html[dir="rtl"] .booking-panel[data-step="time"] .booking-selectors h2 { margin: 0; text-align: start; } .booking-panel[data-step="time"] .booking-selectors .choice-row { align-self: stretch; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--panel-safe); } .booking-panel[data-step="time"] .booking-selectors .choice-row button { width: 100%; min-height: 30px; height: 30px; padding: 0; } }
+@media (min-aspect-ratio: 4 / 3) { .booking-panel .master-panel-content > h1, .booking-panel .master-panel-content > p:not(.master-panel-label) { display: block; } }
+/* Consultation form refinements: all controls remain in the shared bottom track. */
+.booking-panel[data-step="customer"] .booking-fields { gap: var(--layout-major-gap); }
+.booking-panel[data-step="customer"] .booking-fields label { display: grid; min-height: 44px; padding: 0; border: 1px solid var(--color-line); border-radius: calc(var(--card-radius) * .55); background: var(--color-paper); overflow: hidden; }
+.booking-panel[data-step="customer"] .booking-fields label > span { display: none; }
+.booking-panel[data-step="customer"] .booking-fields .customer-writing-field { width: 100%; height: 100%; min-height: 44px; padding: 10px 12px; border: 0; border-radius: inherit; background: transparent; text-align: start; }
+.booking-panel[data-step="customer"] .customer-writing-field::placeholder, .promo-input-card > input::placeholder { color: var(--color-secondary-control); opacity: 1; }
+.booking-panel[data-step="customer"] .customer-writing-field.is-inline-error::placeholder, .booking-panel[data-step="promo"] .promo-input-card.is-invalid .booking-message { color: #b42318; }
+.booking-panel[data-step="customer"] .booking-fields label.is-invalid { box-shadow: inset 0 0 0 1px #b42318; background: var(--color-paper); }
+.booking-panel[data-step="customer"] .booking-fields label.is-invalid input { box-shadow: none; background: transparent; }
+.calendar-day { display: grid; place-items: center; background: rgba(7, 20, 120, .12); color: var(--color-ink); }
+.calendar-day.is-unavailable { background: rgba(13, 13, 13, .10); color: rgba(13, 13, 13, .38); text-decoration: none; }
+.calendar-day.is-booked { background: rgba(13, 13, 13, .14); color: var(--color-ink); }
+.booking-selectors .choice-row { gap: var(--layout-related-gap); }
+.booking-selectors .choice-row button { min-height: clamp(30px, 4.5dvh, 40px); padding: var(--layout-compact-gap); border-radius: calc(var(--card-radius) * .55); }
+.booking-summary { grid-template-columns: 1fr; }
+.booking-summary > div { position: relative; grid-template-columns: 1fr; gap: var(--layout-compact-gap); padding: var(--layout-related-gap) var(--panel-safe); border: 0; text-align: center; }
+.booking-summary > div::after { position: absolute; inset-inline: var(--panel-safe); inset-block-end: 0; height: 1px; background: var(--color-line); content: ''; }
+.booking-summary > div:last-child::after { display: none; }
+.booking-summary dt { color: var(--color-secondary-control); }
+.booking-summary dd { color: var(--color-ink); }
+/* Consultation box contract: one stacked gap and one rectangular radius. */
+.booking-panel {
+  --consultation-stack-gap: var(--layout-related-gap);
+  --consultation-box-radius: calc(var(--card-radius) * .55);
+  --consultation-entry-height: 44px;
+  --calendar-day-size: clamp(22px, 3.5dvh, 30px);
+}
+.booking-panel :is(.booking-card, .booking-fields label, .payment-options button, .booking-inline-action, .choice-row button, .calendar-card, .booking-summary, .promo-input-card, .promo-action-card) {
+  border: 0;
+  border-radius: var(--consultation-box-radius);
+}
+.booking-panel :is(.booking-fields, .booking-selectors, .payment-options, .choice-row) { gap: var(--consultation-stack-gap); }
+.booking-panel :is(.booking-card input, .booking-fields input, .booking-fields select, .customer-writing-field) {
+  min-height: var(--consultation-entry-height);
+  height: var(--consultation-entry-height);
+  padding-block: 0;
+  border: 0;
+  border-radius: var(--consultation-box-radius);
+  font-size: clamp(12px, 1.05vw, 14px);
+  line-height: var(--consultation-entry-height);
+}
+.booking-panel[data-step="customer"] .booking-fields label { border: 0; border-radius: var(--consultation-box-radius); }
+.booking-panel[data-step="customer"] .booking-fields .customer-writing-field { padding-inline: 12px; }
+.booking-panel :is(.booking-fields label.is-invalid, .booking-card.is-invalid, .payment-options.is-invalid, .promo-card input.is-invalid) { box-shadow: none; }
+.booking-panel[data-step="customer"] .booking-fields label.is-invalid { box-shadow: none; }
+.booking-panel .calendar-grid { gap: var(--layout-compact-gap); }
+.booking-panel .calendar-day {
+  justify-self: center;
+  width: var(--calendar-day-size);
+  height: var(--calendar-day-size);
+  min-width: 0;
+  min-height: 0;
+  font-size: clamp(10px, 1.15vw, 13px);
+  font-weight: 700;
+}
+.booking-panel .calendar-head { font-size: clamp(13px, 1.55vw, 18px); }
+.booking-panel .calendar-weekday { font-size: clamp(10px, 1.2vw, 14px); }
+.booking-panel .calendar-card {
+  grid-template-rows: auto auto auto;
+  row-gap: 0;
+  padding-bottom: 0;
+}
+.booking-panel[data-step="summary"] .booking-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--consultation-stack-gap);
+  padding: var(--consultation-stack-gap);
+  border-radius: var(--consultation-box-radius);
+}
+.booking-panel[data-step="summary"] .booking-summary > div {
+  display: grid;
+  align-content: center;
+  gap: var(--consultation-stack-gap);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  text-align: center;
+}
+.booking-panel[data-step="summary"] .booking-summary > div::after { display: none; }
+.booking-panel[data-step="summary"] .booking-summary :is(dt, dd) { text-align: center; }
+.booking-panel[data-step="summary"] .booking-summary dt { color: var(--color-secondary-control); }
+.booking-panel[data-step="summary"] .booking-summary dd { color: var(--color-ink); }
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="summary"] .booking-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Final writable-field alignment must outrank landscape customer-card rules. */
+.booking-panel :is(.promo-input-card > input, .customer-writing-field) {
+  padding-inline: 0;
+  font-size: var(--consultation-writable-font-size);
+  line-height: var(--consultation-entry-height);
+  text-align: center;
+}
+.booking-panel[data-step="customer"] .booking-fields .customer-writing-field {
+  padding-inline: 0;
+  font-size: var(--consultation-writable-font-size);
+  line-height: var(--consultation-entry-height);
+  text-align: center;
+}
+.booking-panel :is(.promo-input-card > input, .customer-writing-field)::placeholder { text-align: center; }
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel { --consultation-writable-font-size: clamp(9px, .9vw, 11px); }
+}
+
+.booking-panel[data-step="date"] .calendar-card {
+  grid-template-rows: auto auto auto;
+  row-gap: 0;
+  padding-bottom: 0;
+}
+.booking-panel[data-step="date"] .calendar-day {
+  font-size: clamp(10px, 1.15vw, 13px);
+  font-weight: 700;
+}
+/* Calendar alignment: one shared horizontal grid boundary. */
+.booking-panel[data-step="date"] .calendar-card {
+  --calendar-grid-width: 100%;
+}
+.booking-panel[data-step="date"] :is(.calendar-head, .calendar-weekdays, .calendar-grid) {
+  inline-size: var(--calendar-grid-width);
+  justify-self: center;
+}
+
+/* Open payment boxes distribute their live content with equal dynamic space. */
+.booking-panel[data-step="payment"] .payment-option.is-open {
+  padding: 0;
+  gap: 0;
+}
+.booking-panel[data-step="payment"] .payment-option.is-open .payment-option-detail-inner {
+  display: flex;
+  height: 100%;
+  padding: 0;
+  gap: 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+}
+.booking-panel[data-step="payment"] .payment-option.is-open .payment-instruction {
+  min-height: 0;
+  white-space: pre-line;
+}
+.booking-panel[data-step="payment"] .payment-option--coming.is-open .payment-option-detail-inner {
+  display: flex;
+  height: 100%;
+  padding: 0;
+  align-items: center;
+  justify-content: space-evenly;
+}
+.booking-panel[data-step="payment"] .payment-option--coming {
+  --payment-expanded-height: calc(var(--payment-qr-size) + (var(--payment-box-space) * 3) + 2.7em);
+}
+
+/* Payment-box internals use one consistent boundary and element gap. */
+.booking-panel[data-step="payment"] .payment-options {
+  --payment-box-space: var(--layout-compact-gap);
+  --payment-expanded-height: calc(var(--payment-qr-size) + (var(--payment-box-space) * 3) + 2.7em);
+}
+.booking-panel[data-step="payment"] .payment-option { font-size: var(--consultation-writable-font-size); }
+.booking-panel[data-step="payment"] .payment-option-label { padding-inline: var(--payment-box-space); }
+.booking-panel[data-step="payment"] .payment-option.is-open {
+  padding: var(--payment-box-space);
+  gap: var(--payment-box-space);
+}
+.booking-panel[data-step="payment"] .payment-option.is-open .payment-option-label {
+  display: none;
+}
+.booking-panel[data-step="payment"] .payment-option.is-open .payment-option-detail-inner {
+  align-content: start;
+  padding: 0;
+  gap: var(--payment-box-space);
+}
+.booking-panel[data-step="payment"] .payment-instruction { min-height: 2.7em; }
+.booking-panel[data-step="payment"] .payment-option--coming { --payment-expanded-height: max(var(--payment-rest-height), calc((var(--payment-box-space) * 4) + 1.35em)); }
+.booking-panel[data-step="payment"] .payment-option--coming.is-open { padding: 0; gap: 0; }
+.booking-panel[data-step="payment"] .payment-option--coming.is-open .payment-option-label { display: none; }
+.booking-panel[data-step="payment"] .payment-option--coming.is-open .payment-option-detail-inner {
+  height: 100%;
+  padding: var(--payment-box-space);
+  place-items: center;
+  align-content: center;
+}
+
+/* The Month box retains the shared lower-content anchor on its own. */
+.booking-panel[data-step="date"] .calendar-card {
+  grid-row: 4;
+  align-self: end;
+  width: var(--booking-master-container-width);
+  margin: 0;
+}
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="date"] .calendar-card {
+    position: absolute;
+    inset-inline: 0;
+    bottom: var(--homepage-standard-card-bottom-inset);
+    justify-self: center;
+    width: min(calc(100% - (var(--panel-safe) * 2)), 400px);
+  }
+}
+
+/* Payment method panel: a bottom-anchored, exclusive upward accordion. */
+.booking-panel[data-step="payment"] .payment-options {
+  --payment-rest-height: var(--homepage-white-card-height);
+  --payment-expanded-height: clamp(142px, 27dvh, 220px);
+  --payment-qr-size: clamp(62px, 12dvh, 112px);
+  display: flex;
+  flex-direction: column;
+  align-self: end;
+  gap: var(--consultation-stack-gap);
+  width: min(100%, 620px);
+  margin: 0;
+  overflow: visible;
+}
+.booking-panel[data-step="payment"] .payment-option {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: 100%;
+  min-height: var(--payment-rest-height);
+  height: var(--payment-rest-height);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--consultation-box-radius);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: height 380ms cubic-bezier(.22, .61, .36, 1), background-color 180ms ease;
+}
+.booking-panel[data-step="payment"] .payment-option.is-selected { background: var(--color-paper); color: var(--color-ink); }
+.booking-panel[data-step="payment"] .payment-option.is-open { height: var(--payment-expanded-height); }
+.booking-panel[data-step="payment"] .payment-option--coming { --payment-expanded-height: clamp(84px, 15dvh, 116px); }
+.booking-panel[data-step="payment"] .payment-option-label {
+  display: grid;
+  flex: 0 0 var(--payment-rest-height);
+  place-items: center;
+  padding-inline: var(--consultation-stack-gap);
+  font-size: var(--consultation-writable-font-size);
+  font-weight: 600;
+  line-height: var(--type-control-line-height);
+  text-align: center;
+}
+.booking-panel[data-step="payment"] .payment-option-detail {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-rows: 0fr;
+  min-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-4px);
+  transition: grid-template-rows 340ms cubic-bezier(.22, .61, .36, 1), opacity 150ms ease, transform 220ms ease;
+}
+.booking-panel[data-step="payment"] .payment-option.is-open .payment-option-detail {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 30ms, 45ms, 45ms;
+}
+.booking-panel[data-step="payment"] .payment-option-detail-inner {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-height: 0;
+  padding: 0 var(--consultation-stack-gap) var(--consultation-stack-gap);
+  gap: var(--layout-compact-gap);
+  font-size: var(--consultation-writable-font-size);
+  font-weight: 500;
+  line-height: var(--type-control-line-height);
+  text-align: center;
+}
+.booking-panel[data-step="payment"] .payment-instruction,
+.booking-panel[data-step="payment"] .payment-coming-message { display: block; max-width: 34ch; white-space: pre-line; text-align: center; }
+.booking-panel[data-step="payment"] .payment-qr-placeholder {
+  display: block;
+  width: min(var(--payment-qr-size), 100%);
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: var(--consultation-box-radius);
+  background: var(--color-panel);
+  opacity: 0;
+  transform: translateY(-3px);
+  transition: opacity 160ms ease 0ms, transform 200ms ease 0ms;
+}
+.booking-panel[data-step="payment"] .payment-qr-placeholder > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.booking-panel[data-step="payment"] .payment-option.is-open .payment-qr-placeholder { opacity: 1; transform: translateY(0); transition-delay: 80ms, 80ms; }
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="payment"] .payment-options { width: min(100%, 620px); }
+}
+@media (max-height: 440px) and (min-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="payment"] .payment-options { --payment-expanded-height: 112px; --payment-qr-size: 50px; }
+  .booking-panel[data-step="payment"] .payment-option--coming { --payment-expanded-height: 76px; }
+  .booking-panel[data-step="payment"] .payment-option-detail-inner { gap: 4px; padding-bottom: 6px; }
+}
+/* Writable Consultation fields share the established Panel 1 action typography. */
+.booking-panel { --consultation-writable-font-size: 9px; }
+.booking-panel :is(.promo-input-card > input, .customer-writing-field) {
+  padding-inline: 0;
+  font-size: var(--consultation-writable-font-size);
+  line-height: var(--consultation-entry-height);
+  text-align: center;
+}
+.booking-panel :is(.promo-input-card > input, .customer-writing-field)::placeholder {
+  font-size: inherit;
+  line-height: inherit;
+  text-align: center;
+}
+html[dir="rtl"] .booking-panel :is(.promo-input-card > input, .customer-writing-field) { text-align: center; }
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel { --consultation-writable-font-size: clamp(9px, .9vw, 11px); }
+}
 @media (max-width: 420px) { .booking-selectors { grid-template-columns: 1fr; } .booking-selectors .booking-card { padding: var(--space-half); } }
 /* Start plan: content only; the surrounding Master Panel remains shared. */
 .plan-detail-page .master-panel-content { grid-template-rows: auto auto auto minmax(0,1fr); }
@@ -588,4 +902,333 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
     height: var(--story-active-height);
     transform-origin: center center;
   }
+}
+
+/* Final Consultation-only cascade: preserves the shared control contract at every breakpoint. */
+.booking-panel .booking-card,
+.booking-panel .booking-fields label,
+.booking-panel .payment-options button,
+.booking-panel .booking-inline-action,
+.booking-panel .choice-row button,
+.booking-panel .calendar-card,
+.booking-panel .booking-summary,
+.booking-panel .booking-promo-cards .booking-promo-card {
+  border: 0;
+  border-radius: var(--consultation-box-radius);
+}
+.booking-panel .booking-fields,
+.booking-panel .booking-selectors,
+.booking-panel .payment-options,
+.booking-panel .booking-selectors .choice-row { gap: var(--consultation-stack-gap); }
+.booking-panel .booking-card input,
+.booking-panel .booking-fields input,
+.booking-panel .booking-fields select {
+  border: 0;
+  border-radius: var(--consultation-box-radius);
+  font-size: clamp(12px, 1.05vw, 14px);
+}
+.booking-panel[data-step="customer"] .booking-fields .customer-writing-field,
+.booking-panel[data-step="promo"] .promo-input-card > input {
+  padding-inline: 0;
+  font-size: var(--consultation-writable-font-size);
+  line-height: var(--consultation-entry-height);
+  text-align: center;
+}
+.booking-panel[data-step="customer"] .booking-fields .customer-writing-field::placeholder,
+.booking-panel[data-step="promo"] .promo-input-card > input::placeholder { text-align: center; }
+.booking-panel[data-step="customer"] .booking-fields label { border: 0; border-radius: var(--consultation-box-radius); }
+.booking-panel[data-step="time"] .booking-selectors .booking-card { border-radius: var(--consultation-box-radius); }
+.booking-panel[data-step="summary"] .booking-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--consultation-stack-gap); padding: var(--consultation-stack-gap); }
+.booking-panel[data-step="summary"] .booking-summary > div { gap: var(--consultation-stack-gap); padding: 0; border: 0; text-align: center; }
+.booking-panel[data-step="summary"] .booking-summary > div::after { display: none; }
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="summary"] .booking-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Month box: header, weekdays, and days share one internal rhythm. */
+.booking-panel[data-step="date"] .calendar-card {
+  --calendar-box-gap: var(--layout-related-gap);
+  display: grid;
+  align-content: start;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  gap: var(--calendar-box-gap);
+  min-height: 0;
+  height: auto;
+  padding: var(--calendar-box-gap);
+}
+.booking-panel[data-step="date"] :is(.calendar-weekdays, .calendar-grid) {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  text-align: center;
+}
+.booking-panel[data-step="date"] .calendar-weekdays { gap: var(--layout-compact-gap); }
+.booking-panel[data-step="date"] .calendar-grid { gap: var(--layout-compact-gap); }
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="date"] .calendar-card { --calendar-box-gap: var(--layout-compact-gap); }
+}
+
+/* Calendar header shares the exact seven-column boundary used by the dates. */
+.booking-panel[data-step="date"] .calendar-head {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: center;
+  width: 100%;
+}
+.booking-panel[data-step="date"] .calendar-head select {
+  grid-column: 1 / span 3;
+  justify-self: start;
+  width: max-content;
+}
+.booking-panel[data-step="date"] .calendar-year {
+  grid-column: 7;
+  justify-self: end;
+}
+.booking-panel[data-step="date"] :is(.calendar-weekdays, .calendar-grid) { inline-size: 100%; }
+.booking-panel[data-step="date"] .calendar-card > :is(.calendar-head, .calendar-weekdays, .calendar-grid) {
+  inline-size: var(--calendar-grid-width);
+  justify-self: center;
+}
+
+/* Month/Year uses the visible outer day-circle columns, not the calendar-card edge. */
+.booking-panel[data-step="date"] .calendar-card {
+  --calendar-day-column-width: calc((var(--calendar-grid-width) - (var(--layout-compact-gap) * 6)) / 7);
+  --calendar-day-grid-edge-inset: calc((var(--calendar-day-column-width) - var(--calendar-day-size)) / 2);
+}
+.booking-panel[data-step="date"] .calendar-card > .calendar-head {
+  inline-size: calc(var(--calendar-grid-width) - (var(--calendar-day-grid-edge-inset) * 2));
+}
+/* Calendar controls keep physical circle-edge placement regardless of page direction. */
+.booking-panel[data-step="date"] .calendar-head { direction: ltr; }
+.booking-panel[data-step="date"] .calendar-head select {
+  margin: 0;
+  padding-inline: 0;
+}
+html[dir="rtl"] .booking-panel[data-step="date"] .calendar-head select { direction: rtl; }
+
+/* Confirmation success mark: both strokes share one centered drawing timeline. */
+.booking-panel[data-step="confirmation"] .confirmation-content { position: relative; }
+.confirmation-success-mark {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.confirmation-success-mark svg {
+  width: clamp(52px, 9vmin, 90px);
+  height: clamp(52px, 9vmin, 90px);
+  overflow: visible;
+  transform-origin: center;
+}
+.confirmation-success-mark :is(.confirmation-success-circle, .confirmation-success-check) {
+  fill: none;
+  stroke: #8a8a8a;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3.5;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.confirmation-success-mark .confirmation-success-check { stroke-width: 4.5; }
+.confirmation-success-mark.is-drawing :is(.confirmation-success-circle, .confirmation-success-check) {
+  animation: confirmation-success-draw 900ms cubic-bezier(.35, .7, .3, 1) forwards;
+}
+.confirmation-success-mark.is-drawing svg {
+  animation: confirmation-success-pulse 180ms cubic-bezier(.35, .7, .3, 1) 900ms 1 both;
+}
+@keyframes confirmation-success-draw {
+  0% { stroke: #8a8a8a; stroke-dashoffset: 1; }
+  100% { stroke: #2f9f62; stroke-dashoffset: 0; }
+}
+@keyframes confirmation-success-pulse {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.035); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .confirmation-success-mark :is(.confirmation-success-circle, .confirmation-success-check) {
+    stroke: #2f9f62;
+    stroke-dashoffset: 0;
+  }
+  .confirmation-success-mark.is-drawing :is(.confirmation-success-circle, .confirmation-success-check) { animation: none; }
+  .confirmation-success-mark.is-drawing svg { animation: none; }
+}
+
+/* Calendar header and day columns share the Month box's one horizontal inset. */
+.booking-panel[data-step="date"] .calendar-card {
+  --calendar-horizontal-inset: var(--calendar-box-gap);
+  padding-inline: var(--calendar-horizontal-inset);
+  --calendar-day-grid-edge-inset: 0px;
+}
+.booking-panel[data-step="date"] .calendar-card > .calendar-head {
+  inline-size: var(--calendar-grid-width);
+}
+.booking-panel[data-step="date"] .calendar-day,
+.booking-panel[data-step="date"] .calendar-day:is(.is-booked, .is-unavailable, .is-selected) {
+  background: transparent;
+  border-radius: 0;
+}
+.booking-panel[data-step="date"] .calendar-day { color: var(--color-brand); }
+.booking-panel[data-step="date"] .calendar-day.is-booked { color: var(--color-ink); }
+.booking-panel[data-step="date"] .calendar-day.is-unavailable { color: rgba(13, 13, 13, .38); }
+.booking-panel[data-step="date"] .calendar-day.is-selected { color: var(--color-brand); font-weight: 800; }
+
+/* Custom Month picker: follows the existing calendar-head grid without invoking a native select. */
+.booking-panel[data-step="date"] .calendar-month-picker {
+  position: relative;
+  grid-column: 1 / span 3;
+  justify-self: start;
+  min-inline-size: 0;
+  direction: inherit;
+  z-index: 2;
+}
+html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direction: rtl; }
+.booking-panel[data-step="date"] .calendar-month-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: 700;
+  line-height: inherit;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.booking-panel[data-step="date"] .calendar-month-arrow {
+  inline-size: 6px;
+  block-size: 6px;
+  border-inline-end: 1.5px solid currentColor;
+  border-block-end: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 200ms cubic-bezier(.22, .61, .36, 1);
+}
+.booking-panel[data-step="date"] .calendar-month-picker.is-open .calendar-month-arrow {
+  transform: translateY(1px) rotate(225deg);
+}
+.booking-panel[data-step="date"] .calendar-month-menu {
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: calc(100% + 8px);
+  display: grid;
+  grid-template-columns: 1fr;
+  inline-size: clamp(140px, 20vw, 184px);
+  max-inline-size: min(184px, calc(100vw - (var(--panel-safe) * 2)));
+  max-block-size: min(280px, calc(100dvh - (var(--panel-safe) * 2)));
+  overflow-y: auto;
+  padding: var(--calendar-box-gap);
+  border: 0;
+  border-radius: var(--consultation-box-radius);
+  background: var(--color-paper);
+  box-shadow: 0 10px 26px rgba(13, 13, 13, .12);
+  opacity: 0;
+  transform: translateY(-4px) scale(.98);
+  transform-origin: top inline-start;
+  transition: opacity 200ms cubic-bezier(.22, .61, .36, 1), transform 200ms cubic-bezier(.22, .61, .36, 1);
+}
+.booking-panel[data-step="date"] .calendar-month-picker.opens-upward .calendar-month-menu {
+  inset-block-start: auto;
+  inset-block-end: calc(100% + 8px);
+  transform-origin: bottom inline-start;
+  transform: translateY(4px) scale(.98);
+}
+.booking-panel[data-step="date"] .calendar-month-picker.is-open .calendar-month-menu {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.booking-panel[data-step="date"] .calendar-month-option {
+  display: grid;
+  place-items: center;
+  min-block-size: 36px;
+  margin: 0;
+  padding: 0 var(--layout-compact-gap);
+  border: 0;
+  border-radius: calc(var(--consultation-box-radius) * .6);
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: 600;
+  line-height: var(--type-control-line-height);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.booking-panel[data-step="date"] .calendar-month-option[aria-selected="true"] {
+  background: color-mix(in srgb, var(--color-brand) 13%, white);
+  color: var(--color-brand);
+}
+.booking-panel[data-step="date"] .calendar-month-option:hover,
+.booking-panel[data-step="date"] .calendar-month-option:focus-visible {
+  background: #f0f1f2;
+  outline: 0;
+}
+.booking-panel[data-step="date"] .calendar-card:has(.calendar-month-picker.is-open) { overflow: visible; }
+@media (prefers-reduced-motion: reduce) {
+  .booking-panel[data-step="date"] :is(.calendar-month-menu, .calendar-month-arrow, .calendar-month-option) { transition-duration: .01ms; }
+}
+
+/* Consultation inputs retain their visual scale while preventing focus zoom. */
+.booking-flow-page :is(input, select, textarea) {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Shared image preview uses the Master Panel width and Search-overlay backdrop. */
+.site-image-preview {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--panel-safe);
+  background: rgba(255, 255, 255, .32);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 260ms ease, visibility 0s linear 260ms;
+}
+.site-image-preview.is-open {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.site-image-preview-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(100vw - (var(--panel-safe) * 2));
+  max-width: calc(100vw - (var(--panel-safe) * 2));
+  max-height: calc(100dvh - (var(--panel-safe) * 2));
+  opacity: 0;
+  transform: scale(.94);
+  transition: opacity 260ms ease, transform 260ms cubic-bezier(.22, .61, .36, 1);
+}
+.site-image-preview.is-open .site-image-preview-frame {
+  opacity: 1;
+  transform: scale(1);
+}
+.site-image-preview-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: calc(100vw - (var(--panel-safe) * 2));
+  max-height: calc(100dvh - (var(--panel-safe) * 2));
+  object-fit: contain;
+  border-radius: var(--panel-radius);
+}
+.site-image-preview.is-payment-qr .site-image-preview-image {
+  border-radius: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-image-preview,
+  .site-image-preview-frame { transition-duration: .01ms; }
 }

@@ -438,3 +438,69 @@ const applyProductionMetadata = () => {
 };
 applyProductionMetadata();
 new MutationObserver(applyProductionMetadata).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+
+/* Shared direct-image preview: taps open only when no gallery drag occurred. */
+const ooxmeImagePreview = document.createElement('div');
+ooxmeImagePreview.className = 'site-image-preview';
+ooxmeImagePreview.hidden = true;
+ooxmeImagePreview.innerHTML = '<div class="site-image-preview-frame"><img class="site-image-preview-image" alt="" /></div>';
+document.body.append(ooxmeImagePreview);
+let ooxmeImagePreviewTimer;
+let ooxmeImagePress = null;
+const getOoxmePreviewImage = (target) => {
+  if (!(target instanceof Element)) return null;
+  const image = target.closest('.project-gallery-slide, .payment-qr-placeholder > img');
+  return image instanceof HTMLImageElement ? image : null;
+};
+const closeOoxmeImagePreview = () => {
+  window.clearTimeout(ooxmeImagePreviewTimer);
+  if (ooxmeImagePreview.hidden) return;
+  ooxmeImagePreview.classList.remove('is-open');
+  window.setTimeout(() => { ooxmeImagePreview.hidden = true; }, 260);
+};
+const openOoxmeImagePreview = (image) => {
+  const previewImage = ooxmeImagePreview.querySelector('.site-image-preview-image');
+  const isPaymentQr = image.matches('.payment-qr-placeholder > img');
+  previewImage.src = image.currentSrc || image.src;
+  previewImage.alt = image.alt || '';
+  ooxmeImagePreview.classList.toggle('is-payment-qr', isPaymentQr);
+  ooxmeImagePreview.hidden = false;
+  window.requestAnimationFrame(() => ooxmeImagePreview.classList.add('is-open'));
+  window.clearTimeout(ooxmeImagePreviewTimer);
+  ooxmeImagePreviewTimer = window.setTimeout(closeOoxmeImagePreview, 5000);
+};
+ooxmeImagePreview.addEventListener('click', (event) => {
+  if (event.target.closest('.site-image-preview-image')) closeOoxmeImagePreview();
+});
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.site-image-preview-image')) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  closeOoxmeImagePreview();
+}, true);
+document.addEventListener('pointerdown', (event) => {
+  const image = getOoxmePreviewImage(event.target);
+  if (!image) return;
+  ooxmeImagePress = { image, pointerId: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
+}, true);
+document.addEventListener('pointermove', (event) => {
+  if (!ooxmeImagePress || event.pointerId !== ooxmeImagePress.pointerId) return;
+  if (Math.hypot(event.clientX - ooxmeImagePress.x, event.clientY - ooxmeImagePress.y) > 8) ooxmeImagePress.moved = true;
+}, true);
+document.addEventListener('pointerup', (event) => {
+  if (!ooxmeImagePress || event.pointerId !== ooxmeImagePress.pointerId) return;
+  const pressedImage = ooxmeImagePress.image;
+  window.setTimeout(() => {
+    if (ooxmeImagePress?.image === pressedImage) ooxmeImagePress = null;
+  }, 600);
+}, true);
+document.addEventListener('pointercancel', () => { ooxmeImagePress = null; }, true);
+document.addEventListener('click', (event) => {
+  const image = getOoxmePreviewImage(event.target);
+  if (!image || !ooxmeImagePress || ooxmeImagePress.image !== image || ooxmeImagePress.moved) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  openOoxmeImagePreview(image);
+  ooxmeImagePress = null;
+}, true);
+window.OOXMEImagePreview = { open: openOoxmeImagePreview, close: closeOoxmeImagePreview };
