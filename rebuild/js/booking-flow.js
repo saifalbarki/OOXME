@@ -124,13 +124,52 @@ const setFieldError = (field, key, invalid) => {
 };
 const promoValid = (show = false) => { const field = document.querySelector('[data-field="promo"]'); const code = (field?.value.trim() || state.promo || '').toUpperCase(); const valid = !code || code === 'R100'; markInvalid(field, show && !valid); if (show && !valid) setPromoFeedback(copy[language].promoInvalid, true); return valid; };
 const customerComplete = (show = false) => { let valid = true; fieldsRequired.forEach((key) => { const field = document.querySelector(`[data-field="${key}"]`); const value = String(state[key] || '').trim(); const usablePhone = key !== 'phone' || value.replace(/\D/g, '').length >= 7; const usableEmail = key !== 'email' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); const missing = !value || !usablePhone || !usableEmail; if (missing) valid = false; if (show) setFieldError(field, key, missing); }); return valid; };
-const dateAvailable = () => { if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date || '')) return false; const date = new Date(`${state.date}T12:00:00`); return !Number.isNaN(date.valueOf()) && ![4, 5].includes(date.getDay()) && date.getDate() % 4 !== 0; };
+let liveAvailability = null;
+let liveAvailabilityKey = '';
+let liveAvailabilityRequest = null;
+const usesLiveBookingApi = !['localhost', '127.0.0.1'].includes(window.location.hostname);
+const fallbackTimesForDate = (date) => {
+  const value = new Date(`${date}T12:00:00`);
+  if (Number.isNaN(value.valueOf()) || [4, 5].includes(value.getDay()) || value.getDate() % 4 === 0) return [];
+  return ['10:00', '13:00', '16:00'];
+};
+const availableTimesForDate = (date) => liveAvailability?.days?.[date] || fallbackTimesForDate(date);
+const dateAvailable = () => /^\d{4}-\d{2}-\d{2}$/.test(state.date || '') && availableTimesForDate(state.date).length > 0;
+const loadLiveAvailability = async (year, month) => {
+  if (!usesLiveBookingApi) return;
+  const key = `${year}-${month}`;
+  if (liveAvailabilityKey === key || liveAvailabilityRequest === key) return;
+  liveAvailabilityRequest = key;
+  try {
+    const response = await fetch(`/api/booking/availability?year=${year}&month=${month}`, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error('Availability request failed');
+    liveAvailability = await response.json(); liveAvailabilityKey = key;
+    if (state.date && !availableTimesForDate(state.date).includes(state.time)) state.time = '';
+    if (state.date && !dateAvailable()) { state.date = ''; state.time = ''; }
+    save(); renderCalendar(); renderChoices();
+  } catch (_) {
+    // Preserve the current local schedule if production availability is temporarily unavailable.
+  } finally { liveAvailabilityRequest = null; }
+};
 const timeDurationComplete = (show = false) => { const validTime = ['10:00','13:00','16:00'].includes(state.time); const validDuration = [45,60,90].includes(Number(state.duration)) && !(state.promo.toUpperCase() === 'R100' && Number(state.duration) !== 45); if (show) { markInvalid(document.querySelector('[data-times]')?.closest('.booking-card'), !validTime); markInvalid(document.querySelector('[data-durations]')?.closest('.booking-card'), !validDuration); } return validTime && validDuration; };
 const bookingComplete = () => promoValid(false) && customerComplete(false) && dateAvailable() && timeDurationComplete(false);
 const canProceed = (show = true) => { if (BOOKING_DESIGN_MODE) return true; if (step === 0) { const valid = promoValid(show); const code = promoInputField?.value.trim().toUpperCase() || state.promo.toUpperCase(); if (!valid) return false; if (code === 'R100') { state.promo = 'R100'; state.duration = '45'; save(); renderChoices(); if (show) setPromoFeedback(language === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); } else { state.promo = ''; save(); } return true; } if (step === 1) return customerComplete(show); if (step === 2) { const valid = dateAvailable(); if (show) markInvalid(document.querySelector('[data-calendar]'), !valid); return valid; } if (step === 3) return timeDurationComplete(show); if (step === 4) { const valid = bookingComplete(); if (show) markInvalid(document.querySelector('[data-summary]'), !valid); return valid; } if (step === 5) { const valid = total() === 0 || Boolean(state.payment); if (show) markInvalid(document.querySelector('[data-payment-options]'), !valid); return valid; } return true; };
 const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; panels.forEach(p=>p.classList.remove('is-active')); track.style.transform=`translateY(${-step*100}dvh)`; clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (step === panels.length - 1) updateConfirmationPanel({ animate: true });},620); };
 window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => step, moveTo });
-const continueStep = () => { if(!canProceed(true)) return; if(!BOOKING_DESIGN_MODE && step===4 && total()===0) moveTo(6); else moveTo(step+1); };
+let bookingSubmission = null;
+const submitBooking = async () => {
+  if (!usesLiveBookingApi || bookingSubmission) return bookingSubmission;
+  const button = document.querySelector('.booking-panel[data-step="payment"] [data-next]');
+  const message = document.querySelector('[data-payment-options]')?.closest('.master-panel-content')?.querySelector('.booking-submit-message') || (() => { const element=document.createElement('p'); element.className='booking-message booking-submit-message'; document.querySelector('[data-payment-options]')?.after(element); return element; })();
+  button?.setAttribute('aria-busy', 'true'); if (button) button.disabled = true;
+  message.textContent = language === 'ar' ? 'جارٍ تأكيد الحجز...' : 'Confirming your booking...';
+  bookingSubmission = fetch('/api/booking/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ date: state.date, time: state.time, duration: Number(state.duration), payment: state.payment, promo: state.promo, customer: { name: state.name, email: state.email, phone: state.phone, topic: state.topic, sector: state.sector, additional: state.additional } }) })
+    .then(async (response) => { const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error || 'booking_unavailable'); state.bookingId = body.id; save(); })
+    .catch((error) => { message.textContent = error.message === 'slot_unavailable' ? (language === 'ar' ? 'هذا الموعد لم يعد متاحاً. اختر وقتاً آخر.' : 'This time is no longer available. Please choose another.') : (language === 'ar' ? 'تعذر تأكيد الحجز الآن. حاول مرة أخرى.' : 'We could not confirm your booking right now. Please try again.'); throw error; })
+    .finally(() => { bookingSubmission = null; button?.removeAttribute('aria-busy'); if (button) button.disabled = false; });
+  return bookingSubmission;
+};
+const continueStep = async () => { if(!canProceed(true)) return; if (step === 5 && usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } } if(!BOOKING_DESIGN_MODE && step===4 && total()===0) moveTo(6); else moveTo(step+1); };
 document.querySelectorAll('[data-next]').forEach(x=>x.addEventListener('click',continueStep));
 document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save(); if(step===1&&customerComplete(false))setTimeout(()=>{if(step===1&&customerComplete(false))moveTo(2)},180)}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();if(step===1&&customerComplete(false))moveTo(2)}); });
 const consultationViewport = window.visualViewport;
@@ -326,11 +365,12 @@ const renderCalendar = () => {
   const box=document.querySelector('[data-calendar]');
   if(!box)return;
   const year=monthCursor.getFullYear(),month=monthCursor.getMonth(), days=new Date(year,month+1,0).getDate(), first=new Date(year,month,1).getDay(), t=copy[language];
+  void loadLiveAvailability(year, month + 1);
   const monthOptions = t.months.map((name,index)=>`<button type="button" class="calendar-month-option" role="option" data-month-option="${index}" aria-selected="${index===month}">${name}</button>`).join('');
   let html=`<div class="calendar-head"><div class="calendar-month-picker"><button type="button" class="calendar-month-trigger" data-month-trigger aria-haspopup="listbox" aria-expanded="false"><span>${t.months[month]}</span><span class="calendar-month-arrow" aria-hidden="true"></span></button><div class="calendar-month-menu" data-month-menu role="listbox" aria-label="Month" hidden>${monthOptions}</div></div><span class="calendar-year">${year}</span></div><div class="calendar-weekdays">${t.weekdays.map(d=>`<span class="calendar-weekday">${d}</span>`).join('')}</div><div class="calendar-grid">`;
   html+=Array(first).fill('<span></span>').join('');
   for(let day=1;day<=days;day++){
-    const date=new Date(year,month,day),dow=date.getDay(),key=date.toISOString().slice(0,10), unavailable=dow===4||dow===5, booked=!unavailable&&day%4===0, cls=unavailable?'is-unavailable':booked?'is-booked':state.date===key?'is-selected':'';
+    const date=new Date(year,month,day),key=date.toISOString().slice(0,10), unavailable=availableTimesForDate(key).length===0, cls=unavailable?'is-unavailable':state.date===key?'is-selected':'';
     html+=`<button type="button" class="calendar-day ${cls}" data-date="${key}">${day}</button>`;
   }
   box.innerHTML=html+`</div>`;
@@ -379,7 +419,7 @@ const renderCalendar = () => {
     state.date=b.dataset.date;markInvalid(box,false);save();renderCalendar();setTimeout(()=>{if(step===2&&dateAvailable())moveTo(3)},180);
   }));
 };
-const renderChoices = () => { const times=document.querySelector('[data-times]'),durations=document.querySelector('[data-durations]'); if(!times)return; const options=['10:00','13:00','16:00']; times.innerHTML=options.map(value=>`<button type="button" class="${state.time===value?'is-selected':''}" data-time="${value}">${value}</button>`).join(''); durations.innerHTML=[45,60,90].map(value=>`<button type="button" class="${Number(state.duration)===value?'is-selected':''}" data-duration="${value}">${value} ${language==='ar'?'دقيقة':'minutes'}</button>`).join(''); times.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>{state.time=b.dataset.time;markInvalid(times.closest('.booking-card'),false);save();renderChoices();if(state.duration)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)}));durations.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{state.duration=b.dataset.duration;if(state.promo.trim().toUpperCase()==='R100')state.duration='45';markInvalid(durations.closest('.booking-card'),false);save();renderChoices();if(state.time)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)})); };
+const renderChoices = () => { const times=document.querySelector('[data-times]'),durations=document.querySelector('[data-durations]'); if(!times)return; const options=state.date?availableTimesForDate(state.date):['10:00','13:00','16:00']; times.innerHTML=options.map(value=>`<button type="button" class="${state.time===value?'is-selected':''}" data-time="${value}">${value}</button>`).join(''); durations.innerHTML=[45,60,90].map(value=>`<button type="button" class="${Number(state.duration)===value?'is-selected':''}" data-duration="${value}">${value} ${language==='ar'?'دقيقة':'minutes'}</button>`).join(''); times.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>{state.time=b.dataset.time;markInvalid(times.closest('.booking-card'),false);save();renderChoices();if(state.duration)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)}));durations.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{state.duration=b.dataset.duration;if(state.promo.trim().toUpperCase()==='R100')state.duration='45';markInvalid(durations.closest('.booking-card'),false);save();renderChoices();if(state.time)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)})); };
 const money = value => `${value} USD`;
 const renderSummary = () => { const box=document.querySelector('[data-summary]'); if(!box)return; const labels=copy[language].summary; const rows=[['name',state.name],['email',state.email],['phone',state.phone],['topic',state.topic],['sector',state.sector],['date',state.date],['time',state.time],['duration',state.duration?`${state.duration} ${language==='ar'?'دقيقة':'minutes'}`:''],['promo',state.promo||'—'],['fee',money(price())],['discount',money(discount())],['total',money(total())]]; box.innerHTML=rows.map(([key,value])=>`<div><dt>${labels[key]}</dt><dd>${value||'—'}</dd></div>`).join(''); document.querySelector('[data-confirm-label]').textContent=total()===0?copy[language].confirm:copy[language].confirmPay; };
 const paymentOptionsContainer = document.querySelector('[data-payment-options]');
