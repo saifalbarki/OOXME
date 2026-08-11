@@ -508,28 +508,40 @@ html[dir="rtl"] .booking-card input, html[dir="rtl"] .booking-fields input, html
   .booking-panel[data-step="payment"] .payment-option-detail-inner { gap: 4px; padding-bottom: 6px; }
 }
 
-/* Payment cards are a bottom-anchored accordion. An open card gains only the
-   space it needs above its fixed lower edge, with one shared inner rhythm. */
-.booking-panel[data-step="payment"] .payment-option.is-open {
-  --payment-expanded-height: max(
-    clamp(142px, 27dvh, 220px),
-    calc(var(--payment-qr-size) + (var(--payment-box-space) * 3) + 2.7em)
+/* Payment cards grow upward from the anchored stack.  Each live item is
+   separated from its neighbours and the card edges by the same X value. */
+.booking-panel[data-step="payment"] .payment-options {
+  --payment-box-space: max(
+    var(--layout-compact-gap),
+    calc((var(--payment-rest-height) - 1.35em) / 2)
   );
-  padding: 0;
+}
+.booking-panel[data-step="payment"] .payment-option.is-open {
+  --payment-expanded-height: calc(
+    var(--payment-qr-size) + 2.7em + (var(--payment-box-space) * 3)
+  );
+  padding: var(--payment-box-space);
+  gap: 0;
 }
 .booking-panel[data-step="payment"] .payment-option.is-open .payment-option-detail-inner {
   display: grid;
-  grid-template-rows: minmax(2.7em, auto) var(--payment-qr-size);
+  grid-template-rows: minmax(2.7em, max-content) var(--payment-qr-size);
   align-content: start;
   justify-items: center;
   box-sizing: border-box;
   height: 100%;
-  padding: var(--payment-box-space);
+  padding: 0;
   gap: var(--payment-box-space);
 }
 .booking-panel[data-step="payment"] .payment-option.is-open .payment-qr-placeholder {
   width: var(--payment-qr-size);
   height: var(--payment-qr-size);
+}
+.booking-panel[data-step="payment"] .payment-option--coming.is-open {
+  --payment-expanded-height: calc(1.35em + (var(--payment-box-space) * 2));
+}
+.booking-panel[data-step="payment"] .payment-option--coming.is-open .payment-option-detail-inner {
+  grid-template-rows: minmax(1.35em, max-content);
 }
 
 /* Only the Search field moves for keyboard safety; the overlay itself stays in
