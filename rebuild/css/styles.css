@@ -102,7 +102,9 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .master-panel-continue { display: grid; align-content: end; justify-items: center; width: 100%; min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--color-brand); font-size: 9px; font-weight: 700; text-decoration: none; cursor: pointer; }
 .swipe-control { display: grid; align-content: end; justify-items: center; width: 100%; min-height: 44px; }
 .swipe-control > span:not(.swipe-control-line) { display: none; }
-.swipe-control-line { width: 60%; height: var(--bottom-control-line-thickness); border-radius: 9999px; background: var(--color-bottom-control); animation: bottom-control-line-bounce 2.4s cubic-bezier(.22, .61, .36, 1) infinite; }
+.swipe-control-line { position: relative; width: 60%; height: var(--bottom-control-line-thickness); overflow: hidden; border-radius: 9999px; background: var(--color-bottom-control); animation: bottom-control-line-bounce 2.4s cubic-bezier(.22, .61, .36, 1) infinite; }
+.swipe-control-progress { position: absolute; inset-block: 0; left: 50%; width: 0; border-radius: inherit; background: var(--color-brand); pointer-events: none; transform: translateX(-50%); transition: width 340ms cubic-bezier(.22, .61, .36, 1); }
+.swipe-control-progress.is-progress-reset { transition: none; }
 @keyframes bottom-control-line-bounce { 0%, 72%, 100% { transform: translateY(0); } 82% { transform: translateY(-5px); } 90% { transform: translateY(1px); } }
 .master-panel-track.is-dragging { transition: none; }
 .search-overlay { position: fixed; inset: 0; z-index: 10; display: grid; grid-template-rows: 1fr auto auto; padding: var(--panel-safe); background: rgba(255, 255, 255, 0); opacity: 0; pointer-events: none; visibility: hidden; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); transition: opacity .3s ease 1.1s, visibility 0s linear 1.4s, background-color .3s ease 1.1s, backdrop-filter .3s ease 1.1s, -webkit-backdrop-filter .3s ease 1.1s; }
@@ -143,7 +145,7 @@ html[dir="rtl"] .master-panel-label { font-size: 10px; letter-spacing: 0; text-t
 @media (max-aspect-ratio: 4 / 3) { :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .master-panel-content h1, :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .master-panel-content > p:not(.master-panel-label) { display: block; } :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .project-gallery { position: static; inset: auto; bottom: auto; width: 100%; translate: none; } :is(.brands-designed-page, .unique-works-page) .project-panel--al-basri-primary .project-gallery-viewport { width: min(100%, clamp(180px, 52dvh, 460px)); aspect-ratio: 1; } }
 html[dir="rtl"] .master-panel-content h1 { font-size: clamp(27px, 5.7vw, 52px); font-weight: 600; letter-spacing: 0; line-height: var(--type-heading-arabic-line-height); }
 html[dir="rtl"] .master-panel-content p:not(.master-panel-label) { font-size: clamp(13.5px, 1.45vw, 15.5px); font-weight: 500; letter-spacing: 0; line-height: var(--type-body-line-height); }
-@media (prefers-reduced-motion: reduce) { .master-panel-track { transition-duration: .01ms; } .master-panel-screen.is-active .master-panel-content > *, .swipe-control-line { animation-duration: .01ms; animation-iteration-count: 1; } .search-overlay { transition-duration: .01ms; } }
+@media (prefers-reduced-motion: reduce) { .master-panel-track { transition-duration: .01ms; } .master-panel-screen.is-active .master-panel-content > *, .swipe-control-line { animation-duration: .01ms; animation-iteration-count: 1; } .swipe-control-progress { transition-duration: .01ms; } .search-overlay { transition-duration: .01ms; } }
 
 /* Booking flow: panel-internal controls only; the Master Panel remains shared. */
 .booking-panel .master-panel-content { grid-template-rows: auto auto auto minmax(0, 1fr); }
@@ -236,6 +238,17 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 /* Shared bottom-anchored content occupies the space directly above the bottom control zone. */
 :is(.booking-card, .booking-fields, .booking-selectors, .payment-options, .booking-promo-cards, .plan-detail-cards) { margin-bottom: 0; }
 .contact-actions { align-items: flex-end; margin-bottom: 0; }
+/* The final contact row shares the bottom control's exact horizontal span.
+   Its controls distribute only within that common boundary. */
+.contact-panel .master-panel-content > .contact-actions {
+  width: calc(60% + var(--content-safe-inline) + (var(--content-safe-inline) / 5));
+  max-inline-size: none;
+  justify-self: center;
+  justify-content: space-between;
+  column-gap: 0;
+  row-gap: var(--layout-related-gap);
+  flex-wrap: wrap;
+}
 
 /* Shared interaction geometry: expanded hit zones stay fully transparent. */
 :where(button, a, input, select, textarea, label) { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -246,41 +259,6 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 .swipe-control-line { will-change: transform; }
 .project-gallery-dots { position: relative; margin-block: -20px; padding-block: 20px; touch-action: manipulation; }
 .project-gallery-dot { position: relative; z-index: 1; }
-
-/* Al Basri Mall: landscape-only curved image wall. Portrait retains the approved vertical gallery. */
-@media (min-aspect-ratio: 4 / 3) {
-  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport {
-    width: 100%;
-    height: 30dvh;
-    overflow: hidden;
-    border-radius: 0;
-    cursor: grab;
-    perspective: 1100px;
-    perspective-origin: 50% 50%;
-    touch-action: pan-y;
-  }
-  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-track {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    transform-style: preserve-3d;
-  }
-  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-slide {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    width: clamp(118px, 17vw, 240px);
-    height: 100%;
-    max-width: 34%;
-    object-fit: contain;
-    border-radius: clamp(3px, .45vw, 6px);
-    backface-visibility: hidden;
-    will-change: transform, opacity;
-  }
-  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport:active { cursor: grabbing; }
-}
 
 /* Closing uses the existing Fade + Blur + collapse language at a shorter pace. */
 .search-overlay:not(.is-open) { transition: opacity .22s ease .12s, visibility 0s linear .34s, background-color .22s ease .12s, backdrop-filter .22s ease .12s, -webkit-backdrop-filter .22s ease .12s; }
@@ -355,7 +333,7 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
   .plan-detail-cards { gap: var(--layout-major-gap); }
   .project-gallery-viewport,
   .project-panel--al-basri-primary .project-gallery-viewport,
-  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport {
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-viewport {
     height: var(--layout-gallery-height);
   }
   .project-gallery-dots { margin-block: calc(var(--layout-compact-gap) * -1); padding-block: var(--layout-compact-gap); }
@@ -405,6 +383,24 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
   transform: none;
 }
 
+/* Non-Mall Portfolio panels use two real text rows. Removing Text 1 from the
+   DOM promotes the project name into the exact former label anchor while the
+   gallery retains its existing lower content track. */
+.project-panel:not(.project-panel--al-basri-mall) .master-panel-content {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+.project-panel:not(.project-panel--al-basri-mall) .master-panel-content > h1,
+.project-panel:not(.project-panel--al-basri-mall) .master-panel-content > p:not(.master-panel-label) {
+  display: block;
+}
+.project-panel:not(.project-panel--al-basri-mall)[data-project-key] .project-gallery {
+  grid-row: 3;
+}
+.project-panel--al-basri-mall .master-panel-content > h1,
+.project-panel--al-basri-mall .master-panel-content > p:not(.master-panel-label) {
+  display: block;
+}
+
 /* Gallery dots remain easy to hit without adding layout height around the
    shared image-to-dots gap. */
 .project-gallery { gap: var(--layout-major-gap); }
@@ -431,7 +427,7 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
   }
   .project-panel .project-gallery-viewport,
   .project-panel--al-basri-primary .project-gallery-viewport,
-  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport {
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-viewport {
     height: clamp(22px, 6dvh, 28px);
   }
 }
@@ -441,7 +437,7 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
      changing its bottom anchor or the gallery's horizontal behavior. */
   .project-panel .project-gallery-viewport,
   .project-panel--al-basri-primary .project-gallery-viewport,
-  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-arc .project-gallery-viewport {
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-viewport {
     height: clamp(96px, 20dvh, 144px);
   }
 }
@@ -455,14 +451,16 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
   }
 }
 
-/* Shared square-image Portfolio deck. Only galleries whose own project assets
-   confirm as 1:1 receive this presentation; Al Basri Mall retains its portrait
-   gallery and its separate landscape arc unchanged. */
+/* Shared Portfolio depth-gallery image treatment. The Story deck consumes the
+   exact same radius token as the square-image deck. */
+.project-gallery.is-square-depth-deck,
+.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story {
+  --gallery-deck-image-radius: clamp(14px, 3.8vmin, 32px);
+}
 .project-gallery.is-square-depth-deck {
   --square-deck-card-size: clamp(160px, 44dvh, 360px);
   --square-deck-rise: clamp(32px, 8dvh, 56px);
   --square-deck-viewport-ratio: 1.18;
-  --gallery-deck-image-radius: clamp(14px, 3.8vmin, 32px);
   gap: var(--layout-major-gap);
 }
 .project-gallery.is-square-depth-deck .project-gallery-viewport {
@@ -493,37 +491,14 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
   width: 100%;
   height: auto;
   aspect-ratio: 1;
-  border: 1.25px solid rgba(0, 0, 0, .32);
+  border: 0;
   border-radius: var(--gallery-deck-image-radius);
   object-fit: contain;
   transform-origin: center bottom;
   backface-visibility: hidden;
   will-change: transform, opacity;
 }
-.project-gallery.is-square-depth-deck .project-gallery-dots {
-  position: relative;
-  display: block;
-  width: clamp(52px, 8vw, 72px);
-  min-height: 0;
-  height: clamp(4px, .55vmin, 6px);
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  border-radius: 9999px;
-  background: #d5d8de;
-  touch-action: manipulation;
-}
-.project-gallery.is-square-depth-deck .project-gallery-progress-indicator {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: 0;
-  width: 30%;
-  border-radius: inherit;
-  background: #4b5058;
-  transform: translateX(calc(var(--gallery-progress, 0) * 233.333%));
-  transition: transform .34s cubic-bezier(.22, .75, .3, 1);
-  will-change: transform;
-}
+.project-gallery.is-square-depth-deck .project-gallery-dots { display: none; }
 
 @media (min-aspect-ratio: 4 / 3) {
   .project-gallery.is-square-depth-deck {
@@ -538,5 +513,72 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
     --square-deck-card-size: clamp(58px, 18dvh, 78px);
     --square-deck-rise: clamp(16px, 5dvh, 24px);
     --square-deck-viewport-ratio: 1.31;
+  }
+}
+
+/* Al Basri Mall keeps its tall Story cards. Portrait mirrors the established
+   stacked square-gallery depth treatment without altering the active card's
+   approved Story size; wide layouts intentionally become a flat horizontal
+   row rather than an arc. */
+.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story {
+  --story-active-height: clamp(238px, 49dvh, 456px);
+  --story-deck-rise: clamp(32px, 8dvh, 56px);
+  gap: 0;
+}
+.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-dots {
+  display: none;
+}
+.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-viewport {
+  position: relative;
+  width: 100%;
+  height: calc(var(--story-active-height) + var(--story-deck-rise));
+  max-height: none;
+  margin-inline: 0;
+  aspect-ratio: auto;
+  overflow: visible;
+  border-radius: 0;
+  cursor: grab;
+  touch-action: pan-y;
+}
+.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-viewport:active {
+  cursor: grabbing;
+}
+.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-track {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-slide {
+  position: absolute;
+  inset-block-start: auto;
+  inset-block-end: 0;
+  inset-inline-start: 50%;
+  display: block;
+  width: auto;
+  height: var(--story-active-height);
+  max-width: none;
+  object-fit: contain;
+  border-radius: var(--gallery-deck-image-radius);
+  backface-visibility: hidden;
+  transform-origin: center bottom;
+  will-change: transform, opacity, filter;
+}
+
+@media (min-aspect-ratio: 4 / 3) {
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story {
+    --story-active-height: var(--layout-gallery-height);
+    --story-deck-rise: 0px;
+  }
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-viewport {
+    height: var(--story-active-height);
+    overflow: hidden;
+  }
+  .project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-slide {
+    inset-block-start: 0;
+    inset-block-end: auto;
+    height: var(--story-active-height);
+    transform-origin: center center;
   }
 }

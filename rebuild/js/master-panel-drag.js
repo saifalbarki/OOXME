@@ -38,6 +38,49 @@ window.OOXMEMasterPanelDrag = {
     if (!experience || !track || track.dataset.masterPanelDragBound) return;
     track.dataset.masterPanelDragBound = 'true';
 
+    // One visual fill lives inside the existing bottom line. Each panel owns
+    // its own value, so incoming and outgoing panels stay synchronized during
+    // the complete-panel transition without touching the control's hit area.
+    const updateBottomProgress = ({ immediatePanel = null } = {}) => {
+      panels.forEach((panel, panelIndex) => {
+        const gallery = panel.querySelector('[data-project-gallery][data-total-images]');
+        const totalImages = Number(gallery?.dataset.totalImages);
+        const activeImageIndex = Number(gallery?.dataset.activeImageIndex);
+        const galleryProgress = Number.isFinite(totalImages) && totalImages > 0 && Number.isFinite(activeImageIndex)
+          ? (activeImageIndex + 1) / totalImages
+          : null;
+        const progress = Math.min(1, Math.max(0, galleryProgress ?? ((panelIndex + 1) / panels.length)));
+        panel.querySelectorAll('.swipe-control-line').forEach((line) => {
+          let fill = line.querySelector(':scope > .swipe-control-progress');
+          if (!fill) {
+            fill = document.createElement('span');
+            fill.className = 'swipe-control-progress';
+            fill.setAttribute('aria-hidden', 'true');
+            line.append(fill);
+          }
+          const resetImmediately = panel === immediatePanel;
+          if (resetImmediately) fill.classList.add('is-progress-reset');
+          fill.style.width = `${progress * 100}%`;
+          if (resetImmediately) {
+            // Commit the reset state before restoring the normal width easing.
+            void fill.offsetWidth;
+            window.requestAnimationFrame(() => fill.classList.remove('is-progress-reset'));
+          }
+        });
+      });
+    };
+    const progressObserver = new MutationObserver(() => window.requestAnimationFrame(updateBottomProgress));
+    progressObserver.observe(track, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-active-image-index', 'data-total-images']
+    });
+    track.addEventListener('ooxme:gallery-progress', (event) => {
+      const panel = event.target.closest('.master-panel-screen');
+      updateBottomProgress({ immediatePanel: event.detail?.reset ? panel : null });
+    });
+    updateBottomProgress();
+
     const interactiveSelector = [
       'button', 'a', 'input', 'select', 'textarea', 'label',
       '[data-project-gallery]', '[data-search-overlay]', '.search-overlay',

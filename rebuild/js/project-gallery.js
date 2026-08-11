@@ -6,9 +6,11 @@ const isUniqueWorksCollection = document.body.classList.contains('unique-works-p
 const isSecondaryCollection = isDesignedCollection || isUniqueWorksCollection;
 const primaryAlBasriPanel = document.querySelector('[data-project-key="al-basri"]');
 primaryAlBasriPanel.classList.add('project-panel--al-basri-primary');
+const isAlBasriMallPanel = (panel) => !isSecondaryCollection && panel.dataset.projectKey === 'al-basri';
+if (isAlBasriMallPanel(primaryAlBasriPanel)) primaryAlBasriPanel.classList.add('project-panel--al-basri-mall');
 if (!isSecondaryCollection) {
   const remainingAlBasriPanel = primaryAlBasriPanel.cloneNode(true);
-  remainingAlBasriPanel.classList.remove('is-active', 'project-panel--al-basri-primary');
+  remainingAlBasriPanel.classList.remove('is-active', 'project-panel--al-basri-primary', 'project-panel--al-basri-mall');
   remainingAlBasriPanel.dataset.projectKey = 'al-basri-remaining';
   primaryAlBasriPanel.after(remainingAlBasriPanel);
 }
@@ -33,18 +35,49 @@ const uniqueWorksDescriptions = {
 };
 const descriptions = isDesignedCollection ? designedDescriptions : (isUniqueWorksCollection ? uniqueWorksDescriptions : managedDescriptions);
 panels.forEach((panel) => {
-  const copy = descriptions[panel.dataset.projectKey];
+  const isMall = isAlBasriMallPanel(panel);
+  const label = panel.querySelector('.master-panel-label');
+  const title = panel.querySelector('h1');
+  if (isMall) {
+    label.dataset.en = 'Portfolio';
+    label.dataset.ar = 'بورتفوليو';
+    label.textContent = label.dataset.en;
+    title.dataset.en = 'Some Distinctive Story Designs';
+    title.dataset.ar = 'بعض التصاميم المميزة للستوري';
+    title.textContent = title.dataset.en;
+  } else {
+    // Remove the label element so the project title takes its actual layout
+    // row instead of leaving a hidden Text 1 space behind.
+    label.remove();
+  }
+  const copy = isMall
+    ? { en: 'A selection of Story designs created for Al Basri Mall.', ar: 'مجموعة من تصاميم الستوري المختارة التي صممت لمول البصري.' }
+    : descriptions[panel.dataset.projectKey];
   const description = document.createElement('p');
   description.dataset.en = copy.en;
   description.dataset.ar = copy.ar;
   description.textContent = copy.en;
   panel.querySelector('h1').after(description);
 });
-const projects = {
-  'al-basri': [
+if (!isSecondaryCollection) {
+  const hyperAlBasriPanel = document.querySelector('[data-project-key="al-basri-remaining"]');
+  const title = hyperAlBasriPanel.querySelector('h1');
+  title.dataset.en = 'Hyper Al-Basri';
+  title.dataset.ar = 'هايبر البصري';
+  title.textContent = title.dataset.en;
+}
+const alBasriHijabImages = [
+  'photo_1_2026-08-11_13-31-55.jpg',
+  'photo_2_2026-08-11_13-31-55.jpg',
+  'photo_3_2026-08-11_13-31-55.jpg',
+  'photo_4_2026-08-11_13-31-55.jpg'
+].map((name) => `assets/projects/hijab/${name}`);
+const alBasriMallImages = [
     '01','02','03','04','05','06','07','08','09','10','11','12','13',
     'photo_9_2026-08-02_22-22-30','photo_10_2026-08-02_22-22-30','photo_11_2026-08-02_22-22-30','photo_12_2026-08-02_22-22-30','photo_13_2026-08-02_22-22-30','photo_14_2026-08-02_22-22-30','photo_15_2026-08-02_22-22-30','photo_16_2026-08-02_22-22-30','photo_17_2026-08-02_22-22-30','photo_18_2026-08-02_22-22-30','photo_19_2026-08-02_22-22-30','photo_20_2026-08-02_22-22-30','photo_21_2026-08-02_22-22-30','photo_22_2026-08-02_22-22-30','photo_23_2026-08-02_22-22-30','photo_24_2026-08-02_22-22-30','photo_30_2026-08-02_22-22-30','photo_31_2026-08-02_22-22-30','photo_32_2026-08-02_22-22-30'
-  ].map((name) => `assets/projects/mall albasri/design/optimized/${name}.webp`),
+].map((name) => `assets/projects/mall albasri/design/optimized/${name}.webp`);
+const projects = {
+  'al-basri': [...alBasriHijabImages, ...alBasriMallImages],
   'al-basri-remaining': [
     '02','03','04','05','06','07','08','09','10','11','12','13',
     'photo_9_2026-08-02_22-22-30','photo_10_2026-08-02_22-22-30','photo_11_2026-08-02_22-22-30','photo_12_2026-08-02_22-22-30','photo_13_2026-08-02_22-22-30','photo_14_2026-08-02_22-22-30','photo_15_2026-08-02_22-22-30','photo_16_2026-08-02_22-22-30','photo_17_2026-08-02_22-22-30','photo_18_2026-08-02_22-22-30','photo_19_2026-08-02_22-22-30','photo_20_2026-08-02_22-22-30','photo_21_2026-08-02_22-22-30','photo_22_2026-08-02_22-22-30','photo_23_2026-08-02_22-22-30','photo_24_2026-08-02_22-22-30','photo_30_2026-08-02_22-22-30','photo_31_2026-08-02_22-22-30','photo_32_2026-08-02_22-22-30'
@@ -89,10 +122,7 @@ const uniqueWorksWideProjectLabels = {
   lccd: { en: 'Dr. Hameed Ibrahim', ar: 'الدكتور حميد ابراهيم' }
 };
 const wideProjectLabels = isDesignedCollection ? designedWideProjectLabels : (isUniqueWorksCollection ? uniqueWorksWideProjectLabels : managedWideProjectLabels);
-const applyWideProjectLabels = () => panels.forEach((panel) => {
-  const label = panel.querySelector('.master-panel-label');
-  label.textContent = window.matchMedia('(min-aspect-ratio: 4 / 3)').matches ? wideProjectLabels[panel.dataset.projectKey][root.lang] : label.dataset[root.lang];
-});
+const applyWideProjectLabels = () => {};
 const applyLanguage = (language) => {
   root.lang = language;
   root.dir = language === 'ar' ? 'rtl' : 'ltr';
@@ -127,17 +157,27 @@ const galleries = new Map();
 const primaryGallery = document.querySelector('.project-panel--al-basri-primary [data-project-gallery]');
 const landscapeGalleryQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
 const isAlBasriMallGallery = (gallery) => gallery === primaryGallery && !isSecondaryCollection;
-const isAlBasriMallArc = (gallery) => isAlBasriMallGallery(gallery) && landscapeGalleryQuery.matches;
+const isAlBasriMallPresentation = (gallery) => isAlBasriMallGallery(gallery);
+const isAlBasriMallPortraitDeck = (gallery) => isAlBasriMallPresentation(gallery) && !landscapeGalleryQuery.matches;
 const isSquareDepthDeck = (gallery) => !isAlBasriMallGallery(gallery) && Boolean(galleries.get(gallery)?.isSquareDeck);
-const setupSquareProgressTrack = (state) => {
+const isPortraitDepthDeck = (gallery) => isSquareDepthDeck(gallery) || isAlBasriMallPortraitDeck(gallery);
+const removeAlBasriMallPagination = (state) => {
   state.dots.replaceChildren();
-  state.dots.classList.add('project-gallery-progress-track');
-  const indicator = document.createElement('span');
-  indicator.className = 'project-gallery-progress-indicator';
-  indicator.setAttribute('aria-hidden', 'true');
-  state.dots.setAttribute('role', 'progressbar');
-  state.dots.append(indicator);
-  state.progressIndicator = indicator;
+  state.dots.classList.add('is-al-basri-mall-pagination-removed');
+  state.dots.setAttribute('aria-hidden', 'true');
+};
+const publishGalleryProgress = (gallery, state, { reset = false } = {}) => {
+  // Zero-based state lets the shared bottom handle use the same
+  // (activeImageIndex + 1) / totalImages progress equation everywhere.
+  gallery.dataset.activeImageIndex = `${state.index}`;
+  gallery.dataset.totalImages = `${state.images.length}`;
+  gallery.dispatchEvent(new CustomEvent('ooxme:gallery-progress', { bubbles: true, detail: { reset } }));
+};
+const removeSquarePagination = (state) => {
+  state.dots.replaceChildren();
+  state.dots.classList.remove('project-gallery-progress-track');
+  state.dots.classList.add('is-square-pagination-removed');
+  state.dots.setAttribute('aria-hidden', 'true');
 };
 const populateGallery = (gallery, images, state) => {
   state.images = images;
@@ -147,8 +187,13 @@ const populateGallery = (gallery, images, state) => {
   state.imageRatios = new Map();
   state.isSquareDeck = false;
   gallery.classList.remove('is-square-depth-deck');
+  state.dots.classList.remove('is-square-pagination-removed');
+  state.dots.classList.remove('is-al-basri-mall-pagination-removed');
+  state.dots.removeAttribute('aria-hidden');
   state.rail.replaceChildren();
   state.dots.replaceChildren();
+  if (isAlBasriMallGallery(gallery)) removeAlBasriMallPagination(state);
+  publishGalleryProgress(gallery, state, { reset: true });
   const physicalImages = images.length > 1 ? [images[images.length - 1], ...images, images[0]] : images;
   physicalImages.forEach((src) => {
     const image = new Image();
@@ -162,15 +207,15 @@ const populateGallery = (gallery, images, state) => {
         state.isSquareDeck = !isAlBasriMallGallery(gallery) && [...state.imageRatios.values()].every((ratio) => Math.abs(ratio - 1) <= .04);
         gallery.classList.toggle('is-square-depth-deck', state.isSquareDeck);
         if (state.isSquareDeck) {
-          setupSquareProgressTrack(state);
+          removeSquarePagination(state);
           renderSquareDepthDeck(gallery);
-          updateGalleryDots(state);
         }
       }
       window.requestAnimationFrame(() => syncWideGalleryCentering(gallery));
     });
     state.rail.append(image);
   });
+  if (isAlBasriMallGallery(gallery)) return;
   images.forEach((_, index) => {
     const dot = document.createElement('button');
     dot.className = 'project-gallery-dot';
@@ -185,12 +230,12 @@ panels.forEach((panel) => {
   const images = imagesForPanel(panel);
   const rail = gallery.querySelector('.project-gallery-track');
   const dots = gallery.querySelector('.project-gallery-dots');
-  const state = { images: [], index: 0, physicalIndex: 0, cloneOffset: 0, rail, dots, viewport: gallery.querySelector('.project-gallery-viewport'), manualDirection: null, wrapTimer: null, arcDragging: false, deckDragging: false, deckDragX: 0, imageRatios: new Map(), isSquareDeck: false };
+  const state = { images: [], index: 0, physicalIndex: 0, cloneOffset: 0, rail, dots, viewport: gallery.querySelector('.project-gallery-viewport'), manualDirection: null, wrapTimer: null, arcDragging: false, arcDragX: 0, deckDragging: false, deckDragX: 0, imageRatios: new Map(), isSquareDeck: false };
   galleries.set(gallery, state);
   populateGallery(gallery, images, state);
   dots.addEventListener('pointerdown', (event) => dots.setPointerCapture?.(event.pointerId));
   dots.addEventListener('pointerup', (event) => {
-    if (isSquareDepthDeck(gallery)) return;
+    if (isSquareDepthDeck(gallery) || isAlBasriMallGallery(gallery)) return;
     if (event.target.closest('.project-gallery-dot')) return;
     const dot = [...dots.children].reduce((nearest, candidate) => {
       const currentDistance = Math.abs(candidate.getBoundingClientRect().left + candidate.getBoundingClientRect().width / 2 - event.clientX);
@@ -245,6 +290,7 @@ const renderSquareDepthDeck = (gallery, dragX = 0) => {
     const depth = visible.get(imageIndex);
     if (imageIndex < 0 || imageIndex >= count || depth === undefined) {
       slide.style.opacity = '0';
+      slide.style.visibility = 'hidden';
       slide.style.pointerEvents = 'none';
       slide.style.zIndex = '0';
       slide.style.filter = 'none';
@@ -264,6 +310,7 @@ const renderSquareDepthDeck = (gallery, dragX = 0) => {
     const shadowOffset = interpolateDepth([6, 5, 4, 3, 2], depth);
     const shadowBlur = interpolateDepth([18, 14, 10, 8, 6], depth);
     const shadowOpacity = interpolateDepth([.14, .11, .08, .05, .025], depth);
+    slide.style.visibility = 'visible';
     slide.style.opacity = `${opacity}`;
     slide.style.pointerEvents = isActive ? 'auto' : 'none';
     slide.style.zIndex = `${100 - Math.round(depth * 10)}`;
@@ -276,57 +323,144 @@ const renderSquareDepthDeck = (gallery, dragX = 0) => {
   });
   return true;
 };
-const renderAlBasriMallArc = (gallery, center = galleries.get(gallery)?.index ?? 0) => {
-  if (!isAlBasriMallArc(gallery)) return false;
+const renderAlBasriMallStoryDeck = (gallery, dragX = 0) => {
+  const state = galleries.get(gallery);
+  const count = state.images.length;
+  const viewportHeight = state.viewport.clientHeight;
+  const activeHeight = state.rail.children[state.cloneOffset]?.offsetHeight || viewportHeight;
+  if (!count || !viewportHeight || !activeHeight) return true;
+
+  // This mirrors the square-image deck's depth hierarchy while retaining the
+  // Story card's approved active dimensions and portrait aspect ratio.
+  const layerExposure = Math.min(16, Math.max(9, activeHeight * .04));
+  const availableRise = Math.max(0, viewportHeight - activeHeight);
+  const maxDepth = Math.min(4, count - 1, Math.floor(availableRise / layerExposure));
+  const range = Math.max(72, state.viewport.clientWidth * .24);
+  const dragProgress = Math.min(1, Math.abs(dragX) / range);
+  const direction = dragX
+    ? (dragX < 0 ? 1 : -1)
+    : (state.manualDirection ?? (root.dir === 'rtl' ? -1 : 1));
+  const rotation = Math.max(-4, Math.min(4, (dragX / range) * 4));
+  const visible = new Map([[state.index, 0]]);
+  for (let depth = 1; depth <= maxDepth; depth += 1) {
+    visible.set(deckIndexAt(state.index, direction, depth, count), depth - dragProgress);
+  }
+  state.rail.style.transform = 'none';
+  state.rail.style.transition = 'none';
+  state.rail.querySelectorAll('.project-gallery-slide').forEach((slide, physicalIndex) => {
+    const imageIndex = physicalIndex - state.cloneOffset;
+    const depth = visible.get(imageIndex);
+    if (imageIndex < 0 || imageIndex >= count || depth === undefined) {
+      slide.style.opacity = '0';
+      slide.style.visibility = 'hidden';
+      slide.style.pointerEvents = 'none';
+      slide.style.zIndex = '0';
+      slide.style.filter = 'none';
+      slide.style.boxShadow = 'none';
+      return;
+    }
+    const scale = Math.max(.76, 1 - depth * .06);
+    const translateY = -((1 - scale) * activeHeight + depth * layerExposure);
+    const isActive = imageIndex === state.index;
+    const opacity = interpolateDepth([1, .95, .83, .66, .42], depth);
+    const blur = interpolateDepth([0, .35, .8, 1.4, 2], depth);
+    const shadowOffset = interpolateDepth([6, 5, 4, 3, 2], depth);
+    const shadowBlur = interpolateDepth([18, 14, 10, 8, 6], depth);
+    const shadowOpacity = interpolateDepth([.14, .11, .08, .05, .025], depth);
+    slide.style.visibility = 'visible';
+    slide.style.opacity = `${opacity}`;
+    slide.style.zIndex = `${100 - Math.round(depth * 10)}`;
+    slide.style.pointerEvents = isActive ? 'auto' : 'none';
+    slide.style.transform = `translate3d(calc(-50% + ${isActive ? dragX : 0}px), ${translateY}px, 0) rotate(${isActive ? rotation : 0}deg) scale(${scale})`;
+    slide.style.filter = blur ? `blur(${blur}px)` : 'none';
+    slide.style.boxShadow = `0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity})`;
+    slide.style.transition = state.deckDragging ? 'none' : 'transform .34s cubic-bezier(.22, .75, .3, 1), opacity .34s ease, filter .34s ease, box-shadow .34s ease';
+  });
+  return true;
+};
+const renderAlBasriMallLandscapeRow = (gallery, center = galleries.get(gallery)?.index ?? 0) => {
   const state = galleries.get(gallery);
   const count = state.images.length;
   const viewportWidth = state.viewport.clientWidth;
-  if (!count || !viewportWidth) return true;
-  const horizontalStep = Math.min(170, viewportWidth * .21);
+  const viewportHeight = state.viewport.clientHeight;
+  if (!count || !viewportWidth || !viewportHeight) return true;
+
+  const activeWidth = viewportHeight * 9 / 16;
+  const sideScale = .3;
+  const sideWidth = activeWidth * sideScale;
+  const smallGap = Math.min(16, Math.max(8, viewportWidth * .012));
+  const focusGap = Math.min(80, Math.max(36, viewportWidth * .05));
+  const firstSideOffset = activeWidth / 2 + focusGap + sideWidth / 2;
+  const remainingWidth = Math.max(0, viewportWidth / 2 - firstSideOffset);
+  const visibleLevels = Math.min(count - 1, 1 + Math.floor(remainingWidth / (sideWidth + smallGap)));
+
   state.rail.style.transform = 'none';
   state.rail.style.transition = 'none';
   state.rail.querySelectorAll('.project-gallery-slide').forEach((slide, physicalIndex) => {
     const imageIndex = physicalIndex - state.cloneOffset;
     if (imageIndex < 0 || imageIndex >= count) {
       slide.style.opacity = '0';
+      slide.style.visibility = 'hidden';
       slide.style.pointerEvents = 'none';
       return;
     }
     const distance = circularDistance(imageIndex, center, count);
     const depth = Math.abs(distance);
-    if (depth > 3.15) {
+    if (depth > visibleLevels + .05) {
+      const sign = Math.sign(distance) || 1;
+      const offscreenOffset = firstSideOffset + (visibleLevels + 1) * (sideWidth + smallGap);
       slide.style.opacity = '0';
+      slide.style.visibility = 'hidden';
       slide.style.pointerEvents = 'none';
+      slide.style.zIndex = '0';
+      slide.style.filter = 'none';
+      slide.style.boxShadow = 'none';
+      slide.style.transform = `translate3d(calc(-50% + ${sign * offscreenOffset}px), 0, 0) scale(${sideScale})`;
+      slide.style.transition = 'none';
       return;
     }
-    const scale = Math.max(.72, 1 - depth * .09);
-    const rotation = distance * -9.5;
-    const translateX = distance * horizontalStep;
-    const translateZ = 54 - depth * 52;
-    slide.style.opacity = `${Math.max(.2, 1 - depth * .21)}`;
+    const sign = Math.sign(distance);
+    const horizontalOffset = depth <= 1
+      ? depth * firstSideOffset
+      : firstSideOffset + (depth - 1) * (sideWidth + smallGap);
+    const scale = .3 + .7 * Math.max(0, 1 - depth);
+    slide.style.visibility = 'visible';
+    slide.style.opacity = `${Math.max(.56, 1 - depth * .14)}`;
     slide.style.zIndex = `${100 - Math.round(depth * 10)}`;
-    slide.style.pointerEvents = 'none';
-    slide.style.transform = `translate3d(calc(-50% + ${translateX}px), 0, ${translateZ}px) rotateY(${rotation}deg) scale(${scale})`;
-    slide.style.transition = state.arcDragging ? 'none' : 'transform .42s cubic-bezier(.22, .61, .36, 1), opacity .32s ease';
+    slide.style.pointerEvents = depth < .5 ? 'auto' : 'none';
+    slide.style.filter = 'none';
+    slide.style.boxShadow = 'none';
+    slide.style.transform = `translate3d(calc(-50% + ${sign * horizontalOffset}px), 0, 0) scale(${scale})`;
+    slide.style.transition = state.arcDragging ? 'none' : 'transform .38s cubic-bezier(.22, .61, .36, 1), opacity .3s ease';
   });
-  gallery.classList.add('is-al-basri-mall-arc');
   return true;
 };
-const clearAlBasriMallArc = (gallery) => {
+const renderAlBasriMallPresentation = (gallery, center = galleries.get(gallery)?.index ?? 0) => {
+  if (!isAlBasriMallPresentation(gallery)) return false;
+  gallery.classList.add('is-al-basri-mall-story');
+  return landscapeGalleryQuery.matches
+    ? renderAlBasriMallLandscapeRow(gallery, center)
+    : renderAlBasriMallStoryDeck(gallery);
+};
+const renderPortraitDepthDeck = (gallery, dragX = 0) => {
+  if (isAlBasriMallPortraitDeck(gallery)) return renderAlBasriMallStoryDeck(gallery, dragX);
+  return renderSquareDepthDeck(gallery, dragX);
+};
+const clearAlBasriMallPresentation = (gallery) => {
   if (gallery !== primaryGallery) return;
   const state = galleries.get(gallery);
-  gallery.classList.remove('is-al-basri-mall-arc');
+  gallery.classList.remove('is-al-basri-mall-story');
   state.rail.style.transform = '';
   state.rail.style.transition = '';
   state.rail.querySelectorAll('.project-gallery-slide').forEach((slide) => {
-    ['opacity', 'pointer-events', 'z-index', 'transform', 'transition'].forEach((property) => slide.style.removeProperty(property));
+    ['opacity', 'visibility', 'pointer-events', 'z-index', 'transform', 'transition', 'filter', 'box-shadow'].forEach((property) => slide.style.removeProperty(property));
   });
 };
 const placeGalleryAtPhysicalIndex = (gallery, physicalIndex, smooth = true) => {
   const state = galleries.get(gallery);
   const target = state.rail.children[physicalIndex];
   if (!target) return;
-  if (renderAlBasriMallArc(gallery)) return;
+  if (renderAlBasriMallPresentation(gallery)) return;
   if (renderSquareDepthDeck(gallery)) return;
   const wideProjectGallery = window.matchMedia('(min-aspect-ratio: 4 / 3)').matches;
   if (wideProjectGallery) {
@@ -339,18 +473,7 @@ const placeGalleryAtPhysicalIndex = (gallery, physicalIndex, smooth = true) => {
   if (!smooth) window.requestAnimationFrame(() => { state.rail.style.transition = ''; });
 };
 const updateGalleryDots = (state, { wrap = false } = {}) => {
-  if (state.isSquareDeck) {
-    const progress = state.images.length > 1 ? state.index / (state.images.length - 1) : 0;
-    state.dots.setAttribute('aria-valuemin', '1');
-    state.dots.setAttribute('aria-valuemax', `${state.images.length}`);
-    state.dots.setAttribute('aria-valuenow', `${state.index + 1}`);
-    if (wrap && state.progressIndicator) state.progressIndicator.style.transition = 'none';
-    state.dots.style.setProperty('--gallery-progress', `${progress}`);
-    if (wrap && state.progressIndicator) {
-      window.requestAnimationFrame(() => state.progressIndicator.style.removeProperty('transition'));
-    }
-    return;
-  }
+  if (state.isSquareDeck) return;
   [...state.dots.children].forEach((dot, index) => dot.classList.toggle('is-active', index === state.index));
 };
 const normalizeGalleryWrap = (gallery) => {
@@ -367,7 +490,11 @@ const normalizeGalleryWrap = (gallery) => {
 const setGalleryImage = (gallery, requested) => {
   const state = galleries.get(gallery);
   const imageCount = state.images.length;
-  if (imageCount < 2) return updateGalleryDots(state);
+  if (imageCount < 2) {
+    updateGalleryDots(state);
+    publishGalleryProgress(gallery, state);
+    return;
+  }
   if (state.physicalIndex === 0) { state.physicalIndex = imageCount; placeGalleryAtPhysicalIndex(gallery, imageCount, false); }
   if (state.physicalIndex === imageCount + 1) { state.physicalIndex = 1; placeGalleryAtPhysicalIndex(gallery, 1, false); }
   const forward = requested === state.index + 1;
@@ -379,6 +506,7 @@ const setGalleryImage = (gallery, requested) => {
     state.physicalIndex += direction;
     placeGalleryAtPhysicalIndex(gallery, state.physicalIndex);
     updateGalleryDots(state, { wrap: wraps });
+    publishGalleryProgress(gallery, state, { reset: wraps && direction === 1 });
     normalizeGalleryWrap(gallery);
     return;
   }
@@ -386,18 +514,18 @@ const setGalleryImage = (gallery, requested) => {
   state.physicalIndex = state.index + 1;
   placeGalleryAtPhysicalIndex(gallery, state.physicalIndex);
   updateGalleryDots(state);
+  publishGalleryProgress(gallery, state);
 };
 const syncWideGalleryCentering = (gallery) => {
   const state = galleries.get(gallery);
-  if (isAlBasriMallArc(gallery)) {
-    renderAlBasriMallArc(gallery);
+  if (isAlBasriMallPresentation(gallery)) {
+    renderAlBasriMallPresentation(gallery);
     return;
   }
   if (isSquareDepthDeck(gallery)) {
     renderSquareDepthDeck(gallery);
     return;
   }
-  if (gallery === primaryGallery && !landscapeGalleryQuery.matches) clearAlBasriMallArc(gallery);
   const isWide = window.matchMedia('(min-aspect-ratio: 4 / 3)').matches;
   const firstRealSlide = state.rail.children[state.cloneOffset];
   const gap = Number.parseFloat(getComputedStyle(state.rail).gap) || 0;
@@ -410,7 +538,6 @@ window.setTimeout(() => galleries.forEach((_, gallery) => syncWideGalleryCenteri
 window.addEventListener('resize', () => galleries.forEach((_, gallery) => syncWideGalleryCentering(gallery)));
 landscapeGalleryQuery.addEventListener('change', () => {
   const state = galleries.get(primaryGallery);
-  if (!landscapeGalleryQuery.matches) clearAlBasriMallArc(primaryGallery);
   placeGalleryAtPhysicalIndex(primaryGallery, state.physicalIndex, false);
   syncWideGalleryCentering(primaryGallery);
 });
@@ -449,8 +576,8 @@ let galleryGesture = null;
 document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
   gallery.addEventListener('pointerdown', (event) => {
     const state = galleries.get(gallery);
-    if (isAlBasriMallArc(gallery)) state.arcDragging = true;
-    if (isSquareDepthDeck(gallery)) state.deckDragging = true;
+    if (isPortraitDepthDeck(gallery)) state.deckDragging = true;
+    else if (isAlBasriMallPresentation(gallery)) state.arcDragging = true;
     galleryGesture = { gallery, x: event.clientX, y: event.clientY, lastX: event.clientX, lastTime: performance.now(), pointerId: event.pointerId };
     gallery.setPointerCapture?.(event.pointerId);
   });
@@ -458,13 +585,14 @@ document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
     if (!galleryGesture || galleryGesture.gallery !== gallery || galleryGesture.pointerId !== event.pointerId) return;
     const state = galleries.get(gallery);
     const dx = event.clientX - galleryGesture.x;
-    if (isSquareDepthDeck(gallery)) {
+    if (isPortraitDepthDeck(gallery)) {
       state.deckDragX = dx;
-      renderSquareDepthDeck(gallery, dx);
-    } else if (isAlBasriMallArc(gallery)) {
+      renderPortraitDepthDeck(gallery, dx);
+    } else if (isAlBasriMallPresentation(gallery)) {
+      state.arcDragX = dx;
       const range = Math.max(96, state.viewport.clientWidth * .34);
       const center = state.index + Math.max(-1, Math.min(1, -dx / range));
-      renderAlBasriMallArc(gallery, center);
+      renderAlBasriMallPresentation(gallery, center);
     } else return;
     galleryGesture.lastX = event.clientX;
     galleryGesture.lastTime = performance.now();
@@ -476,7 +604,7 @@ document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
     const state = galleries.get(gallery);
     const dx = event.clientX - galleryGesture.x;
     const dy = event.clientY - galleryGesture.y;
-    if (isSquareDepthDeck(gallery)) {
+    if (isPortraitDepthDeck(gallery)) {
       const threshold = Math.max(52, Math.min(96, state.viewport.clientWidth * .2));
       const elapsed = Math.max(1, performance.now() - galleryGesture.lastTime);
       const velocity = (event.clientX - galleryGesture.lastX) / elapsed;
@@ -488,11 +616,11 @@ document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
       if (direction) {
         state.manualDirection = direction;
         setGalleryImage(gallery, state.index + direction);
-      } else renderSquareDepthDeck(gallery);
+      } else renderPortraitDepthDeck(gallery);
       galleryGesture = null;
       return;
     }
-    if (isAlBasriMallArc(gallery)) {
+    if (isAlBasriMallPresentation(gallery)) {
       const range = Math.max(96, state.viewport.clientWidth * .34);
       const progress = Math.max(-1, Math.min(1, -dx / range));
       const elapsed = Math.max(1, performance.now() - galleryGesture.lastTime);
@@ -500,11 +628,12 @@ document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
       let direction = Math.round(progress);
       if (!direction && Math.abs(velocity) > .42 && Math.abs(dx) > 12) direction = velocity < 0 ? 1 : -1;
       state.arcDragging = false;
+      state.arcDragX = 0;
       if (direction) {
         state.manualDirection = direction;
         setGalleryImage(gallery, state.index + direction);
       } else {
-        renderAlBasriMallArc(gallery);
+        renderAlBasriMallPresentation(gallery);
       }
       galleryGesture = null;
       return;
@@ -520,15 +649,17 @@ document.querySelectorAll('[data-project-gallery]').forEach((gallery) => {
     galleryGesture = null;
   });
   gallery.addEventListener('pointercancel', () => {
-    if (isSquareDepthDeck(gallery)) {
+    if (isPortraitDepthDeck(gallery)) {
       const state = galleries.get(gallery);
       state.deckDragging = false;
       state.deckDragX = 0;
-      renderSquareDepthDeck(gallery);
+      renderPortraitDepthDeck(gallery);
     }
-    if (isAlBasriMallArc(gallery)) {
-      galleries.get(gallery).arcDragging = false;
-      renderAlBasriMallArc(gallery);
+    if (isAlBasriMallPresentation(gallery)) {
+      const state = galleries.get(gallery);
+      state.arcDragging = false;
+      state.arcDragX = 0;
+      renderAlBasriMallPresentation(gallery);
     }
     galleryGesture = null;
   });
