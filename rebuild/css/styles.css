@@ -277,7 +277,7 @@ html[dir="rtl"] .booking-card input, html[dir="rtl"] .booking-fields input, html
 }
 .booking-panel[data-step="summary"] .booking-summary {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--consultation-stack-gap);
+  gap: var(--layout-major-gap);
   padding: var(--consultation-stack-gap);
   border-radius: var(--consultation-box-radius);
 }
@@ -1303,37 +1303,137 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
 
 /* Keyboard focus shifts only the active Consultation form group, never the
    Master Panel or its navigation track. */
-.booking-panel :is(.booking-promo-cards, .booking-fields) {
+.booking-panel :is(.booking-promo-cards, .booking-fields, .booking-customer-fields) {
   transform: translate3d(0, 0, 0);
   transition: transform 200ms cubic-bezier(.22, .61, .36, 1);
 }
-.booking-panel :is(.booking-promo-cards, .booking-fields).is-keyboard-active {
+.booking-panel :is(.booking-promo-cards, .booking-fields, .booking-customer-fields).is-keyboard-active {
   transform: translate3d(0, var(--consultation-keyboard-shift, 0px), 0);
   will-change: transform;
 }
 @media (prefers-reduced-motion: reduce) {
-  .booking-panel :is(.booking-promo-cards, .booking-fields) { transition-duration: .01ms; }
-}
-
-/* Panel 2 shares the calendar's actual lower grid track on portrait. Keeping
-   the complete form as a normal grid item restores its approved content width
-   and makes both panels resolve their lower edge from the same safe baseline. */
-@media (max-aspect-ratio: 4 / 3) {
-  .booking-panel[data-step="customer"] .booking-fields {
-    position: static;
-    inset: auto;
-    grid-row: 4;
-    justify-self: center;
-    align-self: end;
-    width: var(--booking-master-container-width);
-    margin-block-end: 0;
-  }
+  .booking-panel :is(.booking-promo-cards, .booking-fields, .booking-customer-fields) { transition-duration: .01ms; }
 }
 
 /* Panel 1 uses the same lower grid boundary as the calendar, summary, and
    customer form. The two controls remain one intact group. */
 @media (max-aspect-ratio: 4 / 3) {
   .booking-panel[data-step="promo"] .booking-promo-cards { margin-block-end: 0; }
+}
+
+/* Panel 2 is an isolated customer-form component. Its six existing field
+   controls remain one grid group, anchored by the same lower content track as
+   the calendar and summary instead of by an independent positioning wrapper. */
+.booking-panel[data-step="customer"] .booking-customer-fields {
+  display: grid;
+  grid-row: 4;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: end;
+  justify-self: center;
+  width: min(100%, 620px);
+  max-height: min(47dvh, 420px);
+  margin: 0;
+  padding: 0 2px;
+  gap: var(--layout-major-gap);
+  overflow: auto;
+  scrollbar-width: thin;
+  text-align: center;
+}
+.booking-panel[data-step="customer"] .booking-customer-fields > label {
+  display: grid;
+  min-height: var(--consultation-entry-height);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--consultation-box-radius);
+  background: var(--color-paper);
+  font-size: clamp(10px, 1.1vw, 13px);
+  font-weight: 600;
+  line-height: var(--type-control-line-height);
+  text-align: center;
+}
+.booking-panel[data-step="customer"] .booking-customer-fields > label > span { display: none; }
+.booking-panel[data-step="customer"] .booking-customer-fields .customer-writing-field {
+  width: 100%;
+  min-height: var(--consultation-entry-height);
+  height: var(--consultation-entry-height);
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--consultation-writable-font-size);
+  line-height: var(--consultation-entry-height);
+  text-align: center;
+  outline-color: var(--color-brand);
+}
+.booking-panel[data-step="customer"] .booking-customer-fields .customer-writing-field::placeholder {
+  color: var(--color-secondary-control);
+  opacity: 1;
+  text-align: center;
+}
+.booking-panel[data-step="customer"] .booking-customer-fields > label.is-invalid,
+.booking-panel[data-step="customer"] .booking-customer-fields > label.is-invalid input {
+  box-shadow: none;
+  background: var(--color-paper);
+}
+html[dir="rtl"] .booking-panel[data-step="customer"] .booking-customer-fields {
+  direction: rtl;
+  font-family: var(--font-arabic);
+}
+html[dir="rtl"] .booking-panel[data-step="customer"] .booking-customer-fields .customer-writing-field {
+  direction: rtl;
+  text-align: center;
+}
+@media (max-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="customer"] .booking-customer-fields {
+    --customer-field-height: 44px;
+    grid-template-columns: 1fr;
+    width: var(--booking-master-container-width);
+    max-height: 43dvh;
+    align-self: end;
+    overflow: auto;
+    scrollbar-width: none;
+  }
+  .booking-panel[data-step="customer"] .booking-customer-fields::-webkit-scrollbar { display: none; }
+  .booking-panel[data-step="customer"] .booking-customer-fields > label {
+    min-height: var(--customer-field-height);
+    justify-items: center;
+  }
+  .booking-panel[data-step="customer"] .booking-customer-fields .customer-writing-field {
+    min-height: var(--customer-field-height);
+    max-height: var(--customer-field-height);
+    height: var(--customer-field-height);
+    line-height: calc(var(--customer-field-height) - 2px);
+  }
+}
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="customer"] .booking-customer-fields {
+    position: absolute;
+    inset-inline: var(--panel-safe);
+    bottom: var(--homepage-standard-card-bottom-inset);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, var(--homepage-white-card-height));
+    align-self: auto;
+    width: calc(100% - (var(--panel-safe) * 2));
+    max-height: none;
+    padding: 0;
+    overflow: visible;
+    gap: var(--panel-safe);
+  }
+  .booking-panel[data-step="customer"] .booking-customer-fields > label {
+    place-items: center;
+    width: 100%;
+    height: var(--homepage-white-card-height);
+    min-height: 0;
+    padding: 0 var(--panel-safe);
+  }
+  .booking-panel[data-step="customer"] .booking-customer-fields .customer-writing-field {
+    min-height: 100%;
+    height: 100%;
+    line-height: normal;
+  }
 }
 
 /* Both final-state symbols occupy the existing confirmation content surface;

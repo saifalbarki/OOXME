@@ -1,4 +1,4 @@
-const interactionTarget = 'button, a, input, select, textarea, label, [data-project-gallery], .booking-card, .booking-fields, .booking-selectors, .calendar-card, .booking-summary, .payment-options';
+const interactionTarget = 'button, a, input, select, textarea, label, [data-project-gallery], .booking-card, .booking-fields, .booking-customer-fields, .booking-selectors, .calendar-card, .booking-summary, .payment-options';
 let activeInteraction = null;
 let suppressedClickTarget = null;
 
