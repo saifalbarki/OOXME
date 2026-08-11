@@ -1391,12 +1391,10 @@ html[dir="rtl"] .booking-panel[data-step="customer"] .booking-customer-fields .c
     --customer-field-height: 44px;
     grid-template-columns: 1fr;
     width: var(--booking-master-container-width);
-    max-height: 43dvh;
+    max-height: none;
     align-self: end;
-    overflow: auto;
-    scrollbar-width: none;
+    overflow: visible;
   }
-  .booking-panel[data-step="customer"] .booking-customer-fields::-webkit-scrollbar { display: none; }
   .booking-panel[data-step="customer"] .booking-customer-fields > label {
     min-height: var(--customer-field-height);
     justify-items: center;
