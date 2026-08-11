@@ -1315,17 +1315,17 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   .booking-panel :is(.booking-promo-cards, .booking-fields) { transition-duration: .01ms; }
 }
 
-/* Panel 2 is one bottom-anchored input group. The portrait content grid is its
-   containing block, so the group's lower edge uses the same safe baseline as
-   the date and summary boxes while its fields continue building upward. */
+/* Panel 2 shares the calendar's actual lower grid track on portrait. Keeping
+   the complete form as a normal grid item restores its approved content width
+   and makes both panels resolve their lower edge from the same safe baseline. */
 @media (max-aspect-ratio: 4 / 3) {
-  .booking-panel[data-step="customer"] .master-panel-content { position: relative; }
   .booking-panel[data-step="customer"] .booking-fields {
-    position: absolute;
-    inset-inline: 0;
-    inset-block-end: 0;
-    grid-row: auto;
-    align-self: auto;
+    position: static;
+    inset: auto;
+    grid-row: 4;
+    justify-self: center;
+    align-self: end;
+    width: var(--booking-master-container-width);
     margin-block-end: 0;
   }
 }
