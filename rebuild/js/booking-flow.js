@@ -40,7 +40,8 @@ document.querySelectorAll('[data-language-toggle]').forEach(x=>x.addEventListene
 window.addEventListener('storage',e=>{if(e.key==='ooxme-language')applyLanguage(e.newValue==='ar'?'ar':'en')});
 window.addEventListener('resize', () => { applyLandscapeStepText(); updateCustomerPlaceholders(); });
 track.style.height=`${panels.length*100}dvh`;
-let step=0, transitionTimer, startY=null;
+let step=0, transitionTimer;
+let restoreConsultationPromoPanel = () => {};
 const confirmationDescription = document.querySelector('.booking-panel[data-step="confirmation"] .master-panel-content > p:not(.master-panel-label)');
 if (confirmationDescription) {
   confirmationDescription.dataset.ar = '\u0633\u0648\u0641 \u062a\u0633\u062a\u0644\u0645 \u0627\u0644\u0627\u0631\u0634\u0627\u062f\u0627\u062a \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0629 \u0639\u0628\u0631 \u0627\u0644\u0627\u064a\u0645\u064a\u0644 \u0628\u0639\u062f \u062a\u0623\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0645\u062f\u0641\u0648\u0639\u0627\u062a\u0643';
@@ -80,13 +81,10 @@ const dateAvailable = () => { if (!/^\d{4}-\d{2}-\d{2}$/.test(state.date || ''))
 const timeDurationComplete = (show = false) => { const validTime = ['10:00','13:00','16:00'].includes(state.time); const validDuration = [45,60,90].includes(Number(state.duration)) && !(state.promo.toUpperCase() === 'R100' && Number(state.duration) !== 45); if (show) { markInvalid(document.querySelector('[data-times]')?.closest('.booking-card'), !validTime); markInvalid(document.querySelector('[data-durations]')?.closest('.booking-card'), !validDuration); } return validTime && validDuration; };
 const bookingComplete = () => promoValid(false) && customerComplete(false) && dateAvailable() && timeDurationComplete(false);
 const canProceed = (show = true) => { if (BOOKING_DESIGN_MODE) return true; if (step === 0) { const valid = promoValid(show); const code = promoInputField?.value.trim().toUpperCase() || state.promo.toUpperCase(); if (!valid) return false; if (code === 'R100') { state.promo = 'R100'; state.duration = '45'; save(); renderChoices(); if (show) setPromoFeedback(language === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); } else { state.promo = ''; save(); } return true; } if (step === 1) return customerComplete(show); if (step === 2) { const valid = dateAvailable(); if (show) markInvalid(document.querySelector('[data-calendar]'), !valid); return valid; } if (step === 3) return timeDurationComplete(show); if (step === 4) { const valid = bookingComplete(); if (show) markInvalid(document.querySelector('[data-summary]'), !valid); return valid; } if (step === 5) { const valid = total() === 0 || Boolean(state.payment); if (show) markInvalid(document.querySelector('[data-payment-options]'), !valid); return valid; } return true; };
-const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); const completingFlow = step === panels.length - 2 && next === panels.length - 1; if(next===step || (next>step && !canProceed(true)))return; step=next; panels.forEach(p=>p.classList.remove('is-active')); track.style.transform=`translateY(${-step*100}dvh)`; clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (completingFlow) replayConfirmationSuccessMark();},620); };
+const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); const completingFlow = step === panels.length - 2 && next === panels.length - 1; if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; panels.forEach(p=>p.classList.remove('is-active')); track.style.transform=`translateY(${-step*100}dvh)`; clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (completingFlow) replayConfirmationSuccessMark();},620); };
 window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => step, moveTo });
 const continueStep = () => { if(!canProceed(true)) return; if(!BOOKING_DESIGN_MODE && step===4 && total()===0) moveTo(6); else moveTo(step+1); };
 document.querySelectorAll('[data-next]').forEach(x=>x.addEventListener('click',continueStep));
-experience.addEventListener('pointerdown',e=>{if(!e.target.closest('button,input,select,a,label'))startY=e.clientY});
-experience.addEventListener('pointerup',e=>{if(startY===null)return; const d=startY-e.clientY; if(Math.abs(d)>60) moveTo(step+(d>0?1:-1)); startY=null});
-let wheelLock=false; window.addEventListener('wheel',e=>{if(wheelLock||Math.abs(e.deltaY)<20)return; wheelLock=true; moveTo(step+(e.deltaY>0?1:-1)); setTimeout(()=>wheelLock=false,620)},{passive:true});
 document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save(); if(step===1&&customerComplete(false))setTimeout(()=>{if(step===1&&customerComplete(false))moveTo(2)},180)}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();if(step===1&&customerComplete(false))moveTo(2)}); field.addEventListener('focus',()=>field.scrollIntoView({block:'center',behavior:'smooth'})); });
 document.querySelectorAll('[data-customer-form] [data-field]').forEach((field) => {
   const key = field.dataset.field;
@@ -112,14 +110,12 @@ document.querySelector('[data-promo-form]').addEventListener('submit',e=>{e.prev
 const promoDescription = document.querySelector('[data-step="promo"] .master-panel-content > p');
 let consultationPromoSuccess = false;
 let consultationPromoSuccessTimer;
-let consultationPromoCodeTimer;
 const updateConsultationPromoCopy = () => {
   promoInputField.placeholder = consultationCopy[language].promoPlaceholder;
-  if (promoDescription) promoDescription.textContent = consultationPromoSuccess ? consultationCopy[language].promoApplied : consultationCopy[language].promoDescription;
+  if (promoDescription) promoDescription.textContent = consultationPromoSuccess ? 'تم تطبيق الخصم' : consultationCopy[language].promoDescription;
 };
 const clearConsultationPromoTimers = () => {
   window.clearTimeout(consultationPromoSuccessTimer);
-  window.clearTimeout(consultationPromoCodeTimer);
 };
 const showConsultationPromoFeedback = (message = '', clearAfter = false) => {
   setPromoFeedback(message, clearAfter);
@@ -129,6 +125,13 @@ promoInputField.addEventListener('input', () => {
   promoInputCard.classList.remove('is-invalid');
   promoInputField.placeholder = consultationCopy[language].promoPlaceholder;
 });
+restoreConsultationPromoPanel = () => {
+  clearConsultationPromoTimers();
+  consultationPromoSuccess = false;
+  promoInputField.value = state.promo;
+  showConsultationPromoFeedback();
+  updateConsultationPromoCopy();
+};
 const promoExampleCodes = ['OOXME25', 'START10', 'HELLO20', 'WELCOME', 'OOX15'];
 let promoPlaceholderTimer;
 let promoPlaceholderRunning = false;
@@ -206,13 +209,8 @@ document.querySelector('[data-promo-form]').addEventListener('submit', (event) =
   updateConsultationPromoCopy();
   consultationPromoSuccessTimer = window.setTimeout(() => {
     consultationPromoSuccess = false;
-    updateConsultationPromoCopy();
-    showConsultationPromoFeedback(code);
-    consultationPromoCodeTimer = window.setTimeout(() => {
-      showConsultationPromoFeedback();
-      moveTo(1);
-    }, 1000);
-  }, 2000);
+    moveTo(1);
+  }, 1000);
 });
 const monthCursor = new Date(); monthCursor.setDate(1);
 let clearMonthDropdownListeners = () => {};
@@ -240,10 +238,10 @@ const renderCalendar = () => {
       menu.hidden=false;
       trigger.setAttribute('aria-expanded','true');
       window.requestAnimationFrame(()=>{
-        const triggerBounds=trigger.getBoundingClientRect();
-        const roomBelow=window.innerHeight-triggerBounds.bottom;
-        const roomAbove=triggerBounds.top;
-        picker.classList.toggle('opens-upward', roomBelow<menu.scrollHeight+8 && roomAbove>roomBelow);
+        const bounds=menu.getBoundingClientRect();
+        menu.style.setProperty('--month-menu-center-x',`${(window.innerWidth/2)-(bounds.left+(bounds.width/2))}px`);
+        /* The resting animation begins 4px above its final centered position. */
+        menu.style.setProperty('--month-menu-center-y',`${(window.innerHeight/2)-(bounds.top+(bounds.height/2))-4}px`);
         picker.classList.add('is-open');
       });
       return;
@@ -252,7 +250,8 @@ const renderCalendar = () => {
     picker.classList.remove('is-open');
     closeTimer=window.setTimeout(()=>{menu.hidden=true;picker.classList.remove('opens-upward');},210);
   };
-  const onOutsidePointerDown = (event) => { if(!picker.contains(event.target)) setMonthMenuOpen(false); };
+  /* Only the white month menu itself keeps the picker open. */
+  const onOutsidePointerDown = (event) => { if(!menu.contains(event.target)) setMonthMenuOpen(false); };
   const onEscape = (event) => { if(event.key==='Escape') setMonthMenuOpen(false); };
   trigger.addEventListener('click',()=>setMonthMenuOpen(menu.hidden));
   menu.querySelectorAll('[data-month-option]').forEach(option=>option.addEventListener('click',()=>{
@@ -355,5 +354,93 @@ document.addEventListener('pointerdown', event => {
   if (event.target.closest('.payment-option')) return;
   closeOpenPaymentOption();
 });
-let searchTimer; const closeSearch=()=>{searchOverlay.classList.remove('is-open');searchTimer=setTimeout(()=>searchOverlay.hidden=true,1450)}; const resizeSearch=()=>{searchInput.style.height='24px';searchInput.style.height=`${searchInput.scrollHeight}px`;searchOverlay.querySelector('.search-overlay-field').style.height=`${Math.max(48,searchInput.scrollHeight+24)}px`}; const viewport=window.visualViewport;const fullViewport=viewport?.height??innerHeight;const updateKeyboard=()=>{if(!viewport)return;searchOverlay.style.setProperty('--visual-viewport-height',`${viewport.height}px`);searchOverlay.style.setProperty('--visual-viewport-top',`${viewport.offsetTop}px`);searchOverlay.classList.toggle('is-keyboard-open',document.activeElement===searchInput&&fullViewport-viewport.height>120)};document.querySelectorAll('[data-search-toggle]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();if(searchOverlay.hidden){searchOverlay.hidden=false;requestAnimationFrame(()=>searchOverlay.classList.add('is-open'))}else closeSearch()})); searchOverlay.addEventListener('click',closeSearch); searchOverlay.querySelectorAll('a,label,[data-search-suggestion]').forEach(x=>x.addEventListener('click',e=>e.stopPropagation())); searchInput.addEventListener('input',()=>{const q=searchInput.value.trim();searchOverlay.classList.toggle('is-typing',!!q);suggestion.hidden=!q;if(q)suggestion.textContent=language==='ar'?`اقتراح: «${q}»`:`Search for “${q}”`;resizeSearch()});searchInput.addEventListener('focus',updateKeyboard);searchInput.addEventListener('blur',()=>setTimeout(updateKeyboard));viewport?.addEventListener('resize',updateKeyboard);viewport?.addEventListener('scroll',updateKeyboard);
+let searchTimer;
+const searchOverlayField = searchOverlay.querySelector('.search-overlay-field');
+const searchMenuOptions = [...searchOverlay.querySelectorAll('.search-overlay-links a')];
+const normalizeSearchText = value => String(value || '')
+  .toLocaleLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[أإآ]/g, 'ا')
+  .replace(/ى/g, 'ي')
+  .replace(/ة/g, 'ه')
+  .replace(/[^\p{L}\p{N}]+/gu, ' ')
+  .trim();
+const searchDistance = (left, right) => {
+  const previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+  for (let leftIndex = 0; leftIndex < left.length; leftIndex += 1) {
+    let diagonal = previous[0];
+    previous[0] = leftIndex + 1;
+    for (let rightIndex = 0; rightIndex < right.length; rightIndex += 1) {
+      const saved = previous[rightIndex + 1];
+      previous[rightIndex + 1] = Math.min(previous[rightIndex + 1] + 1, previous[rightIndex] + 1, diagonal + (left[leftIndex] === right[rightIndex] ? 0 : 1));
+      diagonal = saved;
+    }
+  }
+  return previous[right.length];
+};
+const updateSearchResults = query => {
+  const term = normalizeSearchText(query);
+  if (!term) {
+    searchMenuOptions.forEach(option => {
+      option.hidden = false;
+      option.style.order = '';
+    });
+    return;
+  }
+  const ranked = searchMenuOptions
+    .map((option, index) => {
+      const label = normalizeSearchText(`${option.dataset.en || ''} ${option.dataset.ar || ''} ${option.getAttribute('href') || ''}`);
+      const words = label.split(' ').filter(Boolean);
+      const exact = label === term ? 1000 : 0;
+      const starts = words.some(word => word.startsWith(term)) ? 700 : 0;
+      const contains = label.includes(term) ? 500 - label.indexOf(term) : 0;
+      const distance = Math.min(...words.map(word => searchDistance(term, word)));
+      return { option, index, score: exact + starts + contains - distance };
+    })
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .slice(0, 3)
+    .map(({ option }) => option);
+  searchMenuOptions.forEach(option => {
+    const resultIndex = ranked.indexOf(option);
+    option.hidden = resultIndex === -1;
+    option.style.order = resultIndex === -1 ? '' : String(resultIndex);
+  });
+};
+const closeSearch = () => {
+  window.clearTimeout(searchTimer);
+  if (searchOverlay.hidden) return;
+  searchOverlay.classList.remove('is-open');
+  searchTimer = window.setTimeout(() => { searchOverlay.hidden = true; }, 180);
+};
+const openSearch = () => {
+  window.clearTimeout(searchTimer);
+  searchOverlay.hidden = false;
+  window.requestAnimationFrame(() => searchOverlay.classList.add('is-open'));
+};
+const resizeSearch = () => {
+  searchInput.style.height = '0px';
+  const textHeight = Math.max(parseFloat(getComputedStyle(searchInput).fontSize) * 1.35, searchInput.scrollHeight);
+  searchInput.style.height = `${textHeight}px`;
+  searchOverlayField.style.height = `${Math.max(48, textHeight + 24)}px`;
+};
+const viewport=window.visualViewport;
+const fullViewport=viewport?.height??innerHeight;
+const updateKeyboard=()=>{if(!viewport)return;searchOverlay.style.setProperty('--visual-viewport-height',`${viewport.height}px`);searchOverlay.style.setProperty('--visual-viewport-top',`${viewport.offsetTop}px`);searchOverlay.classList.toggle('is-keyboard-open',document.activeElement===searchInput&&fullViewport-viewport.height>120)};
+document.querySelectorAll('[data-search-toggle]').forEach(button=>button.addEventListener('click',event=>{
+  event.stopPropagation();
+  if (searchOverlay.hidden || !searchOverlay.classList.contains('is-open')) openSearch();
+  else closeSearch();
+}));
+searchOverlay.addEventListener('click', closeSearch);
+searchOverlayField.addEventListener('click', event => event.stopPropagation());
+searchOverlay.querySelectorAll('.search-overlay-links a, [data-search-suggestion]').forEach(option=>option.addEventListener('click',event=>{
+  event.stopPropagation();
+  closeSearch();
+}));
+searchInput.addEventListener('input',()=>{const q=searchInput.value.trim();searchOverlay.classList.toggle('is-typing',!!q);suggestion.hidden=true;updateSearchResults(q);resizeSearch()});
+searchInput.addEventListener('focus',updateKeyboard);
+searchInput.addEventListener('blur',()=>setTimeout(updateKeyboard));
+viewport?.addEventListener('resize',updateKeyboard);
+viewport?.addEventListener('scroll',updateKeyboard);
 applyLanguage(language);updateConsultationPromoCopy();renderCalendar();renderChoices();renderSummary();reveal();

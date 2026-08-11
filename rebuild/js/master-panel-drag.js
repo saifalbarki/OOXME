@@ -470,14 +470,9 @@ const openOoxmeImagePreview = (image) => {
   ooxmeImagePreviewTimer = window.setTimeout(closeOoxmeImagePreview, 5000);
 };
 ooxmeImagePreview.addEventListener('click', (event) => {
-  if (event.target.closest('.site-image-preview-image')) closeOoxmeImagePreview();
-});
-document.addEventListener('click', (event) => {
-  if (!event.target.closest('.site-image-preview-image')) return;
   event.preventDefault();
-  event.stopImmediatePropagation();
   closeOoxmeImagePreview();
-}, true);
+});
 document.addEventListener('pointerdown', (event) => {
   const image = getOoxmePreviewImage(event.target);
   if (!image) return;

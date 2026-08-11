@@ -9,7 +9,11 @@
   --space: clamp(16px, 4vw, 48px);
   --space-half: calc(var(--space) / 2);
   --panel-radius: clamp(36px, 10vmin, 88px);
-  --card-radius: calc(var(--space) * 0.9);
+  /* One radius family: every rectangular surface descends from the panel. */
+  --radius-panel: var(--panel-radius);
+  --radius-box: clamp(20px, calc(var(--radius-panel) * .6), 36px);
+  --radius-control: clamp(12px, calc(var(--radius-box) * .62), 22px);
+  --card-radius: var(--radius-box);
   --panel-safe: clamp(20px, 4vw, 48px);
   /* Shared responsive geometry. X intentionally remains the current panel-safe outer gap. */
   --layout-x: var(--panel-safe);
