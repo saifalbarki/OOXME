@@ -1297,18 +1297,18 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   transform: translateY(1px) rotate(225deg);
 }
 .booking-panel[data-step="date"] .calendar-month-menu {
-  --month-menu-cell-height: clamp(20px, 3.4dvh, 32px);
+  --month-menu-cell-height: clamp(40px, 5.4dvh, 48px);
   position: fixed;
   inset: 50% auto auto 50%;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(12, var(--month-menu-cell-height));
-  inline-size: min(clamp(176px, 52vw, 240px), calc(100vw - (var(--panel-safe) * 2)));
+  inline-size: min(clamp(240px, 68vw, 300px), calc(100vw - (var(--panel-safe) * 2)));
   max-inline-size: none;
   max-block-size: none;
-  overflow: hidden;
+  overflow-y: auto;
   box-sizing: border-box;
-  padding: var(--layout-compact-gap);
+  padding: 8px 12px;
   border: 0;
   border-radius: var(--radius-box);
   background: var(--color-paper);
@@ -1333,8 +1333,9 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   place-items: center;
   min-block-size: 0;
   margin: 0;
-  padding: 0;
+  padding: 10px 16px;
   border: 0;
+  border-block-end: 1px solid rgba(0, 0, 0, .06);
   border-radius: var(--radius-control);
   background: transparent;
   color: var(--color-ink);
@@ -1346,7 +1347,7 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   transition: background-color 160ms ease, color 160ms ease;
   -webkit-tap-highlight-color: transparent;
 }
-.booking-panel[data-step="date"] .calendar-month-option + .calendar-month-option { border-block-start: 1px solid rgba(13, 13, 13, .08); }
+.booking-panel[data-step="date"] .calendar-month-option:last-child { border-block-end: 0; }
 .booking-panel[data-step="date"] .calendar-month-option[aria-selected="true"] {
   background: color-mix(in srgb, var(--color-brand) 13%, white);
   color: var(--color-brand);
@@ -1361,10 +1362,11 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   .booking-panel[data-step="date"] .calendar-month-menu {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: repeat(4, var(--month-menu-cell-height));
-    inline-size: min(clamp(300px, 44vw, 440px), calc(100vw - (var(--panel-safe) * 2)));
+    inline-size: min(clamp(360px, 48vw, 500px), calc(100vw - (var(--panel-safe) * 2)));
+    overflow: hidden;
   }
-  .booking-panel[data-step="date"] .calendar-month-option + .calendar-month-option { border-block-start: 0; }
-  .booking-panel[data-step="date"] .calendar-month-option:nth-child(n + 4) { border-block-start: 1px solid rgba(13, 13, 13, .08); }
+  .booking-panel[data-step="date"] .calendar-month-option { border-block-end: 0; }
+  .booking-panel[data-step="date"] .calendar-month-option:nth-child(n + 4) { border-block-start: 1px solid rgba(0, 0, 0, .06); }
   .booking-panel[data-step="date"] .calendar-month-option:not(:nth-child(3n + 1)) { border-inline-start: 1px solid rgba(13, 13, 13, .08); }
 }
 @media (prefers-reduced-motion: reduce) {
