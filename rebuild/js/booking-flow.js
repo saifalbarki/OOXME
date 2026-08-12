@@ -164,7 +164,7 @@ const loadLiveAvailability = async (year, month) => {
   if (liveAvailabilityKey === key || liveAvailabilityRequest === key) return;
   liveAvailabilityRequest = key;
   try {
-    const response = await fetch(`/api/booking/availability?year=${year}&month=${month}`, { headers: { Accept: 'application/json' } });
+    const response = await fetch(`/api/booking/available-slots?year=${year}&month=${month}`, { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error('Availability request failed');
     liveAvailability = await response.json(); liveAvailabilityKey = key;
     if (state.date && !availableTimesForDate(state.date).includes(state.time)) state.time = '';

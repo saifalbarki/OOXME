@@ -13,7 +13,16 @@ const isBusy = (busy, start, end) => busy.some((entry) => new Date(entry.start) 
 async function getBusy(timeMin, timeMax) {
   const config = bookingConfig();
   const result = await calendarApi('/freeBusy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ timeMin, timeMax, timeZone: config.timezone, items: [{ id: config.calendarId }] }) });
-  return result.calendars?.[config.calendarId]?.busy || [];
+  const calendar = result.calendars?.[config.calendarId];
+  if (!calendar || calendar.errors?.length) {
+    const error = new Error('Google Calendar free/busy lookup failed');
+    error.code = 'calendar_availability_unavailable';
+    throw error;
+  }
+  // Google Calendar includes every event whose "Show me as" value is Busy
+  // here (and excludes Transparent/Free events). The caller removes each
+  // overlapping website slot before returning it to the client.
+  return calendar.busy || [];
 }
 
 async function availabilityForMonth(year, month) {
