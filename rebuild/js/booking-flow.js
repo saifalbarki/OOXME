@@ -10,11 +10,13 @@ if (bookingViewportMeta && !/maximum-scale/i.test(bookingViewportMeta.content)) 
   bookingViewportMeta.content = `${bookingViewportMeta.content}, maximum-scale=1`;
 }
 const copy = { en: { months:['January','February','March','April','May','June','July','August','September','October','November','December'], weekdays:['S','M','T','W','T','F','S'], summary:{name:'Customer name',email:'Email',phone:'Phone',topic:'Consultation topic',sector:'Business sector',date:'Selected date',time:'Selected time',duration:'Duration',promo:'Promo code',fee:'Consultation fee',discount:'Discount',total:'Final amount'}, confirmPay:'Confirm & Pay',confirm:'Confirm',promoValid:'Discount applied', promoInvalid:'Invalid code' }, ar: { months:['يناير','فبراير','مارس','ابريل','مايو','يونيو','يوليو','اغسطس','سبتمبر','اكتوبر','نوفمبر','ديسمبر'], weekdays:['ح','ن','ث','ر','خ','ج','س'], summary:{name:'اسم العميل',email:'البريد الالكتروني',phone:'الهاتف',topic:'موضوع الاستشارة',sector:'قطاع العمل',date:'التاريخ المختار',time:'الوقت المختار',duration:'المدة',promo:'كود الخصم',fee:'سعر الاستشارة',discount:'الخصم',total:'المبلغ النهائي'}, confirmPay:'تأكيد والدفع',confirm:'تأكيد',promoValid:'تم تطبيق الخصم',promoInvalid:'الكود غير صالح' } };
-const empty = { promo:'', name:'', email:'', phone:'', sector:'', topic:'', additional:'', date:'', time:'', duration:'', payment:'' };
+const empty = { promo:'', offerToken:'', serverQuote:null, name:'', email:'', phone:'', sector:'', topic:'', additional:'', date:'', time:'', duration:'', payment:'' };
 // Keep the approved design while enforcing the existing booking-step validation.
 const BOOKING_DESIGN_MODE = false;
 let state = {...empty};
 try { state = {...empty, ...JSON.parse(sessionStorage.getItem('ooxme-rebuild-booking') || '{}')}; } catch (_) {}
+const offerTokenFromUrl = new URLSearchParams(window.location.search).get('offerToken') || '';
+if (offerTokenFromUrl) state.offerToken = offerTokenFromUrl;
 let updateBookingSummary = () => {};
 const save = () => {
   try { sessionStorage.setItem('ooxme-rebuild-booking', JSON.stringify(state)); } catch (_) {}
@@ -23,8 +25,9 @@ const save = () => {
   updateConfirmationPanel?.({ animate: step === panels.length - 1 });
 };
 const price = () => ({45:25,60:40,90:60}[Number(state.duration)] || 0);
-const discount = () => state.promo.trim().toUpperCase() === 'R100' ? price() : 0;
-const total = () => Math.max(0, price() - discount());
+const activeServerQuote = () => state.serverQuote && Number(state.serverQuote.durationMinutes) === Number(state.duration) ? state.serverQuote : null;
+const discount = () => Number(activeServerQuote()?.discountAmount || 0);
+const total = () => activeServerQuote() ? Number(activeServerQuote().finalAmount) : price();
 let language = 'en'; try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
 const consultationCopy = {
   en: {
@@ -41,7 +44,7 @@ const consultationCopy = {
 const landscapeStepCopy = { promo:{en:'Enter a promo code if you have one',ar:'ادخل كود الخصم اذا كان لديك'}, customer:{en:'Tell us the details we need for your consultation',ar:'ادخل المعلومات المطلوبة للاستشارة'}, date:{en:'Choose an available date for your consultation',ar:'اختر يوماً متاحاً للاستشارة'}, time:{en:'Choose the consultation time and duration',ar:'اختر وقت ومدة الاستشارة'}, summary:{en:'Review your booking details before confirming',ar:'راجع تفاصيل الحجز قبل التأكيد'}, payment:{en:'Choose your preferred payment method',ar:'اختر طريقة الدفع المناسبة'}, confirmation:{en:'Your consultation booking has been confirmed',ar:'تم تأكيد حجز الاستشارة'} };
 const applyLandscapeStepText = () => { const wide = window.matchMedia('(min-aspect-ratio: 4 / 3)').matches; panels.forEach(panel => { const label = panel.querySelector('.master-panel-label'); if (!label) return; label.textContent = wide ? landscapeStepCopy[panel.dataset.step][language] : label.dataset[language]; }); };
 const updateCustomerPlaceholders = () => { document.querySelectorAll('[data-customer-form] label').forEach(label => { const input = label.querySelector('input'); const labelText = label.querySelector('span'); if (input && !input.classList.contains('is-inline-error')) input.placeholder = labelText?.dataset[language] || ''; }); };
-const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); updateConfirmationPanel(); if (state.promo === 'R100' && promoInputCard?.classList.contains('is-feedback')) setPromoFeedback(next === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
+const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); updateConfirmationPanel(); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
 document.querySelectorAll('[data-language-toggle]').forEach(x=>x.addEventListener('click',()=>applyLanguage(language==='en'?'ar':'en')));
 window.addEventListener('storage',e=>{if(e.key==='ooxme-language')applyLanguage(e.newValue==='ar'?'ar':'en')});
 const alignBookingTrack = () => {
@@ -134,7 +137,7 @@ const setFieldError = (field, key, invalid) => {
   markInvalid(field, invalid);
   field.closest('label')?.classList.toggle('is-invalid', invalid);
 };
-const promoValid = (show = false) => { const field = document.querySelector('[data-field="promo"]'); const code = (field?.value.trim() || state.promo || '').toUpperCase(); const valid = !code || code === 'R100'; markInvalid(field, show && !valid); if (show && !valid) setPromoFeedback(copy[language].promoInvalid, true); return valid; };
+const promoValid = () => true;
 const customerComplete = (show = false) => { let valid = true; fieldsRequired.forEach((key) => { const field = document.querySelector(`[data-field="${key}"]`); const value = String(state[key] || '').trim(); const usablePhone = key !== 'phone' || value.replace(/\D/g, '').length >= 7; const usableEmail = key !== 'email' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); const missing = !value || !usablePhone || !usableEmail; if (missing) valid = false; if (show) setFieldError(field, key, missing); }); return valid; };
 let liveAvailability = null;
 let liveAvailabilityKey = '';
@@ -163,9 +166,9 @@ const loadLiveAvailability = async (year, month) => {
     // Preserve the current local schedule if production availability is temporarily unavailable.
   } finally { liveAvailabilityRequest = null; }
 };
-const timeDurationComplete = (show = false) => { const validTime = ['10:00','13:00','16:00'].includes(state.time); const validDuration = [45,60,90].includes(Number(state.duration)) && !(state.promo.toUpperCase() === 'R100' && Number(state.duration) !== 45); if (show) { markInvalid(document.querySelector('[data-times]')?.closest('.booking-card'), !validTime); markInvalid(document.querySelector('[data-durations]')?.closest('.booking-card'), !validDuration); } return validTime && validDuration; };
+const timeDurationComplete = (show = false) => { const validTime = ['10:00','13:00','16:00'].includes(state.time); const validDuration = [45,60,90].includes(Number(state.duration)); if (show) { markInvalid(document.querySelector('[data-times]')?.closest('.booking-card'), !validTime); markInvalid(document.querySelector('[data-durations]')?.closest('.booking-card'), !validDuration); } return validTime && validDuration; };
 const bookingComplete = () => promoValid(false) && customerComplete(false) && dateAvailable() && timeDurationComplete(false);
-const canProceed = (show = true) => { if (BOOKING_DESIGN_MODE) return true; if (step === 0) { const valid = promoValid(show); const code = promoInputField?.value.trim().toUpperCase() || state.promo.toUpperCase(); if (!valid) return false; if (code === 'R100') { state.promo = 'R100'; state.duration = '45'; save(); renderChoices(); if (show) setPromoFeedback(language === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); } else { state.promo = ''; save(); } return true; } if (step === 1) return customerComplete(show); if (step === 2) { const valid = dateAvailable(); if (show) markInvalid(document.querySelector('[data-calendar]'), !valid); return valid; } if (step === 3) return timeDurationComplete(show); if (step === 4) { const valid = bookingComplete(); if (show) markInvalid(document.querySelector('[data-summary]'), !valid); return valid; } if (step === 5) { const valid = total() === 0 || Boolean(state.payment); if (show) markInvalid(document.querySelector('[data-payment-options]'), !valid); return valid; } return true; };
+const canProceed = (show = true) => { if (BOOKING_DESIGN_MODE) return true; if (step === 0) return promoValid(show); if (step === 1) return customerComplete(show); if (step === 2) { const valid = dateAvailable(); if (show) markInvalid(document.querySelector('[data-calendar]'), !valid); return valid; } if (step === 3) return timeDurationComplete(show); if (step === 4) { const valid = bookingComplete(); if (show) markInvalid(document.querySelector('[data-summary]'), !valid); return valid; } if (step === 5) { const valid = total() === 0 || Boolean(state.payment); if (show) markInvalid(document.querySelector('[data-payment-options]'), !valid); return valid; } return true; };
 const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; panels.forEach(p=>p.classList.remove('is-active')); alignBookingTrack(); clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (step === panels.length - 1) updateConfirmationPanel({ animate: true });},620); };
 window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => step, moveTo });
 let bookingSubmission = null;
@@ -175,16 +178,17 @@ const submitBooking = async () => {
   const message = document.querySelector('[data-payment-options]')?.closest('.master-panel-content')?.querySelector('.booking-submit-message') || (() => { const element=document.createElement('p'); element.className='booking-message booking-submit-message'; document.querySelector('[data-payment-options]')?.after(element); return element; })();
   button?.setAttribute('aria-busy', 'true'); if (button) button.disabled = true;
   message.textContent = language === 'ar' ? 'جارٍ تأكيد الحجز...' : 'Confirming your booking...';
-  bookingSubmission = fetch('/api/booking/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ date: state.date, time: state.time, duration: Number(state.duration), payment: state.payment, promo: state.promo, customer: { name: state.name, email: state.email, phone: state.phone, topic: state.topic, sector: state.sector, additional: state.additional } }) })
-    .then(async (response) => { const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error || 'booking_unavailable'); state.bookingId = body.id; save(); })
+  bookingSubmission = fetch('/api/booking/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ date: state.date, time: state.time, duration: Number(state.duration), payment: state.payment, promoCode: state.promo, offerToken: state.offerToken, customer: { name: state.name, email: state.email, phone: state.phone, topic: state.topic, sector: state.sector, additional: state.additional } }) })
+    .then(async (response) => { const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error || 'booking_unavailable'); state.bookingId = body.id; state.serverQuote = { ...(state.serverQuote || {}), finalAmount: body.finalAmount, currency: body.currency, durationMinutes: Number(state.duration) }; save(); })
     .catch((error) => { message.textContent = error.message === 'slot_unavailable' ? (language === 'ar' ? 'هذا الموعد لم يعد متاحاً. اختر وقتاً آخر.' : 'This time is no longer available. Please choose another.') : (language === 'ar' ? 'تعذر تأكيد الحجز الآن. حاول مرة أخرى.' : 'We could not confirm your booking right now. Please try again.'); throw error; })
     .finally(() => { bookingSubmission = null; button?.removeAttribute('aria-busy'); if (button) button.disabled = false; });
   return bookingSubmission;
 };
-const continueStep = async (event) => { if(!canProceed(true)) return; const confirmsPayment = event?.currentTarget?.closest('.booking-panel')?.dataset.step === 'payment'; if (confirmsPayment && usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } } moveTo(step + 1); };
+const continueStep = async (event) => { if(!canProceed(true)) return; if (step === 0) { state.promo = promoInputField?.value.trim() || state.promo; if (!await refreshServerPromotion({ showFeedback: Boolean(state.promo || state.offerToken) })) return; } if (step === 3 && !await refreshServerPromotion()) return; const confirmsPayment = event?.currentTarget?.closest('.booking-panel')?.dataset.step === 'payment'; if (confirmsPayment && usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } } moveTo(step + 1); };
 document.querySelectorAll('[data-next]:not([data-summary-next])').forEach(x=>x.addEventListener('click',continueStep));
 const continueSummaryStep = async () => {
   if (!canProceed(true)) return;
+  if (!await refreshServerPromotion({ showFeedback: true })) return;
   if (total() === 0) {
     if (usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } }
     moveTo(6);
@@ -330,6 +334,29 @@ const showConsultationPromoFeedback = (message = '', clearAfter = false) => {
   setPromoFeedback(message, clearAfter);
   promoInputCard.classList.toggle('is-invalid', Boolean(message) && message === consultationCopy[language].promoInvalid);
 };
+const refreshServerPromotion = async ({ showFeedback = false } = {}) => {
+  const promoCode = String(state.promo || '').trim();
+  if (!promoCode && !state.offerToken) { state.serverQuote = null; save(); return true; }
+  if (!usesLiveBookingApi) return true;
+  try {
+    const response = await fetch('/api/promo/validate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ promoCode, offerToken: state.offerToken, serviceCode: 'consultation', durationMinutes: Number(state.duration) || 45 })
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || !body.success) throw new Error(body.error || 'promotion_unavailable');
+    state.serverQuote = body.data.quote;
+    if (body.data.grantedDurationMinutes) state.duration = String(body.data.grantedDurationMinutes);
+    save(); renderChoices(); renderSummary();
+    if (showFeedback) showConsultationPromoFeedback(language === 'ar' ? 'تم التحقق من كود الخصم' : 'Discount code verified');
+    return true;
+  } catch (_) {
+    state.serverQuote = null;
+    save(); renderSummary();
+    if (showFeedback) showConsultationPromoFeedback(consultationCopy[language].promoInvalid, true);
+    return false;
+  }
+};
 promoInputField.addEventListener('input', () => {
   promoInputCard.classList.remove('is-invalid');
   stopPromoPlaceholderAnimation();
@@ -345,26 +372,18 @@ restoreConsultationPromoPanel = () => {
   showConsultationPromoFeedback();
   updateConsultationPromoCopy();
 };
-document.querySelector('[data-promo-form]').addEventListener('submit', (event) => {
+document.querySelector('[data-promo-form]').addEventListener('submit', async (event) => {
   event.preventDefault();
   const code = promoInputField.value.trim();
-  if (!code) {
-    state.promo = '';
+  if (!code && !state.offerToken) {
+    state.promo = ''; state.serverQuote = null;
     save();
     showConsultationPromoFeedback();
     moveTo(1);
     return;
   }
-  if (code !== 'R100') {
-    state.promo = '';
-    save();
-    showConsultationPromoFeedback(consultationCopy[language].promoInvalid, true);
-    return;
-  }
-  state.promo = 'R100';
-  state.duration = '45';
-  save();
-  renderChoices();
+  state.promo = code;
+  if (!await refreshServerPromotion({ showFeedback: true })) return;
   clearConsultationPromoTimers();
   consultationPromoSuccess = true;
   promoInputField.value = '';
@@ -437,7 +456,7 @@ const renderCalendar = () => {
     state.date=b.dataset.date;markInvalid(box,false);save();renderCalendar();setTimeout(()=>{if(step===2&&dateAvailable())moveTo(3)},180);
   }));
 };
-const renderChoices = () => { const times=document.querySelector('[data-times]'),durations=document.querySelector('[data-durations]'); if(!times)return; const options=state.date?availableTimesForDate(state.date):['10:00','13:00','16:00']; times.innerHTML=options.map(value=>`<button type="button" class="${state.time===value?'is-selected':''}" data-time="${value}">${value}</button>`).join(''); durations.innerHTML=[45,60,90].map(value=>`<button type="button" class="${Number(state.duration)===value?'is-selected':''}" data-duration="${value}">${value} ${language==='ar'?'دقيقة':'minutes'}</button>`).join(''); times.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>{state.time=b.dataset.time;markInvalid(times.closest('.booking-card'),false);save();renderChoices();if(state.duration)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)}));durations.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{state.duration=b.dataset.duration;if(state.promo.trim().toUpperCase()==='R100')state.duration='45';markInvalid(durations.closest('.booking-card'),false);save();renderChoices();if(state.time)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)})); };
+const renderChoices = () => { const times=document.querySelector('[data-times]'),durations=document.querySelector('[data-durations]'); if(!times)return; const options=state.date?availableTimesForDate(state.date):['10:00','13:00','16:00']; const advance=async()=>{ if(!timeDurationComplete(false))return; if(!await refreshServerPromotion())return; if(step===3)moveTo(4); }; times.innerHTML=options.map(value=>`<button type="button" class="${state.time===value?'is-selected':''}" data-time="${value}">${value}</button>`).join(''); durations.innerHTML=[45,60,90].map(value=>`<button type="button" class="${Number(state.duration)===value?'is-selected':''}" data-duration="${value}">${value} ${language==='ar'?'دقيقة':'minutes'}</button>`).join(''); times.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>{state.time=b.dataset.time;markInvalid(times.closest('.booking-card'),false);save();renderChoices();void advance();}));durations.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{state.duration=b.dataset.duration;state.serverQuote=null;markInvalid(durations.closest('.booking-card'),false);save();renderChoices();void advance();})); };
 const money = value => `${value} USD`;
 const renderSummary = () => { const box=document.querySelector('[data-summary]'); if(!box)return; const labels=copy[language].summary; const rows=[['name',state.name],['email',state.email],['phone',state.phone],['topic',state.topic],['sector',state.sector],['date',state.date],['time',state.time],['duration',state.duration?`${state.duration} ${language==='ar'?'دقيقة':'minutes'}`:''],['promo',state.promo||'—'],['fee',money(price())],['discount',money(discount())],['total',money(total())]]; box.innerHTML=rows.map(([key,value])=>`<div><dt>${labels[key]}</dt><dd>${value||'—'}</dd></div>`).join(''); document.querySelector('[data-confirm-label]').textContent=total()===0?copy[language].confirm:copy[language].confirmPay; };
 updateBookingSummary = renderSummary;

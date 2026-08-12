@@ -13,10 +13,11 @@ async function sendEmail({ to, subject, text }) {
 }
 
 async function sendBookingNotifications(booking) {
-  const details = `Booking ${booking.id}\nCustomer: ${booking.customer.name}\nEmail: ${booking.customer.email}\nPhone: ${booking.customer.phone}\nConsultation: ${dateLabel(booking)}\nTopic: ${booking.customer.topic}\nSector: ${booking.customer.sector}\nAdditional information: ${booking.customer.additional || '—'}\nPayment: ${booking.payment || 'Not specified'}`;
-  const customer = `Your OOXME consultation is booked for ${dateLabel(booking)}. We will send a reminder before your appointment. Booking reference: ${booking.id}.`;
+  const reference = booking.publicReference || booking.id;
+  const details = `Booking ${reference}\nCustomer: ${booking.customer.name}\nEmail: ${booking.customer.email}\nPhone: ${booking.customer.phone}\nConsultation: ${dateLabel(booking)}\nTopic: ${booking.customer.topic}\nSector: ${booking.customer.sector}\nAdditional information: ${booking.customer.additional || '—'}\nPayment: ${booking.payment || 'Not specified'}`;
+  const customer = `Your OOXME consultation is booked for ${dateLabel(booking)}. We will send a reminder before your appointment. Booking reference: ${reference}.`;
   const jobs = [
-    sendEmail({ to: required('BOOKING_INTERNAL_EMAIL'), subject: `New OOXME booking — ${booking.id}`, text: details }),
+    sendEmail({ to: required('BOOKING_INTERNAL_EMAIL'), subject: `New OOXME booking — ${reference}`, text: details }),
     sendEmail({ to: booking.customer.email, subject: 'OOXME consultation confirmation', text: customer })
   ];
   const internalWhatsApp = optional('WHATSAPP_INTERNAL_RECIPIENT');

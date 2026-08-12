@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "build": "node scripts/build-static.js"
+    "build": "node scripts/build-static.js",
+    "db:migrate": "node rebuild/scripts/migrate-booking-db.js"
+  },
+  "dependencies": {
+    "pg": "^8.16.3"
   }
 }
