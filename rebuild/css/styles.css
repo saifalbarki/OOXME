@@ -1359,6 +1359,9 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   background: color-mix(in srgb, var(--color-brand) 13%, white);
   color: var(--color-brand);
 }
+.booking-panel[data-step="customer"] .consultation-topic-menu .calendar-month-option:is([aria-selected="true"], :hover, :focus-visible, :active) {
+  border-radius: calc(var(--radius-box) * .65);
+}
 .booking-panel[data-step="date"] .calendar-month-option:hover,
 .booking-panel[data-step="date"] .calendar-month-option:focus-visible,
 .booking-panel[data-step="customer"] .consultation-topic-menu .calendar-month-option:hover,
@@ -1494,6 +1497,11 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   line-height: var(--consultation-entry-height);
   text-align: center;
   outline-color: var(--color-brand);
+}
+.booking-panel[data-step="customer"] .booking-customer-fields .customer-writing-field[data-field="topic"]:focus,
+.booking-panel[data-step="customer"] .booking-customer-fields .customer-writing-field[data-field="topic"]:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 .booking-panel[data-step="customer"] .booking-customer-fields .customer-writing-field::placeholder {
   color: var(--color-secondary-control);
