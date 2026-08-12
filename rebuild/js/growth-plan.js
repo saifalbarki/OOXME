@@ -219,7 +219,7 @@ const render = () => {
       ["Growth Plan", "باقة نمو"],
       name,
       [en.description, ar.description],
-      `<div class="plan-detail-cards plan-overview"><article><strong ${text(en.price, ar.price)}>${en.price}</strong><span ${text("Monthly investment", "الاستثمار الشهري")}>Monthly investment</span></article>${consultationOffer()}</div>`,
+      `<div class="plan-detail-cards plan-overview"><article><strong ${text(en.price, ar.price)}>${en.price}</strong><span ${text("Monthly investment", "الاستثمار الشهري")}>Monthly investment</span></article></div>`,
     ),
     panel(
       name,
@@ -228,7 +228,7 @@ const render = () => {
         "Management, planning, marketing, and people support for the month ahead.",
         "ادارة وتخطيط وتسويق ودعم للموارد البشرية خلال الشهر.",
       ],
-      `<div class="plan-detail-cards">${cards(pairs("core"))}${consultationOffer()}</div>`,
+      `<div class="plan-detail-cards">${cards(pairs("core"))}</div>`,
     ),
     panel(
       name,
@@ -237,7 +237,7 @@ const render = () => {
         "A consistent social presence with monthly content production.",
         "حضور متواصل مع انتاج محتوى شهري منتظم.",
       ],
-      `<div class="plan-detail-cards">${cards(pairs("social"))}${consultationOffer()}</div>`,
+      `<div class="plan-detail-cards">${cards(pairs("social"))}</div>`,
     ),
     panel(
       name,
@@ -246,7 +246,7 @@ const render = () => {
         "The digital foundations that support a clear business presence.",
         "اسس رقمية تدعم حضوراً واضحاً للاعمال.",
       ],
-      `<div class="plan-detail-cards">${cards(pairs("digital"))}${consultationOffer()}</div>`,
+      `<div class="plan-detail-cards">${cards(pairs("digital"))}</div>`,
     ),
     panel(
       name,
