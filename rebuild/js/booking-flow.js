@@ -296,6 +296,15 @@ document.querySelectorAll('[data-customer-form] [data-field]').forEach((field) =
 const promoInputField = document.querySelector('[data-field="promo"]');
 const promoInputCard = promoInputField.closest('.promo-input-card');
 const promoFeedback = document.querySelector('[data-promo-message]');
+const TEST_PROMO_CODE = 'TEST';
+const testBookingCustomer = {
+  name: 'OOXME Test Booking',
+  email: 'hello@ooxme.com',
+  phone: '+9647840440011',
+  topic: 'TEST promo verification',
+  sector: 'OOXME',
+  additional: 'Automated TEST promo booking'
+};
 let promoFeedbackTimer;
 const setPromoFeedback = (message = '', clearAfter = false) => { window.clearTimeout(promoFeedbackTimer); promoFeedback.textContent = message; promoInputCard.classList.toggle('is-feedback', Boolean(message)); if (clearAfter) promoFeedbackTimer = window.setTimeout(() => { promoFeedback.textContent = ''; promoInputCard.classList.remove('is-feedback'); promoInputField.value = ''; }, 1100); };
 promoInputField.addEventListener('input', () => { const normalized = promoInputField.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); if (promoInputField.value !== normalized) promoInputField.value = normalized; markInvalid(promoInputField,false); setPromoFeedback(); });
@@ -375,6 +384,32 @@ const refreshServerPromotion = async ({ showFeedback = false } = {}) => {
     return false;
   }
 };
+const nearestAvailableTestSlot = async () => {
+  const cursor = new Date();
+  cursor.setDate(1);
+  for (let index = 0; index < 4; index += 1) {
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth() + 1;
+    const response = await fetch(`/api/booking/available-slots?year=${year}&month=${month}`, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error('availability_unavailable');
+    const availability = await response.json();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const date = Object.keys(availability.days || {}).find((value) => new Date(`${value}T12:00:00+03:00`) >= today && availability.days[value]?.length);
+    if (date) return { date, time: availability.days[date][0] };
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  throw new Error('slot_unavailable');
+};
+const runTestPromoBooking = async () => {
+  if (!activeServerQuote() || total() !== 0) throw new Error('promotion_unavailable');
+  const slot = await nearestAvailableTestSlot();
+  Object.assign(state, testBookingCustomer, { duration: '45', date: slot.date, time: slot.time, payment: '' });
+  document.querySelectorAll('[data-customer-form] [data-field]').forEach(field => { field.value = state[field.dataset.field] || ''; });
+  save(); renderCalendar(); renderChoices(); renderSummary();
+  if (usesLiveBookingApi) await submitBooking();
+  moveTo(6);
+};
 promoInputField.addEventListener('input', () => {
   promoInputCard.classList.remove('is-invalid');
   stopPromoPlaceholderAnimation();
@@ -401,7 +436,17 @@ document.querySelector('[data-promo-form]').addEventListener('submit', async (ev
     return;
   }
   state.promo = code;
+  if (code.toUpperCase() === TEST_PROMO_CODE) state.duration = '45';
   if (!await refreshServerPromotion({ showFeedback: true })) return;
+  if (code.toUpperCase() === TEST_PROMO_CODE) {
+    showConsultationPromoFeedback('كود اختباري');
+    try {
+      await runTestPromoBooking();
+    } catch (_) {
+      showConsultationPromoFeedback(consultationCopy[language].promoInvalid, true);
+    }
+    return;
+  }
   clearConsultationPromoTimers();
   consultationPromoSuccess = true;
   promoInputField.value = '';
