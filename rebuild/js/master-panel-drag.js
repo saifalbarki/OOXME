@@ -210,6 +210,8 @@ window.OOXMEMasterPanelDrag = {
     const releaseBottomAction = (action) => {
       const activeIndex = getIndex();
       if (action === 'tap') {
+        const managedAction = new CustomEvent('ooxme:bottom-action', { cancelable: true, detail: { action, activeIndex } });
+        if (!experience.dispatchEvent(managedAction)) return;
         moveTo(activeIndex === panels.length - 1 ? 0 : activeIndex + 1);
       } else if (action === 'right' && window.history.length > 1) {
         window.history.back();
@@ -326,7 +328,7 @@ window.OOXMEMasterPanelDrag = {
       track.style.transition = '';
       drag = null;
       if (target === getIndex()) {
-        track.style.transform = `translateY(${-target * 100}dvh)`;
+        track.style.transform = `translateY(${offsetFor(target)}px)`;
       } else {
         moveTo(target);
       }

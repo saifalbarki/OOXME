@@ -10,11 +10,9 @@ if (bookingViewportMeta && !/maximum-scale/i.test(bookingViewportMeta.content)) 
   bookingViewportMeta.content = `${bookingViewportMeta.content}, maximum-scale=1`;
 }
 const copy = { en: { months:['January','February','March','April','May','June','July','August','September','October','November','December'], weekdays:['S','M','T','W','T','F','S'], summary:{name:'Customer name',email:'Email',phone:'Phone',topic:'Consultation topic',sector:'Business sector',date:'Selected date',time:'Selected time',duration:'Duration',promo:'Promo code',fee:'Consultation fee',discount:'Discount',total:'Final amount'}, confirmPay:'Confirm & Pay',confirm:'Confirm',promoValid:'Discount applied', promoInvalid:'Invalid code' }, ar: { months:['يناير','فبراير','مارس','ابريل','مايو','يونيو','يوليو','اغسطس','سبتمبر','اكتوبر','نوفمبر','ديسمبر'], weekdays:['ح','ن','ث','ر','خ','ج','س'], summary:{name:'اسم العميل',email:'البريد الالكتروني',phone:'الهاتف',topic:'موضوع الاستشارة',sector:'قطاع العمل',date:'التاريخ المختار',time:'الوقت المختار',duration:'المدة',promo:'كود الخصم',fee:'سعر الاستشارة',discount:'الخصم',total:'المبلغ النهائي'}, confirmPay:'تأكيد والدفع',confirm:'تأكيد',promoValid:'تم تطبيق الخصم',promoInvalid:'الكود غير صالح' } };
-copy.en.summary.additional = 'Additional information';
-copy.ar.summary.additional = '\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0625\u0636\u0627\u0641\u064A\u0629';
 const empty = { promo:'', name:'', email:'', phone:'', sector:'', topic:'', additional:'', date:'', time:'', duration:'', payment:'' };
-// Temporary design-review switch. Set to false to restore the full step-validation lock.
-const BOOKING_DESIGN_MODE = true;
+// Keep the approved design while enforcing the existing booking-step validation.
+const BOOKING_DESIGN_MODE = false;
 let state = {...empty};
 try { state = {...empty, ...JSON.parse(sessionStorage.getItem('ooxme-rebuild-booking') || '{}')}; } catch (_) {}
 let updateBookingSummary = () => {};
@@ -46,7 +44,17 @@ const updateCustomerPlaceholders = () => { document.querySelectorAll('[data-cust
 const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); updateConfirmationPanel(); if (state.promo === 'R100' && promoInputCard?.classList.contains('is-feedback')) setPromoFeedback(next === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
 document.querySelectorAll('[data-language-toggle]').forEach(x=>x.addEventListener('click',()=>applyLanguage(language==='en'?'ar':'en')));
 window.addEventListener('storage',e=>{if(e.key==='ooxme-language')applyLanguage(e.newValue==='ar'?'ar':'en')});
-window.addEventListener('resize', () => { applyLandscapeStepText(); updateCustomerPlaceholders(); });
+const alignBookingTrack = () => {
+  if (!track) return;
+  track.style.transform = `translateY(${-step * 100}dvh)`;
+};
+window.addEventListener('resize', () => {
+  applyLandscapeStepText();
+  updateCustomerPlaceholders();
+  track.style.transition = 'none';
+  alignBookingTrack();
+  window.requestAnimationFrame(() => { track.style.transition = ''; });
+});
 track.style.height=`${panels.length*100}dvh`;
 let step=0, transitionTimer;
 let restoreConsultationPromoPanel = () => {};
@@ -158,7 +166,7 @@ const loadLiveAvailability = async (year, month) => {
 const timeDurationComplete = (show = false) => { const validTime = ['10:00','13:00','16:00'].includes(state.time); const validDuration = [45,60,90].includes(Number(state.duration)) && !(state.promo.toUpperCase() === 'R100' && Number(state.duration) !== 45); if (show) { markInvalid(document.querySelector('[data-times]')?.closest('.booking-card'), !validTime); markInvalid(document.querySelector('[data-durations]')?.closest('.booking-card'), !validDuration); } return validTime && validDuration; };
 const bookingComplete = () => promoValid(false) && customerComplete(false) && dateAvailable() && timeDurationComplete(false);
 const canProceed = (show = true) => { if (BOOKING_DESIGN_MODE) return true; if (step === 0) { const valid = promoValid(show); const code = promoInputField?.value.trim().toUpperCase() || state.promo.toUpperCase(); if (!valid) return false; if (code === 'R100') { state.promo = 'R100'; state.duration = '45'; save(); renderChoices(); if (show) setPromoFeedback(language === 'ar' ? 'تم تطبيق الكود' : 'Code applied'); } else { state.promo = ''; save(); } return true; } if (step === 1) return customerComplete(show); if (step === 2) { const valid = dateAvailable(); if (show) markInvalid(document.querySelector('[data-calendar]'), !valid); return valid; } if (step === 3) return timeDurationComplete(show); if (step === 4) { const valid = bookingComplete(); if (show) markInvalid(document.querySelector('[data-summary]'), !valid); return valid; } if (step === 5) { const valid = total() === 0 || Boolean(state.payment); if (show) markInvalid(document.querySelector('[data-payment-options]'), !valid); return valid; } return true; };
-const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; panels.forEach(p=>p.classList.remove('is-active')); track.style.transform=`translateY(${-step*100}dvh)`; clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (step === panels.length - 1) updateConfirmationPanel({ animate: true });},620); };
+const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; panels.forEach(p=>p.classList.remove('is-active')); alignBookingTrack(); clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (step === panels.length - 1) updateConfirmationPanel({ animate: true });},620); };
 window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => step, moveTo });
 let bookingSubmission = null;
 const submitBooking = async () => {
@@ -173,8 +181,22 @@ const submitBooking = async () => {
     .finally(() => { bookingSubmission = null; button?.removeAttribute('aria-busy'); if (button) button.disabled = false; });
   return bookingSubmission;
 };
-const continueStep = async () => { if(!canProceed(true)) return; if (step === 5 && usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } } if(!BOOKING_DESIGN_MODE && step===4 && total()===0) moveTo(6); else moveTo(step+1); };
-document.querySelectorAll('[data-next]').forEach(x=>x.addEventListener('click',continueStep));
+const continueStep = async (event) => { if(!canProceed(true)) return; const confirmsPayment = event?.currentTarget?.closest('.booking-panel')?.dataset.step === 'payment'; if (confirmsPayment && usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } } moveTo(step + 1); };
+document.querySelectorAll('[data-next]:not([data-summary-next])').forEach(x=>x.addEventListener('click',continueStep));
+const continueSummaryStep = async () => {
+  if (!canProceed(true)) return;
+  if (total() === 0) {
+    if (usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } }
+    moveTo(6);
+    return;
+  }
+  moveTo(5);
+};
+experience.addEventListener('ooxme:bottom-action', event => {
+  if (event.detail?.action !== 'tap' || panels[step]?.dataset.step !== 'summary') return;
+  event.preventDefault();
+  void continueSummaryStep();
+});
 document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save(); if(step===1&&customerComplete(false))setTimeout(()=>{if(step===1&&customerComplete(false))moveTo(2)},180)}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();if(step===1&&customerComplete(false))moveTo(2)}); });
 const consultationViewport = window.visualViewport;
 const consultationWritableFields = [...document.querySelectorAll('.booking-panel :is(input, textarea)')];
@@ -255,7 +277,6 @@ const promoFeedback = document.querySelector('[data-promo-message]');
 let promoFeedbackTimer;
 const setPromoFeedback = (message = '', clearAfter = false) => { window.clearTimeout(promoFeedbackTimer); promoFeedback.textContent = message; promoInputCard.classList.toggle('is-feedback', Boolean(message)); if (clearAfter) promoFeedbackTimer = window.setTimeout(() => { promoFeedback.textContent = ''; promoInputCard.classList.remove('is-feedback'); promoInputField.value = ''; }, 1100); };
 promoInputField.addEventListener('input', () => { const normalized = promoInputField.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); if (promoInputField.value !== normalized) promoInputField.value = normalized; markInvalid(promoInputField,false); setPromoFeedback(); });
-document.querySelector('[data-promo-form]').addEventListener('submit',e=>{e.preventDefault(); const code=promoInputField.value.trim(); if (!code) { state.promo=''; save(); setPromoFeedback(); return; } if (code !== 'R100') { state.promo=''; save(); setPromoFeedback(copy[language].promoInvalid, true); return; } state.promo='R100'; state.duration='45'; save(); renderChoices(); setPromoFeedback(language==='ar'?'تم تطبيق الكود':'Code applied'); });
 const promoDescription = document.querySelector('[data-step="promo"] .master-panel-content > p');
 let consultationPromoSuccess = false;
 let consultationPromoSuccessTimer;
@@ -300,7 +321,7 @@ const startPromoPlaceholderAnimation = () => {
 };
 const updateConsultationPromoCopy = () => {
   if (promoPlaceholderCanRun()) startPromoPlaceholderAnimation(); else stopPromoPlaceholderAnimation();
-  if (promoDescription) promoDescription.textContent = consultationPromoSuccess ? 'تم تطبيق الخصم' : consultationCopy[language].promoDescription;
+  if (promoDescription) promoDescription.textContent = consultationPromoSuccess ? consultationCopy[language].promoApplied : consultationCopy[language].promoDescription;
 };
 const clearConsultationPromoTimers = () => {
   window.clearTimeout(consultationPromoSuccessTimer);
@@ -368,7 +389,7 @@ const renderCalendar = () => {
   html+=Array(first).fill('<span></span>').join('');
   for(let day=1;day<=days;day++){
     const key=`${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`, unavailable=availableTimesForDate(key).length===0, cls=unavailable?'is-unavailable':state.date===key?'is-selected':'';
-    html+=`<button type="button" class="calendar-day ${cls}" data-date="${key}">${day}</button>`;
+    html+=`<button type="button" class="calendar-day ${cls}" data-date="${key}"${unavailable ? ' disabled aria-disabled="true"' : ''}><span class="calendar-day-number">${day}</span></button>`;
   }
   box.innerHTML=html+`</div>`;
   const picker=box.querySelector('.calendar-month-picker');
@@ -418,13 +439,15 @@ const renderCalendar = () => {
 };
 const renderChoices = () => { const times=document.querySelector('[data-times]'),durations=document.querySelector('[data-durations]'); if(!times)return; const options=state.date?availableTimesForDate(state.date):['10:00','13:00','16:00']; times.innerHTML=options.map(value=>`<button type="button" class="${state.time===value?'is-selected':''}" data-time="${value}">${value}</button>`).join(''); durations.innerHTML=[45,60,90].map(value=>`<button type="button" class="${Number(state.duration)===value?'is-selected':''}" data-duration="${value}">${value} ${language==='ar'?'دقيقة':'minutes'}</button>`).join(''); times.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>{state.time=b.dataset.time;markInvalid(times.closest('.booking-card'),false);save();renderChoices();if(state.duration)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)}));durations.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{state.duration=b.dataset.duration;if(state.promo.trim().toUpperCase()==='R100')state.duration='45';markInvalid(durations.closest('.booking-card'),false);save();renderChoices();if(state.time)setTimeout(()=>{if(step===3&&timeDurationComplete(false))moveTo(4)},180)})); };
 const money = value => `${value} USD`;
-const renderSummary = () => { const box=document.querySelector('[data-summary]'); if(!box)return; const labels=copy[language].summary; const rows=[['name',state.name],['email',state.email],['phone',state.phone],['topic',state.topic],['sector',state.sector],['additional',state.additional],['date',state.date],['time',state.time],['duration',state.duration?`${state.duration} ${language==='ar'?'دقيقة':'minutes'}`:''],['promo',state.promo||'—'],['fee',money(price())],['discount',money(discount())],['total',money(total())]]; box.innerHTML=rows.map(([key,value])=>`<div><dt>${labels[key]}</dt><dd>${value||'—'}</dd></div>`).join(''); document.querySelector('[data-confirm-label]').textContent=total()===0?copy[language].confirm:copy[language].confirmPay; };
+const renderSummary = () => { const box=document.querySelector('[data-summary]'); if(!box)return; const labels=copy[language].summary; const rows=[['name',state.name],['email',state.email],['phone',state.phone],['topic',state.topic],['sector',state.sector],['date',state.date],['time',state.time],['duration',state.duration?`${state.duration} ${language==='ar'?'دقيقة':'minutes'}`:''],['promo',state.promo||'—'],['fee',money(price())],['discount',money(discount())],['total',money(total())]]; box.innerHTML=rows.map(([key,value])=>`<div><dt>${labels[key]}</dt><dd>${value||'—'}</dd></div>`).join(''); document.querySelector('[data-confirm-label]').textContent=total()===0?copy[language].confirm:copy[language].confirmPay; };
 updateBookingSummary = renderSummary;
 const paymentOptionsContainer = document.querySelector('[data-payment-options]');
 const superQiPaymentOption = paymentOptionsContainer?.querySelector('[data-payment="Qi"]');
 const comingSoonPaymentOption = paymentOptionsContainer?.querySelector('.payment-option--coming');
 if (superQiPaymentOption && comingSoonPaymentOption) {
   const newPaymentMethodClone = superQiPaymentOption.cloneNode(true);
+  newPaymentMethodClone.removeAttribute('data-payment');
+  newPaymentMethodClone.classList.add('payment-option--coming');
   newPaymentMethodClone.dataset.paymentCopy = 'coming';
   paymentOptionsContainer.replaceChild(newPaymentMethodClone, comingSoonPaymentOption);
 }
