@@ -1237,6 +1237,14 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-head select { directi
   color: var(--color-paper);
 }
 
+/* Later landscape steps retain the shared safe boundary above their headings
+   without moving their existing bottom-aligned booking controls. */
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel:is([data-step="customer"], [data-step="date"], [data-step="time"], [data-step="summary"], [data-step="payment"], [data-step="confirmation"]) .master-panel-content {
+    padding-top: calc(var(--master-spacing) + var(--panel-safe));
+  }
+}
+
 /* Custom Month picker: follows the existing calendar-head grid without invoking a native select. */
 .booking-panel[data-step="date"] .calendar-month-picker {
   position: relative;
