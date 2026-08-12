@@ -65,6 +65,11 @@ track.style.height=`${panels.length*100}dvh`;
 let step=0, transitionTimer;
 let restoreConsultationPromoPanel = () => {};
 let updateConfirmationPanel = () => {};
+const customerPanel = document.querySelector('.booking-panel[data-step="customer"]');
+const updateCustomerStepLock = () => {
+  experience?.classList.toggle('is-customer-step-locked', step === 1);
+  customerPanel?.setAttribute('aria-current', step === 1 ? 'step' : 'false');
+};
 const confirmationDescription = document.querySelector('.booking-panel[data-step="confirmation"] .master-panel-content > p:not(.master-panel-label)');
 if (confirmationDescription) {
   confirmationDescription.dataset.ar = '\u0633\u0648\u0641 \u062a\u0633\u062a\u0644\u0645 \u0627\u0644\u0627\u0631\u0634\u0627\u062f\u0627\u062a \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0629 \u0639\u0628\u0631 \u0627\u0644\u0627\u064a\u0645\u064a\u0644 \u0628\u0639\u062f \u062a\u0623\u0643\u064a\u062f \u0627\u0633\u062a\u0644\u0627\u0645 \u0645\u062f\u0641\u0648\u0639\u0627\u062a\u0643';
@@ -172,8 +177,9 @@ const loadLiveAvailability = async (year, month) => {
 const timeDurationComplete = (show = false) => { const validTime = ['10:00','13:00','16:00'].includes(state.time); const validDuration = [45,60,90].includes(Number(state.duration)); if (show) { markInvalid(document.querySelector('[data-times]')?.closest('.booking-card'), !validTime); markInvalid(document.querySelector('[data-durations]')?.closest('.booking-card'), !validDuration); } return validTime && validDuration; };
 const bookingComplete = () => promoValid(false) && customerComplete(false) && dateAvailable() && timeDurationComplete(false);
 const canProceed = (show = true) => { if (BOOKING_DESIGN_MODE) return true; if (step === 0) return promoValid(show); if (step === 1) return customerComplete(show); if (step === 2) { const valid = dateAvailable(); if (show) markInvalid(document.querySelector('[data-calendar]'), !valid); return valid; } if (step === 3) return timeDurationComplete(show); if (step === 4) { const valid = bookingComplete(); if (show) markInvalid(document.querySelector('[data-summary]'), !valid); return valid; } if (step === 5) { const valid = total() === 0 || Boolean(state.payment); if (show) markInvalid(document.querySelector('[data-payment-options]'), !valid); return valid; } return true; };
-const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; panels.forEach(p=>p.classList.remove('is-active')); alignBookingTrack(); clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (step === panels.length - 1) updateConfirmationPanel({ animate: true });},620); };
-window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => step, moveTo });
+const moveTo = (index) => { const next=Math.max(0,Math.min(panels.length-1,index)); if(next===step || (next>step && !canProceed(true)))return; if(next===0) restoreConsultationPromoPanel(); step=next; updateCustomerStepLock(); panels.forEach(p=>p.classList.remove('is-active')); alignBookingTrack(); clearTimeout(transitionTimer); transitionTimer=setTimeout(()=>{reveal(); if (step === panels.length - 1) updateConfirmationPanel({ animate: true });},620); };
+window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => step, moveTo, allowGestureNavigation: () => step !== 1 });
+updateCustomerStepLock();
 let bookingSubmission = null;
 const submitBooking = async () => {
   if (!usesLiveBookingApi || bookingSubmission) return bookingSubmission;
@@ -204,7 +210,16 @@ experience.addEventListener('ooxme:bottom-action', event => {
   event.preventDefault();
   void continueSummaryStep();
 });
-document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save(); if(step===1&&customerComplete(false))setTimeout(()=>{if(step===1&&customerComplete(false))moveTo(2)},180)}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();if(step===1&&customerComplete(false))moveTo(2)}); });
+document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();}); });
+experience?.addEventListener('touchmove', event => {
+  if (step !== 1) return;
+  event.preventDefault();
+}, { capture: true, passive: false });
+experience?.addEventListener('scroll', event => {
+  if (step !== 1 || event.target !== experience) return;
+  experience.scrollTop = 0;
+  alignBookingTrack();
+}, true);
 const consultationViewport = window.visualViewport;
 const consultationWritableFields = [...document.querySelectorAll('.booking-panel :is(input, textarea)')];
 let activeConsultationField = null;

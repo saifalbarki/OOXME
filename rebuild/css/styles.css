@@ -1438,6 +1438,9 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   scrollbar-width: thin;
   text-align: center;
 }
+.booking-flow-page .master-panel-experience.is-customer-step-locked {
+  overscroll-behavior: none;
+}
 .booking-panel[data-step="customer"] .booking-customer-fields > label {
   display: grid;
   min-height: var(--consultation-entry-height);

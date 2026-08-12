@@ -197,6 +197,8 @@ const cards = (items) =>
         `<div class="plan-service-card"><div class="service-name" ${text(item.en.name, item.ar.name)}>${item.en.name}</div><div class="service-details" ${text(item.en.details, item.ar.details)}>${item.en.details}</div></div>`,
     )
     .join("");
+const consultationOffer = () =>
+  `<div class="plan-offer-action"><a class="plan-detail-cta" href="booking.html" data-free-consultation-offer ${text("Subscribe Now", "اشترك الآن")}>Subscribe Now</a><small class="plan-offer-helper" ${text("Or book a free 45-minute consultation", "أو احجز استشارة مجانية مدتها 45 دقيقة")}>Or book a free 45-minute consultation</small></div>`;
 const header = () =>
   `<header class="master-panel-header"><button class="master-panel-control" type="button" data-language-toggle><img src="assets/icons/globe-outline.svg" alt="" /></button><a class="master-panel-logo" href="index.html?panel=2" aria-label="OOXME"><img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME" /></a><button class="master-panel-control" type="button" data-search-toggle aria-label="Search"><img src="assets/icons/search.svg" alt="" /></button></header>`;
 const footer = (final = false) =>
@@ -217,7 +219,7 @@ const render = () => {
       ["Growth Plan", "باقة نمو"],
       name,
       [en.description, ar.description],
-      `<div class="plan-detail-cards plan-overview"><article><strong ${text(en.price, ar.price)}>${en.price}</strong><span ${text("Monthly investment", "الاستثمار الشهري")}>Monthly investment</span></article></div>`,
+      `<div class="plan-detail-cards plan-overview"><article><strong ${text(en.price, ar.price)}>${en.price}</strong><span ${text("Monthly investment", "الاستثمار الشهري")}>Monthly investment</span></article>${consultationOffer()}</div>`,
     ),
     panel(
       name,
@@ -226,7 +228,7 @@ const render = () => {
         "Management, planning, marketing, and people support for the month ahead.",
         "ادارة وتخطيط وتسويق ودعم للموارد البشرية خلال الشهر.",
       ],
-      `<div class="plan-detail-cards">${cards(pairs("core"))}</div>`,
+      `<div class="plan-detail-cards">${cards(pairs("core"))}${consultationOffer()}</div>`,
     ),
     panel(
       name,
@@ -235,7 +237,7 @@ const render = () => {
         "A consistent social presence with monthly content production.",
         "حضور متواصل مع انتاج محتوى شهري منتظم.",
       ],
-      `<div class="plan-detail-cards">${cards(pairs("social"))}</div>`,
+      `<div class="plan-detail-cards">${cards(pairs("social"))}${consultationOffer()}</div>`,
     ),
     panel(
       name,
@@ -244,7 +246,7 @@ const render = () => {
         "The digital foundations that support a clear business presence.",
         "اسس رقمية تدعم حضوراً واضحاً للاعمال.",
       ],
-      `<div class="plan-detail-cards">${cards(pairs("digital"))}</div>`,
+      `<div class="plan-detail-cards">${cards(pairs("digital"))}${consultationOffer()}</div>`,
     ),
     panel(
       name,
@@ -253,7 +255,7 @@ const render = () => {
         "External subscriptions are managed by OOXME and billed separately.",
         "تدار الاشتراكات الخارجية من قبل اوكسوم وتفوتر بشكل منفصل.",
       ],
-      `<div class="plan-detail-cards plan-final"><article><strong ${text("Additional Costs", "تكاليف اضافية")}>Additional Costs</strong><span ${text("Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.", "الاستضافة وتسجيل النطاق وGoogle Workspace وMeta Verified وميزانيات الاعلانات والخدمات الخارجية الاخرى تفوتر بشكل منفصل.")}>Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.</span></article><div class="plan-offer-action"><a class="plan-detail-cta" href="booking.html" data-free-consultation-offer ${text("Subscribe Now", "اشترك الآن")}>Subscribe Now</a><small class="plan-offer-helper" ${text("Or book a free 45-minute consultation", "أو احجز استشارة مجانية مدتها 45 دقيقة")}>Or book a free 45-minute consultation</small></div></div>`,
+      `<div class="plan-detail-cards plan-final"><article><strong ${text("Additional Costs", "تكاليف اضافية")}>Additional Costs</strong><span ${text("Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.", "الاستضافة وتسجيل النطاق وGoogle Workspace وMeta Verified وميزانيات الاعلانات والخدمات الخارجية الاخرى تفوتر بشكل منفصل.")}>Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.</span></article>${consultationOffer()}</div>`,
       true,
     ),
   ].join("");
@@ -297,7 +299,7 @@ document
 document
   .querySelectorAll("[data-next-panel]")
   .forEach((x) => x.addEventListener("click", () => moveTo(current + 1)));
-document.querySelector("[data-free-consultation-offer]")?.addEventListener("click", async (event) => {
+document.querySelectorAll("[data-free-consultation-offer]").forEach((cta) => cta.addEventListener("click", async (event) => {
   event.preventDefault();
   const cta = event.currentTarget;
   cta.setAttribute("aria-busy", "true");
@@ -312,7 +314,7 @@ document.querySelector("[data-free-consultation-offer]")?.addEventListener("clic
   } finally {
     cta.removeAttribute("aria-busy");
   }
-});
+}));
 let closeTimer;
 const closeSearch = () => {
   searchOverlay.classList.remove("is-open");

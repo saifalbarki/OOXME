@@ -81,15 +81,72 @@ async function validatePublicPromotion({ promoCode, serviceCode = 'consultation'
     [code]
   );
   const promotion = result.rows[0];
-  if (!promotion || !appliesTo(promotion.service_restrictions, serviceCode) || !appliesTo(promotion.duration_restrictions, Number(durationMinutes))) {
+  if (promotion) {
+    if (!appliesTo(promotion.service_restrictions, serviceCode) || !appliesTo(promotion.duration_restrictions, Number(durationMinutes))) {
+      return { valid: false, error: 'promotion_unavailable' };
+    }
+    const quote = calculateQuote(getBasePrice({ serviceCode, durationMinutes }), {
+      discountType: promotion.discount_type,
+      discountValue: promotion.discount_value,
+      currency: promotion.currency
+    });
+    return { valid: true, type: 'public_promo', promotionId: promotion.id, promoCode: promotion.code_normalized, quote };
+  }
+
+  const legacyPromotion = await findLegacyPromo(code, execute);
+  if (!legacyPromotion) return { valid: false, error: 'promotion_unavailable' };
+  if (!isLegacyPromoActive(legacyPromotion) || !appliesTo(legacyPromotion.serviceRestrictions, serviceCode) || !appliesTo(legacyPromotion.durationRestrictions, Number(durationMinutes))) {
     return { valid: false, error: 'promotion_unavailable' };
   }
-  const quote = calculateQuote(getBasePrice({ serviceCode, durationMinutes }), {
-    discountType: promotion.discount_type,
-    discountValue: promotion.discount_value,
-    currency: promotion.currency
-  });
-  return { valid: true, type: 'public_promo', promotionId: promotion.id, promoCode: promotion.code_normalized, quote };
+  const quote = calculateQuote(getBasePrice({ serviceCode, durationMinutes }), legacyPromotion);
+  return { valid: true, type: 'public_promo', promotionId: legacyPromotion.id || null, promoCode: legacyPromotion.code, quote };
+}
+
+const legacyValue = (record, ...keys) => keys.map((key) => record[key]).find((value) => value !== undefined && value !== null);
+const toArray = (value) => Array.isArray(value) ? value : value == null || value === '' ? [] : [value];
+
+function isLegacyPromoActive(promotion) {
+  if (promotion.status && String(promotion.status).toLowerCase() !== 'active') return false;
+  if (promotion.isActive === false || String(promotion.isActive).toLowerCase() === 'false') return false;
+  const now = Date.now();
+  const startsAt = promotion.startsAt && Date.parse(promotion.startsAt);
+  const endsAt = promotion.endsAt && Date.parse(promotion.endsAt);
+  return (!startsAt || startsAt <= now) && (!endsAt || endsAt >= now);
+}
+
+async function findLegacyPromo(code, execute) {
+  try {
+    // Some earlier deployments used a `promos` table. Keep it as a read-only
+    // compatibility source while `promotions` remains the primary schema.
+    const result = await execute(
+      `SELECT to_jsonb(p) AS promo
+         FROM promos p
+        WHERE UPPER(COALESCE(to_jsonb(p)->>'code_normalized', to_jsonb(p)->>'code', to_jsonb(p)->>'promo_code')) = $1
+        LIMIT 1`,
+      [code]
+    );
+    const source = result.rows[0] && result.rows[0].promo;
+    if (!source) return null;
+    const percentage = legacyValue(source, 'discount_percent', 'discount_percentage', 'percentage', 'percent_off');
+    const discountValue = legacyValue(source, 'discount_value', 'discount', 'amount') ?? percentage;
+    return {
+      id: legacyValue(source, 'id'),
+      code,
+      status: legacyValue(source, 'status'),
+      isActive: legacyValue(source, 'is_active', 'active'),
+      startsAt: legacyValue(source, 'starts_at', 'start_date', 'start_at'),
+      endsAt: legacyValue(source, 'ends_at', 'end_date', 'end_at'),
+      serviceRestrictions: toArray(legacyValue(source, 'service_restrictions', 'services', 'service_code')),
+      durationRestrictions: toArray(legacyValue(source, 'duration_restrictions', 'durations', 'duration_minutes')),
+      discountType: legacyValue(source, 'discount_type') || (percentage !== undefined ? 'percentage' : 'fixed'),
+      discountValue,
+      currency: legacyValue(source, 'currency')
+    };
+  } catch (error) {
+    // PostgreSQL 42P01 means this compatibility table is not present.
+    if (error.code === '42P01') return null;
+    throw error;
+  }
 }
 
 async function validatePromotionInput({ promoCode, offerToken, offerSession, serviceCode = 'consultation', durationMinutes, execute = query }) {

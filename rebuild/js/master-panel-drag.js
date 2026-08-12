@@ -70,7 +70,7 @@ document.addEventListener('click', (event) => {
 }, true);
 
 window.OOXMEMasterPanelDrag = {
-  register({ experience, track, panels, getIndex, moveTo }) {
+  register({ experience, track, panels, getIndex, moveTo, allowGestureNavigation = true }) {
     if (!experience || !track || track.dataset.masterPanelDragBound) return;
     track.dataset.masterPanelDragBound = 'true';
 
@@ -150,6 +150,9 @@ window.OOXMEMasterPanelDrag = {
       if (document.querySelector('[data-search-overlay].is-open, .search-overlay.is-open, .site-image-preview.is-open')) return true;
       return Boolean(event.target.closest('.calendar-month-menu:not([hidden])'));
     };
+    const gesturesAreAllowed = () => typeof allowGestureNavigation === 'function'
+      ? allowGestureNavigation(getIndex())
+      : allowGestureNavigation;
 
     const setBottomVisual = (gesture, event) => {
       if (bottomFrame) window.cancelAnimationFrame(bottomFrame);
@@ -230,7 +233,7 @@ window.OOXMEMasterPanelDrag = {
       const line = control.querySelector('.swipe-control-line');
       if (!line) return;
       control.addEventListener('pointerdown', (event) => {
-        if (event.button !== 0 || bottomLocked) return;
+        if (event.button !== 0 || bottomLocked || !gesturesAreAllowed()) return;
         bottomGesture = {
           pointerId: event.pointerId,
           control,
@@ -287,6 +290,7 @@ window.OOXMEMasterPanelDrag = {
       control.addEventListener('pointerup', release, true);
       control.addEventListener('pointercancel', (event) => release(event, true), true);
       control.addEventListener('click', (event) => {
+        if (!gesturesAreAllowed()) return;
         event.preventDefault();
         event.stopImmediatePropagation();
         if (suppressBottomClick || bottomLocked) return;
@@ -297,6 +301,7 @@ window.OOXMEMasterPanelDrag = {
         window.setTimeout(() => { bottomLocked = false; }, 260);
       }, true);
       control.addEventListener('keydown', (event) => {
+        if (!gesturesAreAllowed()) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -339,6 +344,11 @@ window.OOXMEMasterPanelDrag = {
 
     experience.addEventListener('pointerdown', (event) => {
       if (event.button !== 0 || event.target.closest(interactiveSelector)) return;
+      if (!gesturesAreAllowed()) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
       const index = getIndex();
       drag = {
         pointerId: event.pointerId,
@@ -392,6 +402,10 @@ window.OOXMEMasterPanelDrag = {
       const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : 1);
       if (Math.abs(delta) < 1) return;
       event.preventDefault();
+      if (!gesturesAreAllowed()) {
+        resetWheelIntent();
+        return;
+      }
       if (wheelState.locked) return;
       const direction = delta > 0 ? 1 : -1;
       if (direction !== wheelState.direction) {
@@ -413,8 +427,8 @@ window.OOXMEMasterPanelDrag = {
   }
 };
 
-// Temporary switch: set to true to restore Subscribe Now across all Growth Plans.
-const GROWTH_PLAN_SUBSCRIPTIONS_ENABLED = false;
+// Growth-plan CTAs issue a secure consultation offer before navigating to booking.
+const GROWTH_PLAN_SUBSCRIPTIONS_ENABLED = true;
 const blockGrowthPlanSubscription = (event) => {
   if (
     GROWTH_PLAN_SUBSCRIPTIONS_ENABLED ||
