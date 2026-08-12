@@ -47,7 +47,8 @@ const consultationCopy = {
 const landscapeStepCopy = { promo:{en:'Enter a promo code if you have one',ar:'ادخل كود الخصم اذا كان لديك'}, customer:{en:'Tell us the details we need for your consultation',ar:'ادخل المعلومات المطلوبة للاستشارة'}, date:{en:'Choose an available date for your consultation',ar:'اختر يوماً متاحاً للاستشارة'}, time:{en:'Choose the consultation time and duration',ar:'اختر وقت ومدة الاستشارة'}, summary:{en:'Review your booking details before confirming',ar:'راجع تفاصيل الحجز قبل التأكيد'}, payment:{en:'Choose your preferred payment method',ar:'اختر طريقة الدفع المناسبة'}, confirmation:{en:'Your consultation booking has been confirmed',ar:'تم تأكيد حجز الاستشارة'} };
 const applyLandscapeStepText = () => { const wide = window.matchMedia('(min-aspect-ratio: 4 / 3)').matches; panels.forEach(panel => { const label = panel.querySelector('.master-panel-label'); if (!label) return; label.textContent = wide ? landscapeStepCopy[panel.dataset.step][language] : label.dataset[language]; }); };
 const updateCustomerPlaceholders = () => { document.querySelectorAll('[data-customer-form] label').forEach(label => { const input = label.querySelector('input'); const labelText = label.querySelector('span'); if (input && !input.classList.contains('is-inline-error')) input.placeholder = labelText?.dataset[language] || ''; }); };
-const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); updateConfirmationPanel(); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
+let refreshConsultationTopicMenu = () => {};
+const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); refreshConsultationTopicMenu(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); updateConfirmationPanel(); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
 document.querySelectorAll('[data-language-toggle]').forEach(x=>x.addEventListener('click',()=>applyLanguage(language==='en'?'ar':'en')));
 window.addEventListener('storage',e=>{if(e.key==='ooxme-language')applyLanguage(e.newValue==='ar'?'ar':'en')});
 const alignBookingTrack = () => {
@@ -211,6 +212,87 @@ experience.addEventListener('ooxme:bottom-action', event => {
   void continueSummaryStep();
 });
 document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();}); });
+const consultationTopicOptions = [
+  { en: 'Brand Management', ar: 'إدارة العلامة التجارية' },
+  { en: 'Business Development', ar: 'تطوير الأعمال' },
+  { en: 'Marketing', ar: 'التسويق' },
+  { en: 'Sales', ar: 'المبيعات' },
+  { en: 'Operations Management', ar: 'إدارة العمليات' },
+  { en: 'Digital Transformation', ar: 'التحول الرقمي' },
+  { en: 'Human Resources', ar: 'الموارد البشرية' },
+  { en: 'Other', ar: 'أخرى' }
+];
+const consultationTopicField = document.querySelector('[data-customer-form] input[data-field="topic"]');
+if (consultationTopicField) {
+  const topicMenu = document.createElement('div');
+  topicMenu.className = 'calendar-month-menu consultation-topic-menu';
+  topicMenu.dataset.topicMenu = '';
+  topicMenu.setAttribute('role', 'listbox');
+  topicMenu.setAttribute('aria-label', 'Consultation Topic');
+  topicMenu.hidden = true;
+  consultationTopicField.insertAdjacentElement('afterend', topicMenu);
+  let topicCloseTimer;
+  let topicPositionFrame;
+  let topicMenuIsOpen = false;
+  const currentTopicOption = () => consultationTopicOptions.find(option => option.en === state.topic || option.ar === state.topic) || null;
+  const positionTopicMenu = () => {
+    if (!topicMenuIsOpen || topicMenu.hidden) return;
+    window.cancelAnimationFrame(topicPositionFrame);
+    topicPositionFrame = window.requestAnimationFrame(() => {
+      const bounds = topicMenu.getBoundingClientRect();
+      const viewport = window.visualViewport;
+      const centerX = (viewport?.offsetLeft || 0) + (viewport?.width || window.innerWidth) / 2;
+      const centerY = (viewport?.offsetTop || 0) + (viewport?.height || window.innerHeight) / 2;
+      const offsetX = parseFloat(topicMenu.style.getPropertyValue('--month-menu-center-x')) || 0;
+      const offsetY = parseFloat(topicMenu.style.getPropertyValue('--month-menu-center-y')) || 0;
+      topicMenu.style.setProperty('--month-menu-center-x', `${offsetX + centerX - (bounds.left + (bounds.width / 2))}px`);
+      topicMenu.style.setProperty('--month-menu-center-y', `${offsetY + centerY - (bounds.top + (bounds.height / 2)) - 4}px`);
+      topicMenu.classList.add('is-open');
+    });
+  };
+  const setTopicMenuOpen = open => {
+    window.clearTimeout(topicCloseTimer);
+    if (open) {
+      topicMenuIsOpen = true;
+      topicMenu.hidden = false;
+      consultationTopicField.setAttribute('aria-expanded', 'true');
+      positionTopicMenu();
+      return;
+    }
+    topicMenuIsOpen = false;
+    window.cancelAnimationFrame(topicPositionFrame);
+    consultationTopicField.setAttribute('aria-expanded', 'false');
+    topicMenu.classList.remove('is-open');
+    topicCloseTimer = window.setTimeout(() => { topicMenu.hidden = true; }, 210);
+  };
+  const renderTopicMenu = () => {
+    const selected = currentTopicOption();
+    consultationTopicField.value = selected ? selected[language] : state.topic || '';
+    topicMenu.innerHTML = consultationTopicOptions.map(option => `<button type="button" class="calendar-month-option" role="option" data-topic-option="${option.en}" aria-selected="${selected === option}">${option[language]}</button>`).join('');
+    topicMenu.querySelectorAll('[data-topic-option]').forEach(option => option.addEventListener('click', () => {
+      state.topic = option.dataset.topicOption;
+      setFieldError(consultationTopicField, 'topic', false);
+      save();
+      setTopicMenuOpen(false);
+      renderTopicMenu();
+    }));
+  };
+  consultationTopicField.readOnly = true;
+  consultationTopicField.setAttribute('aria-haspopup', 'listbox');
+  consultationTopicField.setAttribute('aria-expanded', 'false');
+  consultationTopicField.addEventListener('pointerdown', event => event.preventDefault());
+  consultationTopicField.addEventListener('click', event => { event.preventDefault(); setTopicMenuOpen(topicMenu.hidden); });
+  consultationTopicField.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setTopicMenuOpen(topicMenu.hidden); } });
+  document.addEventListener('click', event => { if (!topicMenu.contains(event.target) && event.target !== consultationTopicField) setTopicMenuOpen(false); });
+  document.addEventListener('touchstart', event => { if (!topicMenu.contains(event.target) && event.target !== consultationTopicField) setTopicMenuOpen(false); }, { passive: true });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') setTopicMenuOpen(false); });
+  window.addEventListener('resize', positionTopicMenu);
+  window.addEventListener('orientationchange', positionTopicMenu);
+  window.visualViewport?.addEventListener('resize', positionTopicMenu);
+  window.visualViewport?.addEventListener('scroll', positionTopicMenu);
+  refreshConsultationTopicMenu = renderTopicMenu;
+  renderTopicMenu();
+}
 experience?.addEventListener('touchmove', event => {
   if (step !== 1) return;
   event.preventDefault();
