@@ -44,10 +44,12 @@ function calculateQuote(basePrice, { discountType, discountValue, currency }) {
   };
 }
 
-async function validateOfferToken({ offerToken, serviceCode = 'consultation', durationMinutes, execute = query }) {
+const hashOfferSession = (session) => crypto.createHash('sha256').update(String(session || '')).digest('hex');
+
+async function validateOfferToken({ offerToken, offerSession, serviceCode = 'consultation', durationMinutes, execute = query }) {
   if (!offerToken) return null;
   const result = await execute(
-    `SELECT id, campaign_source, service_code, granted_duration_minutes, discount_type, discount_value, currency
+    `SELECT id, campaign_source, service_code, granted_duration_minutes, discount_type, discount_value, currency, issued_session_hash
        FROM offer_tokens
       WHERE token_hash = $1
         AND status = 'issued'
@@ -55,7 +57,7 @@ async function validateOfferToken({ offerToken, serviceCode = 'consultation', du
     [hashToken(offerToken)]
   );
   const token = result.rows[0];
-  if (!token || token.service_code !== serviceCode || Number(token.granted_duration_minutes) !== Number(durationMinutes)) {
+  if (!token || token.service_code !== serviceCode || Number(token.granted_duration_minutes) !== Number(durationMinutes) || !offerSession || token.issued_session_hash !== hashOfferSession(offerSession)) {
     return { valid: false, error: 'offer_unavailable' };
   }
   const quote = calculateQuote(getBasePrice({ serviceCode, durationMinutes }), {
@@ -90,9 +92,9 @@ async function validatePublicPromotion({ promoCode, serviceCode = 'consultation'
   return { valid: true, type: 'public_promo', promotionId: promotion.id, promoCode: promotion.code_normalized, quote };
 }
 
-async function validatePromotionInput({ promoCode, offerToken, serviceCode = 'consultation', durationMinutes, execute = query }) {
+async function validatePromotionInput({ promoCode, offerToken, offerSession, serviceCode = 'consultation', durationMinutes, execute = query }) {
   if (promoCode && offerToken) return { valid: false, error: 'multiple_promotions_not_allowed' };
-  const offer = await validateOfferToken({ offerToken, serviceCode, durationMinutes, execute });
+  const offer = await validateOfferToken({ offerToken, offerSession, serviceCode, durationMinutes, execute });
   if (offer) return offer;
   const promotion = await validatePublicPromotion({ promoCode, serviceCode, durationMinutes, execute });
   if (promotion) return promotion;
@@ -101,4 +103,4 @@ async function validatePromotionInput({ promoCode, offerToken, serviceCode = 'co
 
 const validatePromoOrToken = ({ serviceId, ...input }) => validatePromotionInput({ ...input, serviceCode: serviceId || input.serviceCode || 'consultation' });
 
-module.exports = { calculateQuote, getBasePrice, hashToken, normalizePromoCode, validatePromoOrToken, validatePromotionInput };
+module.exports = { calculateQuote, getBasePrice, hashOfferSession, hashToken, normalizePromoCode, validatePromoOrToken, validatePromotionInput };

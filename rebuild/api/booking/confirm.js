@@ -33,6 +33,7 @@ async function reserveBooking(input, customer, config) {
     payment: input.payment || '',
     promo: normalizePromoCode(input.promoCode || input.promo),
     offerToken: input.offerToken || '',
+    offerSession: input.offerSession || '',
     customer: {
       name: String(customer.name).trim(), email: normalizeEmail(customer.email), phone: String(customer.phone).trim(),
       topic: String(customer.topic).trim(), sector: String(customer.sector).trim(), additional: String(customer.additional || '').trim()
@@ -42,7 +43,7 @@ async function reserveBooking(input, customer, config) {
   const result = await withTransaction(async (client) => {
     const execute = client.query.bind(client);
     const promotion = await validatePromoOrToken({
-      promoCode: booking.promo, offerToken: booking.offerToken, serviceId: 'consultation', durationMinutes: duration, execute
+      promoCode: booking.promo, offerToken: booking.offerToken, offerSession: booking.offerSession, serviceId: 'consultation', durationMinutes: duration, execute
     });
     if (!promotion.valid) throw bookingError(promotion.error);
     const quote = promotion.quote;
@@ -73,7 +74,7 @@ async function reserveBooking(input, customer, config) {
       await execute('INSERT INTO promotion_redemptions (id, promotion_id, booking_id, customer_identity_hash, status) VALUES ($1, $2, $3, $4, \'pending\')', [crypto.randomUUID(), promotion.promotionId, booking.id, customerHash]);
     }
     if (promotion.type === 'offer_token') {
-      const held = await execute("UPDATE offer_tokens SET status = 'held', held_at = now() WHERE id = $1 AND status = 'issued' AND expires_at > now() RETURNING id", [promotion.offerTokenId]);
+      const held = await execute("UPDATE offer_tokens SET status = 'held', held_at = now(), customer_identity_hash = $2 WHERE id = $1 AND status = 'issued' AND expires_at > now() AND (customer_identity_hash IS NULL OR customer_identity_hash = $2) RETURNING id", [promotion.offerTokenId, customerHash]);
       if (!held.rowCount) throw bookingError('offer_unavailable');
       await execute('UPDATE bookings SET offer_token_id = $1 WHERE id = $2', [promotion.offerTokenId, booking.id]);
     }

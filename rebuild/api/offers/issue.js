@@ -1,0 +1,38 @@
+const crypto = require('crypto');
+const { json, methodNotAllowed } = require('../_lib/http');
+const { query, withTransaction } = require('../_lib/db');
+const { hashOfferSession, hashToken } = require('../_lib/promo-engine');
+
+const campaignSource = 'plans-free-consultation';
+const fingerprint = (request) => crypto.createHash('sha256')
+  .update(`${request.headers['x-forwarded-for'] || request.socket?.remoteAddress || ''}\u0000${request.headers['user-agent'] || ''}`)
+  .digest('hex');
+
+module.exports = async (request, response) => {
+  if (request.method !== 'POST') return methodNotAllowed(response, ['POST']);
+  try {
+    const issuedSession = crypto.randomBytes(24).toString('base64url');
+    const requestFingerprint = fingerprint(request);
+    const token = crypto.randomBytes(32).toString('base64url');
+    const result = await withTransaction(async (client) => {
+      const recent = await client.query(
+        `SELECT count(*)::int AS count FROM offer_tokens
+          WHERE campaign_source = $1 AND request_fingerprint_hash = $2 AND created_at > now() - interval '1 hour'`,
+        [campaignSource, requestFingerprint]
+      );
+      if (recent.rows[0].count >= 3) return null;
+      const expiresAt = new Date(Date.now() + 15 * 60_000);
+      await client.query(
+        `INSERT INTO offer_tokens (id, token_hash, status, campaign_source, service_code, granted_duration_minutes, discount_type, discount_value, issued_session_hash, request_fingerprint_hash, expires_at)
+         VALUES ($1, $2, 'issued', $3, 'consultation', 45, 'percentage', 100, $4, $5, $6)`,
+        [crypto.randomUUID(), hashToken(token), campaignSource, hashOfferSession(issuedSession), requestFingerprint, expiresAt]
+      );
+      return { expiresAt };
+    });
+    if (!result) return json(response, 429, { error: 'offer_request_limited' });
+    return json(response, 201, { offerToken: token, offerSession: issuedSession, expiresAt: result.expiresAt.toISOString() });
+  } catch (error) {
+    console.error('offer issue failed', error.message);
+    return json(response, 503, { error: 'offer_unavailable' });
+  }
+};

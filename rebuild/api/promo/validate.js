@@ -8,6 +8,7 @@ module.exports = async (request, response) => {
     const result = await validatePromotionInput({
       promoCode: input.promoCode,
       offerToken: input.offerToken,
+      offerSession: input.offerSession,
       serviceCode: input.serviceCode || 'consultation',
       durationMinutes: input.durationMinutes
     });

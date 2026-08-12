@@ -253,7 +253,7 @@ const render = () => {
         "External subscriptions are managed by OOXME and billed separately.",
         "تدار الاشتراكات الخارجية من قبل اوكسوم وتفوتر بشكل منفصل.",
       ],
-      `<div class="plan-detail-cards plan-final"><article><strong ${text("Additional Costs", "تكاليف اضافية")}>Additional Costs</strong><span ${text("Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.", "الاستضافة وتسجيل النطاق وGoogle Workspace وMeta Verified وميزانيات الاعلانات والخدمات الخارجية الاخرى تفوتر بشكل منفصل.")}>Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.</span></article><a class="plan-detail-cta" href="booking.html" ${text("Subscribe Now", "اشترك الان")}>Subscribe Now</a></div>`,
+      `<div class="plan-detail-cards plan-final"><article><strong ${text("Additional Costs", "تكاليف اضافية")}>Additional Costs</strong><span ${text("Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.", "الاستضافة وتسجيل النطاق وGoogle Workspace وMeta Verified وميزانيات الاعلانات والخدمات الخارجية الاخرى تفوتر بشكل منفصل.")}>Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.</span></article><div class="plan-offer-action"><a class="plan-detail-cta" href="booking.html" data-free-consultation-offer ${text("Subscribe Now", "اشترك الآن")}>Subscribe Now</a><small class="plan-offer-helper" ${text("Or book a free 45-minute consultation", "أو احجز استشارة مجانية مدتها 45 دقيقة")}>Or book a free 45-minute consultation</small></div></div>`,
       true,
     ),
   ].join("");
@@ -297,6 +297,22 @@ document
 document
   .querySelectorAll("[data-next-panel]")
   .forEach((x) => x.addEventListener("click", () => moveTo(current + 1)));
+document.querySelector("[data-free-consultation-offer]")?.addEventListener("click", async (event) => {
+  event.preventDefault();
+  const cta = event.currentTarget;
+  cta.setAttribute("aria-busy", "true");
+  try {
+    const response = await fetch("/api/offers/issue", { method: "POST", headers: { Accept: "application/json" } });
+    const offer = await response.json().catch(() => ({}));
+    if (!response.ok || !offer.offerToken || !offer.offerSession) throw new Error("offer_unavailable");
+    location.href = `booking.html?offerToken=${encodeURIComponent(offer.offerToken)}&offerSession=${encodeURIComponent(offer.offerSession)}`;
+  } catch (_) {
+    // Local static preview and a temporary API outage retain the normal paid booking route.
+    location.href = cta.href;
+  } finally {
+    cta.removeAttribute("aria-busy");
+  }
+});
 let closeTimer;
 const closeSearch = () => {
   searchOverlay.classList.remove("is-open");
