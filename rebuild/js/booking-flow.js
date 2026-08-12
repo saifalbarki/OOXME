@@ -212,37 +212,54 @@ experience.addEventListener('ooxme:bottom-action', event => {
 });
 const bookingSelectOptions = {
   topic: [
-    ['Brand Management', 'إدارة العلامة التجارية'], ['Brand Development', 'تطوير العلامة التجارية'], ['Business Development', 'تطوير الأعمال'], ['Marketing Strategy', 'استراتيجية التسويق'], ['Social Media & Content', 'وسائل التواصل والمحتوى'], ['Website', 'الموقع الإلكتروني'], ['Digital Services', 'الخدمات الرقمية'], ['HR Support', 'دعم الموارد البشرية'], ['Business Support', 'دعم الأعمال'], ['Other', 'آخر']
+    'تطوير الأعمال / Business Development', 'إدارة العلامة / Brand Management', 'التسويق / Marketing', 'المبيعات / Sales', 'إدارة العمليات / Operations Management', 'الموارد البشرية / Human Resources', 'التحول الرقمي / Digital Transformation', 'أخرى / Other'
   ],
   sector: [
-    ['Retail & E-commerce', 'التجزئة والتجارة الإلكترونية'], ['Food & Beverage', 'الأغذية والمشروبات'], ['Hospitality & Tourism', 'الضيافة والسياحة'], ['Professional Services', 'الخدمات المهنية'], ['Healthcare & Wellness', 'الصحة والعافية'], ['Real Estate & Construction', 'العقارات والإنشاءات'], ['Technology', 'التقنية'], ['Education & Training', 'التعليم والتدريب'], ['Manufacturing & Industry', 'التصنيع والصناعة'], ['Other', 'آخر']
+    'مقاولات / Contracting', 'هندسة / Engineering', 'عقارات / Real Estate', 'تجارة / Trading', 'مطاعم / Restaurants', 'صحة / Healthcare', 'تعليم / Education', 'تقنية / Technology', 'صناعة / Manufacturing', 'خدمات / Services', 'سيارات / Automotive', 'تجميل / Beauty', 'ضيافة / Hospitality', 'أخرى / Other'
   ]
 };
 const bookingCustomSelects = [...document.querySelectorAll('[data-customer-form] input[data-field="topic"], [data-customer-form] input[data-field="sector"]')];
-const closeBookingSelects = () => document.querySelectorAll('.booking-custom-select.is-open').forEach(label => { label.classList.remove('is-open'); label.querySelector('[data-booking-select-trigger]')?.setAttribute('aria-expanded', 'false'); label.querySelector('[data-booking-select-menu]')?.setAttribute('hidden', ''); });
+const closeBookingSelects = () => { customerPanel?.classList.remove('has-booking-select-open'); document.querySelectorAll('.booking-custom-select.is-open').forEach(label => { label.classList.remove('is-open'); label.querySelector('[data-field]')?.setAttribute('aria-expanded', 'false'); label.querySelector('[data-booking-select-menu]')?.setAttribute('hidden', ''); }); };
 const renderBookingCustomSelects = () => bookingCustomSelects.forEach(field => {
   const key = field.dataset.field;
   const label = field.closest('label');
   if (!label || !bookingSelectOptions[key]) return;
   label.classList.add('booking-custom-select');
-  let trigger = label.querySelector('[data-booking-select-trigger]');
+  field.readOnly = true;
+  field.setAttribute('aria-haspopup', 'listbox');
+  field.setAttribute('aria-expanded', 'false');
   let menu = label.querySelector('[data-booking-select-menu]');
-  if (!trigger) {
-    trigger = document.createElement('button'); trigger.type = 'button'; trigger.className = 'customer-writing-field booking-select-trigger'; trigger.dataset.bookingSelectTrigger = ''; trigger.setAttribute('aria-haspopup', 'listbox'); trigger.setAttribute('aria-expanded', 'false');
+  if (!menu) {
     menu = document.createElement('div'); menu.className = 'booking-select-menu'; menu.dataset.bookingSelectMenu = ''; menu.setAttribute('role', 'listbox'); menu.hidden = true;
-    field.insertAdjacentElement('afterend', trigger); trigger.insertAdjacentElement('afterend', menu);
-    trigger.addEventListener('click', () => { const open = !label.classList.contains('is-open'); closeBookingSelects(); if (open) { label.classList.add('is-open'); trigger.setAttribute('aria-expanded', 'true'); menu.hidden = false; } });
+    field.insertAdjacentElement('afterend', menu);
+    const toggle = (event) => { event.preventDefault(); const open = !label.classList.contains('is-open'); closeBookingSelects(); if (open) { customerPanel?.classList.add('has-booking-select-open'); label.classList.add('is-open'); field.setAttribute('aria-expanded', 'true'); menu.hidden = false; } };
+    field.addEventListener('pointerdown', event => event.preventDefault());
+    field.addEventListener('click', toggle);
+    field.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') toggle(event); });
   }
   const current = String(state[key] || '');
-  const currentOption = bookingSelectOptions[key].find(option => option[0] === current) || null;
-  trigger.innerHTML = `<span>${currentOption ? currentOption[language === 'ar' ? 1 : 0] : (label.querySelector('span')?.dataset[language] || '')}</span><span class="booking-select-arrow" aria-hidden="true"></span>`;
-  menu.innerHTML = bookingSelectOptions[key].map(option => `<button type="button" class="booking-select-option" role="option" aria-selected="${option[0] === current}" data-value="${option[0]}">${option[language === 'ar' ? 1 : 0]}</button>`).join('');
-  menu.querySelectorAll('[data-value]').forEach(option => option.addEventListener('click', () => { field.value = option.dataset.value; state[key] = field.value; setFieldError(field, key, false); label.classList.remove('is-invalid'); save(); closeBookingSelects(); renderBookingCustomSelects(); }));
+  const currentOption = bookingSelectOptions[key].find(option => option === current) || null;
+  field.value = currentOption || '';
+  menu.innerHTML = bookingSelectOptions[key].map(option => `<button type="button" class="booking-select-option" role="option" aria-selected="${option === current}" data-value="${option}">${option}</button>`).join('');
+  menu.querySelectorAll('[data-value]').forEach(option => {
+    option.addEventListener('click', () => {
+      state[key] = option.dataset.value;
+      field.value = state[key];
+      setFieldError(field, key, false);
+      label.classList.remove('is-invalid');
+      save();
+      closeBookingSelects();
+      renderBookingCustomSelects();
+    });
+  });
 });
-document.addEventListener('pointerdown', event => { if (!event.target.closest('.booking-custom-select')) closeBookingSelects(); });
+const closeBookingSelectsOnOutsideInteraction = event => { if (!event.target.closest('.booking-custom-select')) closeBookingSelects(); };
+document.addEventListener('click', closeBookingSelectsOnOutsideInteraction);
+document.addEventListener('touchstart', closeBookingSelectsOnOutsideInteraction, { passive: true });
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeBookingSelects(); });
 renderBookingCustomSelects();
 document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();}); });
+renderBookingCustomSelects();
 experience?.addEventListener('touchmove', event => {
   if (step !== 1) return;
   event.preventDefault();
@@ -512,8 +529,7 @@ const renderCalendar = () => {
     picker.classList.remove('is-open');
     closeTimer=window.setTimeout(()=>{menu.hidden=true;picker.classList.remove('opens-upward');},210);
   };
-  /* Only the white month menu itself keeps the picker open. */
-  const onOutsidePointerDown = (event) => { if(!menu.contains(event.target)) setMonthMenuOpen(false); };
+  const onOutsideMonthInteraction = event => { if(!picker.contains(event.target)) setMonthMenuOpen(false); };
   const onEscape = (event) => { if(event.key==='Escape') setMonthMenuOpen(false); };
   trigger.addEventListener('click',()=>setMonthMenuOpen(menu.hidden));
   menu.querySelectorAll('[data-month-option]').forEach(option=>option.addEventListener('click',()=>{
@@ -523,11 +539,13 @@ const renderCalendar = () => {
     window.clearTimeout(monthDropdownChangeTimer);
     monthDropdownChangeTimer=window.setTimeout(()=>{monthCursor.setMonth(nextMonth);renderCalendar();},210);
   }));
-  document.addEventListener('pointerdown',onOutsidePointerDown);
+  document.addEventListener('click',onOutsideMonthInteraction);
+  document.addEventListener('touchstart',onOutsideMonthInteraction,{passive:true});
   document.addEventListener('keydown',onEscape);
   clearMonthDropdownListeners=()=>{
     window.clearTimeout(closeTimer);
-    document.removeEventListener('pointerdown',onOutsidePointerDown);
+    document.removeEventListener('click',onOutsideMonthInteraction);
+    document.removeEventListener('touchstart',onOutsideMonthInteraction);
     document.removeEventListener('keydown',onEscape);
   };
   box.querySelectorAll('[data-date]').forEach(b=>b.addEventListener('click',()=>{
