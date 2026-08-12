@@ -1,5 +1,9 @@
 const crypto = require('crypto');
+const fs = require('fs/promises');
+const path = require('path');
 const { query } = require('./db');
+
+const filePromoPath = path.join(__dirname, '..', '..', 'data', 'promos.json');
 
 const consultationPrices = new Map([
   [45, 25],
@@ -45,6 +49,31 @@ function calculateQuote(basePrice, { discountType, discountValue, currency }) {
 }
 
 const hashOfferSession = (session) => crypto.createHash('sha256').update(String(session || '')).digest('hex');
+
+async function validateFilePromotion({ promoCode, serviceCode = 'consultation', durationMinutes }) {
+  const code = normalizePromoCode(promoCode);
+  if (!code) return null;
+  const source = await fs.readFile(filePromoPath, 'utf8');
+  const promotions = JSON.parse(source);
+  if (!Array.isArray(promotions)) throw new Error('Invalid promo configuration');
+  const promotion = promotions.find((entry) => normalizePromoCode(entry.code) === code && entry.active === true);
+  if (!promotion) return null;
+  const requiredDuration = promotion.duration_minutes == null ? null : Number(promotion.duration_minutes);
+  if (!Number.isInteger(requiredDuration) || requiredDuration <= 0) {
+    if (promotion.duration_minutes != null) throw new Error('Invalid promo configuration');
+  }
+  if (requiredDuration !== null && requiredDuration !== Number(durationMinutes)) {
+    return { valid: false, error: 'promotion_unavailable' };
+  }
+  const discount = Number(promotion.discount);
+  if (!Number.isFinite(discount) || discount < 0 || discount > 100) throw new Error('Invalid promo configuration');
+  const quote = calculateQuote(getBasePrice({ serviceCode, durationMinutes }), {
+    discountType: 'percentage',
+    discountValue: discount,
+    currency: 'USD'
+  });
+  return { valid: true, type: 'file_promo', promoCode: code, discountPercent: discount, grantedDurationMinutes: requiredDuration, quote };
+}
 
 async function validateOfferToken({ offerToken, offerSession, serviceCode = 'consultation', durationMinutes, execute = query }) {
   if (!offerToken) return null;
@@ -153,6 +182,10 @@ async function validatePromotionInput({ promoCode, offerToken, offerSession, ser
   if (promoCode && offerToken) return { valid: false, error: 'multiple_promotions_not_allowed' };
   const offer = await validateOfferToken({ offerToken, offerSession, serviceCode, durationMinutes, execute });
   if (offer) return offer;
+  if (promoCode) {
+    const filePromotion = await validateFilePromotion({ promoCode, serviceCode, durationMinutes });
+    return filePromotion || { valid: false, error: 'promotion_unavailable' };
+  }
   const promotion = await validatePublicPromotion({ promoCode, serviceCode, durationMinutes, execute });
   if (promotion) return promotion;
   return { valid: true, type: 'none', quote: calculateQuote(getBasePrice({ serviceCode, durationMinutes }), { discountType: 'fixed', discountValue: 0 }) };
@@ -160,4 +193,4 @@ async function validatePromotionInput({ promoCode, offerToken, offerSession, ser
 
 const validatePromoOrToken = ({ serviceId, ...input }) => validatePromotionInput({ ...input, serviceCode: serviceId || input.serviceCode || 'consultation' });
 
-module.exports = { calculateQuote, getBasePrice, hashOfferSession, hashToken, normalizePromoCode, validatePromoOrToken, validatePromotionInput };
+module.exports = { calculateQuote, getBasePrice, hashOfferSession, hashToken, normalizePromoCode, validateFilePromotion, validatePromoOrToken, validatePromotionInput };

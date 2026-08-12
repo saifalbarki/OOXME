@@ -19,6 +19,8 @@ module.exports = async (request, response) => {
         type: result.type,
         campaignSource: result.campaignSource || null,
         grantedDurationMinutes: result.grantedDurationMinutes || null,
+        discountPercent: result.discountPercent ?? null,
+        remainingTotal: result.quote.finalAmount,
         quote: result.quote
       }
     });

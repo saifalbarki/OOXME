@@ -1,6 +1,7 @@
 {
   "cleanUrls": true,
   "functions": {
-    "api/**/*.js": { "maxDuration": 30 }
+    "api/**/*.js": { "maxDuration": 30 },
+    "api/promo/validate.js": { "includeFiles": "data/promos.json" }
   }
 }
