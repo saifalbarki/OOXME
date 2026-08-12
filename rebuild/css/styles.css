@@ -1273,6 +1273,7 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   transform-origin: center;
   transition: opacity 200ms cubic-bezier(.22, .61, .36, 1), transform 200ms cubic-bezier(.22, .61, .36, 1);
 }
+.booking-panel[data-step="date"] .calendar-month-menu[hidden] { display: none; pointer-events: none; }
 .booking-panel[data-step="date"] .calendar-month-picker.opens-upward .calendar-month-menu {
   inset: 50% auto auto 50%;
   transform: translate(calc(-50% + var(--month-menu-center-x, 0px)), calc(-50% - 4px + var(--month-menu-center-y, 0px))) scale(.98);
@@ -1343,7 +1344,7 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   padding-inline: var(--payment-box-space);
   transform: translateY(-50%);
   transform-origin: center;
-  transition: inset-block-start 380ms cubic-bezier(.22, .61, .36, 1), block-size 380ms cubic-bezier(.22, .61, .36, 1), transform 380ms cubic-bezier(.22, .61, .36, 1), opacity 160ms ease, visibility 0s linear 160ms;
+  transition: inset-block-start 380ms cubic-bezier(.22, .61, .36, 1), block-size 380ms cubic-bezier(.22, .61, .36, 1), transform 380ms cubic-bezier(.22, .61, .36, 1);
   z-index: 1;
 }
 .booking-panel[data-step="payment"] .payment-option.is-open .payment-option-label {
@@ -1351,10 +1352,6 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   block-size: calc(var(--consultation-writable-font-size) * var(--type-control-line-height));
   padding-inline: 0;
   transform: translateY(0);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition-delay: 0s, 0s, 0s, 0s, 0s;
 }
 @media (prefers-reduced-motion: reduce) {
   .booking-panel[data-step="payment"] .payment-option-label { transition-duration: .01ms; }

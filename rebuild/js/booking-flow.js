@@ -259,9 +259,47 @@ document.querySelector('[data-promo-form]').addEventListener('submit',e=>{e.prev
 const promoDescription = document.querySelector('[data-step="promo"] .master-panel-content > p');
 let consultationPromoSuccess = false;
 let consultationPromoSuccessTimer;
-const promoPlaceholder = 'اكتب كود الخصم هنا';
+const promoPlaceholderCopy = {
+  ar: '\u0627\u0643\u062A\u0628 \u0643\u0648\u062F \u0627\u0644\u062E\u0635\u0645 \u0647\u0646\u0627',
+  en: 'Enter discount code here'
+};
+let promoPlaceholderTimer;
+let promoPlaceholderRunning = false;
+let promoPlaceholderStep = 0;
+let promoPlaceholderPhase = 'typing';
+const promoPlaceholderCanRun = () => !promoInputField.value && document.activeElement !== promoInputField && !promoInputCard.classList.contains('is-feedback');
+const stopPromoPlaceholderAnimation = (clear = true) => {
+  window.clearTimeout(promoPlaceholderTimer);
+  promoPlaceholderRunning = false;
+  if (clear && !promoInputField.value) promoInputField.placeholder = '';
+};
+const runPromoPlaceholderAnimation = () => {
+  if (!promoPlaceholderCanRun()) { stopPromoPlaceholderAnimation(); return; }
+  const text = promoPlaceholderCopy[language];
+  promoPlaceholderRunning = true;
+  if (promoPlaceholderPhase === 'typing') {
+    promoPlaceholderStep += 1;
+    promoInputField.placeholder = text.slice(0, promoPlaceholderStep);
+    if (promoPlaceholderStep < text.length) promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 55);
+    else { promoPlaceholderPhase = 'holding'; promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 600); }
+    return;
+  }
+  if (promoPlaceholderPhase === 'holding') { promoPlaceholderPhase = 'deleting'; promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 35); return; }
+  promoPlaceholderStep -= 1;
+  promoInputField.placeholder = text.slice(0, Math.max(0, promoPlaceholderStep));
+  if (promoPlaceholderStep > 0) { promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 35); return; }
+  promoPlaceholderPhase = 'typing';
+  promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 200);
+};
+const startPromoPlaceholderAnimation = () => {
+  if (!promoPlaceholderCanRun()) return;
+  stopPromoPlaceholderAnimation();
+  promoPlaceholderPhase = 'typing';
+  promoPlaceholderStep = 0;
+  promoPlaceholderTimer = window.setTimeout(runPromoPlaceholderAnimation, 260);
+};
 const updateConsultationPromoCopy = () => {
-  promoInputField.placeholder = promoPlaceholder;
+  if (promoPlaceholderCanRun()) startPromoPlaceholderAnimation(); else stopPromoPlaceholderAnimation();
   if (promoDescription) promoDescription.textContent = consultationPromoSuccess ? 'تم تطبيق الخصم' : consultationCopy[language].promoDescription;
 };
 const clearConsultationPromoTimers = () => {
@@ -273,7 +311,11 @@ const showConsultationPromoFeedback = (message = '', clearAfter = false) => {
 };
 promoInputField.addEventListener('input', () => {
   promoInputCard.classList.remove('is-invalid');
-  promoInputField.placeholder = promoPlaceholder;
+  stopPromoPlaceholderAnimation();
+});
+promoInputField.addEventListener('focus', () => stopPromoPlaceholderAnimation());
+promoInputField.addEventListener('blur', () => {
+  if (!promoInputField.value) window.setTimeout(startPromoPlaceholderAnimation, 260);
 });
 restoreConsultationPromoPanel = () => {
   clearConsultationPromoTimers();
