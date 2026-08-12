@@ -6,7 +6,7 @@ const blockNavigation = (selector, enabled) => document.querySelectorAll(selecto
   event.preventDefault();
   event.stopImmediatePropagation();
 }, true));
-blockNavigation('[data-service-option]:not([data-service-option="brand-management"])', SERVICES_NAVIGATION_ENABLED);
+blockNavigation('[data-service-option]', SERVICES_NAVIGATION_ENABLED);
 blockNavigation('[data-consultation-option]', CONSULTATION_NAVIGATION_ENABLED);
 const brandsWeDesignedLink = document.querySelector('[data-portfolio-option="brands-we-designed"]');
 if (brandsWeDesignedLink) brandsWeDesignedLink.href = 'brands-designed-gallery.html';
