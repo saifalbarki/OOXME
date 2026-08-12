@@ -4,6 +4,7 @@ const { bookingConfig } = require('../_lib/config');
 const { createCalendarBooking, bookingId } = require('../_lib/calendar');
 const { storeBookingRecord } = require('../_lib/drive');
 const { sendBookingNotifications } = require('../_lib/messaging');
+const { sendBookingConfirmationEmail } = require('../_lib/mailer');
 const { query, withTransaction } = require('../_lib/db');
 const { normalizePromoCode, validatePromoOrToken } = require('../_lib/promo-engine');
 
@@ -112,8 +113,10 @@ module.exports = async (request, response) => {
     const event = await createCalendarBooking(reservation.booking);
     reservation.booking.calendarEventId = event.id;
     reservation.booking.status = 'confirmed';
+    reservation.booking.quote = reservation.promotion.quote;
     await finalizeReservation(reservation.booking, event.id);
     const [drive, notifications] = await Promise.allSettled([storeBookingRecord(reservation.booking), sendBookingNotifications(reservation.booking)]);
+    sendBookingConfirmationEmail(reservation.booking).catch((mailError) => console.error('SMTP booking email failed', mailError.message));
     return json(response, 201, { id: reservation.booking.publicReference, status: reservation.booking.status, calendarEventId: event.id, requiresPayment: reservation.promotion.quote.finalAmount > 0, finalAmount: reservation.promotion.quote.finalAmount, currency: reservation.promotion.quote.currency, integrations: { drive: drive.status, notifications: notifications.status } });
   } catch (error) {
     if (reservation?.booking) await releaseReservation(reservation.booking).catch(() => undefined);
