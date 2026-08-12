@@ -191,6 +191,7 @@ try {
   language = localStorage.getItem("ooxme-language") === "ar" ? "ar" : "en";
 } catch (_) {}
 const text = (en, ar) => `data-en="${en}" data-ar="${ar}"`;
+const htmlText = (en, ar) => `data-html-en="${en}" data-html-ar="${ar}"`;
 const cards = (items) =>
   items
     .map(
@@ -204,8 +205,8 @@ const header = () =>
   `<header class="master-panel-header"><button class="master-panel-control" type="button" data-language-toggle><img src="assets/icons/globe-outline.svg" alt="" /></button><a class="master-panel-logo" href="index.html?panel=2" aria-label="OOXME"><img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME" /></a><button class="master-panel-control" type="button" data-search-toggle aria-label="Search"><img src="assets/icons/search.svg" alt="" /></button></header>`;
 const footer = (final = false) =>
   `<footer class="master-panel-footer">${final ? '<a class="master-panel-continue" href="index.html?panel=2">' : '<button class="master-panel-continue" type="button" data-next-panel>'}<span class="swipe-control"><span ${text(final ? "Growth Plans" : "Next", final ? "باقات النمو" : "التالــــي")}>${final ? "Growth Plans" : "Next"}</span><span class="swipe-control-line"></span></span>${final ? "</a>" : "</button>"}</footer>`;
-const panel = (label, title, description, body, final = false) =>
-  `<section class="master-panel-screen"><div class="master-panel">${header()}<div class="master-panel-content has-simplified-text-hierarchy"><h1 ${text(title[0], title[1])}>${title[0]}</h1><p ${text(description[0], description[1])}>${description[0]}</p>${body}</div>${footer(final)}</div></section>`;
+const panel = (label, title, description, body, final = false, richDescription = false) =>
+  `<section class="master-panel-screen"><div class="master-panel">${header()}<div class="master-panel-content has-simplified-text-hierarchy"><h1 ${text(title[0], title[1])}>${title[0]}</h1><p ${richDescription ? htmlText(description[0], description[1]) : text(description[0], description[1])}>${description[0]}</p>${body}</div>${footer(final)}</div></section>`;
 const render = () => {
   const en = selected.en,
     ar = selected.ar,
@@ -260,7 +261,22 @@ const render = () => {
       true,
     ),
   ];
-  track.innerHTML = (brandManagementPage ? [planPanels[0], planPanels[1], planPanels.at(-1)] : planPanels).join("");
+  const brandManagementPanels = [
+    panel(
+      ["Brand Management", "إدارة العلامة التجارية"],
+      ["Brand Management?", "إدارة العلامة؟"],
+      [
+        "Yes! Brand Management<br><br>We are proud that Ooxme is the first and only in Iraq<br>to offer this service",
+        "نعم! إدارة العلامة التجارية<br><br>نفتخر بكون اوكسوم الأول والوحيد في العراق<br>الذي يقدم هذه الخدمة",
+      ],
+      `<div class="plan-detail-cards plan-overview"><article role="button" tabindex="0" data-brand-management-discover><strong ${text("Discover the Service", "اكتشف الخدمة")}>Discover the Service</strong></article></div>`,
+      false,
+      true,
+    ),
+    planPanels[1],
+    planPanels.at(-1),
+  ];
+  track.innerHTML = (brandManagementPage ? brandManagementPanels : planPanels).join("");
 };
 render();
 const panels = [...track.children];
@@ -274,6 +290,9 @@ const applyLanguage = (next) => {
   document
     .querySelectorAll("[data-en][data-ar]")
     .forEach((x) => (x.textContent = x.dataset[next]));
+  document
+    .querySelectorAll("[data-html-en][data-html-ar]")
+    .forEach((x) => (x.innerHTML = x.dataset[`html${next[0].toUpperCase()}${next.slice(1)}`]));
   searchInput.placeholder = searchInput.dataset[`${next}Placeholder`];
   try {
     localStorage.setItem("ooxme-language", next);
@@ -290,6 +309,17 @@ const moveTo = (next) => {
   clearTimeout(timer);
   timer = setTimeout(reveal, 620);
 };
+const moveToImmediately = (next) => {
+  const target = Math.max(0, Math.min(panels.length - 1, next));
+  if (target === current) return;
+  current = target;
+  clearTimeout(timer);
+  track.style.transition = "none";
+  track.style.transform = `translateY(${-current * 100}dvh)`;
+  reveal();
+  void track.offsetHeight;
+  track.style.transition = "";
+};
 window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => current, moveTo });
 document
   .querySelectorAll("[data-language-toggle]")
@@ -301,6 +331,14 @@ document
 document
   .querySelectorAll("[data-next-panel]")
   .forEach((x) => x.addEventListener("click", () => moveTo(current + 1)));
+document.querySelectorAll("[data-brand-management-discover]").forEach((box) => {
+  box.addEventListener("click", () => moveToImmediately(1));
+  box.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    moveToImmediately(1);
+  });
+});
 document.querySelectorAll("[data-free-consultation-offer]").forEach((cta) => cta.addEventListener("click", async (event) => {
   event.preventDefault();
   const cta = event.currentTarget;
