@@ -298,12 +298,12 @@ const promoInputCard = promoInputField.closest('.promo-input-card');
 const promoFeedback = document.querySelector('[data-promo-message]');
 const TEST_PROMO_CODE = 'TEST';
 const testBookingCustomer = {
-  name: 'OOXME Test Booking',
+  name: 'TEST',
   email: 'hello@ooxme.com',
   phone: '+9647840440011',
-  topic: 'TEST promo verification',
-  sector: 'OOXME',
-  additional: 'Automated TEST promo booking'
+  topic: 'TEST',
+  sector: 'TEST',
+  additional: 'TEST'
 };
 let promoFeedbackTimer;
 const setPromoFeedback = (message = '', clearAfter = false) => { window.clearTimeout(promoFeedbackTimer); promoFeedback.textContent = message; promoInputCard.classList.toggle('is-feedback', Boolean(message)); if (clearAfter) promoFeedbackTimer = window.setTimeout(() => { promoFeedback.textContent = ''; promoInputCard.classList.remove('is-feedback'); promoInputField.value = ''; }, 1100); };
@@ -360,6 +360,7 @@ const clearConsultationPromoTimers = () => {
 const showConsultationPromoFeedback = (message = '', clearAfter = false) => {
   setPromoFeedback(message, clearAfter);
   promoInputCard.classList.toggle('is-invalid', Boolean(message) && message === consultationCopy[language].promoInvalid);
+  promoInputCard.classList.toggle('is-test-feedback', message === 'كود اختباري');
 };
 const refreshServerPromotion = async ({ showFeedback = false } = {}) => {
   const promoCode = String(state.promo || '').trim();
@@ -384,34 +385,15 @@ const refreshServerPromotion = async ({ showFeedback = false } = {}) => {
     return false;
   }
 };
-const nearestAvailableTestSlot = async () => {
-  const cursor = new Date();
-  cursor.setDate(1);
-  for (let index = 0; index < 4; index += 1) {
-    const year = cursor.getFullYear();
-    const month = cursor.getMonth() + 1;
-    const response = await fetch(`/api/booking/available-slots?year=${year}&month=${month}`, { headers: { Accept: 'application/json' } });
-    if (!response.ok) throw new Error('availability_unavailable');
-    const availability = await response.json();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const date = Object.keys(availability.days || {}).find((value) => new Date(`${value}T12:00:00+03:00`) >= today && availability.days[value]?.length);
-    if (date) return { date, time: availability.days[date][0] };
-    cursor.setMonth(cursor.getMonth() + 1);
-  }
-  throw new Error('slot_unavailable');
-};
-const runTestPromoBooking = async () => {
+const prepareTestPromoBooking = () => {
   if (!activeServerQuote() || total() !== 0) throw new Error('promotion_unavailable');
-  const slot = await nearestAvailableTestSlot();
-  Object.assign(state, testBookingCustomer, { duration: '45', date: slot.date, time: slot.time, payment: '' });
+  Object.assign(state, testBookingCustomer, { duration: '45', payment: '' });
   document.querySelectorAll('[data-customer-form] [data-field]').forEach(field => { field.value = state[field.dataset.field] || ''; });
-  save(); renderCalendar(); renderChoices(); renderSummary();
-  if (usesLiveBookingApi) await submitBooking();
-  moveTo(6);
+  save(); renderChoices(); renderSummary();
 };
 promoInputField.addEventListener('input', () => {
   promoInputCard.classList.remove('is-invalid');
+  promoInputCard.classList.remove('is-test-feedback');
   stopPromoPlaceholderAnimation();
 });
 promoInputField.addEventListener('focus', () => stopPromoPlaceholderAnimation());
@@ -427,7 +409,8 @@ restoreConsultationPromoPanel = () => {
 };
 document.querySelector('[data-promo-form]').addEventListener('submit', async (event) => {
   event.preventDefault();
-  const code = promoInputField.value.trim();
+  const code = promoInputField.value.trim().toUpperCase();
+  promoInputField.value = code;
   if (!code && !state.offerToken) {
     state.promo = ''; state.serverQuote = null;
     save();
@@ -441,7 +424,8 @@ document.querySelector('[data-promo-form]').addEventListener('submit', async (ev
   if (code.toUpperCase() === TEST_PROMO_CODE) {
     showConsultationPromoFeedback('كود اختباري');
     try {
-      await runTestPromoBooking();
+      prepareTestPromoBooking();
+      window.setTimeout(() => moveTo(1), 500);
     } catch (_) {
       showConsultationPromoFeedback(consultationCopy[language].promoInvalid, true);
     }
