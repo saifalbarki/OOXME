@@ -141,7 +141,11 @@ window.addEventListener('resize', applyWideProjectLabels);
 let currentPanel = 0;
 let panelTimer;
 panelTrack.style.height = `${panels.length * 100}dvh`;
-const revealPanel = (index) => panels.forEach((panel, number) => panel.classList.toggle('is-active', number === index));
+const revealPanel = (index) => panels.forEach((panel, number) => {
+  const active = number === index;
+  panel.classList.toggle('is-active', active);
+  if (active) panel.querySelector('[data-project-gallery]')?.dispatchEvent(new CustomEvent('ooxme:gallery-activated', { bubbles: true }));
+});
 const moveToPanel = (index) => {
   const target = Math.max(0, Math.min(panels.length - 1, index));
   if (target === currentPanel) return;
@@ -155,6 +159,7 @@ window.OOXMEMasterPanelDrag?.register({ experience, track: panelTrack, panels, g
 revealPanel(currentPanel);
 document.querySelectorAll('[data-next-project]').forEach((button) => button.addEventListener('click', () => moveToPanel(currentPanel + 1)));
 const galleries = new Map();
+const galleryAutoplayDuration = 2000;
 const primaryGallery = document.querySelector('.project-panel--al-basri-primary [data-project-gallery]');
 const landscapeGalleryQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
 const isAlBasriMallGallery = (gallery) => gallery === primaryGallery && !isSecondaryCollection;
@@ -168,11 +173,22 @@ const removeAlBasriMallPagination = (state) => {
   state.dots.setAttribute('aria-hidden', 'true');
 };
 const publishGalleryProgress = (gallery, state, { reset = false } = {}) => {
-  // Zero-based state lets the shared bottom handle use the same
-  // (activeImageIndex + 1) / totalImages progress equation everywhere.
+  // Publish the active slide separately from the shared per-slide timer.
   gallery.dataset.activeImageIndex = `${state.index}`;
   gallery.dataset.totalImages = `${state.images.length}`;
   gallery.dispatchEvent(new CustomEvent('ooxme:gallery-progress', { bubbles: true, detail: { reset } }));
+};
+const restartGalleryProgress = (gallery, state) => {
+  window.cancelAnimationFrame(state.progressFrame);
+  state.progressStartedAt = performance.now();
+  gallery.dataset.autoplayProgress = '0';
+  const tick = (now) => {
+    if (!gallery.closest('.project-panel')?.classList.contains('is-active')) return;
+    const progress = Math.min(1, (now - state.progressStartedAt) / galleryAutoplayDuration);
+    gallery.dataset.autoplayProgress = `${progress}`;
+    if (progress < 1) state.progressFrame = window.requestAnimationFrame(tick);
+  };
+  state.progressFrame = window.requestAnimationFrame(tick);
 };
 const removeSquarePagination = (state) => {
   state.dots.replaceChildren();
@@ -231,7 +247,7 @@ panels.forEach((panel) => {
   const images = imagesForPanel(panel);
   const rail = gallery.querySelector('.project-gallery-track');
   const dots = gallery.querySelector('.project-gallery-dots');
-  const state = { images: [], index: 0, physicalIndex: 0, cloneOffset: 0, rail, dots, viewport: gallery.querySelector('.project-gallery-viewport'), manualDirection: null, wrapTimer: null, arcDragging: false, arcDragX: 0, deckDragging: false, deckDragX: 0, imageRatios: new Map(), isSquareDeck: false };
+  const state = { images: [], index: 0, physicalIndex: 0, cloneOffset: 0, rail, dots, viewport: gallery.querySelector('.project-gallery-viewport'), manualDirection: null, wrapTimer: null, progressFrame: 0, progressStartedAt: 0, arcDragging: false, arcDragX: 0, deckDragging: false, deckDragX: 0, imageRatios: new Map(), isSquareDeck: false };
   galleries.set(gallery, state);
   populateGallery(gallery, images, state);
   dots.addEventListener('pointerdown', (event) => dots.setPointerCapture?.(event.pointerId));
@@ -271,7 +287,7 @@ const renderSquareDepthDeck = (gallery, dragX = 0) => {
   const progress = Math.min(1, Math.abs(dragX) / range);
   const direction = dragX
     ? (dragX < 0 ? 1 : -1)
-    : (state.manualDirection ?? (root.dir === 'rtl' ? -1 : 1));
+    : (state.manualDirection ?? 1);
   const cardSize = state.viewport.clientWidth;
   const layerExposure = Math.min(16, Math.max(9, cardSize * .04));
   const availableRise = Math.max(0, state.viewport.clientHeight - cardSize);
@@ -340,7 +356,7 @@ const renderAlBasriMallStoryDeck = (gallery, dragX = 0) => {
   const dragProgress = Math.min(1, Math.abs(dragX) / range);
   const direction = dragX
     ? (dragX < 0 ? 1 : -1)
-    : (state.manualDirection ?? (root.dir === 'rtl' ? -1 : 1));
+    : (state.manualDirection ?? 1);
   const rotation = Math.max(-4, Math.min(4, (dragX / range) * 4));
   const visible = new Map([[state.index, 0]]);
   for (let depth = 1; depth <= maxDepth; depth += 1) {
@@ -507,7 +523,8 @@ const setGalleryImage = (gallery, requested) => {
     state.physicalIndex += direction;
     placeGalleryAtPhysicalIndex(gallery, state.physicalIndex);
     updateGalleryDots(state, { wrap: wraps });
-    publishGalleryProgress(gallery, state, { reset: wraps && direction === 1 });
+    publishGalleryProgress(gallery, state, { reset: true });
+    restartGalleryProgress(gallery, state);
     normalizeGalleryWrap(gallery);
     return;
   }
@@ -515,7 +532,8 @@ const setGalleryImage = (gallery, requested) => {
   state.physicalIndex = state.index + 1;
   placeGalleryAtPhysicalIndex(gallery, state.physicalIndex);
   updateGalleryDots(state);
-  publishGalleryProgress(gallery, state);
+  publishGalleryProgress(gallery, state, { reset: true });
+  restartGalleryProgress(gallery, state);
 };
 const syncWideGalleryCentering = (gallery) => {
   const state = galleries.get(gallery);
@@ -534,6 +552,14 @@ const syncWideGalleryCentering = (gallery) => {
   gallery.classList.toggle('is-centered', Boolean(isWide && realStripWidth <= state.viewport.clientWidth));
 };
 galleries.forEach((_, gallery) => setGalleryImage(gallery, 0));
+panelTrack.addEventListener('ooxme:gallery-activated', (event) => {
+  const gallery = event.target.closest('[data-project-gallery]');
+  const state = galleries.get(gallery);
+  if (state) restartGalleryProgress(gallery, state);
+});
+galleries.forEach((state, gallery) => {
+  if (gallery.closest('.project-panel')?.classList.contains('is-active')) restartGalleryProgress(gallery, state);
+});
 window.requestAnimationFrame(() => galleries.forEach((_, gallery) => syncWideGalleryCentering(gallery)));
 window.setTimeout(() => galleries.forEach((_, gallery) => syncWideGalleryCentering(gallery)), 700);
 window.addEventListener('resize', () => galleries.forEach((_, gallery) => syncWideGalleryCentering(gallery)));
@@ -559,7 +585,7 @@ window.setInterval(() => {
   if (!primaryGallery.closest('.project-panel').classList.contains('is-active')) return;
   const state = galleries.get(primaryGallery);
   if (state.arcDragging || state.deckDragging) return;
-  const direction = state.manualDirection ?? (root.dir === 'rtl' ? -1 : 1);
+  const direction = state.manualDirection ?? 1;
   setGalleryImage(primaryGallery, state.index + direction);
 }, 2000);
 window.setInterval(() => {
@@ -570,7 +596,7 @@ window.setInterval(() => {
   // is the shared square deck. Non-square portrait galleries stay unchanged.
   if (!window.matchMedia('(min-aspect-ratio: 4 / 3)').matches && !isSecondaryCollection && !isSquareDepthDeck(activeGallery)) return;
   if (state.deckDragging) return;
-  const direction = state.manualDirection ?? (root.dir === 'rtl' ? -1 : 1);
+  const direction = state.manualDirection ?? 1;
   setGalleryImage(activeGallery, state.index + direction);
 }, 2000);
 let galleryGesture = null;

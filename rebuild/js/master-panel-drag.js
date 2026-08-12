@@ -82,9 +82,12 @@ window.OOXMEMasterPanelDrag = {
         const gallery = panel.querySelector('[data-project-gallery][data-total-images]');
         const totalImages = Number(gallery?.dataset.totalImages);
         const activeImageIndex = Number(gallery?.dataset.activeImageIndex);
-        const galleryProgress = Number.isFinite(totalImages) && totalImages > 0 && Number.isFinite(activeImageIndex)
-          ? (activeImageIndex + 1) / totalImages
-          : null;
+        const autoplayProgress = Number(gallery?.dataset.autoplayProgress);
+        const galleryProgress = Number.isFinite(autoplayProgress)
+          ? autoplayProgress
+          : (Number.isFinite(totalImages) && totalImages > 0 && Number.isFinite(activeImageIndex)
+            ? (activeImageIndex + 1) / totalImages
+            : null);
         const progress = Math.min(1, Math.max(0, galleryProgress ?? ((panelIndex + 1) / panels.length)));
         panel.querySelectorAll('.swipe-control-line').forEach((line) => {
           let fill = line.querySelector(':scope > .swipe-control-progress');
@@ -109,7 +112,7 @@ window.OOXMEMasterPanelDrag = {
     progressObserver.observe(track, {
       subtree: true,
       attributes: true,
-      attributeFilter: ['data-active-image-index', 'data-total-images']
+      attributeFilter: ['data-active-image-index', 'data-total-images', 'data-autoplay-progress']
     });
     track.addEventListener('ooxme:gallery-progress', (event) => {
       const panel = event.target.closest('.master-panel-screen');
