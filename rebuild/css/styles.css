@@ -1336,7 +1336,7 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
   padding: 10px 16px;
   border: 0;
   border-block-end: 1px solid rgba(0, 0, 0, .06);
-  border-radius: var(--radius-control);
+  border-radius: 0;
   background: transparent;
   color: var(--color-ink);
   font: inherit;
@@ -1360,14 +1360,11 @@ html[dir="rtl"] .booking-panel[data-step="date"] .calendar-month-picker { direct
 .booking-panel[data-step="date"] .calendar-card:has(.calendar-month-picker.is-open) { overflow: visible; }
 @media (min-aspect-ratio: 4 / 3) {
   .booking-panel[data-step="date"] .calendar-month-menu {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(4, var(--month-menu-cell-height));
-    inline-size: min(clamp(360px, 48vw, 500px), calc(100vw - (var(--panel-safe) * 2)));
-    overflow: hidden;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(12, var(--month-menu-cell-height));
+    inline-size: min(clamp(240px, 34vw, 300px), calc(100vw - (var(--panel-safe) * 2)));
+    overflow-y: auto;
   }
-  .booking-panel[data-step="date"] .calendar-month-option { border-block-end: 0; }
-  .booking-panel[data-step="date"] .calendar-month-option:nth-child(n + 4) { border-block-start: 1px solid rgba(0, 0, 0, .06); }
-  .booking-panel[data-step="date"] .calendar-month-option:not(:nth-child(3n + 1)) { border-inline-start: 1px solid rgba(13, 13, 13, .08); }
 }
 @media (prefers-reduced-motion: reduce) {
   .booking-panel[data-step="date"] :is(.calendar-month-menu, .calendar-month-arrow, .calendar-month-option) { transition-duration: .01ms; }

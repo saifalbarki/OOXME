@@ -470,7 +470,6 @@ const renderCalendar = () => {
       window.requestAnimationFrame(()=>{
         const bounds=menu.getBoundingClientRect();
         menu.style.setProperty('--month-menu-center-x',`${(window.innerWidth/2)-(bounds.left+(bounds.width/2))}px`);
-        /* The resting animation begins 4px above its final centered position. */
         menu.style.setProperty('--month-menu-center-y',`${(window.innerHeight/2)-(bounds.top+(bounds.height/2))-4}px`);
         picker.classList.add('is-open');
       });
