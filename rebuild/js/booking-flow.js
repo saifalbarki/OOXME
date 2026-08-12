@@ -515,9 +515,12 @@ if (superQiPaymentOption && comingSoonPaymentOption) {
   newPaymentMethodClone.removeAttribute('data-payment');
   newPaymentMethodClone.classList.add('payment-option--coming');
   newPaymentMethodClone.dataset.paymentCopy = 'coming';
+  newPaymentMethodClone.disabled = true;
+  newPaymentMethodClone.tabIndex = -1;
+  newPaymentMethodClone.setAttribute('aria-disabled', 'true');
   paymentOptionsContainer.replaceChild(newPaymentMethodClone, comingSoonPaymentOption);
 }
-const paymentOptions = [...document.querySelectorAll('[data-payment-options] .payment-option')];
+const paymentOptions = [...document.querySelectorAll('[data-payment-options] .payment-option:not(.payment-option--coming)')];
 const comingPaymentDetail = document.querySelector('.payment-option--coming .payment-option-detail-inner');
 if (comingPaymentDetail && !comingPaymentDetail.querySelector('.payment-qr-placeholder')) {
   const qrPlaceholder = document.createElement('span');

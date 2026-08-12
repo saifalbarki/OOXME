@@ -377,6 +377,14 @@ html[dir="rtl"] .booking-card input, html[dir="rtl"] .booking-fields input, html
 .booking-panel[data-step="payment"] .payment-option.is-open .payment-option-label {
   display: none;
 }
+.booking-panel[data-step="payment"] .payment-option--coming,
+.booking-panel[data-step="payment"] .payment-option--coming:disabled {
+  pointer-events: none;
+  user-select: none;
+  opacity: .58;
+  border: 1px solid rgba(13, 13, 13, .16);
+  cursor: default;
+}
 .booking-panel[data-step="payment"] .payment-option.is-open .payment-option-detail-inner {
   align-content: start;
   padding: 0;
