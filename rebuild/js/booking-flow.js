@@ -47,7 +47,7 @@ const consultationCopy = {
 const landscapeStepCopy = { promo:{en:'Enter a promo code if you have one',ar:'ادخل كود الخصم اذا كان لديك'}, customer:{en:'Tell us the details we need for your consultation',ar:'ادخل المعلومات المطلوبة للاستشارة'}, date:{en:'Choose an available date for your consultation',ar:'اختر يوماً متاحاً للاستشارة'}, time:{en:'Choose the consultation time and duration',ar:'اختر وقت ومدة الاستشارة'}, summary:{en:'Review your booking details before confirming',ar:'راجع تفاصيل الحجز قبل التأكيد'}, payment:{en:'Choose your preferred payment method',ar:'اختر طريقة الدفع المناسبة'}, confirmation:{en:'Your consultation booking has been confirmed',ar:'تم تأكيد حجز الاستشارة'} };
 const applyLandscapeStepText = () => { const wide = window.matchMedia('(min-aspect-ratio: 4 / 3)').matches; panels.forEach(panel => { const label = panel.querySelector('.master-panel-label'); if (!label) return; label.textContent = wide ? landscapeStepCopy[panel.dataset.step][language] : label.dataset[language]; }); };
 const updateCustomerPlaceholders = () => { document.querySelectorAll('[data-customer-form] label').forEach(label => { const input = label.querySelector('input'); const labelText = label.querySelector('span'); if (input && !input.classList.contains('is-inline-error')) input.placeholder = labelText?.dataset[language] || ''; }); };
-const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); updateConfirmationPanel(); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
+const applyLanguage = (next) => { language=next; root.lang=next; root.dir=next==='ar'?'rtl':'ltr'; document.querySelectorAll('[data-en][data-ar]').forEach(x=>x.textContent=x.dataset[next]); applyLandscapeStepText(); updateCustomerPlaceholders(); renderBookingCustomSelects?.(); document.querySelectorAll('[data-language-toggle]').forEach(x=>x.setAttribute('aria-label',next==='ar'?'التبديل الى الانجليزية':'Switch to Arabic')); searchInput.placeholder=searchInput.dataset[`${next}Placeholder`]; renderCalendar(); renderChoices(); renderSummary(); updateConfirmationPanel(); try { localStorage.setItem('ooxme-language',next); } catch (_) {} };
 document.querySelectorAll('[data-language-toggle]').forEach(x=>x.addEventListener('click',()=>applyLanguage(language==='en'?'ar':'en')));
 window.addEventListener('storage',e=>{if(e.key==='ooxme-language')applyLanguage(e.newValue==='ar'?'ar':'en')});
 const alignBookingTrack = () => {
@@ -210,6 +210,38 @@ experience.addEventListener('ooxme:bottom-action', event => {
   event.preventDefault();
   void continueSummaryStep();
 });
+const bookingSelectOptions = {
+  topic: [
+    ['Brand Management', 'إدارة العلامة التجارية'], ['Brand Development', 'تطوير العلامة التجارية'], ['Business Development', 'تطوير الأعمال'], ['Marketing Strategy', 'استراتيجية التسويق'], ['Social Media & Content', 'وسائل التواصل والمحتوى'], ['Website', 'الموقع الإلكتروني'], ['Digital Services', 'الخدمات الرقمية'], ['HR Support', 'دعم الموارد البشرية'], ['Business Support', 'دعم الأعمال'], ['Other', 'آخر']
+  ],
+  sector: [
+    ['Retail & E-commerce', 'التجزئة والتجارة الإلكترونية'], ['Food & Beverage', 'الأغذية والمشروبات'], ['Hospitality & Tourism', 'الضيافة والسياحة'], ['Professional Services', 'الخدمات المهنية'], ['Healthcare & Wellness', 'الصحة والعافية'], ['Real Estate & Construction', 'العقارات والإنشاءات'], ['Technology', 'التقنية'], ['Education & Training', 'التعليم والتدريب'], ['Manufacturing & Industry', 'التصنيع والصناعة'], ['Other', 'آخر']
+  ]
+};
+const bookingCustomSelects = [...document.querySelectorAll('[data-customer-form] input[data-field="topic"], [data-customer-form] input[data-field="sector"]')];
+const closeBookingSelects = () => document.querySelectorAll('.booking-custom-select.is-open').forEach(label => { label.classList.remove('is-open'); label.querySelector('[data-booking-select-trigger]')?.setAttribute('aria-expanded', 'false'); label.querySelector('[data-booking-select-menu]')?.setAttribute('hidden', ''); });
+const renderBookingCustomSelects = () => bookingCustomSelects.forEach(field => {
+  const key = field.dataset.field;
+  const label = field.closest('label');
+  if (!label || !bookingSelectOptions[key]) return;
+  label.classList.add('booking-custom-select');
+  let trigger = label.querySelector('[data-booking-select-trigger]');
+  let menu = label.querySelector('[data-booking-select-menu]');
+  if (!trigger) {
+    trigger = document.createElement('button'); trigger.type = 'button'; trigger.className = 'customer-writing-field booking-select-trigger'; trigger.dataset.bookingSelectTrigger = ''; trigger.setAttribute('aria-haspopup', 'listbox'); trigger.setAttribute('aria-expanded', 'false');
+    menu = document.createElement('div'); menu.className = 'booking-select-menu'; menu.dataset.bookingSelectMenu = ''; menu.setAttribute('role', 'listbox'); menu.hidden = true;
+    field.insertAdjacentElement('afterend', trigger); trigger.insertAdjacentElement('afterend', menu);
+    trigger.addEventListener('click', () => { const open = !label.classList.contains('is-open'); closeBookingSelects(); if (open) { label.classList.add('is-open'); trigger.setAttribute('aria-expanded', 'true'); menu.hidden = false; } });
+  }
+  const current = String(state[key] || '');
+  const currentOption = bookingSelectOptions[key].find(option => option[0] === current) || null;
+  trigger.innerHTML = `<span>${currentOption ? currentOption[language === 'ar' ? 1 : 0] : (label.querySelector('span')?.dataset[language] || '')}</span><span class="booking-select-arrow" aria-hidden="true"></span>`;
+  menu.innerHTML = bookingSelectOptions[key].map(option => `<button type="button" class="booking-select-option" role="option" aria-selected="${option[0] === current}" data-value="${option[0]}">${option[language === 'ar' ? 1 : 0]}</button>`).join('');
+  menu.querySelectorAll('[data-value]').forEach(option => option.addEventListener('click', () => { field.value = option.dataset.value; state[key] = field.value; setFieldError(field, key, false); label.classList.remove('is-invalid'); save(); closeBookingSelects(); renderBookingCustomSelects(); }));
+});
+document.addEventListener('pointerdown', event => { if (!event.target.closest('.booking-custom-select')) closeBookingSelects(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeBookingSelects(); });
+renderBookingCustomSelects();
 document.querySelectorAll('[data-field]').forEach(field=>{ field.value=state[field.dataset.field]||''; field.addEventListener('input',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();}); field.addEventListener('change',()=>{state[field.dataset.field]=field.value;markInvalid(field,false);field.closest('label')?.classList.remove('is-invalid');save();}); });
 experience?.addEventListener('touchmove', event => {
   if (step !== 1) return;
