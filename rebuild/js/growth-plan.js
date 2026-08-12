@@ -178,6 +178,7 @@ const planData = {
   },
 };
 const key = new URLSearchParams(location.search).get("plan");
+const brandManagementPage = location.pathname.endsWith("/brand-management.html");
 const selected = planData[key] || planData.start;
 const track = document.querySelector("[data-growth-track]"),
   root = document.documentElement,
@@ -214,7 +215,7 @@ const render = () => {
         ar: { name: ar[field][index][0], details: ar[field][index][1] },
       })),
     name = [en.name, ar.name];
-  track.innerHTML = [
+  const planPanels = [
     panel(
       ["Growth Plan", "باقة نمو"],
       name,
@@ -258,7 +259,8 @@ const render = () => {
       `<div class="plan-detail-cards plan-final"><article><strong ${text("Additional Costs", "تكاليف اضافية")}>Additional Costs</strong><span ${text("Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.", "الاستضافة وتسجيل النطاق وGoogle Workspace وMeta Verified وميزانيات الاعلانات والخدمات الخارجية الاخرى تفوتر بشكل منفصل.")}>Hosting, domain registration, Google Workspace, Meta Verified, advertising budgets, and other external services are billed separately.</span></article>${consultationOffer()}</div>`,
       true,
     ),
-  ].join("");
+  ];
+  track.innerHTML = (brandManagementPage ? [planPanels[0], planPanels[1], planPanels.at(-1)] : planPanels).join("");
 };
 render();
 const panels = [...track.children];
