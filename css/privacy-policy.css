@@ -1,0 +1,26 @@
+.privacy-policy-page { overflow: auto; }
+.privacy-policy-experience { height: auto; min-height: 100dvh; overflow: visible; }
+.privacy-policy-experience .master-panel-screen { height: auto; min-height: 100dvh; }
+.privacy-policy-experience .master-panel { min-height: calc(100dvh - (var(--panel-safe) * 2)); }
+.privacy-policy-content { display: block; width: min(100%, 820px); margin: 0 auto; padding-bottom: calc(var(--panel-safe) * 2); text-align: start; }
+.privacy-policy-content > * { opacity: 1 !important; filter: none !important; transform: none !important; }
+.privacy-policy-content > .master-panel-label,
+.privacy-policy-content > h1,
+.privacy-policy-content > .privacy-policy-intro { text-align: center; }
+.privacy-policy-content h1 { max-width: none; }
+.privacy-policy-intro { width: min(100%, 620px) !important; max-width: 620px !important; margin: 0 auto var(--space) !important; }
+.privacy-policy-sections { display: grid; gap: var(--space-half); }
+.privacy-policy-section { padding: var(--panel-safe); border-radius: var(--card-radius); background: var(--color-paper); }
+.privacy-policy-section h2 { margin: 0 0 .45em; font-size: clamp(14px, 1.6vw, 18px); font-weight: 600; letter-spacing: -.035em; line-height: 1.2; }
+.privacy-policy-section p { width: auto !important; max-width: none !important; margin: .45em 0 0; font-size: clamp(12px, 1.15vw, 14px); line-height: 1.55; }
+.privacy-policy-section a { color: inherit; text-underline-offset: .18em; }
+.privacy-policy-footer { margin: var(--space) 0 0; text-align: center; }
+.privacy-policy-footer a { color: var(--color-brand); font-size: 12px; font-weight: 600; text-decoration: none; }
+html[dir="rtl"] .privacy-policy-content,
+html[dir="rtl"] .privacy-policy-section { font-family: var(--font-arabic); text-align: end; }
+html[dir="rtl"] .privacy-policy-section h2 { letter-spacing: 0; }
+html[dir="rtl"] .privacy-policy-content > .master-panel-label,
+html[dir="rtl"] .privacy-policy-content > h1,
+html[dir="rtl"] .privacy-policy-content > .privacy-policy-intro,
+html[dir="rtl"] .privacy-policy-footer { text-align: center; }
+@media (max-width: 560px) { .privacy-policy-content { padding-top: calc(var(--panel-safe) * .75); } .privacy-policy-section { padding: var(--space); } }
