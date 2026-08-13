@@ -21,7 +21,7 @@
     if (!['https://www.facebook.com', 'https://web.facebook.com'].includes(event.origin)) return;
     let data; try { data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data; } catch (_) { return; }
     if (data?.type !== 'WA_EMBEDDED_SIGNUP') return;
-    if (data.event === 'FINISH' && data.data?.waba_id && data.data?.phone_number_id) { signupResult = data.data; complete(); }
+    if (['FINISH', 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING'].includes(data.event) && data.data?.waba_id && data.data?.phone_number_id) { signupResult = data.data; complete(); }
     if (data.event === 'CANCEL') setStatus('The Meta onboarding flow was cancelled.', true);
     if (data.event === 'ERROR') setStatus('Meta could not start Coexistence onboarding. Check the app’s Embedded Signup configuration.', true);
   });
@@ -30,7 +30,7 @@
       button.disabled = true; setStatus('Opening Meta’s secure WhatsApp Business App connection flow…');
       configuration ||= await fetch('/api/whatsapp/coexistence/config', { headers: { Accept: 'application/json' } }).then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.error); return body; });
       await loadSdk(); window.FB.init({ appId: configuration.appId, cookie: true, xfbml: false, version: configuration.graphApiVersion });
-      window.FB.login((result) => { button.disabled = false; signupCode = result?.authResponse?.code || ''; if (!signupCode) { setStatus('Meta did not return an onboarding code. Complete the Coexistence option in the popup and try again.', true); return; } setStatus('Meta authorization received. Waiting for the selected WhatsApp Business App number…'); complete(); }, { config_id: configuration.configId, response_type: 'code', override_default_response_type: true, extras: { featureType: 'whatsapp_business_app_onboarding', sessionInfoVersion: 3 } });
+      window.FB.login((result) => { button.disabled = false; signupCode = result?.authResponse?.code || ''; if (!signupCode) { setStatus('Meta did not return an onboarding code. Complete the Coexistence option in the popup and try again.', true); return; } setStatus('Meta authorization received. Waiting for the selected WhatsApp Business App number…'); complete(); }, { config_id: configuration.configId, response_type: 'code', override_default_response_type: true, extras: { featureType: 'whatsapp_business_app_onboarding', sessionInfoVersion: '3' } });
     } catch (_) { button.disabled = false; setStatus('This onboarding page is not configured yet.', true); }
   });
 })();
