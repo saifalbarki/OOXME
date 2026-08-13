@@ -1,6 +1,6 @@
 const { gmailApi, googleFetch } = require('./google');
 const { required, optional } = require('./config');
-const { sendWhatsAppText } = require('./whatsapp');
+const { sendWhatsAppText, sendYCloudBookingConfirmation } = require('./whatsapp');
 
 const encode = (value) => Buffer.from(value).toString('base64url');
 const escapeHtml = (value) => String(value || '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
@@ -22,7 +22,7 @@ async function sendBookingNotifications(booking) {
   ];
   const internalWhatsApp = optional('WHATSAPP_INTERNAL_RECIPIENT');
   if (internalWhatsApp) jobs.push(sendWhatsAppText(internalWhatsApp, details));
-  if (booking.customer.phone) jobs.push(sendWhatsAppText(booking.customer.phone, customer));
+  if (booking.customer.phone) jobs.push(sendYCloudBookingConfirmation(booking.customer.phone, { reference, consultation: dateLabel(booking), duration: booking.duration }));
   return Promise.allSettled(jobs);
 }
 

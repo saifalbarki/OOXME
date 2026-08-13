@@ -18,4 +18,34 @@ async function sendWhatsAppText(to, body) {
   return result;
 }
 
-module.exports = { sendWhatsAppText, normalizeRecipient };
+async function sendYCloudBookingConfirmation(to, { reference, consultation, duration }) {
+  const recipient = normalizeRecipient(to);
+  if (!recipient) return { skipped: true, reason: 'no_recipient' };
+  const apiKey = required('YCLOUD_API_KEY');
+  const from = required('YCLOUD_WHATSAPP_FROM');
+  const templateName = optional('YCLOUD_WHATSAPP_BOOKING_CONFIRMATION_TEMPLATE', 'ooxme_booking_confirmation');
+  const language = optional('YCLOUD_WHATSAPP_TEMPLATE_LANGUAGE', 'en_US');
+  const response = await fetch('https://api.ycloud.com/v2/whatsapp/messages/sendDirectly', {
+    method: 'POST',
+    headers: { 'X-API-Key': apiKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from,
+      to: `+${recipient}`,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: { code: language },
+        components: [{ type: 'body', parameters: [
+          { type: 'text', text: reference },
+          { type: 'text', text: consultation },
+          { type: 'text', text: String(duration) }
+        ] }]
+      }
+    })
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(`YCloud WhatsApp send failed: ${result.error?.message || result.message || response.status}`);
+  return result;
+}
+
+module.exports = { sendWhatsAppText, sendYCloudBookingConfirmation, normalizeRecipient };
