@@ -291,7 +291,7 @@ const render = () => {
         "External subscriptions are managed by OOXME and billed separately.",
         "تدار الاشتراكات الخارجية من قبل اوكسوم وتفوتر بشكل منفصل.",
       ],
-      `<div class="plan-detail-cards plan-final brand-management-final"><article><strong ${text("Make Your Brand Global", "اجعل علامتك التجارية عالمية")}>Make Your Brand Global</strong><span ${htmlText("Get the service today and be the first in your field<br>Just like Ooxme", "احصل على الخدمة اليوم وكن الأول في مجالك<br>تماماً مثل أوكسوم")}>Get the service today and be the first in your field<br>Just like Ooxme</span></article><div class="plan-offer-action"><a class="plan-detail-cta" href="booking.html" data-free-consultation-offer ${text("Browse Plans", "تصفح الخطط")}>Browse Plans</a></div></div>`,
+      `<div class="plan-detail-cards plan-final brand-management-final"><article><strong ${text("Make Your Brand Global", "اجعل علامتك التجارية عالمية")}>Make Your Brand Global</strong><span ${htmlText("Get the service today and be the first in your field<br>Just like Ooxme", "احصل على الخدمة اليوم وكن الأول في مجالك<br>تماماً مثل أوكسوم")}>Get the service today and be the first in your field<br>Just like Ooxme</span></article><div class="plan-offer-action"><a class="plan-detail-cta" href="index.html?panel=2" data-free-consultation-offer ${text("Browse Plans", "تصفح الخطط")}>Browse Plans</a></div></div>`,
       true,
     ),
   ];
