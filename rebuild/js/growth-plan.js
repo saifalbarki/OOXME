@@ -266,15 +266,34 @@ const render = () => {
       ["Brand Management", "إدارة العلامة التجارية"],
       ["Brand Management?", "إدارة العلامة؟"],
       [
-        "Yes! Brand Management<br><br>We are proud that Ooxme is the first and only in Iraq<br>to offer this service",
-        "نعم! إدارة العلامة التجارية<br><br>نفتخر بكون اوكسوم الأول والوحيد في العراق<br>الذي يقدم هذه الخدمة",
+        "Ooxme introduces a new concept in Iraq<br>Complete brand management",
+        "أوكسوم تقدم مفهوماً جديداً في العراق<br>إدارة علامتك التجارية بالكامل",
       ],
-      `<div class="plan-detail-cards plan-overview"><article role="button" tabindex="0" data-brand-management-discover><strong ${text("Discover the Service", "اكتشف الخدمة")}>Discover the Service</strong></article></div>`,
+      `<div class="plan-detail-cards plan-overview brand-management-intro"><article role="button" tabindex="0" data-brand-management-discover><div class="brand-management-core-content"><div class="service-name" ${text("The One and Only", "الواحد والوحيد")}>The One and Only</div><div class="service-details" ${htmlText("Ooxme introduces a new concept<br>A global system for the first time in Iraq<br>Business development<br>through brand management", "أوكسوم تقدم مفهوماً جديداً<br>نظام عالمي لأول مرة في العراق<br>خدمة تطوير الأعمال<br>عن طريق إدارة العلامة التجارية")}>Ooxme introduces a new concept<br>A global system for the first time in Iraq<br>Business development<br>through brand management</div></div></article></div>`,
       false,
       true,
     ),
-    planPanels[1],
-    planPanels.at(-1),
+    panel(
+      name,
+      ["Integrated Brand", "علامة متكاملة"],
+      [
+        "Identity content marketing and experience<br>working together under one vision<br>to build a clear and consistent brand",
+        "هوية ومحتوى وتسويق وتجربة<br>تعمل جميعها تحت رؤية واحدة<br>لبناء علامة واضحة ومتسقة",
+      ],
+      `<div class="plan-detail-cards brand-management-core"><article role="button" tabindex="0" data-brand-management-next><div class="brand-management-core-content"><div class="service-name" ${text("Brand Management", "إدارة العلامة التجارية")}>Brand Management</div><div class="service-details" ${htmlText("Complete management of your brand<br>We unify its identity content marketing and presence<br>and continuously develop it while maintaining consistency<br>to build a stronger and clearer brand in the market", "إدارة متكاملة لعلامتك التجارية<br>نوحد هويتها ومحتواها وتسويقها وطريقة ظهورها<br>ونعمل باستمرار على تطويرها والحفاظ على اتساقها<br>لتصبح علامة أقوى وأكثر وضوحاً في السوق")}>Complete management of your brand<br>We unify its identity content marketing and presence<br>and continuously develop it while maintaining consistency<br>to build a stronger and clearer brand in the market</div></div></article></div>`,
+      false,
+      true,
+    ),
+    panel(
+      name,
+      ["Partnership Details", "تفاصيل الشراكة"],
+      [
+        "External subscriptions are managed by OOXME and billed separately.",
+        "تدار الاشتراكات الخارجية من قبل اوكسوم وتفوتر بشكل منفصل.",
+      ],
+      `<div class="plan-detail-cards plan-final brand-management-final"><article><strong ${text("Make Your Brand Global", "اجعل علامتك التجارية عالمية")}>Make Your Brand Global</strong><span ${htmlText("Get the service today and be the first in your field<br>Just like Ooxme", "احصل على الخدمة اليوم وكن الأول في مجالك<br>تماماً مثل أوكسوم")}>Get the service today and be the first in your field<br>Just like Ooxme</span></article><div class="plan-offer-action"><a class="plan-detail-cta" href="booking.html" data-free-consultation-offer ${text("Browse Plans", "تصفح الخطط")}>Browse Plans</a></div></div>`,
+      true,
+    ),
   ];
   track.innerHTML = (brandManagementPage ? brandManagementPanels : planPanels).join("");
 };
@@ -332,11 +351,19 @@ document
   .querySelectorAll("[data-next-panel]")
   .forEach((x) => x.addEventListener("click", () => moveTo(current + 1)));
 document.querySelectorAll("[data-brand-management-discover]").forEach((box) => {
-  box.addEventListener("click", () => moveToImmediately(1));
+  box.addEventListener("click", () => moveTo(1));
   box.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    moveToImmediately(1);
+    moveTo(1);
+  });
+});
+document.querySelectorAll("[data-brand-management-next]").forEach((box) => {
+  box.addEventListener("click", () => moveTo(2));
+  box.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    moveTo(2);
   });
 });
 document.querySelectorAll("[data-free-consultation-offer]").forEach((cta) => cta.addEventListener("click", async (event) => {

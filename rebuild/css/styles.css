@@ -597,6 +597,15 @@ html[dir="rtl"] .booking-panel :is(.promo-input-card > input, .customer-writing-
 .plan-detail-cards span,.plan-detail-cards .service-details { margin-top:4px; font-size:clamp(9px,1vw,12px); font-weight:500; line-height:var(--type-control-line-height); overflow:visible; }
 .plan-overview article { min-height:calc(var(--homepage-white-card-height) * 1.35); }
 .plan-overview strong { color:var(--color-brand); font-size:clamp(18px,2vw,25px); }
+.brand-management-page .master-panel-content > :is(h1, p:not(.master-panel-label)) { display:none; }
+.brand-management-core { --plan-card-columns:1; }
+.plan-detail-cards.brand-management-core > article { flex:0 1 100%; width:100%; min-height:0; height:auto; aspect-ratio:1; }
+.brand-management-core-content { display:grid; grid-template-columns:1fr; align-content:center; gap:var(--layout-major-gap); width:100%; }
+.brand-management-core-content > div { display:grid; gap:4px; }
+@media (min-aspect-ratio:4 / 3) {
+  .plan-detail-cards.brand-management-core > article { height:calc((var(--homepage-white-card-height) * 2) + var(--layout-major-gap)); aspect-ratio:auto; }
+  .brand-management-core-content { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--layout-major-gap); }
+}
 .plan-detail-cta { min-height:var(--homepage-white-card-height); border:0; background:var(--color-brand); color:var(--color-paper); font:inherit; font-size:clamp(11px,1.2vw,14px); font-weight:700; }
 .plan-offer-action { display:grid; align-content:center; gap:6px; flex:0 1 calc((100% - (var(--plan-card-columns) - 1) * var(--layout-major-gap)) / var(--plan-card-columns)); min-inline-size:0; text-align:center; }
 .plan-offer-action .plan-detail-cta { width:100%; }
@@ -742,6 +751,49 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
   .master-panel-content p { font-size: clamp(10px, 1.15vw, 12px); }
   .portfolio-options > :is(a, button),
   .plan-detail-cards > :is(article, .plan-service-card, .plan-detail-cta) { padding-block: 7px; }
+}
+
+/* Brand Management Panel 2 retains the shared card treatment while using one
+   card across the exact former card-group footprint. */
+.plan-detail-cards.brand-management-core > article { height:auto !important; aspect-ratio:1; }
+@media (min-aspect-ratio:4 / 3) {
+  .plan-detail-cards.brand-management-core > article { height:calc((var(--homepage-white-card-height) * 2) + var(--layout-major-gap)) !important; aspect-ratio:auto; }
+  .brand-management-core-content { grid-template-columns:1fr; }
+}
+
+/* Brand Management uses one responsive card system without affecting the
+   original Growth Plans. In portrait, Panel 2 mirrors the complete visual
+   span of the two final-panel cards and their shared gap. */
+@media (max-aspect-ratio:4 / 3) {
+  .brand-management-page :is(.brand-management-intro, .brand-management-core) > article {
+    flex: 0 1 100%;
+    width: 100%;
+    min-height: 0;
+    height: calc((var(--homepage-white-card-height) * 2) + var(--layout-major-gap)) !important;
+    aspect-ratio: auto;
+  }
+}
+
+/* Wide Brand Management panels share a single card height. The final pair
+   occupies Panel 2's full card width as two equal boxes separated by the
+   existing layout gap. */
+@media (min-aspect-ratio:4 / 3) {
+  .brand-management-page {
+    --brand-management-landscape-card-height: clamp(108px, 16dvh, 156px);
+  }
+  .brand-management-page .plan-overview > article,
+  .brand-management-page .plan-detail-cards.brand-management-core > article,
+  .brand-management-page .brand-management-final > article,
+  .brand-management-page .brand-management-final .plan-detail-cta {
+    height: var(--brand-management-landscape-card-height) !important;
+    min-height: var(--brand-management-landscape-card-height);
+  }
+  .brand-management-page .master-panel-screen:nth-of-type(3) .plan-detail-cards.brand-management-final {
+    --plan-card-columns: 2;
+  }
+  .brand-management-page .brand-management-core-content {
+    gap: 0;
+  }
 }
 
 /* Shared Portfolio project composition: top text grows down; each gallery and
