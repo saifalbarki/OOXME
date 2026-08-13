@@ -17,8 +17,10 @@ const eventText = (event) => `Reminder: ${event.summary || 'OOXME consultation'}
 
 module.exports = async (request, response) => {
   if (request.method !== 'GET') return methodNotAllowed(response, ['GET']);
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) return json(response, 503, { error: 'reminders_disabled' });
   const authorization = request.headers.authorization || '';
-  if (authorization !== `Bearer ${required('CRON_SECRET')}`) return response.status(401).send('Unauthorized');
+  if (authorization !== `Bearer ${cronSecret}`) return response.status(401).send('Unauthorized');
   try {
     const config = bookingConfig(); const now = Date.now();
     const events = await calendarApi(`/calendars/${encodeURIComponent(config.calendarId)}/events?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(new Date(now).toISOString())}&timeMax=${encodeURIComponent(new Date(now + 26 * HOUR).toISOString())}`);

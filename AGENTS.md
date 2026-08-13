@@ -1,12 +1,12 @@
-# OOXME Rebuild — Locked Master Panel Standard
+# OOXME — Locked Master Panel Standard
 
 ## Scope
 
-These rules apply permanently to every file and future feature inside `/rebuild` only. They do not authorize changes to the production website outside `/rebuild`.
+These rules apply permanently to every file and future feature in this repository root.
 
 ## Single shared system
 
-- The current Master Panel is the sole approved visual and interaction system for the entire rebuilt website.
+- The current Master Panel is the sole approved visual and interaction system for the entire website.
 - Every homepage section, internal page, subpage, service page, project page, plan page, and booking, payment, or confirmation step must use this same system.
 - New work may change only panel-internal content and page-specific functional elements. It must never create a page-specific version of the panel, header, navigation, motion, or overlay.
 - Reuse the shared tokens, styles, markup patterns, and JavaScript motion/language logic. Do not duplicate or override them per page.
@@ -39,4 +39,4 @@ Never alter the approved Master Panel's:
 
 ## Working requirement
 
-Before adding a new rebuilt page or component, verify that it uses the shared Master Panel system without changing any locked rule above. Do not build real website pages unless explicitly requested.
+Before adding a new page or component, verify that it uses the shared Master Panel system without changing any locked rule above. Do not build real website pages unless explicitly requested.
