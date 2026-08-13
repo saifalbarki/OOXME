@@ -2,12 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
-const sourceRoot = path.join(root, 'rebuild');
+const sourceRoot = root;
 const output = path.join(root, 'dist');
 const directories = ['assets', 'css', 'js', 'public'];
 
 if (!fs.existsSync(sourceRoot)) {
-  throw new Error('Expected rebuild source directory is missing.');
+  throw new Error('Expected website source directory is missing.');
 }
 
 fs.rmSync(output, { recursive: true, force: true });

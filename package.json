@@ -7,7 +7,7 @@
     "dev": "node server.js",
     "start": "node server.js",
     "build": "node scripts/build-static.js",
-    "db:migrate": "node rebuild/scripts/migrate-booking-db.js"
+    "db:migrate": "node scripts/migrate-booking-db.js"
   },
   "dependencies": {
     "nodemailer": "^9.0.5",

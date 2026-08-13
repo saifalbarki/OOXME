@@ -1,42 +1,42 @@
-# OOXME Website Guide
+# OOXME Rebuild — Locked Master Panel Standard
 
-## Architecture
+## Scope
 
-- This is a static website. The entry point is `index.html` and each route has its own root HTML file.
-- `css/styles.css` is the base visual system; `css/refinements.css` holds approved panel and interaction refinements.
-- `js/` contains page behaviour. `js/static-site.js` controls the homepage panel navigation, language switch, and search overlay.
-- `assets/` contains all required logos, fonts, icons, and project imagery. Do not remove or rename assets without checking every page reference.
-- `server.js` is only the local preview server. Run it with `npm.cmd run dev` in PowerShell.
+These rules apply permanently to every file and future feature inside `/rebuild` only. They do not authorize changes to the production website outside `/rebuild`.
 
-## Design and spacing
+## Single shared system
 
-- Preserve the approved rounded light-gray panels, white safe margins, OOXME logo placement, and header icon sizing.
-- Use the existing CSS spacing variables and multiples of them; do not introduce arbitrary one-off margins.
-- Preserve current typography, panel colors, CTA treatment, card radius, animations, and responsive behaviour.
-- Make visual changes only when explicitly requested. Never redesign a working component while fixing an unrelated problem.
+- The current Master Panel is the sole approved visual and interaction system for the entire rebuilt website.
+- Every homepage section, internal page, subpage, service page, project page, plan page, and booking, payment, or confirmation step must use this same system.
+- New work may change only panel-internal content and page-specific functional elements. It must never create a page-specific version of the panel, header, navigation, motion, or overlay.
+- Reuse the shared tokens, styles, markup patterns, and JavaScript motion/language logic. Do not duplicate or override them per page.
 
-## Navigation
+## Locked panel framework
 
-- Root HTML pages are the canonical destinations. Use relative static links such as `consultation.html`.
-- The local preview server also supports clean URLs such as `/consultation` for compatibility.
-- Keep homepage section navigation, search overlay, and language switching smooth and consistent.
-- Test every changed link and button after editing.
+Never alter the approved Master Panel's:
 
-## Booking flow
+- Size, viewport position, radius, safe margins, background, or responsive geometry.
+- Centered OOXME logo size and position.
+- Physical header positions: Language icon on the left and Search icon on the right, in both LTR and RTL.
+- Header icon size, alignment, spacing, or global color system.
+- Typography hierarchy, approved fonts, colors, and spacing tokens.
+- Bottom-control width, line thickness, spacing, resting position, or shared line-only bounce animation.
+- Shared panel swipe/click travel, final panel alignment, or post-arrival content Fade + Blur reveal.
+- Search Overlay layout, glass treatment, opening/closing sequence, active-input behavior, keyboard-safe positioning, or suggestion treatment.
 
-- Keep booking state, promo-code logic, price calculation, and confirmation details connected across consultation, summary, payment, and confirmation pages.
-- `R100` remains a 100% promotion and locks the consultation to 45 minutes.
-- Do not alter booking prices, payment rules, or customer-facing copy unless explicitly instructed.
+## Content boundaries
 
-## Languages
+- Cards, forms, images, lists, controls, and all other new page content must live inside the Master Panel safe area and use its tokens, typography, spacing, direction, and motion conventions.
+- Content must not resize, reposition, cover, or override the panel, header, logo, bottom control, Search Overlay, or global spacing.
+- Every new panel must enter and lock into the same exact position and dimensions as the first Master Panel.
 
-- English uses LTR and the approved English typography.
-- Arabic uses RTL and the existing Tosh Arabic fonts in `assets/fonts/arabic/tosh/`.
-- Language changes must update text direction, alignment, arrows, controls, and dynamic content consistently.
+## Language and responsiveness
 
-## Working rules
+- English is LTR with the approved Plus Jakarta Sans font. Arabic is RTL with the approved Tosh font.
+- Language selection uses the single shared `ooxme-language` state. Do not create page- or overlay-specific language state.
+- RTL mirrors content direction only. It does not swap the physical global header icon positions.
+- Preserve the approved responsive behavior and Visual Viewport keyboard-safe handling across screen sizes.
 
-- Make small, isolated changes. Test the affected page before moving on.
-- Do not delete files, assets, CSS, scripts, or pages unless they are proven unused.
-- Do not add secrets, private keys, tokens, or local environment files to Git.
-- Keep `.gitignore` current for local build folders, logs, and environment files.
+## Working requirement
+
+Before adding a new rebuilt page or component, verify that it uses the shared Master Panel system without changing any locked rule above. Do not build real website pages unless explicitly requested.
