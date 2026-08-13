@@ -415,7 +415,7 @@ let promoPlaceholderTimer;
 let promoPlaceholderRunning = false;
 let promoPlaceholderStep = 0;
 let promoPlaceholderPhase = 'typing';
-const promoPlaceholderCanRun = () => !promoInputField.value && document.activeElement !== promoInputField && !promoInputCard.classList.contains('is-feedback');
+const promoPlaceholderCanRun = () => false;
 const stopPromoPlaceholderAnimation = (clear = true) => {
   window.clearTimeout(promoPlaceholderTimer);
   promoPlaceholderRunning = false;
