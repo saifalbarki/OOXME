@@ -34,12 +34,12 @@ const total = () => activeServerQuote() ? Number(activeServerQuote().finalAmount
 let language = 'en'; try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
 const consultationCopy = {
   en: {
-    promoDescription: 'Have a valid discount code? Use it now or skip.', promoPlaceholder: 'Discount code', promoApplied: 'Discount code applied successfully', promoInvalid: 'Invalid code',
+    promoDescription: 'Have a valid discount code? Use it now or skip.', promoPlaceholder: 'Discount code', promoApplied: 'Code applied', promoTestApplied: 'Test code applied', promoInvalid: 'Inactive code',
     calendarAvailable: 'Available days are shown in blue', calendarBooked: 'Fully booked days are shown in gray', calendarWarning: 'This day is fully booked. Choose another day.',
     errors: { name: 'Name is required', email: 'Email is invalid', phone: 'Phone number is incomplete', topic: 'Consultation topic is required', sector: 'Business sector is required', additional: 'Additional information is required' }
   },
   ar: {
-    promoDescription: 'هل لديك كود خصم ساري؟ استخدمه الان او تخطى', promoPlaceholder: 'كود الخصم', promoApplied: 'تم تطبيق كود الخصم بنجاح', promoInvalid: 'الكود غير صالح',
+    promoDescription: 'هل لديك كود خصم ساري؟ استخدمه الان او تخطى', promoPlaceholder: 'كود الخصم', promoApplied: 'تم تطبيق الكود', promoTestApplied: 'تم تطبيق كود اختباري', promoInvalid: 'كود غير فعال',
     calendarAvailable: 'الايام المتاحة تظهر باللون الازرق', calendarBooked: 'الايام الممتلئة تظهر باللون الرمادي', calendarWarning: 'هذا اليوم ممتلئ بالحجوزات، اختر يوم اخر',
     errors: { name: 'الاسم مطلوب', email: 'البريد الالكتروني غير صحيح', phone: 'رقم الهاتف غير مكتمل', topic: 'موضوع الاستشارة مطلوب', sector: 'قطاع العمل مطلوب', additional: 'معلومات اضافية مطلوبة' }
   }
@@ -456,12 +456,23 @@ const clearConsultationPromoTimers = () => {
 const showConsultationPromoFeedback = (message = '', clearAfter = false) => {
   setPromoFeedback(message, clearAfter);
   promoInputCard.classList.toggle('is-invalid', Boolean(message) && message === consultationCopy[language].promoInvalid);
-  promoInputCard.classList.toggle('is-test-feedback', message === 'كود اختباري');
+  promoInputCard.classList.toggle('is-test-feedback', message === consultationCopy[language].promoTestApplied);
 };
 const refreshServerPromotion = async ({ showFeedback = false } = {}) => {
   const promoCode = String(state.promo || '').trim();
   if (!promoCode && !state.offerToken) { state.serverQuote = null; save(); return true; }
-  if (!usesLiveBookingApi) return true;
+  if (!usesLiveBookingApi) {
+    if (promoCode.toUpperCase() === TEST_PROMO_CODE) {
+      state.serverQuote = {
+        durationMinutes: 45,
+        discountAmount: price(),
+        finalAmount: 0,
+        currency: 'USD'
+      };
+      save(); renderChoices(); renderSummary();
+    }
+    return true;
+  }
   try {
     const response = await fetch('/api/promo/validate', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -518,7 +529,7 @@ document.querySelector('[data-promo-form]').addEventListener('submit', async (ev
   if (code.toUpperCase() === TEST_PROMO_CODE) state.duration = '45';
   if (!await refreshServerPromotion({ showFeedback: true })) return;
   if (code.toUpperCase() === TEST_PROMO_CODE) {
-    showConsultationPromoFeedback('كود اختباري');
+    showConsultationPromoFeedback(consultationCopy[language].promoTestApplied);
     try {
       prepareTestPromoBooking();
       window.setTimeout(() => moveTo(1), 500);
@@ -530,7 +541,7 @@ document.querySelector('[data-promo-form]').addEventListener('submit', async (ev
   clearConsultationPromoTimers();
   consultationPromoSuccess = true;
   promoInputField.value = '';
-  showConsultationPromoFeedback();
+  showConsultationPromoFeedback(consultationCopy[language].promoApplied);
   updateConsultationPromoCopy();
   consultationPromoSuccessTimer = window.setTimeout(() => {
     consultationPromoSuccess = false;

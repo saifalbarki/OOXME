@@ -1652,6 +1652,20 @@ html[dir="rtl"] .booking-panel[data-step="customer"] .booking-customer-fields .c
   }
 }
 
+/* Promo feedback always fills the existing input surface, so every language
+   and feedback state stays centered within that box. */
+.booking-panel[data-step="promo"] .promo-input-card > .booking-message {
+  inset: 0;
+  width: auto;
+  height: auto;
+  place-items: center;
+  text-align: center;
+}
+html[dir="rtl"] .booking-panel[data-step="promo"] .promo-input-card > .booking-message {
+  inset: 0;
+  width: auto;
+}
+
 /* Both final-state symbols occupy the existing confirmation content surface;
    the shared end alignment places their visible SVG bottom on that same
    Consultation content baseline without changing either drawing. */
