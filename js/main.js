@@ -1,5 +1,5 @@
 const track = document.querySelector('[data-master-track]');
-const SERVICES_NAVIGATION_ENABLED = false;
+const SERVICES_NAVIGATION_ENABLED = true;
 const CONSULTATION_NAVIGATION_ENABLED = true;
 const blockNavigation = (selector, enabled) => document.querySelectorAll(selector).forEach((action) => action.addEventListener('click', (event) => {
   if (enabled) return;

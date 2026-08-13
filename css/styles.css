@@ -1626,6 +1626,32 @@ html[dir="rtl"] .booking-panel[data-step="customer"] .booking-customer-fields .c
   }
 }
 
+/* Panel 1's two existing promo surfaces use the exact responsive box geometry
+   of Panel 2's final two customer fields, without changing their content or
+   their shared control treatment. */
+@media (max-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="promo"] .booking-promo-cards {
+    --portfolio-card-height: var(--consultation-entry-height);
+  }
+}
+@media (min-aspect-ratio: 4 / 3) {
+  .booking-panel[data-step="promo"] .booking-promo-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .booking-panel[data-step="promo"] .booking-promo-cards .promo-input-card {
+    grid-column: 2;
+  }
+  .booking-panel[data-step="promo"] .booking-promo-cards .promo-action-card {
+    grid-column: 3;
+  }
+  html[dir="rtl"] .booking-panel[data-step="promo"] .booking-promo-cards .promo-input-card {
+    grid-column: 2;
+  }
+  html[dir="rtl"] .booking-panel[data-step="promo"] .booking-promo-cards .promo-action-card {
+    grid-column: 1;
+  }
+}
+
 /* Both final-state symbols occupy the existing confirmation content surface;
    the shared end alignment places their visible SVG bottom on that same
    Consultation content baseline without changing either drawing. */
