@@ -1,9 +1,5 @@
 {
   "cleanUrls": true,
-  "redirects": [
-    { "source": "/brand-management", "destination": "/", "permanent": false },
-    { "source": "/brand-management.html", "destination": "/", "permanent": false }
-  ],
   "functions": {
     "api/**/*.js": { "maxDuration": 30, "includeFiles": "data/promos.json" }
   }
