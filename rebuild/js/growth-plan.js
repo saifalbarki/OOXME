@@ -178,7 +178,7 @@ const planData = {
   },
 };
 const key = new URLSearchParams(location.search).get("plan");
-const brandManagementPage = location.pathname.endsWith("/brand-management.html");
+const brandManagementPage = ["/brand-management", "/brand-management.html"].includes(location.pathname);
 const selected = planData[key] || planData.start;
 const track = document.querySelector("[data-growth-track]"),
   root = document.documentElement,
