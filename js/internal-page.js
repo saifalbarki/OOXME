@@ -33,6 +33,7 @@ const applyLanguage = (language) => {
   document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[language]; });
   searchInput.placeholder = searchInput.dataset[`${language}Placeholder`];
   document.querySelectorAll('[data-language-toggle]').forEach((button) => button.setAttribute('aria-label', language === 'ar' ? 'التبديل الى الانجليزية' : 'Switch to Arabic'));
+  document.title = `${language === 'ar' ? '\u0627\u0648\u0643\u0633\u0648\u0645' : 'OOXME'} — ${page[language][1]}`;
   try { localStorage.setItem('ooxme-language', language); } catch (_) {}
 };
 let language = 'en';

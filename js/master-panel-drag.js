@@ -122,7 +122,7 @@ window.OOXMEMasterPanelDrag = {
 
     const interactiveSelector = [
       '.master-panel-continue', 'input', 'select', 'textarea', '[contenteditable="true"]',
-      '[data-project-gallery]', '[data-search-overlay]', '.search-overlay',
+      '[data-project-gallery]', '[data-service-tile]', '[data-search-overlay]', '.search-overlay',
       '.site-image-preview', '.calendar-month-menu'
     ].join(',');
     let drag = null;
@@ -464,6 +464,20 @@ const productionMetadata = {
   '/service-page.html': { en: ['Brand Management | OOXME', 'OOXME brand-management services.'], ar: ['إدارة العلامة التجارية | اوكسوم', 'خدمات إدارة العلامة التجارية من اوكسوم.'] },
   '/booking.html': { en: ['Consultation | OOXME', 'Book a consultation with OOXME.'], ar: ['استشارة | اوكسوم', 'احجز استشارة مع اوكسوم.'] }
 };
+const setMetadataTitle = (path, english, arabic) => {
+  if (!productionMetadata[path]) return;
+  productionMetadata[path].en[0] = english;
+  productionMetadata[path].ar[0] = arabic;
+};
+setMetadataTitle('/index.html', 'OOXME', '\u0627\u0648\u0643\u0633\u0648\u0645');
+setMetadataTitle('/project-gallery.html', 'OOXME — Brands We Manage', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0627\u0644\u0639\u0644\u0627\u0645\u0627\u062a \u0627\u0644\u062a\u064a \u0646\u062f\u064a\u0631\u0647\u0627');
+setMetadataTitle('/brands-designed-gallery.html', 'OOXME — Brands We Designed', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0627\u0644\u0639\u0644\u0627\u0645\u0627\u062a \u0627\u0644\u062a\u064a \u0635\u0645\u0645\u0646\u0627\u0647\u0627');
+setMetadataTitle('/unique-works-gallery.html', 'OOXME — Unique Works', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0623\u0639\u0645\u0627\u0644 \u0645\u0645\u064a\u0632\u0629');
+setMetadataTitle('/growth-plan.html', 'OOXME — Growth Plans', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u062e\u0637\u0637 \u0627\u0644\u0646\u0645\u0648');
+setMetadataTitle('/service-page.html', 'OOXME — Brand Management', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0639\u0644\u0627\u0645\u0629 \u0627\u0644\u062a\u062c\u0627\u0631\u064a\u0629');
+setMetadataTitle('/booking.html', 'OOXME — Booking', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u062d\u062c\u0632 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0629');
+productionMetadata['/brand-management.html'] = { en: ['OOXME — Brand Management', 'OOXME brand-management services.'], ar: ['\u0627\u0648\u0643\u0633\u0648\u0645 — \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0639\u0644\u0627\u0645\u0629 \u0627\u0644\u062a\u062c\u0627\u0631\u064a\u0629', ''] };
+productionMetadata['/coexistence.html'] = { en: ['OOXME — Connect WhatsApp Business App', 'Connect the OOXME WhatsApp Business App.'], ar: ['\u0627\u0648\u0643\u0633\u0648\u0645 — \u0631\u0628\u0637 \u062a\u0637\u0628\u064a\u0642 \u0648\u0627\u062a\u0633\u0627\u0628 \u0644\u0644\u0623\u0639\u0645\u0627\u0644', ''] };
 const setHeadMeta = (selector, attribute, content) => {
   let element = document.head.querySelector(selector);
   if (!element) {
@@ -482,7 +496,7 @@ const ensureHeadLink = (rel, href, type = '') => {
   document.head.append(link);
 };
 const applyProductionMetadata = () => {
-  const copy = productionMetadata[window.location.pathname];
+  const copy = productionMetadata[window.location.pathname] || (window.location.pathname === '/' ? productionMetadata['/index.html'] : null);
   if (!copy) return;
   const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
   const [title, description] = copy[language];

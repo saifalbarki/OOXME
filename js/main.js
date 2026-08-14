@@ -12,6 +12,8 @@ const brandsWeDesignedLink = document.querySelector('[data-portfolio-option="bra
 if (brandsWeDesignedLink) brandsWeDesignedLink.href = 'brands-designed-gallery.html';
 const uniqueWorksLink = document.querySelector('[data-portfolio-option="unique-works"]');
 if (uniqueWorksLink) uniqueWorksLink.href = 'unique-works-gallery.html';
+const moreServicesLink = document.querySelector('[data-service-option="more-services"]');
+if (moreServicesLink) moreServicesLink.href = 'services.html';
 const experience = document.querySelector('.master-panel-experience');
 const root = document.documentElement;
 const searchInput = document.querySelector('[data-search-input]');

@@ -41,6 +41,7 @@
     document.title = `${page.title} | ${language === 'ar' ? 'أوكسوم' : 'OOXME'}`;
     content.innerHTML = `<p class="master-panel-label">${page.label}</p><h1>${page.title}</h1><p class="privacy-policy-intro">${page.intro}</p><div class="privacy-policy-sections">${page.sections.map(([heading, paragraphs]) => `<section class="privacy-policy-section"><h2>${heading}</h2>${paragraphs.map((paragraph) => `<p>${Array.isArray(paragraph) ? paragraph.map(renderPart).join('') : paragraph}</p>`).join('')}</section>`).join('')}</div><p class="privacy-policy-footer"><a href="index.html">${page.home}</a></p>`;
     document.querySelectorAll('[data-language-toggle]').forEach((button) => button.setAttribute('aria-label', language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'));
+    document.title = `${language === 'ar' ? '\u0627\u0648\u0643\u0633\u0648\u0645' : 'OOXME'} — ${page.title}`;
     try { localStorage.setItem('ooxme-language', language); } catch (_) {}
   };
   let language = 'en';
