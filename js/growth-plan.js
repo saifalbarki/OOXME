@@ -202,9 +202,9 @@ const cards = (items) =>
 const consultationOffer = () =>
   `<div class="plan-offer-action"><a class="plan-detail-cta" href="booking.html" data-free-consultation-offer ${text("Subscribe Now", "اشترك الآن")}>Subscribe Now</a><small class="plan-offer-helper" ${text("Or book a free 45-minute consultation", "أو احجز استشارة مجانية مدتها 45 دقيقة")}>Or book a free 45-minute consultation</small></div>`;
 const header = () =>
-  `<header class="master-panel-header"><button class="master-panel-control" type="button" data-language-toggle><img src="assets/icons/globe-outline.svg" alt="" /></button><a class="master-panel-logo" href="index.html?panel=2" aria-label="OOXME"><img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME" /></a><button class="master-panel-control" type="button" data-search-toggle aria-label="Search"><img src="assets/icons/search.svg" alt="" /></button></header>`;
+  `<header class="master-panel-header"><button class="master-panel-control" type="button" data-language-toggle><img src="assets/icons/globe-outline.svg" alt="" /></button><a class="master-panel-logo" href="index.html?panel=plans" aria-label="OOXME"><img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME" /></a><button class="master-panel-control" type="button" data-search-toggle aria-label="Search"><img src="assets/icons/search.svg" alt="" /></button></header>`;
 const footer = (final = false) =>
-  `<footer class="master-panel-footer">${final ? '<a class="master-panel-continue" href="index.html?panel=2">' : '<button class="master-panel-continue" type="button" data-next-panel>'}<span class="swipe-control"><span ${text(final ? "Growth Plans" : "Next", final ? "باقات النمو" : "التالــــي")}>${final ? "Growth Plans" : "Next"}</span><span class="swipe-control-line"></span></span>${final ? "</a>" : "</button>"}</footer>`;
+  `<footer class="master-panel-footer">${final ? '<a class="master-panel-continue" href="index.html?panel=plans">' : '<button class="master-panel-continue" type="button" data-next-panel>'}<span class="swipe-control"><span ${text(final ? "Growth Plans" : "Next", final ? "باقات النمو" : "التالــــي")}>${final ? "Growth Plans" : "Next"}</span><span class="swipe-control-line"></span></span>${final ? "</a>" : "</button>"}</footer>`;
 const panel = (label, title, description, body, final = false, richDescription = false) =>
   `<section class="master-panel-screen"><div class="master-panel">${header()}<div class="master-panel-content has-simplified-text-hierarchy"><h1 ${text(title[0], title[1])}>${title[0]}</h1><p ${richDescription ? htmlText(description[0], description[1]) : text(description[0], description[1])}>${description[0]}</p>${body}</div>${footer(final)}</div></section>`;
 const render = () => {
@@ -291,7 +291,7 @@ const render = () => {
         "External subscriptions are managed by OOXME and billed separately.",
         "تدار الاشتراكات الخارجية من قبل اوكسوم وتفوتر بشكل منفصل.",
       ],
-      `<div class="plan-detail-cards plan-final brand-management-final"><article><strong ${text("Make Your Brand Global", "اجعل علامتك التجارية عالمية")}>Make Your Brand Global</strong><span ${htmlText("Get the service today and be the first in your field<br>Just like Ooxme", "احصل على الخدمة اليوم وكن الأول في مجالك<br>تماماً مثل أوكسوم")}>Get the service today and be the first in your field<br>Just like Ooxme</span></article><div class="plan-offer-action"><a class="plan-detail-cta" href="index.html?panel=3" ${text("Browse Plans", "تصفح الخطط")}>Browse Plans</a></div></div>`,
+      `<div class="plan-detail-cards plan-final brand-management-final"><article><strong ${text("Make Your Brand Global", "اجعل علامتك التجارية عالمية")}>Make Your Brand Global</strong><span ${htmlText("Get the service today and be the first in your field<br>Just like Ooxme", "احصل على الخدمة اليوم وكن الأول في مجالك<br>تماماً مثل أوكسوم")}>Get the service today and be the first in your field<br>Just like Ooxme</span></article><div class="plan-offer-action"><a class="plan-detail-cta" href="index.html?panel=plans" ${text("Browse Plans", "تصفح الخطط")}>Browse Plans</a></div></div>`,
       true,
     ),
   ];

@@ -72,10 +72,18 @@ searchInput.addEventListener('focus', updateKeyboardSafeArea);
 searchInput.addEventListener('blur', () => window.setTimeout(updateKeyboardSafeArea, 0));
 visualViewport?.addEventListener('resize', updateKeyboardSafeArea);
 visualViewport?.addEventListener('scroll', updateKeyboardSafeArea);
+const panelIds = ['intro', 'portfolio', 'plans', 'services', 'consultation', 'contact'];
+const originalPanels = [...track.querySelectorAll('.master-panel-screen')];
+originalPanels.forEach((panel, index) => { panel.dataset.panelId = panelIds[index]; });
+const plansPanel = track.querySelector('[data-panel-id="plans"]');
+const servicesPanel = track.querySelector('[data-panel-id="services"]');
+if (plansPanel && servicesPanel) track.insertBefore(servicesPanel, plansPanel);
 const panels = [...document.querySelectorAll('.master-panel-screen')];
 track.style.height = `${panels.length * 100}dvh`;
-const requestedPanel = Number(new URLSearchParams(window.location.search).get('panel'));
-let panelIndex = Number.isInteger(requestedPanel) && requestedPanel >= 0 && requestedPanel < panels.length ? requestedPanel : 0;
+const requestedPanel = new URLSearchParams(window.location.search).get('panel');
+const requestedPanelId = /^\d+$/.test(requestedPanel || '') ? panelIds[Number(requestedPanel)] : requestedPanel;
+const requestedPanelIndex = panels.findIndex((panel) => panel.dataset.panelId === requestedPanelId);
+let panelIndex = requestedPanelIndex >= 0 ? requestedPanelIndex : 0;
 if (panelIndex) track.style.transform = `translateY(${-panelIndex * 100}dvh)`;
 let panelTransitionTimer;
 const revealPanel = (index) => {
@@ -97,5 +105,6 @@ document.querySelectorAll('[data-home-panel]').forEach((button) => button.addEve
 searchOverlay.querySelectorAll('[data-panel-index]').forEach((link) => link.addEventListener('click', (event) => {
   event.preventDefault();
   setSearchOpen(false);
-  moveTo(Number(link.dataset.panelIndex));
+  const targetIndex = panels.findIndex((panel) => panel.dataset.panelId === panelIds[Number(link.dataset.panelIndex)]);
+  if (targetIndex >= 0) moveTo(targetIndex);
 }));
