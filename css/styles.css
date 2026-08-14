@@ -1753,6 +1753,7 @@ html[dir="rtl"] .booking-panel[data-step="promo"] .promo-input-card > .booking-m
   background: var(--color-paper);
   color: var(--color-ink);
   cursor: pointer;
+  will-change: transform, border-radius;
   transition: opacity 240ms ease, filter 240ms ease, transform 300ms cubic-bezier(.22, .61, .36, 1);
 }
 .service-tile > img,
@@ -1806,16 +1807,16 @@ html[dir="rtl"] .booking-panel[data-step="promo"] .promo-input-card > .booking-m
 .service-tile.is-expanded .service-tile-price {
   opacity: 0;
   will-change: opacity, transform;
-  transition: opacity 180ms ease, transform 240ms cubic-bezier(.22, .61, .36, 1);
+  transition: opacity 220ms ease, transform 300ms cubic-bezier(.22, .61, .36, 1);
 }
-.service-tile.is-expanded .service-tile-top-row { transform: translateY(-8px); transition-delay: 70ms; }
-.service-tile.is-expanded p { transform: translateY(10px); transition-delay: 130ms; }
-.service-tile.is-expanded .service-tile-price { transform: translateY(12px); transition-delay: 190ms; }
+.service-tile.is-expanded .service-tile-top-row { transform: translateY(-8px); transition-delay: 50ms; }
+.service-tile.is-expanded p { transform: translateY(10px); transition-delay: 100ms; }
+.service-tile.is-expanded .service-tile-price { transform: translateY(12px); transition-delay: 150ms; }
 .service-tile.is-content-visible .service-tile-top-row,
 .service-tile.is-content-visible p,
 .service-tile.is-content-visible .service-tile-price { opacity: 1; transform: translateY(0); }
-.service-tile.is-closing .service-tile-top-row { transition-delay: 90ms; }
-.service-tile.is-closing p { transition-delay: 45ms; }
+.service-tile.is-closing .service-tile-top-row { transition-delay: 70ms; }
+.service-tile.is-closing p { transition-delay: 35ms; }
 .service-tile.is-closing .service-tile-price { transition-delay: 0ms; }
 .service-tile-top-row {
   display: flex;

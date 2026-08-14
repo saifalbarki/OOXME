@@ -85,14 +85,22 @@
     tile.style.removeProperty('--service-tile-height');
     tile.style.opacity = '';
   });
+  const scaledRadius = (radius, factor) => radius.replace(/([\d.]+)px/g, (_, value) => `${Number(value) * factor}px`);
   const animateFlip = (element, from, to, duration = motionDuration, reverse = false) => {
     const offsetX = to.left + to.width / 2 - (from.left + from.width / 2);
     const offsetY = to.top + to.height / 2 - (from.top + from.height / 2);
     const scaleX = to.width / from.width;
     const scaleY = to.height / from.height;
-    return element.animate(reverse
+    const frames = reverse
       ? [{ transform: 'translate(0, 0) scale(1, 1)' }, { transform: `translate(${offsetX}px, ${offsetY}px) scale(${scaleX}, ${scaleY})` }]
-      : [{ transform: `translate(${-offsetX}px, ${-offsetY}px) scale(${1 / scaleX}, ${1 / scaleY})` }, { transform: 'translate(0, 0) scale(1, 1)' }],
+      : [{ transform: `translate(${-offsetX}px, ${-offsetY}px) scale(${1 / scaleX}, ${1 / scaleY})` }, { transform: 'translate(0, 0) scale(1, 1)' }];
+    if (element.matches('[data-service-tile]')) {
+      const radius = getComputedStyle(element).borderRadius;
+      const compensatedRadius = scaledRadius(radius, reverse ? 1 / Math.min(scaleX, scaleY) : Math.max(scaleX, scaleY));
+      frames[0].borderRadius = reverse ? radius : compensatedRadius;
+      frames[1].borderRadius = reverse ? compensatedRadius : radius;
+    }
+    return element.animate(frames,
     { duration, easing: 'cubic-bezier(.22, .61, .36, 1)', fill: reverse ? 'forwards' : 'none' });
   };
   const animateCoverage = (tile, from, to, others, reverse = false) => new Promise((resolve) => {
@@ -141,7 +149,6 @@
     const tile = expandedTile;
     tile.classList.add('is-closing');
     tile.classList.remove('is-content-visible');
-    await new Promise((resolve) => window.setTimeout(resolve, motionDuration ? 300 : 0));
     const from = tile.getBoundingClientRect();
     const icon = tile.querySelector(':scope > img');
     const iconFrom = icon.getBoundingClientRect();
