@@ -17,8 +17,10 @@ module.exports = async (request, response) => {
       success: true,
       data: {
         type: result.type,
+        promoCode: result.promoCode || null,
         campaignSource: result.campaignSource || null,
         grantedDurationMinutes: result.grantedDurationMinutes || null,
+        bookingDefaults: result.bookingDefaults || null,
         discountPercent: result.discountPercent ?? null,
         remainingTotal: result.quote.finalAmount,
         quote: result.quote

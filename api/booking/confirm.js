@@ -48,6 +48,8 @@ async function reserveBooking(input, customer, config) {
     });
     if (!promotion.valid) throw bookingError(promotion.error);
     const quote = promotion.quote;
+    booking.promo = promotion.promoCode || booking.promo;
+    booking.notificationMode = promotion.notificationMode || 'final';
     if (quote.finalAmount > 0 && !['ZainCash', 'Qi'].includes(booking.payment)) throw bookingError('payment_required');
 
     await execute("UPDATE booking_holds SET status = 'expired', released_at = now() WHERE status = 'active' AND expires_at <= now()");
@@ -61,18 +63,18 @@ async function reserveBooking(input, customer, config) {
        VALUES ($1, $2, 'consultation', $3, $4, 'active', now() + interval '10 minutes')`,
       [crypto.randomUUID(), booking.id, bounds.start, bounds.end]
     );
-    if (promotion.type === 'public_promo') {
-      const locked = await execute('SELECT total_usage_limit, per_customer_limit FROM promotions WHERE id = $1 FOR UPDATE', [promotion.promotionId]);
-      if (!locked.rowCount) throw bookingError('promotion_unavailable');
-      const limits = locked.rows[0];
+    if (promotion.type === 'file_promo' || promotion.type === 'offer_token') {
+      // The advisory lock serializes redemptions for this configured code without
+      // exposing or mutating the private JSON source file at runtime.
+      await execute('SELECT pg_advisory_xact_lock(hashtext($1))', [promotion.promoCode]);
       const counts = await execute(
         `SELECT count(*) FILTER (WHERE status IN ('pending', 'redeemed'))::int AS total,
                 count(*) FILTER (WHERE status IN ('pending', 'redeemed') AND customer_identity_hash = $2)::int AS customer
-           FROM promotion_redemptions WHERE promotion_id = $1`,
-        [promotion.promotionId, customerHash]
+           FROM file_promo_redemptions WHERE promo_code_normalized = $1`,
+        [promotion.promoCode, customerHash]
       );
-      if ((limits.total_usage_limit !== null && counts.rows[0].total >= limits.total_usage_limit) || (limits.per_customer_limit !== null && counts.rows[0].customer >= limits.per_customer_limit)) throw bookingError('promotion_limit_reached');
-      await execute('INSERT INTO promotion_redemptions (id, promotion_id, booking_id, customer_identity_hash, status) VALUES ($1, $2, $3, $4, \'pending\')', [crypto.randomUUID(), promotion.promotionId, booking.id, customerHash]);
+      if ((promotion.maxUses !== null && counts.rows[0].total >= promotion.maxUses) || (promotion.perCustomerLimit !== null && counts.rows[0].customer >= promotion.perCustomerLimit)) throw bookingError('promotion_limit_reached');
+      await execute('INSERT INTO file_promo_redemptions (id, promo_code_normalized, booking_id, customer_identity_hash, status) VALUES ($1, $2, $3, $4, \'pending\')', [crypto.randomUUID(), promotion.promoCode, booking.id, customerHash]);
     }
     if (promotion.type === 'offer_token') {
       const held = await execute("UPDATE offer_tokens SET status = 'held', held_at = now(), customer_identity_hash = $2 WHERE id = $1 AND status = 'issued' AND expires_at > now() AND (customer_identity_hash IS NULL OR customer_identity_hash = $2) RETURNING id", [promotion.offerTokenId, customerHash]);
@@ -87,7 +89,7 @@ async function reserveBooking(input, customer, config) {
 async function releaseReservation(booking) {
   await withTransaction(async (client) => {
     await client.query("UPDATE booking_holds SET status = 'released', released_at = now() WHERE booking_id = $1 AND status = 'active'", [booking.id]);
-    await client.query("UPDATE promotion_redemptions SET status = 'released', released_at = now() WHERE booking_id = $1 AND status = 'pending'", [booking.id]);
+    await client.query("UPDATE file_promo_redemptions SET status = 'released', released_at = now() WHERE booking_id = $1 AND status = 'pending'", [booking.id]);
     await client.query("UPDATE offer_tokens SET status = 'issued', held_at = NULL WHERE consumed_booking_id IS NULL AND id = (SELECT offer_token_id FROM bookings WHERE id = $1)", [booking.id]);
     await client.query("UPDATE bookings SET status = 'failed', updated_at = now() WHERE id = $1", [booking.id]);
   });
@@ -97,7 +99,7 @@ async function finalizeReservation(booking, calendarEventId) {
   await withTransaction(async (client) => {
     await client.query("UPDATE bookings SET status = 'confirmed', calendar_event_id = $2, confirmed_at = now(), updated_at = now() WHERE id = $1", [booking.id, calendarEventId]);
     await client.query("UPDATE booking_holds SET status = 'confirmed' WHERE booking_id = $1 AND status = 'active'", [booking.id]);
-    await client.query("UPDATE promotion_redemptions SET status = 'redeemed', redeemed_at = now() WHERE booking_id = $1 AND status = 'pending'", [booking.id]);
+    await client.query("UPDATE file_promo_redemptions SET status = 'redeemed', redeemed_at = now() WHERE booking_id = $1 AND status = 'pending'", [booking.id]);
     await client.query("UPDATE offer_tokens SET status = 'consumed', consumed_at = now(), consumed_booking_id = $1 WHERE id = (SELECT offer_token_id FROM bookings WHERE id = $1) AND status = 'held'", [booking.id]);
   });
 }

@@ -10,7 +10,7 @@ if (bookingViewportMeta && !/maximum-scale/i.test(bookingViewportMeta.content)) 
   bookingViewportMeta.content = `${bookingViewportMeta.content}, maximum-scale=1`;
 }
 const copy = { en: { months:['January','February','March','April','May','June','July','August','September','October','November','December'], weekdays:['S','M','T','W','T','F','S'], summary:{name:'Customer name',email:'Email',phone:'Phone',topic:'Consultation topic',sector:'Business sector',date:'Selected date',time:'Selected time',duration:'Duration',promo:'Promo code',fee:'Consultation fee',discount:'Discount',total:'Final amount'}, confirmPay:'Confirm & Pay',confirm:'Confirm',promoValid:'Discount applied', promoInvalid:'Invalid code' }, ar: { months:['يناير','فبراير','مارس','ابريل','مايو','يونيو','يوليو','اغسطس','سبتمبر','اكتوبر','نوفمبر','ديسمبر'], weekdays:['ح','ن','ث','ر','خ','ج','س'], summary:{name:'اسم العميل',email:'البريد الالكتروني',phone:'الهاتف',topic:'موضوع الاستشارة',sector:'قطاع العمل',date:'التاريخ المختار',time:'الوقت المختار',duration:'المدة',promo:'كود الخصم',fee:'سعر الاستشارة',discount:'الخصم',total:'المبلغ النهائي'}, confirmPay:'تأكيد والدفع',confirm:'تأكيد',promoValid:'تم تطبيق الخصم',promoInvalid:'الكود غير صالح' } };
-const empty = { promo:'', offerToken:'', offerSession:'', serverQuote:null, name:'', email:'', phone:'', sector:'', topic:'', additional:'', date:'', time:'', duration:'', payment:'' };
+const empty = { promo:'', offerToken:'', offerSession:'', offerCode:'', serverQuote:null, name:'', email:'', phone:'', sector:'', topic:'', additional:'', date:'', time:'', duration:'', payment:'' };
 // Keep the approved design while enforcing the existing booking-step validation.
 const BOOKING_DESIGN_MODE = false;
 let state = {...empty};
@@ -19,7 +19,6 @@ const offerTokenFromUrl = new URLSearchParams(window.location.search).get('offer
 const offerSessionFromUrl = new URLSearchParams(window.location.search).get('offerSession') || '';
 state.offerToken = offerTokenFromUrl;
 state.offerSession = offerSessionFromUrl;
-if (state.offerToken) state.duration = '45';
 let updateBookingSummary = () => {};
 const save = () => {
   try { sessionStorage.setItem('ooxme-rebuild-booking', JSON.stringify(state)); } catch (_) {}
@@ -195,7 +194,7 @@ const submitBooking = async () => {
     .finally(() => { bookingSubmission = null; button?.removeAttribute('aria-busy'); if (button) button.disabled = false; });
   return bookingSubmission;
 };
-const continueStep = async (event) => { if(!canProceed(true)) return; if (step === 0) { state.promo = promoInputField?.value.trim() || state.promo; if (!await refreshServerPromotion({ showFeedback: Boolean(state.promo || state.offerToken) })) return; } if (step === 3 && !await refreshServerPromotion()) return; const confirmsPayment = event?.currentTarget?.closest('.booking-panel')?.dataset.step === 'payment'; if (confirmsPayment && usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } } moveTo(step + 1); };
+const continueStep = async (event) => { if(!canProceed(true)) return; if (step === 0) { state.promo = promoInputField?.value.trim() || ''; if (!await refreshServerPromotion({ showFeedback: Boolean(state.promo || state.offerToken) })) return; } if (step === 3 && !await refreshServerPromotion()) return; const confirmsPayment = event?.currentTarget?.closest('.booking-panel')?.dataset.step === 'payment'; if (confirmsPayment && usesLiveBookingApi && bookingComplete()) { try { await submitBooking(); } catch (_) { return; } } moveTo(step + 1); };
 document.querySelectorAll('[data-next]:not([data-summary-next])').forEach(x=>x.addEventListener('click',continueStep));
 const continueSummaryStep = async () => {
   if (!canProceed(true)) return;
@@ -392,21 +391,10 @@ document.querySelectorAll('[data-customer-form] [data-field]').forEach((field) =
 const promoInputField = document.querySelector('[data-field="promo"]');
 const promoInputCard = promoInputField.closest('.promo-input-card');
 const promoFeedback = document.querySelector('[data-promo-message]');
-const TEST_PROMO_CODE = 'TEST';
-const testBookingCustomer = {
-  name: 'TEST',
-  email: 'hello@ooxme.com',
-  phone: '+9647840440011',
-  topic: 'TEST',
-  sector: 'TEST',
-  additional: 'TEST'
-};
 let promoFeedbackTimer;
 const setPromoFeedback = (message = '', clearAfter = false) => { window.clearTimeout(promoFeedbackTimer); promoFeedback.textContent = message; promoInputCard.classList.toggle('is-feedback', Boolean(message)); if (clearAfter) promoFeedbackTimer = window.setTimeout(() => { promoFeedback.textContent = ''; promoInputCard.classList.remove('is-feedback'); promoInputField.value = ''; }, 1100); };
 promoInputField.addEventListener('input', () => { const normalized = promoInputField.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); if (promoInputField.value !== normalized) promoInputField.value = normalized; markInvalid(promoInputField,false); setPromoFeedback(); });
 const promoDescription = document.querySelector('[data-step="promo"] .master-panel-content > p');
-let consultationPromoSuccess = false;
-let consultationPromoSuccessTimer;
 const promoPlaceholderCopy = {
   ar: '\u0627\u0643\u062A\u0628 \u0643\u0648\u062F \u0627\u0644\u062E\u0635\u0645 \u0647\u0646\u0627',
   en: 'Enter discount code here'
@@ -448,31 +436,16 @@ const startPromoPlaceholderAnimation = () => {
 };
 const updateConsultationPromoCopy = () => {
   if (promoPlaceholderCanRun()) startPromoPlaceholderAnimation(); else stopPromoPlaceholderAnimation();
-  if (promoDescription) promoDescription.textContent = consultationPromoSuccess ? consultationCopy[language].promoApplied : consultationCopy[language].promoDescription;
-};
-const clearConsultationPromoTimers = () => {
-  window.clearTimeout(consultationPromoSuccessTimer);
+  if (promoDescription) promoDescription.textContent = consultationCopy[language].promoDescription;
 };
 const showConsultationPromoFeedback = (message = '', clearAfter = false) => {
   setPromoFeedback(message, clearAfter);
   promoInputCard.classList.toggle('is-invalid', Boolean(message) && message === consultationCopy[language].promoInvalid);
-  promoInputCard.classList.toggle('is-test-feedback', message === consultationCopy[language].promoTestApplied);
 };
 const refreshServerPromotion = async ({ showFeedback = false } = {}) => {
   const promoCode = String(state.promo || '').trim();
   if (!promoCode && !state.offerToken) { state.serverQuote = null; save(); return true; }
-  if (!usesLiveBookingApi) {
-    if (promoCode.toUpperCase() === TEST_PROMO_CODE) {
-      state.serverQuote = {
-        durationMinutes: 45,
-        discountAmount: price(),
-        finalAmount: 0,
-        currency: 'USD'
-      };
-      save(); renderChoices(); renderSummary();
-    }
-    return true;
-  }
+  if (!usesLiveBookingApi) return true;
   try {
     const response = await fetch('/api/promo/validate', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -481,26 +454,26 @@ const refreshServerPromotion = async ({ showFeedback = false } = {}) => {
     const body = await response.json().catch(() => ({}));
     if (!response.ok || !body.success) throw new Error(body.error || 'promotion_unavailable');
     state.serverQuote = body.data.quote;
+    state.offerCode = body.data.promoCode || state.offerCode;
     if (body.data.grantedDurationMinutes) state.duration = String(body.data.grantedDurationMinutes);
+    if (body.data.bookingDefaults) Object.entries(body.data.bookingDefaults).forEach(([key, value]) => {
+      if (!['topic', 'sector'].includes(key) || !value) return;
+      state[key] = value;
+      const field = document.querySelector(`[data-field="${key}"]`);
+      if (field) field.value = value;
+    });
     save(); renderChoices(); renderSummary();
-    if (showFeedback) showConsultationPromoFeedback(language === 'ar' ? 'تم التحقق من كود الخصم' : 'Discount code verified');
+    if (showFeedback) showConsultationPromoFeedback();
     return true;
   } catch (_) {
     state.serverQuote = null;
     save(); renderSummary();
-    if (showFeedback) showConsultationPromoFeedback(consultationCopy[language].promoInvalid, true);
+    if (showFeedback) showConsultationPromoFeedback(consultationCopy[language].promoInvalid);
     return false;
   }
 };
-const prepareTestPromoBooking = () => {
-  if (!activeServerQuote() || total() !== 0) throw new Error('promotion_unavailable');
-  Object.assign(state, testBookingCustomer, { duration: '45', payment: '' });
-  document.querySelectorAll('[data-customer-form] [data-field]').forEach(field => { field.value = state[field.dataset.field] || ''; });
-  save(); renderChoices(); renderSummary();
-};
 promoInputField.addEventListener('input', () => {
   promoInputCard.classList.remove('is-invalid');
-  promoInputCard.classList.remove('is-test-feedback');
   stopPromoPlaceholderAnimation();
 });
 promoInputField.addEventListener('focus', () => stopPromoPlaceholderAnimation());
@@ -508,8 +481,6 @@ promoInputField.addEventListener('blur', () => {
   if (!promoInputField.value) window.setTimeout(startPromoPlaceholderAnimation, 260);
 });
 restoreConsultationPromoPanel = () => {
-  clearConsultationPromoTimers();
-  consultationPromoSuccess = false;
   promoInputField.value = state.promo;
   showConsultationPromoFeedback();
   updateConsultationPromoCopy();
@@ -526,27 +497,8 @@ document.querySelector('[data-promo-form]').addEventListener('submit', async (ev
     return;
   }
   state.promo = code;
-  if (code.toUpperCase() === TEST_PROMO_CODE) state.duration = '45';
   if (!await refreshServerPromotion({ showFeedback: true })) return;
-  if (code.toUpperCase() === TEST_PROMO_CODE) {
-    showConsultationPromoFeedback(consultationCopy[language].promoTestApplied);
-    try {
-      prepareTestPromoBooking();
-      window.setTimeout(() => moveTo(1), 500);
-    } catch (_) {
-      showConsultationPromoFeedback(consultationCopy[language].promoInvalid, true);
-    }
-    return;
-  }
-  clearConsultationPromoTimers();
-  consultationPromoSuccess = true;
-  promoInputField.value = '';
-  showConsultationPromoFeedback(consultationCopy[language].promoApplied);
-  updateConsultationPromoCopy();
-  consultationPromoSuccessTimer = window.setTimeout(() => {
-    consultationPromoSuccess = false;
-    moveTo(1);
-  }, 1000);
+  moveTo(1);
 });
 const monthCursor = new Date(); monthCursor.setDate(1);
 let clearMonthDropdownListeners = () => {};
@@ -611,9 +563,9 @@ const renderCalendar = () => {
   }));
 };
 let timeSelectionAdvanceTimer;
-const renderChoices = () => { const times=document.querySelector('[data-times]'),durations=document.querySelector('[data-durations]'); if(!times)return; const options=state.date?availableTimesForDate(state.date):['10:00','13:00','16:00']; const durationLocked=Boolean(state.offerToken); const advanceAfterTimeSelection=async()=>{ if(!timeDurationComplete(false))return; if(!await refreshServerPromotion())return; if(step===3)moveTo(4); }; times.innerHTML=options.map(value=>`<button type="button" class="${state.time===value?'is-selected':''}" data-time="${value}">${value}</button>`).join(''); durations.innerHTML=[45,60,90].map(value=>`<button type="button" class="${Number(state.duration)===value?'is-selected':''}" data-duration="${value}" ${durationLocked&&value!==45?'disabled aria-disabled="true"':''}>${value} ${language==='ar'?'دقيقة':'minutes'}</button>`).join(''); times.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>{window.clearTimeout(timeSelectionAdvanceTimer);state.time=b.dataset.time;markInvalid(times.closest('.booking-card'),false);save();renderChoices();timeSelectionAdvanceTimer=window.setTimeout(()=>{void advanceAfterTimeSelection();},240);}));durations.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{if(durationLocked&&Number(b.dataset.duration)!==45)return;window.clearTimeout(timeSelectionAdvanceTimer);state.duration=b.dataset.duration;state.serverQuote=null;markInvalid(durations.closest('.booking-card'),false);save();renderChoices();})); };
+const renderChoices = () => { const times=document.querySelector('[data-times]'),durations=document.querySelector('[data-durations]'); if(!times)return; const options=state.date?availableTimesForDate(state.date):['10:00','13:00','16:00']; const lockedDuration=Number(state.serverQuote?.grantedDurationMinutes) || null; const advanceAfterTimeSelection=async()=>{ if(!timeDurationComplete(false))return; if(!await refreshServerPromotion())return; if(step===3)moveTo(4); }; times.innerHTML=options.map(value=>`<button type="button" class="${state.time===value?'is-selected':''}" data-time="${value}">${value}</button>`).join(''); durations.innerHTML=[45,60,90].map(value=>`<button type="button" class="${Number(state.duration)===value?'is-selected':''}" data-duration="${value}" ${lockedDuration&&value!==lockedDuration?'disabled aria-disabled="true"':''}>${value} ${language==='ar'?'دقيقة':'minutes'}</button>`).join(''); times.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>{window.clearTimeout(timeSelectionAdvanceTimer);state.time=b.dataset.time;markInvalid(times.closest('.booking-card'),false);save();renderChoices();timeSelectionAdvanceTimer=window.setTimeout(()=>{void advanceAfterTimeSelection();},240);}));durations.querySelectorAll('[data-duration]').forEach(b=>b.addEventListener('click',()=>{if(lockedDuration&&Number(b.dataset.duration)!==lockedDuration)return;window.clearTimeout(timeSelectionAdvanceTimer);state.duration=b.dataset.duration;state.serverQuote=null;markInvalid(durations.closest('.booking-card'),false);save();renderChoices();})); };
 const money = value => `${value} USD`;
-const renderSummary = () => { const box=document.querySelector('[data-summary]'); if(!box)return; const labels=copy[language].summary; const rows=[['name',state.name],['email',state.email],['phone',state.phone],['topic',state.topic],['sector',state.sector],['date',state.date],['time',state.time],['duration',state.duration?`${state.duration} ${language==='ar'?'دقيقة':'minutes'}`:''],['promo',state.promo||'—'],['fee',money(price())],['discount',money(discount())],['total',money(total())]]; box.innerHTML=rows.map(([key,value])=>`<div><dt>${labels[key]}</dt><dd>${value||'—'}</dd></div>`).join(''); document.querySelector('[data-confirm-label]').textContent=total()===0?copy[language].confirm:copy[language].confirmPay; };
+const renderSummary = () => { const box=document.querySelector('[data-summary]'); if(!box)return; const labels=copy[language].summary; const rows=[['name',state.name],['email',state.email],['phone',state.phone],['topic',state.topic],['sector',state.sector],['date',state.date],['time',state.time],['duration',state.duration?`${state.duration} ${language==='ar'?'دقيقة':'minutes'}`:''],['promo',state.promo||state.offerCode||'—'],['fee',money(price())],['discount',money(discount())],['total',money(total())]]; box.innerHTML=rows.map(([key,value])=>`<div><dt>${labels[key]}</dt><dd>${value||'—'}</dd></div>`).join(''); document.querySelector('[data-confirm-label]').textContent=total()===0?copy[language].confirm:copy[language].confirmPay; };
 updateBookingSummary = renderSummary;
 const paymentOptionsContainer = document.querySelector('[data-payment-options]');
 const superQiPaymentOption = paymentOptionsContainer?.querySelector('[data-payment="Qi"]');

@@ -1,29 +1,43 @@
 [
   {
     "code": "TEST",
-    "discount": 100,
+    "type": "public_promo",
+    "active": true,
+    "discount": { "type": "percentage", "value": 100 },
+    "allowed_durations": null,
+    "expires_at": "2027-08-12T23:59:59.999Z",
     "max_uses": 100,
-    "current_uses": 0,
-    "duration_minutes": null,
-    "expiry_date": "2027-08-12",
-    "active": true
+    "per_customer_limit": null,
+    "source_restrictions": ["promo_input"],
+    "booking_defaults": { "topic": "Other", "sector": "Other" },
+    "notification_mode": "test"
   },
   {
     "code": "R100",
-    "discount": 100,
+    "type": "public_promo",
+    "active": true,
+    "discount": { "type": "percentage", "value": 100 },
+    "allowed_durations": [45],
+    "expires_at": null,
     "max_uses": 10,
-    "current_uses": 0,
-    "duration_minutes": 45,
-    "expiry_date": null,
-    "active": true
+    "per_customer_limit": null,
+    "source_restrictions": ["promo_input"],
+    "booking_defaults": null,
+    "notification_mode": "final"
   },
   {
     "code": "FREE",
-    "discount": 100,
+    "type": "private_offer",
+    "active": true,
+    "discount": { "type": "percentage", "value": 100 },
+    "allowed_durations": [45],
+    "expires_at": null,
     "max_uses": 10,
-    "current_uses": 0,
-    "duration_minutes": 45,
-    "expiry_date": null,
-    "active": true
+    "per_customer_limit": null,
+    "source_restrictions": ["plan_cta"],
+    "campaign_source": "plans-free-consultation",
+    "token_ttl_minutes": 15,
+    "booking_defaults": null,
+    "notification_mode": "final"
   }
 ]

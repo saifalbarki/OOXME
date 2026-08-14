@@ -14,15 +14,21 @@ async function sendEmail({ to, subject, text }) {
 
 async function sendBookingNotifications(booking) {
   const reference = booking.publicReference || booking.id;
+  const isTest = booking.notificationMode === 'test';
+  const paymentPending = Number(booking.quote?.finalAmount || 0) > 0;
   const details = `Booking ${reference}\nCustomer: ${booking.customer.name}\nEmail: ${booking.customer.email}\nPhone: ${booking.customer.phone}\nConsultation: ${dateLabel(booking)}\nTopic: ${booking.customer.topic}\nSector: ${booking.customer.sector}\nAdditional information: ${booking.customer.additional || '—'}\nPayment: ${booking.payment || 'Not specified'}`;
-  const customer = `Your OOXME consultation is booked for ${dateLabel(booking)}. We will send a reminder before your appointment. Booking reference: ${reference}.`;
+  const customer = isTest
+    ? `TEST booking: your OOXME consultation is booked for ${dateLabel(booking)}. Booking reference: ${reference}.`
+    : paymentPending
+      ? `Your OOXME booking request was received for ${dateLabel(booking)}. A final confirmation email will be sent once payment is confirmed. Booking reference: ${reference}.`
+      : `Your OOXME consultation is confirmed for ${dateLabel(booking)}. We will send a reminder before your appointment. Booking reference: ${reference}.`;
   const jobs = [
-    sendEmail({ to: required('BOOKING_INTERNAL_EMAIL'), subject: `New OOXME booking — ${reference}`, text: details }),
-    sendEmail({ to: booking.customer.email, subject: 'OOXME consultation confirmation', text: customer })
+    sendEmail({ to: required('BOOKING_INTERNAL_EMAIL'), subject: `${isTest ? 'TEST ' : ''}New OOXME booking — ${reference}`, text: details }),
+    sendEmail({ to: booking.customer.email, subject: `${isTest ? 'TEST ' : ''}OOXME consultation confirmation`, text: customer })
   ];
   const internalWhatsApp = optional('WHATSAPP_INTERNAL_RECIPIENT');
   if (internalWhatsApp) jobs.push(sendWhatsAppText(internalWhatsApp, details));
-  if (booking.customer.phone) jobs.push(sendYCloudBookingConfirmation(booking.customer.phone, { reference, consultation: dateLabel(booking), duration: booking.duration }));
+  if (booking.customer.phone) jobs.push(sendYCloudBookingConfirmation(booking.customer.phone, { reference: isTest ? `TEST - ${reference}` : reference, consultation: dateLabel(booking), duration: booking.duration }));
   return Promise.allSettled(jobs);
 }
 
