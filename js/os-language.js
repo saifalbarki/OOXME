@@ -1,0 +1,34 @@
+(() => {
+  const copy = {
+    en: { title: 'OOXME OS', privateSystem: 'PRIVATE SYSTEM', loginDescription: 'Sign in to access operational status.', username: 'Username', password: 'Password', signIn: 'Sign in', loginError: 'Unable to sign in.', logOut: 'Log out', status: 'STATUS', website: 'Website', github: 'GitHub', vercel: 'Vercel', neon: 'Neon', gpt: 'GPT', calendar: 'Calendar', gmail: 'Gmail', drive: 'Drive', ycloud: 'YCloud', whatsapp: 'WhatsApp', facebook: 'Facebook', instagram: 'Instagram', loading: 'Loading…', unavailable: 'Unavailable', statusCheckFailed: 'Status check failed' },
+    ar: { title: 'نظام أوكسوم', privateSystem: 'نظام خاص', loginDescription: 'سجّل الدخول للوصول إلى الحالة التشغيلية.', username: 'اسم المستخدم', password: 'كلمة المرور', signIn: 'تسجيل الدخول', loginError: 'تعذر تسجيل الدخول.', logOut: 'تسجيل الخروج', status: 'الحالة', website: 'الموقع الإلكتروني', github: 'غيت هب', vercel: 'فيرسل', neon: 'نيون', gpt: 'جي بي تي', calendar: 'التقويم', gmail: 'جي ميل', drive: 'درايف', ycloud: 'واي كلاود', whatsapp: 'واتساب', facebook: 'فيسبوك', instagram: 'إنستغرام', loading: 'جارٍ التحميل…', unavailable: 'غير متاح', statusCheckFailed: 'تعذر فحص الحالة' }
+  };
+  const statusCopy = { Healthy: 'سليم', Unavailable: 'غير متاح', 'Not configured': 'غير مُعَدّ', Connected: 'متصل', Active: 'نشط', Archived: 'مؤرشف', Disabled: 'معطّل', Unknown: 'غير معروف', 'No deployment': 'لا يوجد نشر', 'Health check failed': 'فشل فحص الحالة', 'Server-side Vercel access required': 'يتطلب وصول فيرسل من الخادم', 'Deployment status unavailable': 'حالة النشر غير متاحة', 'No Production deployment found': 'لم يتم العثور على نشر إنتاجي', 'Time unavailable': 'الوقت غير متاح', 'Deployment check failed': 'فشل فحص النشر', 'Server-side GitHub access required': 'يتطلب وصول غيت هب من الخادم', 'Repository status unavailable': 'حالة المستودع غير متاحة', 'Date unavailable': 'التاريخ غير متاح', 'Unknown author': 'مؤلف غير معروف', 'No recent activity': 'لا يوجد نشاط حديث', 'GitHub status check failed': 'فشل فحص حالة غيت هب', 'Gmail status check failed': 'فشل فحص حالة جي ميل', 'Calendar ID required': 'معرّف التقويم مطلوب', 'Calendar status check failed': 'فشل فحص حالة التقويم', 'Storage available': 'مساحة التخزين متاحة', 'Drive status check failed': 'فشل فحص حالة درايف', 'Read-only health check passed': 'نجح فحص الصحة للقراءة فقط', 'Database status check failed': 'فشل فحص حالة قاعدة البيانات', 'Server-side OpenAI key required': 'يتطلب مفتاح أوبن أي آي من الخادم', 'OpenAI status unavailable': 'حالة أوبن أي آي غير متاحة', 'OpenAI status check failed': 'فشل فحص حالة أوبن أي آي', 'Page ID required': 'معرّف الصفحة مطلوب', 'Facebook status check failed': 'فشل فحص حالة فيسبوك', 'Business account ID required': 'معرّف حساب الأعمال مطلوب', 'Instagram status check failed': 'فشل فحص حالة إنستغرام', 'Server-side WhatsApp access required': 'يتطلب وصول واتساب من الخادم', 'WhatsApp status check failed': 'فشل فحص حالة واتساب', 'Server-side YCloud key required': 'يتطلب مفتاح واي كلاود من الخادم', 'YCloud status check failed': 'فشل فحص حالة واي كلاود' };
+  let language = 'en';
+  const status = value => {
+    if (language !== 'ar') return value || copy.en.unavailable;
+    const text = String(value || 'Unavailable');
+    if (statusCopy[text]) return statusCopy[text];
+    return text.replace(/^API HTTP /, 'واجهة برمجة التطبيقات HTTP ').replace(/^HTTP /, 'HTTP ').replace(/^Unread: /, 'غير المقروءة: ').replace(/^Upcoming: /, 'القادمة: ').replace(/^Storage: (.+)% used$/, 'التخزين: $1% مستخدم').replace(/^Models available: /, 'النماذج المتاحة: ').replace(/^Followers: /, 'المتابعون: ').replace(/^Media: /, 'المنشورات: ').replace(/^Quality: /, 'الجودة: ').replace(/^Registered senders: /, 'المرسلون المسجّلون: ');
+  };
+  const apply = next => {
+    language = next === 'ar' ? 'ar' : 'en';
+    const page = copy[language], root = document.documentElement;
+    root.lang = language;
+    root.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.title = page.title;
+    document.querySelectorAll('[data-os-text]').forEach(element => { const value = page[element.dataset.osText]; if (value) element.textContent = value; });
+    document.querySelectorAll('[data-os-placeholder]').forEach(element => { element.placeholder = page[element.dataset.osPlaceholder]; });
+    document.querySelectorAll('[data-os-initial-status]').forEach(element => { element.textContent = page[element.dataset.osInitialStatus]; });
+    document.querySelectorAll('[data-language-toggle]').forEach(button => button.setAttribute('aria-label', language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'));
+    window.renderOsStatuses?.();
+    try { localStorage.setItem('ooxme-language', language); } catch (_) {}
+  };
+  try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
+  window.OOXMEOS = { apply, copy, status, get language() { return language; } };
+  document.addEventListener('DOMContentLoaded', () => {
+    apply(language);
+    document.querySelectorAll('[data-language-toggle]').forEach(button => button.addEventListener('click', () => apply(language === 'ar' ? 'en' : 'ar')));
+    window.addEventListener('storage', event => { if (event.key === 'ooxme-language') apply(event.newValue === 'ar' ? 'ar' : 'en'); });
+  });
+})();
