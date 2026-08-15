@@ -3,5 +3,12 @@
   "cleanUrls": true,
   "functions": {
     "api/**/*.js": { "maxDuration": 30, "includeFiles": "data/promos.json" }
-  }
+  },
+  "rewrites": [
+    { "source": "/os", "destination": "/api/os/index?route=dashboard" },
+    { "source": "/os/", "destination": "/api/os/index?route=dashboard" },
+    { "source": "/os/login", "destination": "/api/os/index?route=login-page" },
+    { "source": "/api/os/login", "destination": "/api/os/index?route=login" },
+    { "source": "/api/os/logout", "destination": "/api/os/index?route=logout" }
+  ]
 }
