@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { configured, valid, credentialsValid, sessionCookie, clearCookie } = require('./api/_lib/os-auth');
 const { login, dashboard } = require('./api/_lib/os-page');
-const { website, vercel, github, gmail, calendar, drive, neon, openai, ycloud, whatsapp, facebook, instagram } = require('./api/_lib/os-status');
+const { allStatuses } = require('./api/_lib/os-status');
 
 const root = __dirname;
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2' };
@@ -24,8 +24,7 @@ const handleOs = async (request, response, requestPath, query) => {
   if (requestPath === '/api/os/logout' && request.method === 'POST') return send(response, 303, { Location: '/os/login', 'Set-Cookie': clearCookie(), 'Cache-Control': 'no-store' });
   if (requestPath === '/api/os/index' && query.get('route') === 'status' && request.method === 'GET') {
     if (!valid(request)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"unauthorized"}');
-    const [websiteStatus, githubStatus, vercelStatus, gmailStatus, calendarStatus, driveStatus, neonStatus, openaiStatus, ycloudStatus, whatsappStatus, facebookStatus, instagramStatus] = await Promise.all([website(), github(), vercel(), gmail(), calendar(), drive(), neon(), openai(), ycloud(), whatsapp(), facebook(), instagram()]);
-    return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify({ website: websiteStatus, github: githubStatus, vercel: vercelStatus, gmail: gmailStatus, calendar: calendarStatus, drive: driveStatus, neon: neonStatus, gpt: openaiStatus, ycloud: ycloudStatus, whatsapp: whatsappStatus, facebook: facebookStatus, instagram: instagramStatus }));
+    return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify(await allStatuses()));
   }
   return false;
 };

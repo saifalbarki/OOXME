@@ -1,7 +1,7 @@
 const { readJson } = require('../_lib/http');
 const { configured, valid, credentialsValid, sessionCookie, clearCookie } = require('../_lib/os-auth');
 const { login, dashboard } = require('../_lib/os-page');
-const { website, vercel, github, gmail, calendar, drive, neon, openai, ycloud, whatsapp, facebook, instagram } = require('../_lib/os-status');
+const { allStatuses } = require('../_lib/os-status');
 
 module.exports = async (request, response) => {
   const route = request.query?.route || 'dashboard';
@@ -29,9 +29,8 @@ module.exports = async (request, response) => {
   if (route === 'status') {
     if (request.method !== 'GET') return response.status(405).send('Method not allowed');
     if (!valid(request)) return response.status(401).json({ error: 'unauthorized' });
-    const [websiteStatus, githubStatus, vercelStatus, gmailStatus, calendarStatus, driveStatus, neonStatus, openaiStatus, ycloudStatus, whatsappStatus, facebookStatus, instagramStatus] = await Promise.all([website(), github(), vercel(), gmail(), calendar(), drive(), neon(), openai(), ycloud(), whatsapp(), facebook(), instagram()]);
     response.setHeader('Cache-Control', 'no-store');
-    return response.status(200).json({ website: websiteStatus, github: githubStatus, vercel: vercelStatus, gmail: gmailStatus, calendar: calendarStatus, drive: driveStatus, neon: neonStatus, gpt: openaiStatus, ycloud: ycloudStatus, whatsapp: whatsappStatus, facebook: facebookStatus, instagram: instagramStatus });
+    return response.status(200).json(await allStatuses());
   }
   if (request.method !== 'GET') return response.status(405).send('Method not allowed');
   if (!valid(request)) return response.redirect(303, '/os/login');

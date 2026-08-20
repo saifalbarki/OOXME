@@ -7,6 +7,8 @@ const { gmailApi, calendarApi, driveApi } = require('./google');
 const { query } = require('./db');
 const short = (value, limit) => String(value || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit);
 const messageHeaders = message => Object.fromEntries((message.payload?.headers || []).map(({ name, value }) => [String(name).toLowerCase(), value]));
+const limited = detail => ({ state: 'limited', label: 'Not configured', detail });
+const googleConfigured = () => Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID && process.env.GOOGLE_OAUTH_CLIENT_SECRET && process.env.GOOGLE_OAUTH_REFRESH_TOKEN);
 
 const website = async () => {
   try {
@@ -46,6 +48,7 @@ const github = async () => {
 };
 
 const gmail = async () => {
+  if (!googleConfigured()) return limited('Google OAuth credentials required');
   try {
     await gmailApi('/users/me/profile');
     const [unread, recent] = await Promise.all([
@@ -67,12 +70,14 @@ const gmail = async () => {
 };
 
 const calendar = async () => {
-  try { const id = process.env.GOOGLE_CALENDAR_ID; if (!id) return { state: 'unavailable', label: 'Not configured', detail: 'Calendar ID required' }; const result = await calendarApi(`/calendars/${encodeURIComponent(id)}/events?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(new Date().toISOString())}&maxResults=5`); return { state: 'ready', label: 'Connected', detail: `Upcoming: ${(result.items || []).length}` }; } catch { return { state: 'error', label: 'Unavailable', detail: 'Calendar status check failed' }; }
+  try { const id = process.env.GOOGLE_CALENDAR_ID; if (!id) return limited('Calendar ID required'); if (!googleConfigured()) return limited('Google OAuth credentials required'); const result = await calendarApi(`/calendars/${encodeURIComponent(id)}/events?singleEvents=true&orderBy=startTime&timeMin=${encodeURIComponent(new Date().toISOString())}&maxResults=5`); return { state: 'ready', label: 'Connected', detail: `Upcoming: ${(result.items || []).length}` }; } catch { return { state: 'error', label: 'Unavailable', detail: 'Calendar status check failed' }; }
 };
 const drive = async () => {
+  if (!googleConfigured()) return limited('Google OAuth credentials required');
   try { const result = await driveApi('/about?fields=storageQuota'); const quota = result.storageQuota || {}; return { state: 'ready', label: 'Connected', detail: quota.limit ? `Storage: ${Math.round((Number(quota.usage || 0) / Number(quota.limit)) * 100)}% used` : 'Storage available' }; } catch { return { state: 'error', label: 'Unavailable', detail: 'Drive status check failed' }; }
 };
 const neon = async () => {
+  if (!process.env.DATABASE_URL) return limited('Database URL required');
   try { await query('SELECT 1'); return { state: 'ready', label: 'Connected', detail: 'Read-only health check passed' }; } catch { return { state: 'error', label: 'Unavailable', detail: 'Database status check failed' }; }
 };
 const openai = async () => {
@@ -85,4 +90,16 @@ const instagram = async () => { try { const id = process.env.INSTAGRAM_BUSINESS_
 const whatsapp = async () => { try { const id=process.env.WHATSAPP_PHONE_NUMBER_ID, token=process.env.WHATSAPP_ACCESS_TOKEN; if(!id||!token)return {state:'unavailable',label:'Not configured',detail:'Server-side WhatsApp access required'}; const response=await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION||'v22.0'}/${encodeURIComponent(id)}?fields=verified_name,quality_rating,code_verification_status`,{headers:{Authorization:`Bearer ${token}`}}); if(!response.ok)throw new Error(); const body=await response.json(); return {state:'ready',label:'Connected',detail:`Quality: ${body.quality_rating||'Unavailable'}`}; } catch{return {state:'error',label:'Unavailable',detail:'WhatsApp status check failed'};} };
 const ycloud = async () => { const token=process.env.YCLOUD_API_KEY; if(!token)return {state:'unavailable',label:'Not configured',detail:'Server-side YCloud key required'}; try { const response=await withTimeout('https://api.ycloud.com/v2/whatsapp/phoneNumbers?limit=1&includeTotal=true',{headers:{'X-API-Key':token}}); if(!response.ok)throw new Error(); const body=await response.json(); return {state:'ready',label:'Connected',detail:`Registered senders: ${Number(body.total || body.totalCount || (body.data||[]).length || 0)}`}; } catch{return {state:'error',label:'Unavailable',detail:'YCloud status check failed'};} };
 
-module.exports = { website, vercel, github, gmail, calendar, drive, neon, openai, ycloud, whatsapp, facebook, instagram };
+const checks = { website, github, vercel, neon, gpt: openai, calendar, gmail, drive, ycloud, whatsapp, facebook, instagram };
+const checked = async (name, check) => {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(check),
+      new Promise(resolve => { timer = setTimeout(() => resolve({ state: 'error', label: 'Timed out', detail: 'Status check timed out' }), 7_000); })
+    ]);
+  } catch { return { state: 'error', label: 'Unavailable', detail: `${name} status check failed` }; } finally { clearTimeout(timer); }
+};
+const allStatuses = async () => Object.fromEntries(await Promise.all(Object.entries(checks).map(async ([name, check]) => [name, await checked(name, check)])));
+
+module.exports = { website, vercel, github, gmail, calendar, drive, neon, openai, ycloud, whatsapp, facebook, instagram, allStatuses };
