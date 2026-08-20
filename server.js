@@ -5,7 +5,8 @@ const { configured, valid, credentialsValid, sessionCookie, clearCookie } = requ
 const { login, dashboard } = require('./api/_lib/os-page');
 const { allStatuses } = require('./api/_lib/os-status');
 
-const root = __dirname;
+const distRoot = path.join(__dirname, 'dist');
+const root = fs.existsSync(distRoot) ? distRoot : __dirname;
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2' };
 const send = (response, status, headers, body = '') => { response.writeHead(status, headers); response.end(body); };
 const readBody = (request) => new Promise((resolve, reject) => { let raw = ''; request.on('data', chunk => { raw += chunk; if (raw.length > 10_000) request.destroy(); }); request.on('end', () => { try { resolve(JSON.parse(raw || '{}')); } catch (error) { reject(error); } }); request.on('error', reject); });

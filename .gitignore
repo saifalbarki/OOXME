@@ -5,3 +5,5 @@ dist/
 .next-preview.*
 *.log
 .env*
+
+.vercel
