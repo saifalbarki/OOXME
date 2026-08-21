@@ -187,6 +187,13 @@ homepageMenuTrigger?.addEventListener('click', (event) => {
 });
 document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => setHomepageMenuOpen(false)));
 document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => {
+  if (homepageMenu?.dataset.active === 'home') {
+    queueHomepageMenuSelection('home', () => {
+      applyLanguage(root.lang === 'ar' ? 'en' : 'ar');
+      setHomepageMenuOpen(false);
+    });
+    return;
+  }
   queueHomepageMenuSelection('home', () => {
     setHomepageMenuOpen(false);
     moveTo(0);
@@ -197,13 +204,18 @@ document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', ()
 document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search'));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
   setHomepageMenuOpen(false);
-  window.setTimeout(() => setHomepageNotificationsOpen(true), 60);
-}, 260));
+  window.setTimeout(() => setHomepageNotificationsOpen(true), 20);
+}, 120));
 homepageNotifications?.addEventListener('click', (event) => {
   if (!event.target.closest('.homepage-notifications-panel')) setHomepageNotificationsOpen(false);
 });
 homepageNotifications?.querySelectorAll('[data-notification]').forEach((notification) => notification.addEventListener('click', () => {
-  const expanded = notification.classList.toggle('is-expanded');
+  const expanded = !notification.classList.contains('is-expanded');
+  homepageNotifications.querySelectorAll('[data-notification].is-expanded').forEach((openNotification) => {
+    openNotification.classList.remove('is-expanded');
+    openNotification.setAttribute('aria-expanded', 'false');
+  });
+  notification.classList.toggle('is-expanded', expanded);
   notification.classList.add('is-read', 'is-selected');
   notification.setAttribute('aria-expanded', String(expanded));
   window.clearTimeout(homepageNotificationSelectionTimer);
