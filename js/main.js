@@ -116,12 +116,14 @@ const homepageBottomNavigation = document.querySelector('.homepage-bottom-naviga
 const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
 const homepageMenu = document.querySelector('[data-home-menu]');
 let homepageMenuInactivityTimer;
+let homepageMenuSelectionTimer;
 const resetHomepageMenuInactivityTimer = () => {
   window.clearTimeout(homepageMenuInactivityTimer);
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
   homepageMenuInactivityTimer = window.setTimeout(() => setHomepageMenuOpen(false), 5000);
 };
 const setHomepageMenuOpen = (open) => {
+  if (!open) window.clearTimeout(homepageMenuSelectionTimer);
   homepageBottomNavigation?.classList.toggle('is-menu-open', open);
   homepageMenuTrigger?.setAttribute('aria-expanded', String(open));
   document.body.classList.toggle('homepage-navigation-open', open);
@@ -131,10 +133,20 @@ const setHomepageMenuActive = (active) => {
   if (!homepageMenu) return;
   homepageMenu.dataset.active = active;
   document.querySelectorAll('.homepage-bottom-menu-button').forEach((button) => {
-    const selected = (active === 'account' && button.matches('[data-home-menu-account]')) || (active === 'gallery' && button.matches('[data-home-menu-gallery]')) || (active === 'home' && button.matches('[data-home-menu-home]'));
+    const selected = (active === 'account' && button.matches('[data-home-menu-account]')) || (active === 'gallery' && button.matches('[data-home-menu-gallery]')) || (active === 'home' && button.matches('[data-home-menu-home]')) || (active === 'search' && button.matches('[data-home-menu-search]')) || (active === 'menu' && button.matches('[data-home-menu-menu]'));
     button.classList.toggle('is-active', selected);
     button.setAttribute('aria-pressed', String(selected));
   });
+};
+const queueHomepageMenuSelection = (active, action) => {
+  setHomepageMenuActive(active);
+  resetHomepageMenuInactivityTimer();
+  window.clearTimeout(homepageMenuSelectionTimer);
+  homepageMenuSelectionTimer = window.setTimeout(() => {
+    homepageMenuSelectionTimer = undefined;
+    if (action) action();
+    else setHomepageMenuOpen(false);
+  }, 3000);
 };
 homepageMenuTrigger?.addEventListener('click', (event) => {
   event.preventDefault();
@@ -143,12 +155,15 @@ homepageMenuTrigger?.addEventListener('click', (event) => {
 });
 document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => setHomepageMenuOpen(false)));
 document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => {
-  setHomepageMenuActive('home');
-  setHomepageMenuOpen(false);
-  moveTo(0);
+  queueHomepageMenuSelection('home', () => {
+    setHomepageMenuOpen(false);
+    moveTo(0);
+  });
 });
-document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => setHomepageMenuActive('account'));
-document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => setHomepageMenuActive('gallery'));
+document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account'));
+document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery'));
+document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search'));
+document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu'));
 document.addEventListener('pointerdown', (event) => {
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
   resetHomepageMenuInactivityTimer();
