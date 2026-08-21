@@ -131,7 +131,7 @@ const setHomepageMenuActive = (active) => {
   if (!homepageMenu) return;
   homepageMenu.dataset.active = active;
   document.querySelectorAll('.homepage-bottom-menu-button').forEach((button) => {
-    const selected = (active === 'account' && button.matches('[data-home-menu-account]')) || (active === 'home' && button.matches('[data-home-menu-home]')) || (active === 'library' && button.matches('[data-home-menu-library]'));
+    const selected = (active === 'account' && button.matches('[data-home-menu-account]')) || (active === 'gallery' && button.matches('[data-home-menu-gallery]')) || (active === 'home' && button.matches('[data-home-menu-home]'));
     button.classList.toggle('is-active', selected);
     button.setAttribute('aria-pressed', String(selected));
   });
@@ -141,16 +141,18 @@ homepageMenuTrigger?.addEventListener('click', (event) => {
   event.stopPropagation();
   setHomepageMenuOpen(!homepageBottomNavigation.classList.contains('is-menu-open'));
 });
+document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => setHomepageMenuOpen(false)));
 document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => {
   setHomepageMenuActive('home');
   setHomepageMenuOpen(false);
   moveTo(0);
 });
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => setHomepageMenuActive('account'));
-document.querySelector('[data-home-menu-library]')?.addEventListener('click', () => setHomepageMenuActive('library'));
+document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => setHomepageMenuActive('gallery'));
 document.addEventListener('pointerdown', (event) => {
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
   resetHomepageMenuInactivityTimer();
+  if (event.target.closest('[data-language-toggle]')) return;
   if (event.target.closest('.homepage-bottom-menu-button, [data-home-menu-trigger]')) return;
   setHomepageMenuOpen(false);
   event.preventDefault();
