@@ -9,7 +9,7 @@ body { margin: 0; overflow: hidden; background: var(--color-paper); color: var(-
 .homepage { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); --homepage-notifications-width: min(calc(100% - (var(--x) * 4)), var(--layout-content-max)); width: 100%; min-height: 100vh; min-height: 100dvh; background: var(--color-paper); }
 .homepage .master-panel-experience { height: 100vh; height: 100dvh; min-height: 100vh; min-height: 100dvh; }
 @supports (-webkit-touch-callout: none) { html.homepage { min-height: -webkit-fill-available; } body.homepage { min-height: -webkit-fill-available; min-height: 100dvh; } }
-.homepage .intro-panel .master-panel { background: url('../assets/Backgrounds/Tall-background.jpg') center / cover no-repeat; }
+.homepage .intro-panel .master-panel { background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; }
 @media (max-aspect-ratio: 4 / 3) { .homepage .intro-panel .master-panel { background-size: auto 125%; background-position: 60% 28%; } }
 @media (min-aspect-ratio: 4 / 3) { .homepage .intro-panel .master-panel { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
 .homepage .intro-panel .master-panel-logo img { filter: brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0, 0, 0, .3)); }
