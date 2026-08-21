@@ -17,6 +17,9 @@ const moreServicesLink = document.querySelector('[data-service-option="more-serv
 if (moreServicesLink) moreServicesLink.href = 'services.html';
 const experience = document.querySelector('.master-panel-experience');
 const root = document.documentElement;
+const setStableViewportHeight = () => root.style.setProperty('--ooxme-stable-viewport-height', `${window.innerHeight}px`);
+setStableViewportHeight();
+window.addEventListener('orientationchange', () => window.setTimeout(setStableViewportHeight, 160));
 const searchInput = document.querySelector('[data-search-input]');
 const applyLanguage = (language) => {
   root.lang = language;
@@ -92,14 +95,14 @@ const plansPanel = track.querySelector('[data-panel-id="plans"]');
 const servicesPanel = track.querySelector('[data-panel-id="services"]');
 if (plansPanel && servicesPanel) track.insertBefore(servicesPanel, plansPanel);
 const panels = [...document.querySelectorAll('.master-panel-screen')];
-track.style.height = `${panels.length * 100}dvh`;
+track.style.height = `calc(var(--ooxme-stable-viewport-height) * ${panels.length})`;
 const requestedPanel = new URLSearchParams(window.location.search).get('panel');
 const requestedPanelId = /^\d+$/.test(requestedPanel || '') ? panelIds[Number(requestedPanel)] : requestedPanel;
 const requestedPanelIndex = HOMEPAGE_NAVIGATION_LOCKED && requestedPanelId !== 'employee-dashboard'
   ? 0
   : panels.findIndex((panel) => panel.dataset.panelId === requestedPanelId);
 let panelIndex = requestedPanelIndex >= 0 ? requestedPanelIndex : 0;
-if (panelIndex) track.style.transform = `translateY(${-panelIndex * 100}dvh)`;
+if (panelIndex) track.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-panelIndex}))`;
 let panelTransitionTimer;
 const revealPanel = (index) => {
   panels.forEach((panel, panelNumber) => panel.classList.toggle('is-active', panelNumber === index));
@@ -110,7 +113,7 @@ const moveTo = (next) => {
   if (target === panelIndex) return;
   panelIndex = target;
   panels.forEach((panel) => panel.classList.remove('is-active'));
-  track.style.transform = `translateY(${-panelIndex * 100}dvh)`;
+  track.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-panelIndex}))`;
   window.clearTimeout(panelTransitionTimer);
   panelTransitionTimer = window.setTimeout(() => revealPanel(panelIndex), 620);
 };
@@ -256,10 +259,6 @@ const setHomepageAccountOpen = (open) => {
   window.clearTimeout(homepageAccountCloseTimer);
   if (open) {
     setHomepageMenuOpen(false);
-    homepageAccount.querySelectorAll('[data-home-account-section]').forEach((section) => {
-      section.classList.remove('is-open');
-      section.querySelector('[data-home-account-toggle]')?.setAttribute('aria-expanded', 'false');
-    });
     homepageAccount.hidden = false;
     homepageAccount.setAttribute('aria-hidden', 'false');
     window.requestAnimationFrame(() => {
@@ -333,20 +332,17 @@ homepageSearch?.addEventListener('pointerdown', (event) => {
 homepageAccount?.addEventListener('pointerdown', (event) => {
   if (!event.target.closest('.homepage-account-panel')) setHomepageAccountOpen(false);
 });
-homepageAccount?.querySelectorAll('[data-home-account-toggle]').forEach((toggle) => toggle.addEventListener('click', () => {
-  const section = toggle.closest('[data-home-account-section]');
-  const shouldOpen = !section.classList.contains('is-open');
-  homepageAccount.querySelectorAll('[data-home-account-section]').forEach((item) => {
-    const open = item === section && shouldOpen;
-    item.classList.toggle('is-open', open);
-    item.querySelector('[data-home-account-toggle]')?.setAttribute('aria-expanded', String(open));
-  });
+homepageAccount?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
+  const selector = homepageAccount.querySelector('[data-home-account-selector]');
+  if (!selector) return;
+  const accountType = button.dataset.homeAccountType;
+  selector.dataset.active = accountType;
+  selector.querySelectorAll('[data-home-account-type]').forEach((item) => item.setAttribute('aria-selected', String(item === button)));
 }));
 homepageAccount?.querySelectorAll('.homepage-account-login').forEach((button) => button.addEventListener('click', async () => {
-  const section = button.closest('[data-home-account-section]');
-  const [usernameInput, passwordInput] = section?.querySelectorAll('[data-home-account-input]') || [];
+  const [usernameInput, passwordInput] = homepageAccount.querySelectorAll('[data-home-account-input]');
   if (!usernameInput || !passwordInput) return;
-  const expectedAccountType = section.dataset.homeAccountSection;
+  const expectedAccountType = homepageAccount.querySelector('[data-home-account-selector]')?.dataset.active;
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
   usernameInput.removeAttribute('aria-invalid');
@@ -370,7 +366,7 @@ homepageAccount?.querySelectorAll('.homepage-account-login').forEach((button) =>
     button.removeAttribute('aria-busy');
   }
 }));
-homepageAccount?.querySelectorAll('.homepage-account-section-content, .homepage-account-register, .homepage-account-login').forEach((element) => element.addEventListener('pointerdown', (event) => event.stopPropagation()));
+homepageAccount?.querySelectorAll('.homepage-account-selector, .homepage-account-form, .homepage-account-login').forEach((element) => element.addEventListener('pointerdown', (event) => event.stopPropagation()));
 homepageSearchInput?.addEventListener('input', renderHomepageSearchSuggestions);
 homepageSearchSuggestions?.addEventListener('click', (event) => event.stopPropagation());
 document.addEventListener('pointerdown', (event) => {

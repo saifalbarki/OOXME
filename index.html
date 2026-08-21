@@ -146,23 +146,16 @@
     </div>
     <div class="homepage-account" data-home-account hidden aria-hidden="true">
       <section class="homepage-search-panel homepage-account-panel" role="dialog" aria-modal="true" aria-label="Account">
-        <section class="homepage-account-section" data-home-account-section="employee">
-          <button class="homepage-account-section-toggle" type="button" data-home-account-toggle="employee" aria-expanded="false"><span data-en="Employee Account" data-ar="حساب الموظف">Employee Account</span></button>
-          <div class="homepage-account-section-content">
-            <label class="homepage-search-field"><input type="text" autocomplete="username" data-home-account-input data-en-placeholder="Username" data-ar-placeholder="اسم المستخدم" placeholder="Username" aria-label="Username" /></label>
-            <label class="homepage-search-field"><input type="password" autocomplete="current-password" data-home-account-input data-en-placeholder="Password" data-ar-placeholder="كلمة المرور" placeholder="Password" aria-label="Password" /></label>
-            <button class="homepage-account-login" type="button"><span data-en="Login" data-ar="تسجيل الدخول">Login</span></button>
-          </div>
-        </section>
-        <section class="homepage-account-section" data-home-account-section="client">
-          <button class="homepage-account-section-toggle" type="button" data-home-account-toggle="client" aria-expanded="false"><span data-en="Client Account" data-ar="حساب العميل">Client Account</span></button>
-          <div class="homepage-account-section-content">
-            <label class="homepage-search-field"><input type="text" autocomplete="username" data-home-account-input data-en-placeholder="Username" data-ar-placeholder="اسم المستخدم" placeholder="Username" aria-label="Username" /></label>
-            <label class="homepage-search-field"><input type="password" autocomplete="current-password" data-home-account-input data-en-placeholder="Password" data-ar-placeholder="كلمة المرور" placeholder="Password" aria-label="Password" /></label>
-            <button class="homepage-account-login" type="button"><span data-en="Login" data-ar="تسجيل الدخول">Login</span></button>
-          </div>
-        </section>
-        <p class="homepage-account-register homepage-search-suggestion" data-en="Don’t have an account? Register now" data-ar="ليس لديك حساب؟ سجل الآن">Don’t have an account? Register now</p>
+        <div class="homepage-account-selector" data-home-account-selector data-active="employee" role="tablist" aria-label="Account type">
+          <span class="homepage-account-selector-indicator" aria-hidden="true"></span>
+          <button type="button" data-home-account-type="employee" role="tab" aria-selected="true"><span data-en="Employees" data-ar="الموظفون">Employees</span></button>
+          <button type="button" data-home-account-type="client" role="tab" aria-selected="false"><span data-en="Clients" data-ar="العملاء">Clients</span></button>
+        </div>
+        <div class="homepage-account-form">
+          <label class="homepage-search-field"><input type="text" autocomplete="username" data-home-account-input data-en-placeholder="Username" data-ar-placeholder="اسم المستخدم" placeholder="Username" aria-label="Username" /></label>
+          <label class="homepage-search-field"><input type="password" autocomplete="current-password" data-home-account-input data-en-placeholder="Password" data-ar-placeholder="كلمة المرور" placeholder="Password" aria-label="Password" /></label>
+          <button class="homepage-account-login" type="button"><span data-en="Login" data-ar="تسجيل الدخول">Login</span></button>
+        </div>
       </section>
     </div>
   </body>
