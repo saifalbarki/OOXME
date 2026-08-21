@@ -158,10 +158,12 @@ const setHomepageNotificationsOpen = (open) => {
   window.clearTimeout(homepageNotificationsCloseTimer);
   if (open) {
     setHomepageMenuOpen(false);
-    document.body.classList.add('homepage-notifications-open');
     homepageNotifications.hidden = false;
     homepageNotifications.setAttribute('aria-hidden', 'false');
-    window.requestAnimationFrame(() => homepageNotifications.classList.add('is-open'));
+    window.requestAnimationFrame(() => {
+      document.body.classList.add('homepage-notifications-open');
+      homepageNotifications.classList.add('is-open');
+    });
     return;
   }
   homepageNotifications.classList.remove('is-open');

@@ -147,8 +147,7 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .homepage-bottom-navigation { --homepage-alignment-x: var(--x); }
 .homepage-bottom-menu, .homepage-bottom-navigation.is-menu-open .homepage-bottom-menu { bottom: var(--homepage-alignment-x); }
 .homepage-notifications { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; padding: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .36s ease, visibility 0s linear .36s; }
-.homepage-notifications::before { position: fixed; z-index: 0; inset: var(--x); border-radius: var(--panel-radius); background: transparent; content: ''; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); transition: backdrop-filter .36s ease, -webkit-backdrop-filter .36s ease; }
-.homepage-notifications.is-open::before { backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.homepage-notifications::before { position: fixed; z-index: 0; inset: var(--x); border-radius: var(--panel-radius); background: transparent; content: ''; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 .homepage-notifications.is-open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 .homepage-notifications-panel { position: relative; z-index: 1; width: var(--homepage-notifications-width); max-height: calc(100dvh - (var(--x) * 2)); overflow: auto; overscroll-behavior: contain; padding: var(--spacing-x-triple) 0 var(--x); border-radius: var(--panel-radius); background: rgba(255, 255, 255, .94); box-shadow: 0 18px 48px rgba(13, 13, 13, .16); opacity: 0; transform: translateY(10px) scale(.985); transition: opacity .36s ease, transform .4s cubic-bezier(.22, .61, .36, 1); }
 .homepage-notifications.is-open .homepage-notifications-panel { opacity: 1; transform: translateY(0) scale(1); }
