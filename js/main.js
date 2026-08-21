@@ -342,6 +342,34 @@ homepageAccount?.querySelectorAll('[data-home-account-toggle]').forEach((toggle)
     item.querySelector('[data-home-account-toggle]')?.setAttribute('aria-expanded', String(open));
   });
 }));
+homepageAccount?.querySelectorAll('.homepage-account-login').forEach((button) => button.addEventListener('click', async () => {
+  const section = button.closest('[data-home-account-section]');
+  const [usernameInput, passwordInput] = section?.querySelectorAll('[data-home-account-input]') || [];
+  if (!usernameInput || !passwordInput) return;
+  const expectedAccountType = section.dataset.homeAccountSection;
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  usernameInput.removeAttribute('aria-invalid');
+  passwordInput.removeAttribute('aria-invalid');
+  try {
+    const response = await fetch('/api/accounts/login', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: usernameInput.value, password: passwordInput.value })
+    });
+    const account = await response.json().catch(() => ({}));
+    if (!response.ok || account.accountType !== expectedAccountType) throw new Error('invalid_credentials');
+    if (account.accountType === 'employee') location.assign('/?panel=employee-dashboard');
+  } catch (_) {
+    usernameInput.setAttribute('aria-invalid', 'true');
+    passwordInput.setAttribute('aria-invalid', 'true');
+    passwordInput.focus();
+  } finally {
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+  }
+}));
 homepageAccount?.querySelectorAll('.homepage-account-section-content, .homepage-account-register, .homepage-account-login').forEach((element) => element.addEventListener('pointerdown', (event) => event.stopPropagation()));
 homepageSearchInput?.addEventListener('input', renderHomepageSearchSuggestions);
 homepageSearchSuggestions?.addEventListener('click', (event) => event.stopPropagation());
