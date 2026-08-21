@@ -1,4 +1,5 @@
 const track = document.querySelector('[data-master-track]');
+const HOMEPAGE_NAVIGATION_LOCKED = true;
 const SERVICES_NAVIGATION_ENABLED = true;
 const CONSULTATION_NAVIGATION_ENABLED = true;
 const blockNavigation = (selector, enabled) => document.querySelectorAll(selector).forEach((action) => action.addEventListener('click', (event) => {
@@ -66,7 +67,15 @@ const setSearchOpen = (open) => {
   searchOverlay.classList.remove('is-open');
   searchCloseTimer = window.setTimeout(() => { searchOverlay.hidden = true; }, searchOverlayCloseDuration);
 };
-document.querySelectorAll('[data-search-toggle]').forEach((button) => button.addEventListener('click', (event) => { event.stopPropagation(); setSearchOpen(searchOverlay.hidden); }));
+document.querySelectorAll('[data-search-toggle]').forEach((button) => button.addEventListener('click', (event) => {
+  if (HOMEPAGE_NAVIGATION_LOCKED) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
+  }
+  event.stopPropagation();
+  setSearchOpen(searchOverlay.hidden);
+}));
 searchOverlay.addEventListener('click', () => setSearchOpen(false));
 searchOverlay.querySelectorAll('a, label, [data-search-suggestion]').forEach((element) => element.addEventListener('click', (event) => event.stopPropagation()));
 searchInput.addEventListener('input', updateSearchState);
@@ -84,7 +93,7 @@ const panels = [...document.querySelectorAll('.master-panel-screen')];
 track.style.height = `${panels.length * 100}dvh`;
 const requestedPanel = new URLSearchParams(window.location.search).get('panel');
 const requestedPanelId = /^\d+$/.test(requestedPanel || '') ? panelIds[Number(requestedPanel)] : requestedPanel;
-const requestedPanelIndex = panels.findIndex((panel) => panel.dataset.panelId === requestedPanelId);
+const requestedPanelIndex = HOMEPAGE_NAVIGATION_LOCKED ? 0 : panels.findIndex((panel) => panel.dataset.panelId === requestedPanelId);
 let panelIndex = requestedPanelIndex >= 0 ? requestedPanelIndex : 0;
 if (panelIndex) track.style.transform = `translateY(${-panelIndex * 100}dvh)`;
 let panelTransitionTimer;
@@ -92,6 +101,7 @@ const revealPanel = (index) => {
   panels.forEach((panel, panelNumber) => panel.classList.toggle('is-active', panelNumber === index));
 };
 const moveTo = (next) => {
+  if (HOMEPAGE_NAVIGATION_LOCKED) return;
   const target = Math.max(0, Math.min(panels.length - 1, next));
   if (target === panelIndex) return;
   panelIndex = target;
@@ -100,8 +110,55 @@ const moveTo = (next) => {
   window.clearTimeout(panelTransitionTimer);
   panelTransitionTimer = window.setTimeout(() => revealPanel(panelIndex), 620);
 };
-window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => panelIndex, moveTo });
+if (!HOMEPAGE_NAVIGATION_LOCKED) window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => panelIndex, moveTo });
 revealPanel(panelIndex);
+const homepageBottomNavigation = document.querySelector('.homepage-bottom-navigation');
+const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
+const homepageMenu = document.querySelector('[data-home-menu]');
+let homepageMenuInactivityTimer;
+const resetHomepageMenuInactivityTimer = () => {
+  window.clearTimeout(homepageMenuInactivityTimer);
+  if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
+  homepageMenuInactivityTimer = window.setTimeout(() => setHomepageMenuOpen(false), 5000);
+};
+const setHomepageMenuOpen = (open) => {
+  homepageBottomNavigation?.classList.toggle('is-menu-open', open);
+  homepageMenuTrigger?.setAttribute('aria-expanded', String(open));
+  document.body.classList.toggle('homepage-navigation-open', open);
+  resetHomepageMenuInactivityTimer();
+};
+const setHomepageMenuActive = (active) => {
+  if (!homepageMenu) return;
+  homepageMenu.dataset.active = active;
+  document.querySelectorAll('.homepage-bottom-menu-button').forEach((button) => {
+    const selected = (active === 'account' && button.matches('[data-home-menu-account]')) || (active === 'home' && button.matches('[data-home-menu-home]')) || (active === 'library' && button.matches('[data-home-menu-library]'));
+    button.classList.toggle('is-active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+};
+homepageMenuTrigger?.addEventListener('click', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  setHomepageMenuOpen(!homepageBottomNavigation.classList.contains('is-menu-open'));
+});
+document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => {
+  setHomepageMenuActive('home');
+  setHomepageMenuOpen(false);
+  moveTo(0);
+});
+document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => setHomepageMenuActive('account'));
+document.querySelector('[data-home-menu-library]')?.addEventListener('click', () => setHomepageMenuActive('library'));
+document.addEventListener('pointerdown', (event) => {
+  if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
+  resetHomepageMenuInactivityTimer();
+  if (event.target.closest('.homepage-bottom-menu-button, [data-home-menu-trigger]')) return;
+  setHomepageMenuOpen(false);
+  event.preventDefault();
+  event.stopPropagation();
+}, true);
+document.addEventListener('pointermove', resetHomepageMenuInactivityTimer, { passive: true });
+document.addEventListener('keydown', resetHomepageMenuInactivityTimer);
+document.addEventListener('wheel', resetHomepageMenuInactivityTimer, { passive: true });
 document.querySelectorAll('[data-next-panel]').forEach((button) => button.addEventListener('click', () => moveTo(panelIndex + 1)));
 document.querySelectorAll('[data-home-panel]').forEach((button) => button.addEventListener('click', () => moveTo(0)));
 searchOverlay.querySelectorAll('[data-panel-index]').forEach((link) => link.addEventListener('click', (event) => {
