@@ -215,6 +215,7 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .employee-dashboard-metric { display: grid; gap: calc(var(--x) * .5); }
 .employee-dashboard-progress { display: block; width: 100%; height: 8px; overflow: hidden; border-radius: 999px; background: #d9dde4; }
 .employee-dashboard-progress i { display: block; width: 50%; height: 100%; border-radius: inherit; background: var(--color-brand); }
+@media (max-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel-content { padding-bottom: 0; } }
 @media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel-content { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; padding-bottom: var(--x); column-gap: var(--x); } .employee-dashboard-identity { grid-column: 1; } .employee-dashboard-status-card { grid-column: 2; } }
 @media (min-aspect-ratio: 4 / 3) { .homepage-notifications-panel { padding-top: calc(var(--x) * 2); } .homepage-notifications-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--x); } }
 .homepage-bottom-navigation.is-menu-open:not(.is-menu-closing) .homepage-bottom-menu-indicator { transition-delay: .1s, 0s; }
