@@ -20,6 +20,17 @@ const root = document.documentElement;
 const setStableViewportHeight = () => root.style.setProperty('--ooxme-stable-viewport-height', `${window.innerHeight}px`);
 setStableViewportHeight();
 window.addEventListener('orientationchange', () => window.setTimeout(setStableViewportHeight, 160));
+document.querySelectorAll('[data-progress]').forEach((progress) => {
+  const value = Math.min(100, Math.max(0, Number(progress.dataset.progress) || 0));
+  const segmentCount = 20;
+  const completedSegments = Math.round((value / 100) * segmentCount);
+  progress.setAttribute('aria-valuenow', String(value));
+  progress.replaceChildren(...Array.from({ length: segmentCount }, (_, index) => {
+    const segment = document.createElement('i');
+    segment.classList.toggle('is-complete', index < completedSegments);
+    return segment;
+  }));
+});
 const searchInput = document.querySelector('[data-search-input]');
 const applyLanguage = (language) => {
   root.lang = language;
