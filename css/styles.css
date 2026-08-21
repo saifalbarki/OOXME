@@ -6,7 +6,9 @@
 :where(a, button, input, select, textarea, [role="button"]):focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
 html, body { min-height: 100%; }
 body { margin: 0; overflow: hidden; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-english); }
-.homepage { width: 100%; min-height: 100dvh; background: url('../assets/Backgrounds/Tall-background.jpg') center / cover no-repeat; }
+.homepage { width: 100%; min-height: 100vh; min-height: 100dvh; background: url('../assets/Backgrounds/Tall-background.jpg') center / cover no-repeat; }
+.homepage .master-panel-experience { height: 100vh; height: 100dvh; min-height: 100vh; min-height: 100dvh; }
+@supports (-webkit-touch-callout: none) { html.homepage { min-height: -webkit-fill-available; } body.homepage { min-height: -webkit-fill-available; min-height: 100dvh; } }
 .homepage .intro-panel .master-panel { background: transparent; }
 @media (min-aspect-ratio: 4 / 3) { .homepage { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
 button { font: inherit; }
