@@ -23,6 +23,7 @@ const applyLanguage = (language) => {
   root.dir = language === 'ar' ? 'rtl' : 'ltr';
   document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[language]; });
   searchInput.placeholder = searchInput.dataset[`${language}Placeholder`];
+  document.querySelectorAll('[data-home-search-input]').forEach((input) => { input.placeholder = input.dataset[`${language}Placeholder`]; });
   document.querySelectorAll('[data-language-toggle]').forEach((button) => button.setAttribute('aria-label', language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'));
   try { localStorage.setItem('ooxme-language', language); } catch (_) {}
 };
@@ -116,11 +117,15 @@ const homepageBottomNavigation = document.querySelector('.homepage-bottom-naviga
 const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
 const homepageMenu = document.querySelector('[data-home-menu]');
 const homepageNotifications = document.querySelector('[data-notifications]');
+const homepageSearch = document.querySelector('[data-home-search]');
+const homepageSearchInput = document.querySelector('[data-home-search-input]');
+const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
 let homepageMenuInactivityTimer;
 let homepageMenuSelectionTimer;
 let homepageMenuCloseTimer;
 let homepageNotificationsCloseTimer;
 let homepageNotificationSelectionTimer;
+let homepageSearchCloseTimer;
 const resetHomepageMenuInactivityTimer = () => {
   window.clearTimeout(homepageMenuInactivityTimer);
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
@@ -172,6 +177,50 @@ const setHomepageNotificationsOpen = (open) => {
   homepageNotificationsCloseTimer = window.setTimeout(() => { homepageNotifications.hidden = true; }, 360);
   setHomepageMenuOpen(true);
 };
+const homepageSearchEntries = [
+  { en: 'Reengineered', ar: 'إعادة هندسة' },
+  { en: 'Ooxme v4.0', ar: 'التحديث الرابع لأوكسوم' },
+  { en: 'Redesign Website', ar: 'إعادة تصميم الموقع' },
+  { en: 'The Client Profile', ar: 'ملف العميل' },
+  { en: 'The Gallery', ar: 'المعرض' },
+  { en: 'Notifications', ar: 'الإشعارات' },
+];
+const renderHomepageSearchSuggestions = () => {
+  if (!homepageSearchInput || !homepageSearchSuggestions) return;
+  const query = homepageSearchInput.value.trim().toLocaleLowerCase();
+  homepageSearchSuggestions.hidden = false;
+  const matches = homepageSearchEntries
+    .map((entry, index) => {
+      const label = entry[root.lang === 'ar' ? 'ar' : 'en'];
+      const normalized = label.toLocaleLowerCase();
+      const position = normalized.indexOf(query);
+      const overlap = [...query].filter((character) => normalized.includes(character)).length;
+      return { entry, index, score: position < 0 ? 100 - overlap : position };
+    })
+    .sort((a, b) => a.score - b.score || a.index - b.index)
+    .slice(0, 3);
+  homepageSearchSuggestions.innerHTML = matches.map(({ entry }) => `<button class="homepage-search-suggestion" type="button">${entry[root.lang === 'ar' ? 'ar' : 'en']}</button>`).join('');
+};
+const setHomepageSearchOpen = (open) => {
+  if (!homepageSearch) return;
+  window.clearTimeout(homepageSearchCloseTimer);
+  if (open) {
+    setHomepageMenuOpen(false);
+    homepageSearch.hidden = false;
+    homepageSearch.setAttribute('aria-hidden', 'false');
+    window.requestAnimationFrame(() => {
+      document.body.classList.add('homepage-search-open');
+      homepageSearch.classList.add('is-open');
+      renderHomepageSearchSuggestions();
+    });
+    return;
+  }
+  homepageSearch.classList.remove('is-open');
+  document.body.classList.remove('homepage-search-open');
+  homepageSearch.setAttribute('aria-hidden', 'true');
+  homepageSearchCloseTimer = window.setTimeout(() => { homepageSearch.hidden = true; }, 360);
+  setHomepageMenuOpen(true);
+};
 const queueHomepageMenuSelection = (active, action) => {
   setHomepageMenuActive(active);
   resetHomepageMenuInactivityTimer();
@@ -181,7 +230,7 @@ const queueHomepageMenuSelection = (active, action) => {
   else setHomepageMenuOpen(false);
 };
 window.setTimeout(() => {
-  if (homepageBottomNavigation?.classList.contains('is-menu-open') || homepageNotifications?.classList.contains('is-open')) return;
+  if (homepageBottomNavigation?.classList.contains('is-menu-open') || homepageNotifications?.classList.contains('is-open') || homepageSearch?.classList.contains('is-open')) return;
   setHomepageMenuOpen(true);
   window.setTimeout(() => setHomepageMenuOpen(false), 2000);
 }, 3000);
@@ -206,7 +255,7 @@ document.querySelector('[data-home-menu-home]')?.addEventListener('click', () =>
 });
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account'));
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery'));
-document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search'));
+document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search', () => setHomepageSearchOpen(true)));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
   setHomepageNotificationsOpen(true);
 }));
@@ -225,6 +274,11 @@ homepageNotifications?.querySelectorAll('[data-notification]').forEach((notifica
   window.clearTimeout(homepageNotificationSelectionTimer);
   homepageNotificationSelectionTimer = window.setTimeout(() => notification.classList.remove('is-selected'), 340);
 }));
+homepageSearch?.addEventListener('pointerdown', (event) => {
+  if (!event.target.closest('.homepage-search-panel')) setHomepageSearchOpen(false);
+});
+homepageSearchInput?.addEventListener('input', renderHomepageSearchSuggestions);
+homepageSearchSuggestions?.addEventListener('click', (event) => event.stopPropagation());
 document.addEventListener('pointerdown', (event) => {
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
   resetHomepageMenuInactivityTimer();
