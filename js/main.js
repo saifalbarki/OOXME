@@ -167,19 +167,22 @@ const setHomepageNotificationsOpen = (open) => {
   homepageNotifications.classList.remove('is-open');
   document.body.classList.remove('homepage-notifications-open');
   homepageNotifications.setAttribute('aria-hidden', 'true');
-  homepageNotificationsCloseTimer = window.setTimeout(() => { homepageNotifications.hidden = true; }, 220);
+  homepageNotificationsCloseTimer = window.setTimeout(() => { homepageNotifications.hidden = true; }, 360);
   setHomepageMenuOpen(true);
 };
-const queueHomepageMenuSelection = (active, action, delay = 3000) => {
+const queueHomepageMenuSelection = (active, action) => {
   setHomepageMenuActive(active);
   resetHomepageMenuInactivityTimer();
   window.clearTimeout(homepageMenuSelectionTimer);
-  homepageMenuSelectionTimer = window.setTimeout(() => {
-    homepageMenuSelectionTimer = undefined;
-    if (action) action();
-    else setHomepageMenuOpen(false);
-  }, delay);
+  homepageMenuSelectionTimer = undefined;
+  if (action) action();
+  else setHomepageMenuOpen(false);
 };
+window.setTimeout(() => {
+  if (homepageBottomNavigation?.classList.contains('is-menu-open') || homepageNotifications?.classList.contains('is-open')) return;
+  setHomepageMenuOpen(true);
+  window.setTimeout(() => setHomepageMenuOpen(false), 2000);
+}, 3000);
 homepageMenuTrigger?.addEventListener('click', (event) => {
   event.preventDefault();
   event.stopPropagation();
@@ -203,9 +206,8 @@ document.querySelector('[data-home-menu-account]')?.addEventListener('click', ()
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery'));
 document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search'));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
-  setHomepageMenuOpen(false);
-  window.setTimeout(() => setHomepageNotificationsOpen(true), 20);
-}, 120));
+  setHomepageNotificationsOpen(true);
+}));
 homepageNotifications?.addEventListener('click', (event) => {
   if (!event.target.closest('.homepage-notifications-panel')) setHomepageNotificationsOpen(false);
 });
