@@ -24,6 +24,7 @@ const applyLanguage = (language) => {
   document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[language]; });
   searchInput.placeholder = searchInput.dataset[`${language}Placeholder`];
   document.querySelectorAll('[data-home-search-input]').forEach((input) => { input.placeholder = input.dataset[`${language}Placeholder`]; });
+  document.querySelectorAll('[data-home-account-input]').forEach((input) => { input.placeholder = input.dataset[`${language}Placeholder`]; });
   document.querySelectorAll('[data-language-toggle]').forEach((button) => button.setAttribute('aria-label', language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'));
   try { localStorage.setItem('ooxme-language', language); } catch (_) {}
 };
@@ -84,7 +85,7 @@ searchInput.addEventListener('focus', updateKeyboardSafeArea);
 searchInput.addEventListener('blur', () => window.setTimeout(updateKeyboardSafeArea, 0));
 visualViewport?.addEventListener('resize', updateKeyboardSafeArea);
 visualViewport?.addEventListener('scroll', updateKeyboardSafeArea);
-const panelIds = ['intro', 'portfolio', 'plans', 'services', 'consultation', 'contact'];
+const panelIds = ['intro', 'portfolio', 'plans', 'services', 'consultation', 'contact', 'employee-dashboard'];
 const originalPanels = [...track.querySelectorAll('.master-panel-screen')];
 originalPanels.forEach((panel, index) => { panel.dataset.panelId = panelIds[index]; });
 const plansPanel = track.querySelector('[data-panel-id="plans"]');
@@ -94,7 +95,9 @@ const panels = [...document.querySelectorAll('.master-panel-screen')];
 track.style.height = `${panels.length * 100}dvh`;
 const requestedPanel = new URLSearchParams(window.location.search).get('panel');
 const requestedPanelId = /^\d+$/.test(requestedPanel || '') ? panelIds[Number(requestedPanel)] : requestedPanel;
-const requestedPanelIndex = HOMEPAGE_NAVIGATION_LOCKED ? 0 : panels.findIndex((panel) => panel.dataset.panelId === requestedPanelId);
+const requestedPanelIndex = HOMEPAGE_NAVIGATION_LOCKED && requestedPanelId !== 'employee-dashboard'
+  ? 0
+  : panels.findIndex((panel) => panel.dataset.panelId === requestedPanelId);
 let panelIndex = requestedPanelIndex >= 0 ? requestedPanelIndex : 0;
 if (panelIndex) track.style.transform = `translateY(${-panelIndex * 100}dvh)`;
 let panelTransitionTimer;
@@ -118,14 +121,41 @@ const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
 const homepageMenu = document.querySelector('[data-home-menu]');
 const homepageNotifications = document.querySelector('[data-notifications]');
 const homepageSearch = document.querySelector('[data-home-search]');
+const homepageAccount = document.querySelector('[data-home-account]');
 const homepageSearchInput = document.querySelector('[data-home-search-input]');
 const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
+const employeeDashboardNavigation = document.querySelector('[data-employee-dashboard-navigation]');
+const employeeDashboardMenuTrigger = document.querySelector('[data-employee-dashboard-menu-trigger]');
+const employeeDashboardMenu = document.querySelector('[data-employee-dashboard-menu]');
 let homepageMenuInactivityTimer;
 let homepageMenuSelectionTimer;
 let homepageMenuCloseTimer;
 let homepageNotificationsCloseTimer;
 let homepageNotificationSelectionTimer;
 let homepageSearchCloseTimer;
+let homepageAccountCloseTimer;
+let employeeDashboardMenuTimer;
+const setEmployeeDashboardMenuOpen = (open) => {
+  if (!employeeDashboardNavigation || !employeeDashboardMenuTrigger) return;
+  window.clearTimeout(employeeDashboardMenuTimer);
+  const wasOpen = employeeDashboardNavigation.classList.contains('is-menu-open');
+  employeeDashboardNavigation.classList.toggle('is-menu-open', open);
+  employeeDashboardNavigation.classList.toggle('is-menu-closing', !open && wasOpen);
+  employeeDashboardMenuTrigger.setAttribute('aria-expanded', String(open));
+  employeeDashboardMenuTimer = window.setTimeout(() => {
+    if (open) setEmployeeDashboardMenuOpen(false);
+    else employeeDashboardNavigation.classList.remove('is-menu-closing');
+  }, open ? 5000 : 340);
+};
+employeeDashboardMenuTrigger?.addEventListener('click', () => setEmployeeDashboardMenuOpen(!employeeDashboardNavigation.classList.contains('is-menu-open')));
+employeeDashboardMenu?.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => {
+  const buttons = [...employeeDashboardMenu.querySelectorAll('button')];
+  employeeDashboardMenu.querySelectorAll('button').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+  employeeDashboardMenu.dataset.active = ['account', 'gallery', 'home', 'search', 'menu'][buttons.indexOf(button)];
+}));
+document.addEventListener('pointerdown', (event) => {
+  if (employeeDashboardNavigation?.classList.contains('is-menu-open') && !event.target.closest('[data-employee-dashboard-navigation]')) setEmployeeDashboardMenuOpen(false);
+});
 const resetHomepageMenuInactivityTimer = () => {
   window.clearTimeout(homepageMenuInactivityTimer);
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
@@ -221,6 +251,29 @@ const setHomepageSearchOpen = (open) => {
   homepageSearchCloseTimer = window.setTimeout(() => { homepageSearch.hidden = true; }, 360);
   setHomepageMenuOpen(true);
 };
+const setHomepageAccountOpen = (open) => {
+  if (!homepageAccount) return;
+  window.clearTimeout(homepageAccountCloseTimer);
+  if (open) {
+    setHomepageMenuOpen(false);
+    homepageAccount.querySelectorAll('[data-home-account-section]').forEach((section) => {
+      section.classList.remove('is-open');
+      section.querySelector('[data-home-account-toggle]')?.setAttribute('aria-expanded', 'false');
+    });
+    homepageAccount.hidden = false;
+    homepageAccount.setAttribute('aria-hidden', 'false');
+    window.requestAnimationFrame(() => {
+      document.body.classList.add('homepage-account-open');
+      homepageAccount.classList.add('is-open');
+    });
+    return;
+  }
+  homepageAccount.classList.remove('is-open');
+  document.body.classList.remove('homepage-account-open');
+  homepageAccount.setAttribute('aria-hidden', 'true');
+  homepageAccountCloseTimer = window.setTimeout(() => { homepageAccount.hidden = true; }, 360);
+  setHomepageMenuOpen(true);
+};
 const queueHomepageMenuSelection = (active, action) => {
   setHomepageMenuActive(active);
   resetHomepageMenuInactivityTimer();
@@ -230,7 +283,7 @@ const queueHomepageMenuSelection = (active, action) => {
   else setHomepageMenuOpen(false);
 };
 window.setTimeout(() => {
-  if (homepageBottomNavigation?.classList.contains('is-menu-open') || homepageNotifications?.classList.contains('is-open') || homepageSearch?.classList.contains('is-open')) return;
+  if (homepageBottomNavigation?.classList.contains('is-menu-open') || homepageNotifications?.classList.contains('is-open') || homepageSearch?.classList.contains('is-open') || homepageAccount?.classList.contains('is-open')) return;
   setHomepageMenuOpen(true);
   window.setTimeout(() => setHomepageMenuOpen(false), 2000);
 }, 3000);
@@ -253,7 +306,7 @@ document.querySelector('[data-home-menu-home]')?.addEventListener('click', () =>
     moveTo(0);
   });
 });
-document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account'));
+document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => setHomepageAccountOpen(true)));
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery'));
 document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search', () => setHomepageSearchOpen(true)));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
@@ -277,6 +330,19 @@ homepageNotifications?.querySelectorAll('[data-notification]').forEach((notifica
 homepageSearch?.addEventListener('pointerdown', (event) => {
   if (!event.target.closest('.homepage-search-panel')) setHomepageSearchOpen(false);
 });
+homepageAccount?.addEventListener('pointerdown', (event) => {
+  if (!event.target.closest('.homepage-account-panel')) setHomepageAccountOpen(false);
+});
+homepageAccount?.querySelectorAll('[data-home-account-toggle]').forEach((toggle) => toggle.addEventListener('click', () => {
+  const section = toggle.closest('[data-home-account-section]');
+  const shouldOpen = !section.classList.contains('is-open');
+  homepageAccount.querySelectorAll('[data-home-account-section]').forEach((item) => {
+    const open = item === section && shouldOpen;
+    item.classList.toggle('is-open', open);
+    item.querySelector('[data-home-account-toggle]')?.setAttribute('aria-expanded', String(open));
+  });
+}));
+homepageAccount?.querySelectorAll('.homepage-account-section-content, .homepage-account-register, .homepage-account-login').forEach((element) => element.addEventListener('pointerdown', (event) => event.stopPropagation()));
 homepageSearchInput?.addEventListener('input', renderHomepageSearchSuggestions);
 homepageSearchSuggestions?.addEventListener('click', (event) => event.stopPropagation());
 document.addEventListener('pointerdown', (event) => {

@@ -2,8 +2,9 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { configured, valid, credentialsValid, sessionCookie, clearCookie } = require('./api/_lib/os-auth');
-const { login, dashboard } = require('./api/_lib/os-page');
+const { login, dashboard, accountManagement } = require('./api/_lib/os-page');
 const { allStatuses } = require('./api/_lib/os-status');
+const accountAdmin = require('./api/_lib/account-admin');
 
 const distRoot = path.join(__dirname, 'dist');
 const root = fs.existsSync(distRoot) ? distRoot : __dirname;
@@ -16,6 +17,10 @@ const handleOs = async (request, response, requestPath, query) => {
     return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }, dashboard());
   }
   if (requestPath === '/os/login' && request.method === 'GET') return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }, login());
+  if (requestPath === '/os/accounts' && request.method === 'GET') {
+    if (!valid(request)) return send(response, 303, { Location: '/os/login', 'Cache-Control': 'no-store' });
+    return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }, accountManagement());
+  }
   if (requestPath === '/api/os/login' && request.method === 'POST') {
     if (!configured()) return send(response, 503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"os_unconfigured"}');
     const body = await readBody(request);
@@ -26,6 +31,21 @@ const handleOs = async (request, response, requestPath, query) => {
   if (requestPath === '/api/os/index' && query.get('route') === 'status' && request.method === 'GET') {
     if (!valid(request)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"unauthorized"}');
     return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify(await allStatuses()));
+  }
+  if (requestPath === '/api/os/accounts') {
+    if (!valid(request)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"unauthorized"}');
+    try {
+      if (request.method === 'GET') return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify(await accountAdmin.list()));
+      if (request.method !== 'POST') return send(response, 405, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"method_not_allowed"}');
+      const body = await readBody(request);
+      const actions = { create: accountAdmin.create, update: accountAdmin.update, reset_password: accountAdmin.resetPassword, set_status: accountAdmin.setStatus, delete: accountAdmin.remove };
+      if (!actions[body.action]) return send(response, 400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"invalid_account_action"}');
+      const id = await actions[body.action](body);
+      return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify({ ok: true, ...(id ? { id } : {}) }));
+    } catch (error) {
+      const status = error.code === '23505' ? 409 : error.code === 'account_not_found' ? 404 : 400;
+      return send(response, status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify({ error: error.code || 'account_action_failed' }));
+    }
   }
   return false;
 };

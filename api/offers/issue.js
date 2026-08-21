@@ -24,9 +24,9 @@ module.exports = async (request, response) => {
       if (recent.rows[0].count >= 3) return null;
       const expiresAt = new Date(Date.now() + promo.token_ttl_minutes * 60_000);
       await client.query(
-        `INSERT INTO offer_tokens (id, token_hash, status, campaign_source, service_code, promo_code_normalized, granted_duration_minutes, discount_type, discount_value, issued_session_hash, request_fingerprint_hash, expires_at)
-         VALUES ($1, $2, 'issued', $3, 'consultation', $4, $5, $6, $7, $8, $9, $10)`,
-        [crypto.randomUUID(), hashToken(token), promo.campaign_source, promo.code, promo.allowed_durations[0], promo.discount.type, promo.discount.value, hashOfferSession(issuedSession), requestFingerprint, expiresAt]
+        `INSERT INTO offer_tokens (id, token_hash, status, campaign_source, service_code, promotion_id, promo_code_normalized, granted_duration_minutes, discount_type, discount_value, issued_session_hash, request_fingerprint_hash, expires_at)
+         VALUES ($1, $2, 'issued', $3, 'consultation', $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [crypto.randomUUID(), hashToken(token), promo.campaign_source, promo.promotionId, promo.code, promo.allowed_durations[0], promo.discount.type, promo.discount.value, hashOfferSession(issuedSession), requestFingerprint, expiresAt]
       );
       return { expiresAt };
     });

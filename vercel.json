@@ -4,14 +4,16 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
-  "functions": {
-    "api/**/*.js": { "maxDuration": 30, "includeFiles": "data/promos.json" }
-  },
+  "functions": { "api/**/*.js": { "maxDuration": 30 } },
   "rewrites": [
     { "source": "/os", "destination": "/api/os/index?route=dashboard" },
     { "source": "/os/", "destination": "/api/os/index?route=dashboard" },
     { "source": "/os/login", "destination": "/api/os/index?route=login-page" },
+    { "source": "/os/accounts", "destination": "/api/os/index?route=accounts-page" },
     { "source": "/api/os/login", "destination": "/api/os/index?route=login" },
-    { "source": "/api/os/logout", "destination": "/api/os/index?route=logout" }
+    { "source": "/api/os/logout", "destination": "/api/os/index?route=logout" },
+    { "source": "/api/os/accounts", "destination": "/api/os/index?route=accounts" },
+    { "source": "/api/accounts/login", "destination": "/api/accounts/index?route=login" },
+    { "source": "/api/accounts/session", "destination": "/api/accounts/index?route=session" }
   ]
 }

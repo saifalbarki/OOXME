@@ -35,4 +35,103 @@ fetch('/api/os/index?route=status',{credentials:'same-origin',signal:statusContr
 
 const dashboard = () => `${head('OOXME OS')}<body class="os-page"><main class="master-panel-experience os-experience os-dashboard-experience"><div class="master-panel-track os-panel-track">${dashboardPanel([['Website','website'],['GitHub','github'],['Vercel','vercel'],['Neon','neon']])}${dashboardPanel([['GPT','gpt'],['Calendar','calendar'],['Gmail','gmail'],['Drive','drive']])}${dashboardPanel([['YCloud','ycloud'],['WhatsApp','whatsapp'],['Facebook','facebook'],['Instagram','instagram']])}</div></main><script src="/js/os-language.js"></script>${dashboardScript}</body></html>`;
 
-module.exports = { login, dashboard };
+const accountManagementScript = `<script>
+(() => {
+  const endpoint = '/api/os/accounts';
+  const state = { accounts: [], type: 'employee', selected: null };
+  const $ = selector => document.querySelector(selector);
+  const t = key => (window.OOXMEOS?.copy?.[window.OOXMEOS.language]?.[key]) || key;
+  const error = message => { $('[data-account-error]').textContent = message || ''; };
+  const request = async (options = {}) => {
+    const response = await fetch(endpoint, { credentials: 'same-origin', ...options, headers: { 'Content-Type': 'application/json', ...(options.headers || {}) } });
+    if (response.status === 401) { location.assign('/os/login'); throw new Error('unauthorized'); }
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || 'account_action_failed');
+    return body;
+  };
+  const updateLabels = () => {
+    const profileLabel = state.type === 'employee' ? t('jobTitle') : t('companyName');
+    $('[data-account-profile-label]').textContent = profileLabel;
+    $('[data-account-profile]').placeholder = profileLabel;
+    document.querySelectorAll('[data-account-type-tab]').forEach(button => {
+      const active = button.dataset.accountTypeTab === state.type;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+  };
+  const selectedProfile = account => account.account_type === 'employee' ? account.employee_display_name : account.client_display_name;
+  const selectedExtra = account => account.account_type === 'employee' ? account.job_title : account.company_name;
+  const accountItem = account => {
+    const item = document.createElement('article'); item.className = 'os-account-item';
+    const details = document.createElement('button'); details.type = 'button'; details.className = 'os-account-select';
+    const name = document.createElement('strong'); name.textContent = selectedProfile(account) || account.username;
+    const meta = document.createElement('span'); meta.textContent = account.username + ' · ' + (selectedExtra(account) || t(account.account_type));
+    details.append(name, meta); details.addEventListener('click', () => select(account));
+    const status = document.createElement('span'); status.className = 'os-account-status'; status.dataset.status = account.status; status.textContent = t(account.status);
+    item.append(details, status); return item;
+  };
+  const render = () => {
+    const list = $('[data-account-list]'); list.replaceChildren();
+    const items = state.accounts.filter(account => account.account_type === state.type);
+    if (!items.length) { const empty = document.createElement('p'); empty.className = 'os-account-empty'; empty.textContent = t('noAccounts'); list.append(empty); }
+    else items.forEach(account => list.append(accountItem(account)));
+    updateLabels();
+  };
+  const resetForm = () => {
+    state.selected = null;
+    $('[data-account-form]').reset();
+    $('[data-account-form]').dataset.mode = 'create';
+    $('[data-account-form-title]').textContent = t('createAccount');
+    $('[data-account-submit]').textContent = t('createAccount');
+    $('[data-account-password]').required = true;
+    $('[data-account-password]').placeholder = t('password');
+    $('[data-account-delete]').hidden = true; $('[data-account-status]').hidden = true;
+    $('[data-account-type]').disabled = false; $('[data-account-type]').value = state.type;
+    error(''); updateLabels();
+  };
+  const select = account => {
+    state.selected = account; state.type = account.account_type;
+    const form = $('[data-account-form]'); form.dataset.mode = 'edit';
+    $('[data-account-form-title]').textContent = t('editAccount'); $('[data-account-submit]').textContent = t('saveChanges');
+    $('[data-account-username]').value = account.username;
+    $('[data-account-display]').value = selectedProfile(account) || '';
+    $('[data-account-profile]').value = selectedExtra(account) || '';
+    $('[data-account-password]').value = ''; $('[data-account-password]').required = false; $('[data-account-password]').placeholder = t('newPasswordOptional');
+    $('[data-account-type]').value = account.account_type; $('[data-account-type]').disabled = true;
+    $('[data-account-delete]').hidden = false; $('[data-account-status]').hidden = false;
+    $('[data-account-status]').textContent = account.status === 'active' ? t('deactivate') : t('activate');
+    error(''); render();
+  };
+  const load = async () => { state.accounts = await request(); render(); };
+  const mutate = async body => { await request({ method: 'POST', body: JSON.stringify(body) }); await load(); };
+  $('[data-account-form]').addEventListener('submit', async event => {
+    event.preventDefault(); error(''); const form = event.currentTarget;
+    const username = $('[data-account-username]').value, displayName = $('[data-account-display]').value, profile = $('[data-account-profile]').value, password = $('[data-account-password]').value;
+    try {
+      if (form.dataset.mode === 'create') {
+        await mutate({ action: 'create', username, password, accountType: state.type, displayName, ...(state.type === 'employee' ? { jobTitle: profile } : { companyName: profile }) });
+      } else {
+        await mutate({ action: 'update', id: state.selected.id, username, displayName, ...(state.type === 'employee' ? { jobTitle: profile } : { companyName: profile }) });
+        if (password) await mutate({ action: 'reset_password', id: state.selected.id, password });
+      }
+      resetForm(); await load();
+    } catch (failure) { if (failure.message !== 'unauthorized') error(t(failure.message)); }
+  });
+  $('[data-account-delete]').addEventListener('click', async () => {
+    if (!state.selected || !confirm(t('deleteConfirm'))) return;
+    try { await mutate({ action: 'delete', id: state.selected.id }); resetForm(); } catch (failure) { if (failure.message !== 'unauthorized') error(t(failure.message)); }
+  });
+  $('[data-account-status]').addEventListener('click', async () => {
+    if (!state.selected) return;
+    try { await mutate({ action: 'set_status', id: state.selected.id, status: state.selected.status === 'active' ? 'inactive' : 'active' }); select(state.accounts.find(account => account.id === state.selected.id) || state.selected); } catch (failure) { if (failure.message !== 'unauthorized') error(t(failure.message)); }
+  });
+  $('[data-account-new]').addEventListener('click', resetForm);
+  $('[data-account-type]').addEventListener('change', event => { state.type = event.currentTarget.value; updateLabels(); });
+  document.querySelectorAll('[data-account-type-tab]').forEach(button => button.addEventListener('click', () => { state.type = button.dataset.accountTypeTab; resetForm(); render(); }));
+  document.addEventListener('DOMContentLoaded', () => { resetForm(); load().catch(failure => { if (failure.message !== 'unauthorized') error(t('accountLoadFailed')); }); });
+})();
+</script>`;
+
+const accountManagement = () => shell(`<section class="master-panel-content os-content os-account-content"><div class="os-title-row"><h1 data-os-text="accountManagement">Account Management</h1><div class="os-account-top-actions"><a class="os-account-back" href="/os" data-os-text="osDashboard">OS Dashboard</a><form action="/api/os/logout" method="post"><button class="os-logout" type="submit" data-os-text="logOut">Log out</button></form></div></div><section class="os-account-layout"><section class="os-account-directory" aria-label="Account directory"><div class="os-account-tabs" role="tablist"><button type="button" data-account-type-tab="employee" data-os-text="employees">Employees</button><button type="button" data-account-type-tab="client" data-os-text="clients">Clients</button></div><div class="os-account-list" data-account-list></div></section><section class="os-account-editor"><div class="os-account-editor-heading"><h2 data-account-form-title data-os-text="createAccount">Create account</h2><button type="button" class="os-account-new" data-account-new data-os-text="newAccount">New account</button></div><form class="os-account-form" data-account-form data-mode="create"><label><span data-os-text="accountType">Account type</span><select data-account-type><option value="employee" data-os-text="employee">Employee</option><option value="client" data-os-text="client">Client</option></select></label><label><span data-os-text="username">Username</span><input data-account-username autocomplete="username" required></label><label><span data-os-text="displayName">Display name</span><input data-account-display autocomplete="name" required></label><label><span data-account-profile-label data-os-text="jobTitle">Job title</span><input data-account-profile></label><label><span data-os-text="password">Password</span><input type="password" data-account-password autocomplete="new-password" required></label><p class="os-error" data-account-error role="alert"></p><button type="submit" class="os-account-primary" data-account-submit data-os-text="createAccount">Create account</button></form><div class="os-account-danger-actions"><button type="button" data-account-status hidden></button><button type="button" data-account-delete hidden data-os-text="deleteAccount">Delete account</button></div></section></section></section><script src="/js/os-language.js"></script>${accountManagementScript}`, 'OOXME OS — Account Management');
+
+module.exports = { login, dashboard, accountManagement };

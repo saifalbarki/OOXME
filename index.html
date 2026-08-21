@@ -94,6 +94,32 @@
             <footer class="master-panel-footer"><button class="master-panel-continue" type="button" data-home-panel><span class="swipe-control"><span data-en="Home" data-ar="الرئيسيــــة">Home</span><span class="swipe-control-line"></span></span></button></footer>
           </div>
         </section>
+        <section class="master-panel-screen employee-dashboard-panel">
+          <div class="master-panel">
+            <header class="master-panel-header">
+              <button class="master-panel-control" type="button" data-language-toggle aria-label="Switch language"><img src="assets/icons/globe-outline.svg" alt="" /></button>
+              <a class="master-panel-logo" href="index.html" aria-label="OOXME"><img src="assets/logo/OX-001-LOGO-black.png" alt="OOXME" /></a>
+              <button class="master-panel-control" type="button" data-search-toggle aria-label="Search"><img src="assets/icons/search.svg" alt="" /></button>
+            </header>
+            <div class="master-panel-content employee-dashboard-content">
+              <section class="employee-dashboard-identity" aria-label="Employee information">
+                <div class="employee-dashboard-avatar" aria-hidden="true"><img src="assets/icons/New/PROFILE.svg" alt="" /></div>
+                <article class="employee-dashboard-card employee-dashboard-info-card">
+                  <strong data-en="Employee name" data-ar="اسم الموظف">Employee name</strong>
+                  <span data-en="Job title" data-ar="المسمى الوظيفي">Job title</span>
+                  <span data-en="Employee ID" data-ar="معرّف الموظف">Employee ID</span>
+                </article>
+              </section>
+              <article class="employee-dashboard-card employee-dashboard-status-card">
+                <div class="employee-dashboard-status"><span data-en="Account status" data-ar="حالة الحساب">Account status</span><i aria-label="Status pending"></i></div>
+                <p data-en="Professional summary pending" data-ar="الملخص المهني قيد الإضافة">Professional summary pending</p>
+                <div class="employee-dashboard-metric"><span data-en="Task completion" data-ar="إنجاز المهام">Task completion</span><span class="employee-dashboard-progress" aria-label="Task completion pending"><i></i></span></div>
+                <div class="employee-dashboard-metric"><span data-en="Employee efficiency" data-ar="كفاءة الموظف">Employee efficiency</span><span class="employee-dashboard-progress" aria-label="Employee efficiency pending"><i></i></span></div>
+              </article>
+            </div>
+            <footer class="master-panel-footer homepage-bottom-navigation employee-dashboard-navigation" data-employee-dashboard-navigation><button class="master-panel-continue" type="button" data-employee-dashboard-menu-trigger aria-label="Open navigation" aria-expanded="false"><span class="swipe-control"><span data-en="Continue" data-ar="متابعــــة">Continue</span><span class="swipe-control-line"></span></span></button><nav class="homepage-bottom-menu" data-employee-dashboard-menu data-active="home" aria-label="Employee dashboard navigation"><span class="homepage-bottom-menu-indicator" aria-hidden="true"></span><button class="homepage-bottom-menu-button" type="button" data-employee-dashboard-menu-account aria-label="Account" aria-pressed="false"><img src="assets/icons/New/PROFILE.svg" alt="" /></button><button class="homepage-bottom-menu-button" type="button" data-employee-dashboard-menu-gallery aria-label="Gallery" aria-pressed="false"><img src="assets/icons/New/GALLERY.svg" alt="" /></button><button class="homepage-bottom-menu-button is-active" type="button" data-employee-dashboard-menu-home aria-label="Home" aria-pressed="true"><img src="assets/icons/New/HOME.svg" alt="" /></button><button class="homepage-bottom-menu-button" type="button" data-employee-dashboard-menu-search aria-label="Search" aria-pressed="false"><img src="assets/icons/New/SEARCH.svg" alt="" /></button><button class="homepage-bottom-menu-button" type="button" data-employee-dashboard-menu-notifications aria-label="Notifications" aria-pressed="false"><img src="assets/icons/New/NOTIFICATION.svg" alt="" /></button></nav></footer>
+          </div>
+        </section>
       </div>
     </main>
     <div class="search-overlay" data-search-overlay hidden>
@@ -116,6 +142,27 @@
         <label class="homepage-search-field"><input type="search" autocomplete="off" data-home-search-input data-en-placeholder="Search OOXME" data-ar-placeholder="ابحث في اوكسوم" placeholder="Search OOXME" aria-label="Search OOXME" /></label>
         <div class="homepage-search-suggestions" data-home-search-suggestions hidden aria-live="polite"></div>
         <section class="homepage-search-quick-access"><h2 data-en="Quick Access" data-ar="وصول سريع">Quick Access</h2><div><button class="homepage-search-suggestion" type="button" data-en="Brand Management" data-ar="إدارة العلامة التجارية">Brand Management</button><button class="homepage-search-suggestion" type="button" data-en="Brand Development" data-ar="تطوير العلامة التجارية">Brand Development</button><button class="homepage-search-suggestion" type="button" data-en="Digital Transformation" data-ar="التحول الرقمي">Digital Transformation</button></div></section>
+      </section>
+    </div>
+    <div class="homepage-account" data-home-account hidden aria-hidden="true">
+      <section class="homepage-search-panel homepage-account-panel" role="dialog" aria-modal="true" aria-label="Account">
+        <section class="homepage-account-section" data-home-account-section="employee">
+          <button class="homepage-account-section-toggle" type="button" data-home-account-toggle="employee" aria-expanded="false"><span data-en="Employee Account" data-ar="حساب الموظف">Employee Account</span></button>
+          <div class="homepage-account-section-content">
+            <label class="homepage-search-field"><input type="text" autocomplete="username" data-home-account-input data-en-placeholder="Username" data-ar-placeholder="اسم المستخدم" placeholder="Username" aria-label="Username" /></label>
+            <label class="homepage-search-field"><input type="password" autocomplete="current-password" data-home-account-input data-en-placeholder="Password" data-ar-placeholder="كلمة المرور" placeholder="Password" aria-label="Password" /></label>
+            <button class="homepage-account-login" type="button"><span data-en="Login" data-ar="تسجيل الدخول">Login</span></button>
+          </div>
+        </section>
+        <section class="homepage-account-section" data-home-account-section="client">
+          <button class="homepage-account-section-toggle" type="button" data-home-account-toggle="client" aria-expanded="false"><span data-en="Client Account" data-ar="حساب العميل">Client Account</span></button>
+          <div class="homepage-account-section-content">
+            <label class="homepage-search-field"><input type="text" autocomplete="username" data-home-account-input data-en-placeholder="Username" data-ar-placeholder="اسم المستخدم" placeholder="Username" aria-label="Username" /></label>
+            <label class="homepage-search-field"><input type="password" autocomplete="current-password" data-home-account-input data-en-placeholder="Password" data-ar-placeholder="كلمة المرور" placeholder="Password" aria-label="Password" /></label>
+            <button class="homepage-account-login" type="button"><span data-en="Login" data-ar="تسجيل الدخول">Login</span></button>
+          </div>
+        </section>
+        <p class="homepage-account-register homepage-search-suggestion" data-en="Don’t have an account? Register now" data-ar="ليس لديك حساب؟ سجل الآن">Don’t have an account? Register now</p>
       </section>
     </div>
   </body>

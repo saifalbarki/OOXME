@@ -3,9 +3,9 @@ const { Pool } = require('pg');
 let pool;
 
 const databaseUrl = () => {
-  const value = process.env.DATABASE_URL;
+  const value = process.env.OOXME_DATABASE_URL || process.env.DATABASE_URL;
   if (!value) {
-    const error = new Error('Missing required environment variable: DATABASE_URL');
+    const error = new Error('Missing required environment variable: OOXME_DATABASE_URL or DATABASE_URL');
     error.code = 'database_unconfigured';
     throw error;
   }
