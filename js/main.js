@@ -117,6 +117,7 @@ const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
 const homepageMenu = document.querySelector('[data-home-menu]');
 let homepageMenuInactivityTimer;
 let homepageMenuSelectionTimer;
+let homepageMenuCloseTimer;
 const resetHomepageMenuInactivityTimer = () => {
   window.clearTimeout(homepageMenuInactivityTimer);
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
@@ -124,7 +125,18 @@ const resetHomepageMenuInactivityTimer = () => {
 };
 const setHomepageMenuOpen = (open) => {
   if (!open) window.clearTimeout(homepageMenuSelectionTimer);
-  homepageBottomNavigation?.classList.toggle('is-menu-open', open);
+  window.clearTimeout(homepageMenuCloseTimer);
+  if (open) {
+    homepageBottomNavigation?.classList.remove('is-menu-closing');
+    homepageBottomNavigation?.classList.add('is-menu-open');
+  } else if (homepageBottomNavigation?.classList.contains('is-menu-open')) {
+    homepageBottomNavigation.classList.remove('is-menu-open');
+    homepageBottomNavigation.classList.add('is-menu-closing');
+    homepageMenuCloseTimer = window.setTimeout(() => {
+      homepageBottomNavigation.classList.remove('is-menu-closing');
+      homepageMenuCloseTimer = undefined;
+    }, 340);
+  }
   homepageMenuTrigger?.setAttribute('aria-expanded', String(open));
   document.body.classList.toggle('homepage-navigation-open', open);
   resetHomepageMenuInactivityTimer();
