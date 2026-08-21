@@ -33,7 +33,15 @@ async function migrate() {
         throw error;
       }
     }
-    const tables = await client.query("SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ANY($1::text[]) ORDER BY tablename", [['bookings', 'promotions', 'promotion_redemptions', 'offer_tokens', 'booking_holds', 'idempotency_keys']]);
+    const expectedTables = ['bookings', 'promotions', 'promotion_redemptions', 'offer_tokens', 'booking_holds', 'idempotency_keys', 'users', 'employee_profiles', 'client_profiles', 'projects', 'tasks', 'files', 'sessions'];
+    const tables = await client.query("SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ANY($1::text[]) ORDER BY tablename", [expectedTables]);
+    const verifiedTables = new Set(tables.rows.map((row) => row.tablename));
+    const missingTables = expectedTables.filter((table) => !verifiedTables.has(table));
+
+    if (missingTables.length > 0) {
+      throw new Error(`Migration verification failed. Missing tables: ${missingTables.join(', ')}`);
+    }
+
     console.log(`Verified tables: ${tables.rows.map((row) => row.tablename).join(', ') || 'none'}`);
   } finally {
     await client.query('SELECT pg_advisory_unlock(80455001)').catch(() => undefined);
