@@ -15,8 +15,12 @@
   --radius-control: clamp(12px, calc(var(--radius-box) * .62), 22px);
   --card-radius: var(--radius-box);
   --panel-safe: clamp(20px, 4vw, 48px);
-  /* Shared responsive geometry. X intentionally remains the current panel-safe outer gap. */
-  --layout-x: var(--panel-safe);
+  /* Shared responsive geometry. x is the panel-to-screen edge gap. */
+  --x: var(--panel-safe);
+  --layout-x: var(--x);
+  --spacing-x: var(--x);
+  --spacing-x-half: calc(var(--x) * .5);
+  --spacing-x-triple: calc(var(--x) * 3);
   --layout-major-gap: var(--layout-x);
   --layout-related-gap: calc(var(--layout-x) * .75);
   --layout-compact-gap: calc(var(--layout-x) * .5);

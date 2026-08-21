@@ -115,9 +115,12 @@ revealPanel(panelIndex);
 const homepageBottomNavigation = document.querySelector('.homepage-bottom-navigation');
 const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
 const homepageMenu = document.querySelector('[data-home-menu]');
+const homepageNotifications = document.querySelector('[data-notifications]');
 let homepageMenuInactivityTimer;
 let homepageMenuSelectionTimer;
 let homepageMenuCloseTimer;
+let homepageNotificationsCloseTimer;
+let homepageNotificationSelectionTimer;
 const resetHomepageMenuInactivityTimer = () => {
   window.clearTimeout(homepageMenuInactivityTimer);
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
@@ -150,7 +153,24 @@ const setHomepageMenuActive = (active) => {
     button.setAttribute('aria-pressed', String(selected));
   });
 };
-const queueHomepageMenuSelection = (active, action) => {
+const setHomepageNotificationsOpen = (open) => {
+  if (!homepageNotifications) return;
+  window.clearTimeout(homepageNotificationsCloseTimer);
+  if (open) {
+    setHomepageMenuOpen(false);
+    document.body.classList.add('homepage-notifications-open');
+    homepageNotifications.hidden = false;
+    homepageNotifications.setAttribute('aria-hidden', 'false');
+    window.requestAnimationFrame(() => homepageNotifications.classList.add('is-open'));
+    return;
+  }
+  homepageNotifications.classList.remove('is-open');
+  document.body.classList.remove('homepage-notifications-open');
+  homepageNotifications.setAttribute('aria-hidden', 'true');
+  homepageNotificationsCloseTimer = window.setTimeout(() => { homepageNotifications.hidden = true; }, 220);
+  setHomepageMenuOpen(true);
+};
+const queueHomepageMenuSelection = (active, action, delay = 3000) => {
   setHomepageMenuActive(active);
   resetHomepageMenuInactivityTimer();
   window.clearTimeout(homepageMenuSelectionTimer);
@@ -158,7 +178,7 @@ const queueHomepageMenuSelection = (active, action) => {
     homepageMenuSelectionTimer = undefined;
     if (action) action();
     else setHomepageMenuOpen(false);
-  }, 3000);
+  }, delay);
 };
 homepageMenuTrigger?.addEventListener('click', (event) => {
   event.preventDefault();
@@ -175,7 +195,20 @@ document.querySelector('[data-home-menu-home]')?.addEventListener('click', () =>
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account'));
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery'));
 document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search'));
-document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu'));
+document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
+  setHomepageMenuOpen(false);
+  window.setTimeout(() => setHomepageNotificationsOpen(true), 60);
+}, 260));
+homepageNotifications?.addEventListener('click', (event) => {
+  if (!event.target.closest('.homepage-notifications-panel')) setHomepageNotificationsOpen(false);
+});
+homepageNotifications?.querySelectorAll('[data-notification]').forEach((notification) => notification.addEventListener('click', () => {
+  const expanded = notification.classList.toggle('is-expanded');
+  notification.classList.add('is-read', 'is-selected');
+  notification.setAttribute('aria-expanded', String(expanded));
+  window.clearTimeout(homepageNotificationSelectionTimer);
+  homepageNotificationSelectionTimer = window.setTimeout(() => notification.classList.remove('is-selected'), 340);
+}));
 document.addEventListener('pointerdown', (event) => {
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
   resetHomepageMenuInactivityTimer();
