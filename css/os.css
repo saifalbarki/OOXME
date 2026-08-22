@@ -64,6 +64,7 @@ html[lang="ar"] .os-page { font-family: var(--font-arabic); }
 
 .os-current-accounts-content { --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); box-sizing: border-box; display: grid; grid-template-rows: auto auto minmax(0, 1fr); align-content: stretch; justify-items: center; padding: var(--x); gap: var(--x); }
 .os-current-accounts-content .homepage-account-selector { width: 100%; }
+.homepage-account-selector[data-os-panel-three-type][data-active="notifications"] .homepage-account-selector-indicator { left: calc(50% + var(--homepage-account-selector-inset)); }
 .os-current-accounts-list { display: grid; align-content: start; justify-items: center; width: 100%; min-height: 0; overflow: auto; gap: var(--x); }
 .os-current-account-row { display: flex; align-items: start; justify-content: space-between; width: 100%; min-height: var(--homepage-account-control-height); box-sizing: border-box; padding: calc(var(--x) * .65) var(--x); gap: var(--x); border-radius: var(--card-radius); background: var(--color-paper); }
 .os-current-account-details { display: grid; min-width: 0; gap: 2px; text-align: start; }
@@ -87,7 +88,7 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 .os-current-account-action.is-active img { filter: none; }
 .os-current-account-select { border: 0; outline: 0; background: var(--color-paper); color: var(--color-ink); text-align: center; }
 .os-current-account-select, .os-current-account-select option { font-size: var(--overlay-text-size) !important; }
-.os-current-account-form input { border: 0; outline: 0; background: var(--color-paper); color: var(--color-secondary-control); font-size: var(--overlay-text-size); text-align: center; }
+.os-current-account-form input { border: 0; outline: 0; background: var(--color-paper); color: var(--color-secondary-control); font-size: var(--overlay-text-size) !important; text-align: center; }
 .os-current-account-select:focus, .os-current-account-form input:focus { border-color: transparent; box-shadow: none; }
 .os-current-account-form { display: grid; justify-items: center; width: 100%; gap: var(--x); }
 .os-current-account-form input::placeholder { color: var(--color-secondary-control); opacity: 1; }
