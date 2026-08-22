@@ -37,10 +37,24 @@
   const notifications = document.querySelector('[data-notifications]');
   const search = document.querySelector('[data-home-search]');
   const account = document.querySelector('[data-home-account]');
+  const services = document.querySelector('[data-home-services]');
   const searchInput = document.querySelector('[data-home-search-input]');
   const searchSuggestions = document.querySelector('[data-home-search-suggestions]');
-  const overlayByItem = { account, search, menu: notifications };
-  const overlayClassByItem = { account: 'homepage-account-open', search: 'homepage-search-open', menu: 'homepage-notifications-open' };
+  const overlayByItem = { account, search, menu: notifications, services };
+  const overlayClassByItem = { account: 'homepage-account-open', search: 'homepage-search-open', menu: 'homepage-notifications-open', services: 'homepage-services-open' };
+  const normalizeNotificationLayout = (container) => container?.querySelectorAll('[data-notification]').forEach((item) => {
+    const date = item.querySelector('.homepage-notification-summary time');
+    const details = item.querySelector('.homepage-notification-details');
+    if (date && details) details.append(date);
+  });
+  normalizeNotificationLayout(notifications);
+  notifications?.querySelectorAll('[data-notifications-option]').forEach((button) => button.addEventListener('click', () => {
+    const selector = notifications.querySelector('[data-notifications-selector]');
+    const panel = notifications.querySelector('[data-notifications-panel]');
+    selector.dataset.active = button.dataset.notificationsOption;
+    panel.dataset.active = button.dataset.notificationsOption;
+    selector.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
+  }));
   let overlayCloseTimer;
   let notificationSelectionTimer;
   const overlayMotionTimers = new WeakMap();
@@ -120,7 +134,7 @@
         item.className = 'homepage-notification';
         item.dataset.notification = '';
         item.setAttribute('aria-expanded', 'false');
-        item.innerHTML = '<span class="homepage-notification-summary"><span><strong></strong><time></time></span><span class="homepage-notification-unread" aria-hidden="true"></span></span><span class="homepage-notification-details"><span class="homepage-notification-copy"></span></span>';
+        item.innerHTML = '<span class="homepage-notification-summary"><span><strong></strong></span><span class="homepage-notification-unread" aria-hidden="true"></span></span><span class="homepage-notification-details"><span class="homepage-notification-copy"></span><time></time></span>';
         item.querySelector('strong').textContent = record.title;
         item.querySelector('time').dateTime = record.publish_date;
         item.querySelector('time').textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(record.publish_date));
@@ -157,6 +171,16 @@
   account?.addEventListener('pointerdown', (event) => {
     if (!event.target.closest('.homepage-account-panel')) setOverlayOpen('account', false);
   });
+  services?.addEventListener('pointerdown', (event) => {
+    if (!event.target.closest('.homepage-services-panel')) setOverlayOpen('services', false);
+  });
+  services?.querySelectorAll('[data-home-services-option]').forEach((button) => button.addEventListener('click', () => {
+    const selector = services.querySelector('[data-home-services-selector]');
+    const panel = services.querySelector('[data-home-services-panel]');
+    selector.dataset.active = button.dataset.homeServicesOption;
+    panel.dataset.active = button.dataset.homeServicesOption;
+    selector.querySelectorAll('[data-home-services-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
+  }));
   account?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
     const accountSelector = account.querySelector('[data-home-account-selector]');
     accountSelector.dataset.active = button.dataset.homeAccountType;

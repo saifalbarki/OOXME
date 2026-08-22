@@ -123,8 +123,22 @@ const homepageMenu = document.querySelector('[data-home-menu]');
 const homepageNotifications = document.querySelector('[data-notifications]');
 const homepageSearch = document.querySelector('[data-home-search]');
 const homepageAccount = document.querySelector('[data-home-account]');
+const homepageServices = document.querySelector('[data-home-services]');
 const homepageSearchInput = document.querySelector('[data-home-search-input]');
 const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
+const normalizeSharedNotificationLayout = (container) => container?.querySelectorAll('[data-notification]').forEach((item) => {
+  const date = item.querySelector('.homepage-notification-summary time');
+  const details = item.querySelector('.homepage-notification-details');
+  if (date && details) details.append(date);
+});
+normalizeSharedNotificationLayout(homepageNotifications);
+homepageNotifications?.querySelectorAll('[data-notifications-option]').forEach((button) => button.addEventListener('click', () => {
+  const selector = homepageNotifications.querySelector('[data-notifications-selector]');
+  const panel = homepageNotifications.querySelector('[data-notifications-panel]');
+  selector.dataset.active = button.dataset.notificationsOption;
+  panel.dataset.active = button.dataset.notificationsOption;
+  selector.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
+}));
 const employeeDashboardNavigation = document.querySelector('[data-employee-dashboard-navigation]');
 const employeeDashboardMenuTrigger = document.querySelector('[data-employee-dashboard-menu-trigger]');
 const employeeDashboardMenu = document.querySelector('[data-employee-dashboard-menu]');
@@ -135,6 +149,7 @@ let homepageNotificationsCloseTimer;
 let homepageNotificationSelectionTimer;
 let homepageSearchCloseTimer;
 let homepageAccountCloseTimer;
+let homepageServicesCloseTimer;
 let employeeDashboardMenuTimer;
 const setEmployeeDashboardMenuOpen = (open) => {
   if (!employeeDashboardNavigation || !employeeDashboardMenuTrigger) return;
@@ -150,9 +165,10 @@ const setEmployeeDashboardMenuOpen = (open) => {
 };
 employeeDashboardMenuTrigger?.addEventListener('click', () => setEmployeeDashboardMenuOpen(!employeeDashboardNavigation.classList.contains('is-menu-open')));
 employeeDashboardMenu?.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => {
+  if (button.hasAttribute('data-employee-dashboard-menu-services')) return;
   const buttons = [...employeeDashboardMenu.querySelectorAll('button')];
   employeeDashboardMenu.querySelectorAll('button').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
-  employeeDashboardMenu.dataset.active = ['account', 'gallery', 'home', 'search', 'menu'][buttons.indexOf(button)];
+  employeeDashboardMenu.dataset.active = ['account', 'gallery', 'home', 'menu', 'services'][buttons.indexOf(button)];
 }));
 document.querySelector('[data-employee-dashboard-menu-notifications]')?.addEventListener('click', () => setHomepageNotificationsOpen(true));
 document.addEventListener('pointerdown', (event) => {
@@ -185,7 +201,7 @@ const setHomepageMenuActive = (active) => {
   if (!homepageMenu) return;
   homepageMenu.dataset.active = active;
   document.querySelectorAll('.homepage-bottom-menu-button').forEach((button) => {
-    const selected = (active === 'account' && button.matches('[data-home-menu-account]')) || (active === 'gallery' && button.matches('[data-home-menu-gallery]')) || (active === 'home' && button.matches('[data-home-menu-home]')) || (active === 'search' && button.matches('[data-home-menu-search]')) || (active === 'menu' && button.matches('[data-home-menu-menu]'));
+    const selected = (active === 'account' && button.matches('[data-home-menu-account]')) || (active === 'gallery' && button.matches('[data-home-menu-gallery]')) || (active === 'home' && button.matches('[data-home-menu-home]')) || (active === 'menu' && button.matches('[data-home-menu-menu]')) || (active === 'services' && button.matches('[data-home-menu-services]'));
     button.classList.toggle('is-active', selected);
     button.setAttribute('aria-pressed', String(selected));
   });
@@ -282,6 +298,29 @@ const setHomepageAccountOpen = (open) => {
   homepageAccountCloseTimer = window.setTimeout(() => { homepageAccount.hidden = true; }, 360);
   setHomepageMenuOpen(true);
 };
+const setHomepageServicesOpen = (open) => {
+  if (!homepageServices) return;
+  window.clearTimeout(homepageServicesCloseTimer);
+  if (open) {
+    setHomepageMenuOpen(false);
+    setEmployeeDashboardMenuOpen(false);
+    homepageServices.hidden = false;
+    homepageServices.setAttribute('aria-hidden', 'false');
+    prepareHomepageOverlayMotion(homepageServices);
+    window.requestAnimationFrame(() => {
+      document.body.classList.add('homepage-services-open');
+      homepageServices.classList.add('is-open');
+    });
+    return;
+  }
+  prepareHomepageOverlayMotion(homepageServices);
+  homepageServices.classList.remove('is-open');
+  document.body.classList.remove('homepage-services-open');
+  homepageServices.setAttribute('aria-hidden', 'true');
+  homepageServicesCloseTimer = window.setTimeout(() => { homepageServices.hidden = true; }, 360);
+  setHomepageMenuOpen(true);
+};
+document.querySelector('[data-employee-dashboard-menu-services]')?.addEventListener('click', () => setHomepageServicesOpen(true));
 const queueHomepageMenuSelection = (active, action) => {
   setHomepageMenuActive(active);
   resetHomepageMenuInactivityTimer();
@@ -291,7 +330,7 @@ const queueHomepageMenuSelection = (active, action) => {
   else setHomepageMenuOpen(false);
 };
 window.setTimeout(() => {
-  if (homepageBottomNavigation?.classList.contains('is-menu-open') || homepageNotifications?.classList.contains('is-open') || homepageSearch?.classList.contains('is-open') || homepageAccount?.classList.contains('is-open')) return;
+  if (homepageBottomNavigation?.classList.contains('is-menu-open') || homepageNotifications?.classList.contains('is-open') || homepageSearch?.classList.contains('is-open') || homepageAccount?.classList.contains('is-open') || homepageServices?.classList.contains('is-open')) return;
   setHomepageMenuOpen(true);
   window.setTimeout(() => setHomepageMenuOpen(false), 2000);
 }, 3000);
@@ -317,7 +356,7 @@ document.querySelector('[data-home-menu-home]')?.addEventListener('click', () =>
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => setHomepageAccountOpen(true)));
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => location.assign('/studio')));
 document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/studio'));
-document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search', () => setHomepageSearchOpen(true)));
+document.querySelector('[data-home-menu-services]')?.addEventListener('click', () => queueHomepageMenuSelection('services', () => setHomepageServicesOpen(true)));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
   setHomepageNotificationsOpen(true);
 }));
@@ -329,8 +368,8 @@ const renderSharedNotifications = (notifications) => {
   if (!list || !Array.isArray(notifications)) return;
   list.replaceChildren(...notifications.map(notification => {
     const item = document.createElement('button'); item.type = 'button'; item.className = 'homepage-notification'; item.dataset.notification = ''; item.setAttribute('aria-expanded', 'false');
-    const summary = document.createElement('span'); summary.className = 'homepage-notification-summary'; const summaryCopy = document.createElement('span'); const title = document.createElement('strong'); title.textContent = notification.title; const date = document.createElement('time'); date.dateTime = notification.publish_date; date.textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(notification.publish_date)); summaryCopy.append(title, date); const unread = document.createElement('span'); unread.className = 'homepage-notification-unread'; unread.setAttribute('aria-hidden', 'true'); summary.append(summaryCopy, unread);
-    const details = document.createElement('span'); details.className = 'homepage-notification-details'; const copy = document.createElement('span'); copy.className = 'homepage-notification-copy'; copy.textContent = notification.body; details.append(copy); item.append(summary, details); return item;
+    const summary = document.createElement('span'); summary.className = 'homepage-notification-summary'; const summaryCopy = document.createElement('span'); const title = document.createElement('strong'); title.textContent = notification.title; const date = document.createElement('time'); date.dateTime = notification.publish_date; date.textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(notification.publish_date)); summaryCopy.append(title); const unread = document.createElement('span'); unread.className = 'homepage-notification-unread'; unread.setAttribute('aria-hidden', 'true'); summary.append(summaryCopy, unread);
+    const details = document.createElement('span'); details.className = 'homepage-notification-details'; const copy = document.createElement('span'); copy.className = 'homepage-notification-copy'; copy.textContent = notification.body; details.append(copy, date); item.append(summary, details); return item;
   }));
 };
 const loadSharedNotifications = async () => {
@@ -357,6 +396,16 @@ homepageSearch?.addEventListener('pointerdown', (event) => {
 homepageAccount?.addEventListener('pointerdown', (event) => {
   if (!event.target.closest('.homepage-account-panel')) setHomepageAccountOpen(false);
 });
+homepageServices?.addEventListener('pointerdown', (event) => {
+  if (!event.target.closest('.homepage-services-panel')) setHomepageServicesOpen(false);
+});
+homepageServices?.querySelectorAll('[data-home-services-option]').forEach((button) => button.addEventListener('click', () => {
+  const selector = homepageServices.querySelector('[data-home-services-selector]');
+  const panel = homepageServices.querySelector('[data-home-services-panel]');
+  selector.dataset.active = button.dataset.homeServicesOption;
+  panel.dataset.active = button.dataset.homeServicesOption;
+  selector.querySelectorAll('[data-home-services-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
+}));
 homepageAccount?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
   const selector = homepageAccount.querySelector('[data-home-account-selector]');
   if (!selector) return;

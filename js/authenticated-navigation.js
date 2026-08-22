@@ -43,6 +43,7 @@
     trigger.addEventListener('click', event => { event.stopPropagation(); navigation.classList.contains('is-menu-open') ? close() : open(); });
     menu.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
       if (button.disabled) return;
+      if (button.hasAttribute('data-auth-nav-noop')) return;
       if (button.dataset.authNavPanel) {
         movePanel(button.dataset.authNavPanel, button);
         return;

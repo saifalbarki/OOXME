@@ -72,21 +72,22 @@
               <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="account" aria-pressed="false"><img src="assets/icons/New/PROFILE.svg" alt="" /></button>
               <button class="homepage-bottom-menu-button is-active" type="button" data-auth-nav-item="gallery" aria-pressed="true"><img src="assets/icons/New/FILE.svg" alt="" /></button>
               <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="home" data-auth-nav-destination="/" aria-pressed="false"><img src="assets/icons/New/HOME.svg" alt="" /></button>
-              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="search" aria-pressed="false"><img src="assets/icons/New/SEARCH.svg" alt="" /></button>
-              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="menu" aria-pressed="false"><img src="assets/icons/New/NOTIFICATION.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="menu" aria-label="Notifications" aria-pressed="false"><img src="assets/icons/New/NOTIFICATION.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="services" aria-label="Services" aria-pressed="false"><img src="assets/icons/New/SERVICES.svg" alt="" /></button>
             </nav>
           </footer>
         </article>
       </section>
     </main>
     <div class="homepage-notifications" data-notifications hidden aria-hidden="true">
-      <section class="homepage-notifications-panel" role="dialog" aria-modal="true" aria-label="Notifications">
-        <header class="homepage-notifications-header"><h2 data-en="Notifications" data-ar="الإشعارات">Notifications</h2></header>
+      <section class="homepage-notifications-panel homepage-account-panel" data-notifications-panel data-active="notifications" role="dialog" aria-modal="true" aria-label="Notifications">
+        <header class="homepage-account-selector homepage-notifications-selector" data-notifications-selector data-active="notifications" role="tablist" aria-label="Notifications view"><span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-notifications-option="notifications" role="tab" aria-selected="true"><span data-en="Notifications" data-ar="الإشعارات">Notifications</span></button><button type="button" data-notifications-option="contact" role="tab" aria-selected="false"><span data-en="Contact" data-ar="التواصل">Contact</span></button></header>
         <div class="homepage-notifications-list">
           <button class="homepage-notification" type="button" data-notification aria-expanded="false"><span class="homepage-notification-summary"><span><strong data-en="Redesign Website" data-ar="إعادة تصميم الموقع">Redesign Website</strong><time data-en="21 August 2026" data-ar="٢١ أغسطس ٢٠٢٦">21 August 2026</time></span><span class="homepage-notification-unread" aria-label="Unread"></span></span><span class="homepage-notification-details"><span class="homepage-notification-copy"><span data-en="With the launch of the fourth update of the new OOXME OS, we are currently maintaining, organizing, and developing our website to better support our work requirements and meet your expectations." data-ar="مع انطلاق التحديث الرابع لنظام اوكسوم الجديد، فإننا نقوم حالياً بصيانة وتنظيم وتطوير موقعنا الإلكتروني ليلبي متطلبات عملنا ويلائم تطلعاتكم.">With the launch of the fourth update of the new OOXME OS, we are currently maintaining, organizing, and developing our website to better support our work requirements and meet your expectations.</span><span data-en="You will be notified soon when the improved version of our website is ready." data-ar="سوف يتم إشعاركم قريباً بالنسخة الأفضل من موقعنا.">You will be notified soon when the improved version of our website is ready.</span><span data-en="Thank you." data-ar="شكراً لكم.">Thank you.</span></span></span></button>
           <button class="homepage-notification" type="button" data-notification aria-expanded="false"><span class="homepage-notification-summary"><span><strong data-en="The Client Profile" data-ar="ملف العميل">The Client Profile</strong><time data-en="21 August 2026" data-ar="٢١ أغسطس ٢٠٢٦">21 August 2026</time></span><span class="homepage-notification-unread" aria-label="Unread"></span></span><span class="homepage-notification-details"><span data-en="Your profile area will be available here when it is ready." data-ar="ستتوفر مساحة ملفك الشخصي هنا عند جاهزيتها.">Your profile area will be available here when it is ready.</span><span class="homepage-notification-media" aria-hidden="true"><img src="assets/icons/New/PROFILE.svg" alt="" /><span class="homepage-notification-new-badge" data-en="NEW" data-ar="جديد">NEW</span></span></span></button>
           <button class="homepage-notification is-read" type="button" data-notification aria-expanded="false"><span class="homepage-notification-summary"><span><strong data-en="The Gallery" data-ar="المعرض">The Gallery</strong><time data-en="21 August 2026" data-ar="٢١ أغسطس ٢٠٢٦">21 August 2026</time></span><span class="homepage-notification-unread" aria-hidden="true"></span></span><span class="homepage-notification-details"><span data-en="New project work will appear in the gallery soon." data-ar="ستظهر أعمال المشاريع الجديدة في المعرض قريباً.">New project work will appear in the gallery soon.</span><span class="homepage-notification-media" aria-hidden="true"><img src="assets/icons/New/GALLERY.svg" alt="" /><span class="homepage-notification-new-badge" data-en="NEW" data-ar="جديد">NEW</span></span></span></button>
         </div>
+        <div class="homepage-notifications-contact" aria-hidden="true"></div>
       </section>
     </div>
     <div class="homepage-search" data-home-search hidden aria-hidden="true">
@@ -107,6 +108,19 @@
           <label class="homepage-search-field"><input type="text" autocomplete="username" data-home-account-input data-en-placeholder="Username" data-ar-placeholder="اسم المستخدم" placeholder="Username" aria-label="Username" /></label>
           <label class="homepage-search-field"><input type="password" autocomplete="current-password" data-home-account-input data-en-placeholder="Password" data-ar-placeholder="كلمة المرور" placeholder="Password" aria-label="Password" /></label>
           <button class="homepage-account-login" type="button"><span data-en="Login" data-ar="تسجيل الدخول">Login</span></button>
+        </div>
+      </section>
+    </div>
+    <div class="homepage-services" data-home-services hidden aria-hidden="true">
+      <section class="homepage-search-panel homepage-account-panel homepage-services-panel" data-home-services-panel data-active="services" role="dialog" aria-modal="true" aria-label="Services">
+        <div class="homepage-account-selector homepage-services-selector" data-home-services-selector data-active="services" role="tablist" aria-label="Services type">
+          <span class="homepage-account-selector-indicator" aria-hidden="true"></span>
+          <button type="button" data-home-services-option="services" role="tab" aria-selected="true"><span data-en="Services" data-ar="الخدمات">Services</span></button>
+          <button type="button" data-home-services-option="consultation" role="tab" aria-selected="false"><span data-en="Consultation" data-ar="استشارة">Consultation</span></button>
+        </div>
+        <div class="homepage-services-content">
+          <button type="button" data-home-services-content="services" aria-disabled="true"><span data-en="Brand Management" data-ar="إدارة العلامة التجارية">Brand Management</span></button>
+          <button type="button" data-home-services-content="consultation" aria-disabled="true"><span data-en="Book a Consultation" data-ar="حجز استشارة">Book a Consultation</span></button>
         </div>
       </section>
     </div>
