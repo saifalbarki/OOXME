@@ -64,7 +64,7 @@ html[lang="ar"] .os-page { font-family: var(--font-arabic); }
 
 .os-current-accounts-content { --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); box-sizing: border-box; display: grid; grid-template-rows: auto auto minmax(0, 1fr); align-content: stretch; justify-items: center; padding: var(--x); gap: var(--x); }
 .os-current-accounts-content .homepage-account-selector { width: 100%; }
-.os-current-accounts-list { display: grid; align-content: start; width: 100%; min-height: 0; overflow: auto; gap: var(--x); }
+.os-current-accounts-list { display: grid; align-content: start; justify-items: center; width: 100%; min-height: 0; overflow: auto; gap: var(--x); }
 .os-current-account-row { display: flex; align-items: start; justify-content: space-between; width: 100%; min-height: var(--homepage-account-control-height); box-sizing: border-box; padding: calc(var(--x) * .65) var(--x); gap: var(--x); border-radius: var(--card-radius); background: var(--color-paper); }
 .os-current-account-details { display: grid; min-width: 0; gap: 2px; text-align: start; }
 .os-current-account-details strong { overflow: hidden; color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
@@ -85,10 +85,10 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 .os-current-account-action img, .os-current-account-delete img { width: var(--homepage-bottom-nav-icon-size); height: var(--homepage-bottom-nav-icon-size); flex: 0 0 auto; object-fit: contain; }
 .os-current-account-action.is-active { color: var(--color-ink); }
 .os-current-account-action.is-active img { filter: none; }
-.os-current-account-select { border: 1px solid #3f4248; outline: 0; background: var(--color-paper); color: var(--color-ink); text-align: center; }
+.os-current-account-select { border: 0; outline: 0; background: var(--color-paper); color: var(--color-ink); text-align: center; }
 .os-current-account-form input { border: 0; outline: 0; background: var(--color-paper); color: var(--color-secondary-control); font-size: var(--overlay-text-size); text-align: center; }
 .os-current-account-select:focus, .os-current-account-form input:focus { border-color: transparent; box-shadow: none; }
-.os-current-account-form { display: grid; width: 100%; gap: var(--x); }
+.os-current-account-form { display: grid; justify-items: center; width: 100%; gap: var(--x); }
 .os-current-account-form input::placeholder { color: var(--color-secondary-control); opacity: 1; }
 .os-current-account-confirm-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: var(--x); }
 .os-current-account-cancel, .os-current-account-delete, .os-current-account-confirm-actions .homepage-account-login { border: 0; }
@@ -96,6 +96,6 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 .os-current-account-delete { background: #ffe3e5; color: #b3261e; cursor: pointer; }
 .os-current-account-warning { width: 100%; box-sizing: border-box; padding: var(--x); border-radius: var(--card-radius); background: #fff1f2; color: #8e1b25; font-size: var(--overlay-text-size); font-weight: 600; line-height: 1.35; text-align: center; }
 .os-current-account-error { width: 100%; min-height: 0; color: #b3261e; text-align: center; }
-@media (hover: none) and (pointer: coarse) { .os-current-account-form input { font-size: 16px; transform: scale(.875); transform-origin: center; width: calc(100% / .875); } }
+@media (hover: none) and (pointer: coarse) { .os-current-account-form input { width: 100%; font-size: 16px !important; transform: none; } }
 @media (max-aspect-ratio: 4 / 3) { .os-current-accounts-content { padding-bottom: var(--x); } .os-current-accounts-list { overflow-y: auto; } }
 html[dir="rtl"] .os-current-accounts-content { --overlay-text-size: clamp(13.5px, 1.45vw, 15.5px); }
