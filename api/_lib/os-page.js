@@ -10,6 +10,7 @@ const login = () => `${head('OOXME OS — Sign in')}<body class="os-page"><main 
 
 const cards = items => `<section class="os-grid">${items.map(([name, key]) => `<article class="os-card" data-state="unavailable" data-os-service="${key}"><div><span class="os-card-label" data-os-text="status">STATUS</span><h2 data-os-text="${key}">${name}</h2><p data-os-status data-os-initial-status="loading">Loading…</p><small data-os-meta></small></div><span class="os-card-dot" aria-hidden="true"></span></article>`).join('')}</section>`;
 const dashboardPanel = items => `<section class="master-panel-screen is-active os-screen"><article class="master-panel os-panel">${panelHeader()}${items.length ? `<section class="master-panel-content os-content os-dashboard-content">${cards(items)}</section>` : '<section class="master-panel-content os-content os-dashboard-empty" aria-hidden="true"></section>'}${dashboardFooter()}</article></section>`;
+const currentAccountsPanel = () => `<section class="master-panel-screen is-active os-screen"><article class="master-panel os-panel">${panelHeader()}<section class="master-panel-content os-content os-current-accounts-content"><div class="homepage-account-selector" data-os-accounts-mode data-active="current" role="tablist" aria-label="Account mode"><span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-os-accounts-mode-option="current" role="tab" aria-selected="true" data-os-text="current">Current</button><button type="button" data-os-accounts-mode-option="edit" role="tab" aria-selected="false" data-os-text="edit">Edit</button></div><div class="homepage-account-selector" data-os-accounts-type data-active="employee" role="tablist" aria-label="Account type"><span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-os-accounts-type-option="employee" role="tab" aria-selected="true" data-os-text="employee">Employee</button><button type="button" data-os-accounts-type-option="client" role="tab" aria-selected="false" data-os-text="client">Client</button></div><div class="os-current-accounts-divider" aria-hidden="true"></div><section class="os-current-accounts-list" data-os-current-accounts-list aria-live="polite"></section></section>${dashboardFooter()}</article></section>`;
 
 const dashboardScript = `<script>
 let osStatusData={};
@@ -35,7 +36,44 @@ fetch('/api/os/index?route=status',{credentials:'same-origin',signal:statusContr
   .finally(()=>clearTimeout(statusTimer));
 </script>`;
 
-const dashboard = () => `${head('OOXME OS')}<body class="os-page"><main class="master-panel-experience os-experience os-dashboard-experience"><div class="master-panel-track os-panel-track">${dashboardPanel([['Website','website'],['Vercel','vercel'],['GitHub','github'],['Gmail','gmail'],['Drive','drive'],['Calendar','calendar'],['WhatsApp','whatsapp'],['Facebook','facebook'],['Instagram','instagram'],['YCloud','ycloud'],['GPT','gpt'],['Neon','neon']])}${dashboardPanel([])}${dashboardPanel([])}</div></main><script src="/js/os-language.js"></script><script src="/js/authenticated-navigation.js"></script>${dashboardScript}</body></html>`;
+const currentAccountsScript = `<script>
+(() => {
+  const list = document.querySelector('[data-os-current-accounts-list]');
+  const modeSelector = document.querySelector('[data-os-accounts-mode]');
+  const typeSelector = document.querySelector('[data-os-accounts-type]');
+  if (!list || !modeSelector || !typeSelector) return;
+  let accounts = [];
+  const text = key => window.OOXMEOS?.copy?.[window.OOXMEOS.language]?.[key] || key;
+  const formatDate = value => value ? new Intl.DateTimeFormat(window.OOXMEOS?.language === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value)) : '';
+  const setSelector = (selector, value, attribute) => {
+    selector.dataset.active = value;
+    selector.querySelectorAll('button').forEach(button => button.setAttribute('aria-selected', String(button.dataset[attribute] === value)));
+  };
+  const render = () => {
+    list.replaceChildren();
+    const type = typeSelector.dataset.active;
+    const current = accounts.filter(account => account.account_type === type && account.status === 'active');
+    if (!current.length) { const empty = document.createElement('p'); empty.className = 'os-current-accounts-empty'; empty.textContent = text('noAccounts'); list.append(empty); return; }
+    current.forEach(account => {
+      const row = document.createElement('article'); row.className = 'os-current-account-row'; row.dataset.state = 'healthy';
+      const details = document.createElement('div'); details.className = 'os-current-account-details';
+      const name = document.createElement('strong'); name.textContent = type === 'employee' ? (account.employee_display_name || account.username) : (account.client_display_name || account.username);
+      const role = document.createElement('span'); role.textContent = type === 'employee' ? (account.job_title || account.username) : (account.company_name || account.username);
+      const period = document.createElement('small'); period.textContent = [formatDate(account.created_at), text('present')].filter(Boolean).join(' → ');
+      const dot = document.createElement('span'); dot.className = 'os-card-dot os-current-account-dot'; dot.setAttribute('aria-hidden', 'true');
+      details.append(name, role, period); row.append(details, dot); list.append(row);
+    });
+  };
+  modeSelector.querySelectorAll('[data-os-accounts-mode-option]').forEach(button => button.addEventListener('click', () => setSelector(modeSelector, button.dataset.osAccountsModeOption, 'osAccountsModeOption')));
+  typeSelector.querySelectorAll('[data-os-accounts-type-option]').forEach(button => button.addEventListener('click', () => { setSelector(typeSelector, button.dataset.osAccountsTypeOption, 'osAccountsTypeOption'); render(); }));
+  fetch('/api/os/accounts', { credentials: 'same-origin' })
+    .then(response => { if (!response.ok) throw new Error('accounts_unavailable'); return response.json(); })
+    .then(data => { accounts = Array.isArray(data) ? data : []; render(); })
+    .catch(() => { const error = document.createElement('p'); error.className = 'os-current-accounts-empty'; error.textContent = text('accountLoadFailed'); list.replaceChildren(error); });
+})();
+</script>`;
+
+const dashboard = () => `${head('OOXME OS')}<body class="os-page"><main class="master-panel-experience os-experience os-dashboard-experience"><div class="master-panel-track os-panel-track">${dashboardPanel([['Website','website'],['Vercel','vercel'],['GitHub','github'],['Gmail','gmail'],['Drive','drive'],['Calendar','calendar'],['WhatsApp','whatsapp'],['Facebook','facebook'],['Instagram','instagram'],['YCloud','ycloud'],['GPT','gpt'],['Neon','neon']])}${currentAccountsPanel()}${dashboardPanel([])}</div></main><script src="/js/os-language.js"></script><script src="/js/authenticated-navigation.js"></script>${dashboardScript}${currentAccountsScript}</body></html>`;
 
 const accountManagementScript = `<script>
 (() => {
