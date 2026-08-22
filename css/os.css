@@ -104,3 +104,7 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 @media (hover: none) and (pointer: coarse) { .os-current-account-form input { width: 100%; font-size: 16px !important; transform: none; } }
 @media (max-aspect-ratio: 4 / 3) { .os-current-accounts-content { padding-bottom: var(--x); } .os-current-accounts-list { overflow-y: auto; } }
 html[dir="rtl"] .os-current-accounts-content { --overlay-text-size: clamp(13.5px, 1.45vw, 15.5px); }
+
+/* OS login adopts the shared writable-field baseline without changing its geometry. */
+.os-login .homepage-search-field input.ooxme-writable-field { --ooxme-writable-font-size: 16px; color: var(--color-ink); font-size: var(--ooxme-writable-font-size) !important; font-weight: 700; line-height: 1.35; text-align: center; transform: none; }
+.os-login .homepage-search-field input.ooxme-writable-field::placeholder { color: rgba(13, 13, 13, .48); font-size: inherit; font-weight: 400; text-align: center; }

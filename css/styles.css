@@ -242,7 +242,7 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .studio-work-gallery { position: relative; align-self: end; width: 100%; min-height: 0; }
 .studio-work-gallery[hidden] { display: none; }
 .studio-work-gallery.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story { --gallery-deck-image-radius: var(--radius-control); position: static; inset: auto; bottom: auto; translate: none; width: 100%; }
-.studio-rating { --studio-rating-size: clamp(32px, 5dvh, 42px); --studio-rating-star-size: calc(var(--studio-rating-size) * .42); --studio-rating-star-gap: calc(var(--studio-rating-star-size) * 1.35); position: absolute; z-index: 120; top: var(--x); left: 50%; width: 0; height: 0; direction: ltr; }
+.studio-rating { --studio-rating-size: clamp(32px, 5dvh, 42px); --studio-rating-star-size: calc(var(--studio-rating-size) * .42); --studio-rating-star-gap: calc(var(--studio-rating-star-size) * 1.35); --studio-rating-cycle: 6.4s; --studio-rating-phase-delay: .25s; position: absolute; z-index: 120; top: var(--x); left: 50%; width: 0; height: 0; direction: ltr; }
 .studio-rating-trigger { position: absolute; display: grid; place-items: center; width: var(--studio-rating-size); height: var(--studio-rating-size); padding: 0; border: 1px solid rgba(255, 255, 255, .54); border-radius: 50%; background: rgba(255, 255, 255, .24); box-shadow: 0 8px 22px rgba(13, 13, 13, .12); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); cursor: pointer; transform: translateX(-50%); transition: opacity .24s ease, transform .3s cubic-bezier(.22, .61, .36, 1), background-color .24s ease; }
 .studio-rating-loop { position: relative; display: block; width: 100%; height: 100%; }
 .studio-rating-loop img { --studio-rating-rest-opacity: 0; --studio-rating-offset: 0px; position: absolute; top: 50%; left: 50%; width: var(--studio-rating-star-size); height: var(--studio-rating-star-size); object-fit: contain; opacity: var(--studio-rating-rest-opacity); transform: translate(-50%, -50%); }
@@ -251,10 +251,11 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .studio-rating-loop img:nth-child(3) { --studio-rating-rest-opacity: 1; --studio-rating-offset: 0px; }
 .studio-rating-loop img:nth-child(4) { --studio-rating-offset: var(--studio-rating-star-gap); }
 .studio-rating-loop img:nth-child(5) { --studio-rating-offset: calc(var(--studio-rating-star-gap) * 2); }
-@keyframes studio-rating-shell { 0%, 77.90625%, 100% { width: var(--studio-rating-size); border-radius: 50%; } 20%, 65.90625% { width: calc(var(--studio-rating-size) * 3.6); border-radius: var(--radius-control); } }
+/* 3.90625% is the shared --studio-rating-phase-delay within the 6.4s cycle. */
+@keyframes studio-rating-shell { 0%, 70.09375%, 100% { width: var(--studio-rating-size); border-radius: 50%; } 20%, 65.90625% { width: calc(var(--studio-rating-size) * 3.6); border-radius: var(--radius-control); } }
 @keyframes studio-rating-star { 0%, 3.90625%, 62%, 100% { opacity: var(--studio-rating-rest-opacity); transform: translate(-50%, -50%); } 15.90625%, 45% { opacity: 1; transform: translate(calc(-50% + var(--studio-rating-offset)), -50%); } }
-.studio-rating.is-loop-ready:not(.is-open):not(.is-submitted) .studio-rating-trigger { animation: studio-rating-shell 6.4s cubic-bezier(.22, .61, .36, 1) infinite; }
-.studio-rating.is-loop-ready:not(.is-open):not(.is-submitted) .studio-rating-loop img { animation: studio-rating-star 6.4s cubic-bezier(.22, .61, .36, 1) infinite; }
+.studio-rating.is-loop-ready:not(.is-open):not(.is-submitted) .studio-rating-trigger { animation: studio-rating-shell var(--studio-rating-cycle) cubic-bezier(.22, .61, .36, 1) infinite; }
+.studio-rating.is-loop-ready:not(.is-open):not(.is-submitted) .studio-rating-loop img { animation: studio-rating-star var(--studio-rating-cycle) cubic-bezier(.22, .61, .36, 1) infinite; }
 .studio-rating-card { position: absolute; left: 50%; display: grid; width: min(320px, calc(100vw - (var(--x) * 4))); padding: calc(var(--x) * .55); gap: calc(var(--x) * .55); border: 1px solid rgba(255, 255, 255, .68); border-radius: var(--radius-box); background: rgba(255, 255, 255, .82); box-shadow: 0 18px 48px rgba(13, 13, 13, .16); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); opacity: 0; pointer-events: none; transform: translateX(-50%) scale(.86); transform-origin: center top; transition: opacity .24s ease, transform .34s cubic-bezier(.22, .61, .36, 1); }
 .studio-rating.is-open .studio-rating-trigger { animation: none; opacity: 0; pointer-events: none; transform: translateX(-50%); }
 .studio-rating.is-open .studio-rating-card { opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1); }
