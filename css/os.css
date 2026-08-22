@@ -52,9 +52,11 @@ html[lang="ar"] .os-page { font-family: var(--font-arabic); }
 /* OS status dashboard: all services occupy Panel 1; remaining panels stay empty. */
 .os-dashboard-content { box-sizing: border-box; display: grid; align-content: start; padding: var(--x); }
 .os-dashboard-content .os-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: repeat(4, auto); grid-auto-flow: row; align-content: start; align-self: start; width: 100%; height: auto; margin: 0; gap: var(--x); }
-.os-dashboard-content .os-card { box-sizing: border-box; align-items: flex-start; width: 100%; min-height: 0; height: auto; aspect-ratio: 1; padding: min(calc(var(--x) * .55), 14px); gap: min(calc(var(--x) * .35), 8px); }
-.os-dashboard-content .os-card-label { font-size: clamp(6px, .65vw, 8px); }
-.os-dashboard-content .os-card h2 { margin: min(calc(var(--x) * .25), 4px) 0 1px; font-size: clamp(9px, 1vw, 12px); }
+.os-dashboard-content .os-card { box-sizing: border-box; align-items: flex-start; width: 100%; min-height: 0; height: auto; aspect-ratio: 1; padding: min(calc(var(--x) * .78), 18px); gap: 0; }
+.os-dashboard-content .os-card-details { display: grid; min-width: 0; width: 100%; align-content: start; }
+.os-dashboard-content .os-card-heading { display: flex; align-items: center; justify-content: space-between; min-width: 0; gap: min(calc(var(--x) * .35), 8px); }
+.os-dashboard-content .os-card h2 { min-width: 0; margin: 0; font-size: clamp(9px, 1vw, 12px); }
+.os-dashboard-content .os-card-heading .os-card-dot { flex: 0 0 7px; margin: 0; }
 .os-dashboard-content .os-card p { font-size: clamp(7px, .78vw, 9px) !important; }
 .os-dashboard-content .os-card small { margin-top: 2px; font-size: clamp(6px, .65vw, 8px); }
 .os-dashboard-empty { padding: 0; }
@@ -67,15 +69,15 @@ html[lang="ar"] .os-page { font-family: var(--font-arabic); }
 .os-dashboard-footer .homepage-bottom-menu[data-active="next"] .homepage-bottom-menu-indicator { left: calc(((100% / 3) * 2) + var(--homepage-bottom-nav-highlight-inset)); }
 .os-dashboard-footer .homepage-bottom-menu-button:disabled { cursor: default; opacity: .35; }
 
-.os-current-accounts-content { box-sizing: border-box; display: grid; grid-template-rows: auto auto 1px minmax(0, 1fr); align-content: stretch; justify-items: center; padding: var(--x); gap: var(--x); }
+.os-current-accounts-content { --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); box-sizing: border-box; display: grid; grid-template-rows: auto auto 1px minmax(0, 1fr); align-content: stretch; justify-items: center; padding: var(--x); gap: var(--x); }
 .os-current-accounts-content .homepage-account-selector { width: 100%; }
 .os-current-accounts-divider { width: 100%; height: 1px; background: var(--color-line); }
 .os-current-accounts-list { display: grid; align-content: start; width: 100%; min-height: 0; overflow: auto; gap: var(--x); }
-.os-current-account-row { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: var(--homepage-account-control-height); box-sizing: border-box; padding: calc(var(--x) * .65) var(--x); gap: var(--x); border-radius: var(--card-radius); background: var(--color-paper); }
+.os-current-account-row { display: flex; align-items: start; justify-content: space-between; width: 100%; min-height: var(--homepage-account-control-height); box-sizing: border-box; padding: calc(var(--x) * .65) var(--x); gap: var(--x); border-radius: var(--card-radius); background: var(--color-paper); }
 .os-current-account-details { display: grid; min-width: 0; gap: 2px; text-align: start; }
 .os-current-account-details strong { overflow: hidden; color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .os-current-account-details span, .os-current-account-details small, .os-current-accounts-empty { color: var(--color-secondary-control); font-size: var(--overlay-text-size); font-weight: 500; line-height: 1.35; }
-.os-current-account-dot { flex: 0 0 7px; margin: 0; }
+.os-current-account-dot { flex: 0 0 7px; margin: calc((var(--overlay-text-size) * 1.35 - 7px) / 2) 0 0; }
 .os-current-account-row[data-state="healthy"] .os-current-account-dot { --status-dot-color: #27834b; }
 .os-current-account-row[data-state="inactive"] .os-current-account-dot, .os-current-account-row[data-state="suspended"] .os-current-account-dot { --status-dot-color: var(--color-secondary-control); }
 html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[dir="rtl"] .os-current-account-details { text-align: end; }
@@ -94,3 +96,4 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 .os-current-account-warning { width: 100%; box-sizing: border-box; padding: var(--x); border-radius: var(--card-radius); background: #fff1f2; color: #8e1b25; font-size: var(--overlay-text-size); font-weight: 600; line-height: 1.35; text-align: center; }
 .os-current-account-error { width: 100%; min-height: 0; color: #b3261e; text-align: center; }
 @media (max-aspect-ratio: 4 / 3) { .os-current-accounts-content { padding-bottom: var(--x); } .os-current-accounts-list { overflow-y: auto; } }
+html[dir="rtl"] .os-current-accounts-content { --overlay-text-size: clamp(13.5px, 1.45vw, 15.5px); }
