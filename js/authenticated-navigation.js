@@ -15,13 +15,9 @@
     const dashboard = navigation.hasAttribute('data-os-panel-navigation') ? document.querySelector('.os-dashboard-experience') : null;
     const panels = dashboard ? [...dashboard.querySelectorAll('.os-screen')] : [];
     const currentPanel = () => dashboard ? Math.round(dashboard.scrollTop / dashboard.clientHeight) : 0;
-    const updatePanelControls = (index = currentPanel()) => {
-      if (!dashboard) return;
-      menu.querySelector('[data-auth-nav-panel="previous"]').disabled = index <= 0;
-      menu.querySelector('[data-auth-nav-panel="next"]').disabled = index >= panels.length - 1;
-    };
-    const movePanel = (direction, button) => {
-      const target = Math.max(0, Math.min(panels.length - 1, currentPanel() + direction));
+    const updatePanelControls = () => {};
+    const movePanel = (target, button) => {
+      target = Math.max(0, Math.min(panels.length - 1, Number(target)));
       if (target === currentPanel()) return;
       setActive(button.dataset.authNavItem);
       resetInactivity();
@@ -39,7 +35,7 @@
     menu.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
       if (button.disabled) return;
       if (button.dataset.authNavPanel) {
-        movePanel(button.dataset.authNavPanel === 'previous' ? -1 : 1, button);
+        movePanel(button.dataset.authNavPanel, button);
         return;
       }
       setActive(button.dataset.authNavItem);

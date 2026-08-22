@@ -232,6 +232,7 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .homepage-bottom-navigation.is-menu-open:not(.is-menu-closing) :is([data-auth-nav-item="gallery"], [data-auth-nav-item="search"]) { transition-delay: .05s; }
 .homepage-bottom-navigation.is-menu-open:not(.is-menu-closing) :is([data-auth-nav-item="account"], [data-auth-nav-item="menu"]) { transition-delay: .1s; }
 .homepage-bottom-navigation.is-menu-open:not(.is-menu-closing) :is([data-auth-nav-item="previous"], [data-auth-nav-item="next"]) { transition-delay: .1s; }
+.homepage-bottom-navigation.is-menu-open:not(.is-menu-closing) :is([data-auth-nav-item="discount"], [data-auth-nav-item="users"]) { transition-delay: .1s; }
 .homepage-bottom-navigation.is-menu-closing .homepage-bottom-menu { pointer-events: none; }
 .homepage-bottom-navigation.is-menu-closing .homepage-bottom-menu-indicator { opacity: 0; transition-delay: .1s, 0s; }
 .homepage-bottom-navigation.is-menu-closing .homepage-bottom-menu-button { opacity: 0; transform: scale(.72); }
@@ -242,11 +243,16 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .homepage-bottom-navigation.is-menu-closing :is([data-auth-nav-item="gallery"], [data-auth-nav-item="search"]) { transition-delay: .04s; transition-duration: .14s, .18s; }
 .homepage-bottom-navigation.is-menu-closing [data-auth-nav-item="home"] { transition-delay: .08s; transition-duration: .14s, .18s; }
 .homepage-bottom-navigation.is-menu-closing :is([data-auth-nav-item="previous"], [data-auth-nav-item="next"]) { transition-delay: 0s; transition-duration: .14s, .18s; }
+.homepage-bottom-navigation.is-menu-closing :is([data-auth-nav-item="discount"], [data-auth-nav-item="users"]) { transition-delay: 0s; transition-duration: .14s, .18s; }
 .homepage-bottom-menu [data-auth-nav-item="previous"] { grid-column: 1; }
 .homepage-bottom-menu [data-auth-nav-item="home"] { grid-column: 3; }
 .homepage-bottom-menu [data-auth-nav-item="next"] { grid-column: 5; }
+.homepage-bottom-menu [data-auth-nav-item="discount"] { grid-column: 1; }
+.homepage-bottom-menu [data-auth-nav-item="users"] { grid-column: 5; }
 .homepage-bottom-menu[data-active="previous"] .homepage-bottom-menu-indicator { left: var(--homepage-bottom-nav-highlight-inset); }
 .homepage-bottom-menu[data-active="next"] .homepage-bottom-menu-indicator { left: calc(((100% / 5) * 4) + var(--homepage-bottom-nav-highlight-inset)); }
+.homepage-bottom-menu[data-active="discount"] .homepage-bottom-menu-indicator { left: var(--homepage-bottom-nav-highlight-inset); }
+.homepage-bottom-menu[data-active="users"] .homepage-bottom-menu-indicator { left: calc(((100% / 5) * 4) + var(--homepage-bottom-nav-highlight-inset)); }
 .homepage-bottom-menu [data-auth-nav-panel]:disabled { cursor: default; opacity: .35; }
 @media (prefers-reduced-motion: reduce) { .homepage-bottom-menu, .homepage .intro-panel .master-panel-control, .homepage-bottom-menu-indicator, .homepage-bottom-menu-button, .homepage-notifications, .homepage-notifications-panel, .homepage-notification, .homepage-notification-details { transition-duration: .01ms; } }
 .master-panel-track.is-dragging { transition: none; }

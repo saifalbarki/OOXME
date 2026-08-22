@@ -86,6 +86,7 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 .os-current-account-action.is-active { color: var(--color-ink); }
 .os-current-account-action.is-active img { filter: none; }
 .os-current-account-select { border: 0; outline: 0; background: var(--color-paper); color: var(--color-ink); text-align: center; }
+.os-current-account-select, .os-current-account-select option { font-size: var(--overlay-text-size) !important; }
 .os-current-account-form input { border: 0; outline: 0; background: var(--color-paper); color: var(--color-secondary-control); font-size: var(--overlay-text-size); text-align: center; }
 .os-current-account-select:focus, .os-current-account-form input:focus { border-color: transparent; box-shadow: none; }
 .os-current-account-form { display: grid; justify-items: center; width: 100%; gap: var(--x); }
