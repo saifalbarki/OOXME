@@ -205,7 +205,6 @@
   const rating = workGallery.querySelector('[data-studio-rating]');
   const ratingTrigger = rating?.querySelector('[data-rating-open]');
   const ratingForm = rating?.querySelector('[data-rating-form]');
-  const ratingClose = rating?.querySelector('[data-rating-close]');
   const ratingSubmit = rating?.querySelector('[data-rating-submit]');
   const ratingOptions = rating ? [...rating.querySelectorAll('[data-rating-value]')] : [];
   const state = { index: 0, manualDirection: 1, dragging: false };
@@ -214,6 +213,10 @@
   let selectedRating = 0;
   let pausedDeckAnimations = [];
   let ratingTransitionTimers = [];
+  const startRatingLoop = () => {
+    if (!ratingSubmitted) rating?.classList.add('is-loop-ready');
+  };
+  window.requestAnimationFrame(() => window.setTimeout(startRatingLoop, 1000));
   const landscapeQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
   const circularDistance = (index, center, count) => {
     let distance = index - center;
@@ -369,8 +372,7 @@
     rating.classList.add('is-open');
     setRatingOpenState(true);
   };
-  ratingTrigger?.addEventListener('click', openRating);
-  ratingClose?.addEventListener('click', closeRating);
+  ratingTrigger?.addEventListener('click', (event) => { event.stopPropagation(); openRating(); });
   ratingOptions.forEach((option) => option.addEventListener('click', () => {
     if (ratingSubmitted) return;
     selectedRating = Number(option.dataset.ratingValue);
@@ -398,9 +400,9 @@
   };
   ratingSubmit?.addEventListener('click', submitRating);
   ratingForm?.addEventListener('submit', (event) => { event.preventDefault(); submitRating(); });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeRating();
-  });
+  document.addEventListener('click', (event) => {
+    if (rating?.classList.contains('is-open') && !event.target.closest('.studio-rating-card')) closeRating();
+  }, true);
   document.addEventListener('studio-view-change', (event) => {
     if (event.detail !== 'work') closeRating();
   });
