@@ -26,6 +26,7 @@
     });
     if (workGallery) workGallery.hidden = view !== 'work';
     if (clientCopy) clientCopy.hidden = view !== 'client';
+    syncDuplicateStudioPanel?.();
     document.dispatchEvent(new CustomEvent('studio-view-change', { detail: view }));
   };
 
@@ -220,8 +221,10 @@
 
   if (!workGallery) return;
 
-  // The exact Basra Mall source sequence used by the Portfolio Story deck.
-  const images = [
+  // Panel 1 uses the supplied Hijab project sequence in numeric filename order.
+  const images = ['01', '02', '03', '04'].map((name) => `assets/projects/hijab/${name}.jpg`);
+  // Panel 2 keeps the established Basra Mall source sequence.
+  const panelTwoImages = [
     '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13',
     'photo_9_2026-08-02_22-22-30', 'photo_10_2026-08-02_22-22-30', 'photo_11_2026-08-02_22-22-30',
     'photo_12_2026-08-02_22-22-30', 'photo_13_2026-08-02_22-22-30', 'photo_14_2026-08-02_22-22-30',
@@ -235,6 +238,12 @@
   const viewport = gallery.querySelector('.project-gallery-viewport');
   const rail = gallery.querySelector('.project-gallery-track');
   const card = document.querySelector('.studio-card');
+  const studioExperience = document.querySelector('.studio-page .master-panel-experience');
+  const studioPanel = document.querySelector('.studio-panel');
+  let duplicateStudioPanel;
+  let studioTrack;
+  let studioPanels = [];
+  let studioPanelIndex = 0;
   const rating = workGallery.querySelector('[data-studio-rating]');
   const ratingTrigger = rating?.querySelector('[data-rating-open]');
   const ratingForm = rating?.querySelector('[data-rating-form]');
@@ -360,7 +369,30 @@
       });
     });
   };
-  const render = (center) => (landscapeQuery.matches ? renderLandscape(center) : renderPortrait(center));
+  const syncDuplicateStudioPanel = () => {
+    if (!duplicateStudioPanel) return;
+    const duplicateSlides = duplicateStudioPanel.querySelectorAll('.project-gallery-slide');
+    slides.forEach((slide, index) => {
+      const duplicateSlide = duplicateSlides[index];
+      if (!duplicateSlide) return;
+      duplicateSlide.className = slide.className;
+      duplicateSlide.style.cssText = slide.style.cssText;
+      duplicateSlide.src = panelTwoImages[index % panelTwoImages.length];
+    });
+    const duplicateSelector = duplicateStudioPanel.querySelector('[data-studio-selector]');
+    const duplicateWorkGallery = duplicateStudioPanel.querySelector('[data-studio-work-gallery]');
+    const duplicateClientCopy = duplicateStudioPanel.querySelector('[data-studio-client-copy]');
+    if (duplicateSelector) {
+      duplicateSelector.dataset.active = selector.dataset.active;
+      duplicateSelector.querySelectorAll('[data-studio-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.studioOption === selector.dataset.active)));
+    }
+    if (duplicateWorkGallery) duplicateWorkGallery.hidden = workGallery.hidden;
+    if (duplicateClientCopy) duplicateClientCopy.hidden = clientCopy.hidden;
+  };
+  const render = (center) => {
+    landscapeQuery.matches ? renderLandscape(center) : renderPortrait(center);
+    syncDuplicateStudioPanel();
+  };
   const containGallery = () => {
     viewport.style.removeProperty('height');
     gallery.style.removeProperty('--story-active-height');
@@ -496,6 +528,75 @@
   gallery.addEventListener('pointercancel', () => { state.dragging = false; gesture = null; render(); });
   window.addEventListener('resize', () => { if (!ratingPaused) { containGallery(); render(); } });
   landscapeQuery.addEventListener('change', () => { if (!ratingPaused) { containGallery(); render(); } });
-  window.requestAnimationFrame(() => { containGallery(); render(); });
+  const createSecondStudioPanel = () => {
+    if (duplicateStudioPanel || !studioExperience || !studioPanel || !window.OOXMEMasterPanelDrag) return;
+    duplicateStudioPanel = studioPanel.cloneNode(true);
+    duplicateStudioPanel.classList.remove('is-active');
+    studioTrack = document.createElement('div');
+    studioTrack.className = 'master-panel-track';
+    studioPanel.before(studioTrack);
+    studioTrack.append(studioPanel, duplicateStudioPanel);
+    studioPanels = [studioPanel, duplicateStudioPanel];
+    studioTrack.style.height = 'calc(var(--ooxme-stable-viewport-height) * 2)';
+    const moveToStudioPanel = (next) => {
+      const target = Math.max(0, Math.min(studioPanels.length - 1, next));
+      if (target === studioPanelIndex) return;
+      studioPanelIndex = target;
+      studioPanels.forEach((panel) => panel.classList.remove('is-active'));
+      studioTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-studioPanelIndex}))`;
+      window.setTimeout(() => studioPanels[studioPanelIndex].classList.add('is-active'), 620);
+    };
+    window.OOXMEMasterPanelDrag.register({ experience: studioExperience, track: studioTrack, panels: studioPanels, getIndex: () => studioPanelIndex, moveTo: moveToStudioPanel, allowBottomControlNavigation: false });
+    duplicateStudioPanel.querySelector('[data-auth-nav-trigger]')?.addEventListener('click', () => navigationTrigger?.click());
+    duplicateStudioPanel.querySelectorAll('[data-auth-nav-item]').forEach((button) => button.addEventListener('click', () => navigationMenu?.querySelector(`[data-auth-nav-item="${button.dataset.authNavItem}"]`)?.click()));
+    duplicateStudioPanel.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption)));
+    const duplicateGallery = duplicateStudioPanel.querySelector('[data-studio-project-gallery]');
+    let duplicateGesture;
+    duplicateGallery?.addEventListener('pointerdown', (event) => {
+      if (event.target.closest('[data-studio-rating]')) return;
+      if (ratingPaused) { event.preventDefault(); return; }
+      duplicateGesture = { x: event.clientX, lastX: event.clientX, lastTime: performance.now(), pointerId: event.pointerId };
+      state.dragging = true;
+      duplicateGallery.setPointerCapture?.(event.pointerId);
+    });
+    duplicateGallery?.addEventListener('pointermove', (event) => {
+      if (!duplicateGesture || duplicateGesture.pointerId !== event.pointerId) return;
+      const dx = event.clientX - duplicateGesture.x;
+      if (landscapeQuery.matches) {
+        const range = Math.max(96, viewport.clientWidth * .34);
+        renderLandscape(state.index + Math.max(-1, Math.min(1, -dx / range)));
+      } else renderPortrait(dx);
+      syncDuplicateStudioPanel();
+      duplicateGesture.lastX = event.clientX;
+      duplicateGesture.lastTime = performance.now();
+      event.preventDefault();
+    }, { passive: false });
+    const finishDuplicateGesture = (event) => {
+      if (!duplicateGesture || duplicateGesture.pointerId !== event.pointerId) return;
+      const dx = event.clientX - duplicateGesture.x;
+      const elapsed = Math.max(1, performance.now() - duplicateGesture.lastTime);
+      const velocity = (event.clientX - duplicateGesture.lastX) / elapsed;
+      const threshold = landscapeQuery.matches ? Math.max(96, viewport.clientWidth * .34) : Math.max(52, Math.min(96, viewport.clientWidth * .2));
+      const direction = Math.abs(dx) >= threshold || (Math.abs(velocity) > (landscapeQuery.matches ? .42 : .45) && Math.abs(dx) > 12) ? (dx < 0 ? 1 : -1) : 0;
+      state.dragging = false;
+      if (direction) move(direction);
+      else render();
+      duplicateGesture = null;
+    };
+    duplicateGallery?.addEventListener('pointerup', finishDuplicateGesture);
+    duplicateGallery?.addEventListener('pointercancel', () => { state.dragging = false; duplicateGesture = null; render(); });
+    const duplicateClientCopy = duplicateStudioPanel.querySelector('[data-studio-client-copy]');
+    const [duplicateName, duplicateSince, duplicateDescription] = duplicateClientCopy?.querySelectorAll(':scope > :is(strong, p)') || [];
+    if (duplicateName && duplicateSince && duplicateDescription) {
+      Object.assign(duplicateName.dataset, { en: 'Basra Mall', ar: 'البصري مول' });
+      duplicateName.textContent = duplicateName.dataset[root.lang === 'ar' ? 'ar' : 'en'];
+      Object.assign(duplicateSince.dataset, { en: 'Since 10 January 2026', ar: 'منذ 10 يناير 2026' });
+      duplicateSince.textContent = duplicateSince.dataset[root.lang === 'ar' ? 'ar' : 'en'];
+      Object.assign(duplicateDescription.dataset, { en: 'We provide Basra Mall with a monthly brand management package covering social media management, content creation, photography, and design. We also developed and refined the visual identity to create a more consistent and professional brand presence. This work contributed to gradual sales growth, stronger audience engagement, and an increase in followers and interested customers.', ar: 'نقدم للبصري مول باقة شهرية متكاملة لإدارة العلامة التجارية، تشمل إدارة حسابات التواصل الاجتماعي، صناعة المحتوى، التصوير، والتصميم. كما عملنا على تطوير وتحسين الهوية البصرية لبناء حضور أكثر اتساقاً واحترافية للعلامة. وأسهم هذا العمل في تحقيق نمو تدريجي في المبيعات، وزيادة التفاعل، وارتفاع أعداد المتابعين والعملاء المهتمين.' });
+      duplicateDescription.textContent = duplicateDescription.dataset[root.lang === 'ar' ? 'ar' : 'en'];
+    }
+    syncDuplicateStudioPanel();
+  };
+  window.requestAnimationFrame(() => { containGallery(); render(); window.setTimeout(createSecondStudioPanel, 1100); });
   window.setInterval(() => { if (!workGallery.hidden && !ratingPaused) move(state.manualDirection); }, 2000);
 })();

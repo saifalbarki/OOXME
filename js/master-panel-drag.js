@@ -1,4 +1,4 @@
-const interactionTarget = 'button, a, input, select, textarea, label, [data-project-gallery], .booking-card, .booking-fields, .booking-customer-fields, .booking-selectors, .calendar-card, .booking-summary, .payment-options';
+const interactionTarget = 'button, a, input, select, textarea, label, [data-project-gallery], [data-studio-project-gallery], .booking-card, .booking-fields, .booking-customer-fields, .booking-selectors, .calendar-card, .booking-summary, .payment-options';
 let activeInteraction = null;
 let suppressedClickTarget = null;
 
@@ -70,7 +70,7 @@ document.addEventListener('click', (event) => {
 }, true);
 
 window.OOXMEMasterPanelDrag = {
-  register({ experience, track, panels, getIndex, moveTo, allowGestureNavigation = true }) {
+  register({ experience, track, panels, getIndex, moveTo, allowGestureNavigation = true, allowBottomControlNavigation = allowGestureNavigation }) {
     if (!experience || !track || track.dataset.masterPanelDragBound) return;
     track.dataset.masterPanelDragBound = 'true';
 
@@ -122,7 +122,7 @@ window.OOXMEMasterPanelDrag = {
 
     const interactiveSelector = [
       '.master-panel-continue', 'input', 'select', 'textarea', '[contenteditable="true"]',
-      '[data-project-gallery]', '[data-service-tile]', '[data-search-overlay]', '.search-overlay',
+      '[data-project-gallery]', '[data-studio-project-gallery]', '[data-service-tile]', '[data-search-overlay]', '.search-overlay',
       '.site-image-preview', '.calendar-month-menu'
     ].join(',');
     let drag = null;
@@ -153,6 +153,9 @@ window.OOXMEMasterPanelDrag = {
     const gesturesAreAllowed = () => typeof allowGestureNavigation === 'function'
       ? allowGestureNavigation(getIndex())
       : allowGestureNavigation;
+    const bottomControlGesturesAreAllowed = () => typeof allowBottomControlNavigation === 'function'
+      ? allowBottomControlNavigation(getIndex())
+      : allowBottomControlNavigation;
 
     const setBottomVisual = (gesture, event) => {
       if (bottomFrame) window.cancelAnimationFrame(bottomFrame);
@@ -233,7 +236,7 @@ window.OOXMEMasterPanelDrag = {
       const line = control.querySelector('.swipe-control-line');
       if (!line) return;
       control.addEventListener('pointerdown', (event) => {
-        if (event.button !== 0 || bottomLocked || !gesturesAreAllowed()) return;
+        if (event.button !== 0 || bottomLocked || !bottomControlGesturesAreAllowed()) return;
         bottomGesture = {
           pointerId: event.pointerId,
           control,
@@ -290,7 +293,7 @@ window.OOXMEMasterPanelDrag = {
       control.addEventListener('pointerup', release, true);
       control.addEventListener('pointercancel', (event) => release(event, true), true);
       control.addEventListener('click', (event) => {
-        if (!gesturesAreAllowed()) return;
+        if (!bottomControlGesturesAreAllowed()) return;
         event.preventDefault();
         event.stopImmediatePropagation();
         if (suppressBottomClick || bottomLocked) return;
@@ -301,7 +304,7 @@ window.OOXMEMasterPanelDrag = {
         window.setTimeout(() => { bottomLocked = false; }, 260);
       }, true);
       control.addEventListener('keydown', (event) => {
-        if (!gesturesAreAllowed()) return;
+        if (!bottomControlGesturesAreAllowed()) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
         event.stopImmediatePropagation();
