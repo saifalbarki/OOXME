@@ -251,8 +251,8 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .studio-rating-loop img:nth-child(3) { --studio-rating-rest-opacity: 1; --studio-rating-offset: 0px; }
 .studio-rating-loop img:nth-child(4) { --studio-rating-offset: var(--studio-rating-star-gap); }
 .studio-rating-loop img:nth-child(5) { --studio-rating-offset: calc(var(--studio-rating-star-gap) * 2); }
-@keyframes studio-rating-shell { 0%, 81%, 100% { width: var(--studio-rating-size); border-radius: 50%; } 20%, 66% { width: calc(var(--studio-rating-size) * 3.6); border-radius: var(--radius-control); } }
-@keyframes studio-rating-star { 0%, 14%, 62%, 100% { opacity: var(--studio-rating-rest-opacity); transform: translate(-50%, -50%); } 32%, 45% { opacity: 1; transform: translate(calc(-50% + var(--studio-rating-offset)), -50%); } }
+@keyframes studio-rating-shell { 0%, 77.90625%, 100% { width: var(--studio-rating-size); border-radius: 50%; } 20%, 65.90625% { width: calc(var(--studio-rating-size) * 3.6); border-radius: var(--radius-control); } }
+@keyframes studio-rating-star { 0%, 3.90625%, 62%, 100% { opacity: var(--studio-rating-rest-opacity); transform: translate(-50%, -50%); } 15.90625%, 45% { opacity: 1; transform: translate(calc(-50% + var(--studio-rating-offset)), -50%); } }
 .studio-rating.is-loop-ready:not(.is-open):not(.is-submitted) .studio-rating-trigger { animation: studio-rating-shell 6.4s cubic-bezier(.22, .61, .36, 1) infinite; }
 .studio-rating.is-loop-ready:not(.is-open):not(.is-submitted) .studio-rating-loop img { animation: studio-rating-star 6.4s cubic-bezier(.22, .61, .36, 1) infinite; }
 .studio-rating-card { position: absolute; left: 50%; display: grid; width: min(320px, calc(100vw - (var(--x) * 4))); padding: calc(var(--x) * .55); gap: calc(var(--x) * .55); border: 1px solid rgba(255, 255, 255, .68); border-radius: var(--radius-box); background: rgba(255, 255, 255, .82); box-shadow: 0 18px 48px rgba(13, 13, 13, .16); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); opacity: 0; pointer-events: none; transform: translateX(-50%) scale(.86); transform-origin: center top; transition: opacity .24s ease, transform .34s cubic-bezier(.22, .61, .36, 1); }
