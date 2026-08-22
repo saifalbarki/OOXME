@@ -190,6 +190,12 @@ const setHomepageMenuActive = (active) => {
     button.setAttribute('aria-pressed', String(selected));
   });
 };
+const homepageOverlayMotionTimers = new WeakMap();
+const prepareHomepageOverlayMotion = (overlay) => {
+  window.clearTimeout(homepageOverlayMotionTimers.get(overlay));
+  overlay.classList.add('is-animating');
+  homepageOverlayMotionTimers.set(overlay, window.setTimeout(() => overlay.classList.remove('is-animating'), 420));
+};
 const setHomepageNotificationsOpen = (open) => {
   if (!homepageNotifications) return;
   window.clearTimeout(homepageNotificationsCloseTimer);
@@ -197,12 +203,14 @@ const setHomepageNotificationsOpen = (open) => {
     setHomepageMenuOpen(false);
     homepageNotifications.hidden = false;
     homepageNotifications.setAttribute('aria-hidden', 'false');
+    prepareHomepageOverlayMotion(homepageNotifications);
     window.requestAnimationFrame(() => {
       document.body.classList.add('homepage-notifications-open');
       homepageNotifications.classList.add('is-open');
     });
     return;
   }
+  prepareHomepageOverlayMotion(homepageNotifications);
   homepageNotifications.classList.remove('is-open');
   document.body.classList.remove('homepage-notifications-open');
   homepageNotifications.setAttribute('aria-hidden', 'true');
@@ -240,6 +248,7 @@ const setHomepageSearchOpen = (open) => {
     setHomepageMenuOpen(false);
     homepageSearch.hidden = false;
     homepageSearch.setAttribute('aria-hidden', 'false');
+    prepareHomepageOverlayMotion(homepageSearch);
     window.requestAnimationFrame(() => {
       document.body.classList.add('homepage-search-open');
       homepageSearch.classList.add('is-open');
@@ -247,6 +256,7 @@ const setHomepageSearchOpen = (open) => {
     });
     return;
   }
+  prepareHomepageOverlayMotion(homepageSearch);
   homepageSearch.classList.remove('is-open');
   document.body.classList.remove('homepage-search-open');
   homepageSearch.setAttribute('aria-hidden', 'true');
@@ -260,12 +270,14 @@ const setHomepageAccountOpen = (open) => {
     setHomepageMenuOpen(false);
     homepageAccount.hidden = false;
     homepageAccount.setAttribute('aria-hidden', 'false');
+    prepareHomepageOverlayMotion(homepageAccount);
     window.requestAnimationFrame(() => {
       document.body.classList.add('homepage-account-open');
       homepageAccount.classList.add('is-open');
     });
     return;
   }
+  prepareHomepageOverlayMotion(homepageAccount);
   homepageAccount.classList.remove('is-open');
   document.body.classList.remove('homepage-account-open');
   homepageAccount.setAttribute('aria-hidden', 'true');

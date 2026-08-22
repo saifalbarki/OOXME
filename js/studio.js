@@ -43,6 +43,13 @@
   const overlayClassByItem = { account: 'homepage-account-open', search: 'homepage-search-open', menu: 'homepage-notifications-open' };
   let overlayCloseTimer;
   let notificationSelectionTimer;
+  const overlayMotionTimers = new WeakMap();
+
+  const prepareOverlayMotion = (overlay) => {
+    window.clearTimeout(overlayMotionTimers.get(overlay));
+    overlay.classList.add('is-animating');
+    overlayMotionTimers.set(overlay, window.setTimeout(() => overlay.classList.remove('is-animating'), 420));
+  };
 
   const setNavigationOpen = (open) => {
     if (!navigation || !navigationTrigger || navigation.classList.contains('is-menu-open') === open) return;
@@ -56,6 +63,7 @@
     if (open) {
       overlay.hidden = false;
       overlay.setAttribute('aria-hidden', 'false');
+      prepareOverlayMotion(overlay);
       window.requestAnimationFrame(() => {
         document.body.classList.add(className);
         overlay.classList.add('is-open');
@@ -63,6 +71,7 @@
       });
       return;
     }
+    prepareOverlayMotion(overlay);
     overlay.classList.remove('is-open');
     document.body.classList.remove(className);
     overlay.setAttribute('aria-hidden', 'true');
@@ -233,12 +242,30 @@
   const slides = images.map((src) => {
     const image = new Image();
     image.className = 'project-gallery-slide';
-    image.src = src;
+    image.dataset.src = src;
+    image.loading = 'lazy';
+    image.decoding = 'async';
     image.alt = '';
     image.draggable = false;
     rail.append(image);
     return image;
   });
+  const ensureSlideSource = (index, priority = 'low') => {
+    const normalizedIndex = ((Math.round(index) % images.length) + images.length) % images.length;
+    const slide = slides[normalizedIndex];
+    if (!slide || slide.hasAttribute('src')) return;
+    slide.fetchPriority = priority;
+    slide.addEventListener('load', () => {
+      if (!ratingPaused) {
+        containGallery();
+        render();
+      }
+    }, { once: true });
+    slide.src = slide.dataset.src;
+  };
+  const primeSlides = (center, direction, count) => {
+    for (let depth = 0; depth <= count; depth += 1) ensureSlideSource(deckIndexAt(center, direction, depth, images.length), depth === 0 ? 'high' : 'low');
+  };
   const renderPortrait = (dragX = 0) => {
     const viewportHeight = viewport.clientHeight;
     const activeHeight = slides[state.index]?.offsetHeight || viewportHeight;
@@ -254,10 +281,11 @@
     const rotation = Math.max(-4, Math.min(4, (dragX / range) * 4));
     const visible = new Map([[state.index, 0]]);
     for (let depth = 1; depth <= maxDepth; depth += 1) visible.set(deckIndexAt(state.index, direction, depth, images.length), depth - dragProgress);
+    primeSlides(state.index, direction, maxDepth + 1);
     slides.forEach((slide, index) => {
       const depth = visible.get(index);
       if (depth === undefined) {
-        Object.assign(slide.style, { opacity: '0', visibility: 'hidden', pointerEvents: 'none', zIndex: '0', filter: 'none', boxShadow: 'none' });
+        Object.assign(slide.style, { opacity: '0', visibility: 'hidden', pointerEvents: 'none', zIndex: '0', filter: 'none', boxShadow: 'none', willChange: 'auto' });
         return;
       }
       const scale = Math.max(.76, 1 - depth * .06);
@@ -272,7 +300,7 @@
         zIndex: `${100 - Math.round(depth * 10)}`, pointerEvents: isActive ? 'auto' : 'none',
         transform: `translate3d(calc(-50% + ${isActive ? dragX : 0}px), ${translateY}px, 0) rotate(${isActive ? rotation : 0}deg) scale(${scale})`,
         filter: blur ? `blur(${blur}px)` : 'none', boxShadow: `0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity})`,
-        transition: state.dragging ? 'none' : 'transform .34s cubic-bezier(.22, .75, .3, 1), opacity .34s ease, filter .34s ease, box-shadow .34s ease'
+        willChange: 'transform, opacity, filter', transition: state.dragging ? 'none' : 'transform .34s cubic-bezier(.22, .75, .3, 1), opacity .34s ease, filter .34s ease, box-shadow .34s ease'
       });
     });
   };
@@ -288,13 +316,14 @@
     const firstSideOffset = activeWidth / 2 + focusGap + sideWidth / 2;
     const remainingWidth = Math.max(0, viewportWidth / 2 - firstSideOffset);
     const visibleLevels = Math.min(images.length - 1, 1 + Math.floor(remainingWidth / (sideWidth + smallGap)));
+    primeSlides(center, 1, visibleLevels + 1);
     slides.forEach((slide, index) => {
       const distance = circularDistance(index, center, images.length);
       const depth = Math.abs(distance);
       const sign = Math.sign(distance) || 1;
       if (depth > visibleLevels + .05) {
         const offscreenOffset = firstSideOffset + (visibleLevels + 1) * (sideWidth + smallGap);
-        Object.assign(slide.style, { opacity: '0', visibility: 'hidden', pointerEvents: 'none', zIndex: '0', filter: 'none', boxShadow: 'none', transform: `translate3d(calc(-50% + ${sign * offscreenOffset}px), 0, 0) scale(${sideScale})`, transition: 'none' });
+        Object.assign(slide.style, { opacity: '0', visibility: 'hidden', pointerEvents: 'none', zIndex: '0', filter: 'none', boxShadow: 'none', willChange: 'auto', transform: `translate3d(calc(-50% + ${sign * offscreenOffset}px), 0, 0) scale(${sideScale})`, transition: 'none' });
         return;
       }
       const horizontalOffset = depth <= 1 ? depth * firstSideOffset : firstSideOffset + (depth - 1) * (sideWidth + smallGap);
@@ -303,7 +332,7 @@
         visibility: 'visible', opacity: `${Math.max(.56, 1 - depth * .14)}`, zIndex: `${100 - Math.round(depth * 10)}`,
         pointerEvents: depth < .5 ? 'auto' : 'none', filter: 'none', boxShadow: 'none',
         transform: `translate3d(calc(-50% + ${sign * horizontalOffset}px), 0, 0) scale(${scale})`,
-        transition: state.dragging ? 'none' : 'transform .38s cubic-bezier(.22, .61, .36, 1), opacity .3s ease'
+        willChange: 'transform, opacity', transition: state.dragging ? 'none' : 'transform .38s cubic-bezier(.22, .61, .36, 1), opacity .3s ease'
       });
     });
   };
@@ -340,6 +369,7 @@
     ratingPaused = true;
     gallery.classList.add('is-rating-paused');
     rating?.classList.add('is-rating-paused');
+    slides.forEach((slide) => { slide.style.willChange = 'auto'; });
     pausedDeckAnimations = gallery.getAnimations?.({ subtree: true }).filter((animation) => animation.playState === 'running') || [];
     pausedDeckAnimations.forEach((animation) => animation.pause());
   };
@@ -348,6 +378,7 @@
     ratingPaused = false;
     gallery.classList.remove('is-rating-paused');
     rating?.classList.remove('is-rating-paused');
+    render();
     pausedDeckAnimations.forEach((animation) => {
       try { animation.play(); } catch (_) {}
     });

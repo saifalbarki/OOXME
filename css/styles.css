@@ -165,6 +165,9 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .homepage-search, .homepage-account { position: fixed; z-index: 20; inset: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .36s ease, visibility 0s linear .36s; }
 .homepage-search::before, .homepage-account::before { position: fixed; z-index: 0; inset: var(--x); border-radius: var(--panel-radius); background: transparent; content: ''; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 .homepage-search.is-open, .homepage-account.is-open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+/* Prepare compositor layers only for the shared overlay transition frames. */
+:is(.homepage-notifications, .homepage-search, .homepage-account).is-animating { will-change: opacity; }
+:is(.homepage-notifications, .homepage-search, .homepage-account).is-animating :is(.homepage-notifications-panel, .homepage-search-panel, .homepage-account-panel) { will-change: opacity, transform; backface-visibility: hidden; }
 .homepage-search-panel { position: absolute; z-index: 1; top: calc(var(--x) * 2); left: 50%; width: var(--homepage-notifications-width); padding: var(--x); border-radius: var(--panel-radius); background: rgba(255, 255, 255, .94); box-shadow: 0 18px 48px rgba(13, 13, 13, .16); opacity: 0; transform: translate(-50%, 10px); transition: opacity .36s ease, transform .4s cubic-bezier(.22, .61, .36, 1); }
 .homepage-search.is-open .homepage-search-panel, .homepage-account.is-open .homepage-search-panel { opacity: 1; transform: translate(-50%, 0); }
 .homepage-search-field { display: block; width: 100%; }
@@ -211,7 +214,7 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 @media (max-width: 767px) { :is(input, select, textarea) { font-size: 16px !important; } }
 .employee-dashboard-panel .master-panel { isolation: isolate; background: transparent; }.employee-dashboard-panel .master-panel::before { position: absolute; z-index: 0; inset: -12px; background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; content: ''; filter: blur(5px); transform: scale(1.04); }.employee-dashboard-panel .master-panel > * { position: relative; z-index: 1; }@media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel::before { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
 .employee-dashboard-panel .master-panel-control { opacity: 0; pointer-events: none; }
-.employee-dashboard-panel .master-panel-content { display: grid; align-content: end; justify-items: center; width: calc(100% - (var(--x) * 2)); margin-inline: auto; padding: 0 0 var(--x); gap: var(--x); text-align: center; }
+.employee-dashboard-panel .master-panel-content { display: grid; align-content: end; justify-items: center; width: calc(100% - (var(--x) * 2)); margin-inline: auto; padding: 0 0 var(--x); gap: var(--x); text-align: center; transform: translateY(calc(var(--x) * -1)); }
 .employee-dashboard-content { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; }
 .employee-dashboard-identity { display: grid; justify-items: center; width: 100%; gap: var(--x); }
 .employee-dashboard-avatar { display: grid; place-items: center; width: clamp(76px, 22vw, 116px); aspect-ratio: 1; border-radius: 50%; background: var(--color-paper); }
