@@ -41,6 +41,7 @@ html[dir="rtl"] .os-dashboard-content .os-title-row { flex-direction: row-revers
 .os-login button i { margin-inline-start: 0; }
 .os-login { position: absolute; inset-inline: var(--content-safe-inline); bottom: var(--homepage-standard-card-bottom-inset); justify-self: center; width: min(calc(100% - (var(--content-safe-inline) * 2)), 360px); margin: 0; }
 .os-login .os-error { position: absolute; inset-inline: 0; top: calc(100% + var(--layout-compact-gap)); }
+.os-login-page { position: fixed; inset: 0; width: 100%; min-height: var(--ooxme-stable-viewport-height); overflow: hidden; overscroll-behavior: none; }.os-login-page .os-experience, .os-login-page .os-screen { height: var(--ooxme-stable-viewport-height); min-height: var(--ooxme-stable-viewport-height); max-height: var(--ooxme-stable-viewport-height); overflow: hidden; }@media (hover: none) and (pointer: coarse) { .os-login-page .os-login input { font-size: 16px !important; transform: none; } }
 html[lang="en"] .os-page { font-family: var(--font-english); }
 html[lang="ar"] .os-page { font-family: var(--font-arabic); }
 .os-account-content { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: var(--layout-major-gap); overflow: auto; padding-bottom: var(--bottom-control-area-height); }
@@ -61,6 +62,8 @@ html[lang="ar"] .os-page { font-family: var(--font-arabic); }
 .os-dashboard-content .os-card small { margin-top: 2px; font-size: clamp(6px, .65vw, 8px); }
 .os-dashboard-empty { padding: 0; }
 @media (min-aspect-ratio: 4 / 3) { .os-dashboard-content .os-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, auto); } }
+.os-dashboard-summary { display: none; }
+@media (max-aspect-ratio: 4 / 3) { .os-dashboard-content { grid-template-rows: minmax(0, 1fr) auto; gap: var(--x); }.os-dashboard-summary { display: grid; width: 100%; box-sizing: border-box; padding: min(calc(var(--x) * .78), 18px); gap: calc(var(--x) * .5); border-radius: var(--card-radius); background: var(--color-paper); }.os-dashboard-summary-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(2ch, auto) minmax(2ch, auto); align-items: center; column-gap: var(--x); }.os-dashboard-summary-row > span, .os-dashboard-summary-row > strong { font-size: clamp(9px, 1vw, 12px); line-height: var(--type-control-line-height); }.os-dashboard-summary-row > span { min-width: 0; color: var(--color-ink); font-weight: 700; }.os-dashboard-summary-row > strong { color: var(--color-ink); font-weight: 700; text-align: end; }.os-dashboard-summary-row > .os-dashboard-summary-active { color: #27834b; }html[dir="rtl"] .os-dashboard-summary-row { direction: rtl; } }
 
 .os-current-accounts-content { --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); box-sizing: border-box; display: grid; grid-template-rows: auto auto minmax(0, 1fr); align-content: stretch; justify-items: center; padding: var(--x); gap: var(--x); }
 .os-current-accounts-content .homepage-account-selector { width: 100%; }
@@ -88,7 +91,7 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 .os-current-account-action.is-active img { filter: none; }
 .os-current-account-select { border: 0; outline: 0; background: var(--color-paper); color: var(--color-ink); text-align: center; }
 .os-current-account-select, .os-current-account-select option { font-size: var(--overlay-text-size) !important; }
-.os-current-account-form input { border: 0; outline: 0; background: var(--color-paper); color: var(--color-secondary-control); font-size: var(--overlay-text-size) !important; text-align: center; }
+.os-current-account-form input { border: 0; outline: 0; background: var(--color-paper); color: var(--color-ink); font-size: var(--overlay-text-size) !important; text-align: center; }
 .os-current-account-select:focus, .os-current-account-form input:focus { border-color: transparent; box-shadow: none; }
 .os-current-account-form { display: grid; justify-items: center; width: 100%; gap: var(--x); }
 .os-current-account-form input::placeholder { color: var(--color-secondary-control); opacity: 1; }

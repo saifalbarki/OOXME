@@ -253,6 +253,7 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .homepage-bottom-menu[data-active="next"] .homepage-bottom-menu-indicator { left: calc(((100% / 5) * 4) + var(--homepage-bottom-nav-highlight-inset)); }
 .homepage-bottom-menu[data-active="discount"] .homepage-bottom-menu-indicator { left: var(--homepage-bottom-nav-highlight-inset); }
 .homepage-bottom-menu[data-active="users"] .homepage-bottom-menu-indicator { left: calc(((100% / 5) * 4) + var(--homepage-bottom-nav-highlight-inset)); }
+.os-dashboard-footer .homepage-bottom-menu-indicator { --homepage-bottom-nav-highlight-inset: calc(var(--bottom-control-line-thickness) * .75); }
 .homepage-bottom-menu [data-auth-nav-panel]:disabled { cursor: default; opacity: .35; }
 @media (prefers-reduced-motion: reduce) { .homepage-bottom-menu, .homepage .intro-panel .master-panel-control, .homepage-bottom-menu-indicator, .homepage-bottom-menu-button, .homepage-notifications, .homepage-notifications-panel, .homepage-notification, .homepage-notification-details { transition-duration: .01ms; } }
 .master-panel-track.is-dragging { transition: none; }

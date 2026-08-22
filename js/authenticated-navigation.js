@@ -15,7 +15,16 @@
     const dashboard = navigation.hasAttribute('data-os-panel-navigation') ? document.querySelector('.os-dashboard-experience') : null;
     const panels = dashboard ? [...dashboard.querySelectorAll('.os-screen')] : [];
     const currentPanel = () => dashboard ? Math.round(dashboard.scrollTop / dashboard.clientHeight) : 0;
-    const updatePanelControls = () => {};
+    const panelNavigationItem = index => ['home', 'users', 'discount'][index] || 'home';
+    if (dashboard && !dashboard.dataset.osActivePanel) dashboard.dataset.osActivePanel = String(currentPanel());
+    const updatePanelControls = target => {
+      if (!dashboard) return;
+      const panel = target ?? currentPanel();
+      setActive(panelNavigationItem(panel));
+      if (dashboard.dataset.osActivePanel === String(panel)) return;
+      dashboard.dataset.osActivePanel = String(panel);
+      dashboard.dispatchEvent(new CustomEvent('os-panel-activated', { detail: { panel } }));
+    };
     const movePanel = (target, button) => {
       target = Math.max(0, Math.min(panels.length - 1, Number(target)));
       if (target === currentPanel()) return;
@@ -24,12 +33,12 @@
       dashboard.scrollTo({ top: target * dashboard.clientHeight, behavior: 'smooth' });
       updatePanelControls(target);
       clearTimeout(settleTimer);
-      settleTimer = setTimeout(() => { setActive('home'); updatePanelControls(); }, 520);
+      settleTimer = setTimeout(() => updatePanelControls(), 520);
     };
     if (dashboard) {
       let scrollTimer;
       updatePanelControls();
-      dashboard.addEventListener('scroll', () => { clearTimeout(scrollTimer); scrollTimer = setTimeout(() => { updatePanelControls(); setActive('home'); }, 140); }, { passive: true });
+      dashboard.addEventListener('scroll', () => { clearTimeout(scrollTimer); scrollTimer = setTimeout(updatePanelControls, 140); }, { passive: true });
     }
     trigger.addEventListener('click', event => { event.stopPropagation(); navigation.classList.contains('is-menu-open') ? close() : open(); });
     menu.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
