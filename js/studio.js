@@ -19,18 +19,21 @@
   if (!selector) return;
   const workGallery = document.querySelector('[data-studio-work-gallery]');
   const clientCopy = document.querySelector('[data-studio-client-copy]');
-  const setStudioView = (view) => {
-    selector.dataset.active = view;
-    selector.querySelectorAll('[data-studio-option]').forEach((option) => {
+  const setStudioView = (view, panel = selector.closest('.studio-panel')) => {
+    const panelSelector = panel?.querySelector('[data-studio-selector]');
+    const panelWorkGallery = panel?.querySelector('[data-studio-work-gallery]');
+    const panelClientCopy = panel?.querySelector('[data-studio-client-copy]');
+    if (!panelSelector) return;
+    panelSelector.dataset.active = view;
+    panelSelector.querySelectorAll('[data-studio-option]').forEach((option) => {
       option.setAttribute('aria-selected', String(option.dataset.studioOption === view));
     });
-    if (workGallery) workGallery.hidden = view !== 'work';
-    if (clientCopy) clientCopy.hidden = view !== 'client';
-    syncDuplicateStudioPanel?.();
-    document.dispatchEvent(new CustomEvent('studio-view-change', { detail: view }));
+    if (panelWorkGallery) panelWorkGallery.hidden = view !== 'work';
+    if (panelClientCopy) panelClientCopy.hidden = view !== 'client';
+    document.dispatchEvent(new CustomEvent('studio-view-change', { detail: { view, panel } }));
   };
 
-  selector.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption)));
+  selector.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption, button.closest('.studio-panel'))));
 
   const navigation = document.querySelector('[data-authenticated-navigation]');
   const navigationTrigger = navigation?.querySelector('[data-auth-nav-trigger]');
@@ -379,15 +382,6 @@
       duplicateSlide.style.cssText = slide.style.cssText;
       duplicateSlide.src = panelTwoImages[index % panelTwoImages.length];
     });
-    const duplicateSelector = duplicateStudioPanel.querySelector('[data-studio-selector]');
-    const duplicateWorkGallery = duplicateStudioPanel.querySelector('[data-studio-work-gallery]');
-    const duplicateClientCopy = duplicateStudioPanel.querySelector('[data-studio-client-copy]');
-    if (duplicateSelector) {
-      duplicateSelector.dataset.active = selector.dataset.active;
-      duplicateSelector.querySelectorAll('[data-studio-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.studioOption === selector.dataset.active)));
-    }
-    if (duplicateWorkGallery) duplicateWorkGallery.hidden = workGallery.hidden;
-    if (duplicateClientCopy) duplicateClientCopy.hidden = clientCopy.hidden;
   };
   const render = (center) => {
     landscapeQuery.matches ? renderLandscape(center) : renderPortrait(center);
@@ -491,7 +485,7 @@
     if (rating?.classList.contains('is-open') && !event.target.closest('.studio-rating-card')) closeRating();
   }, true);
   document.addEventListener('studio-view-change', (event) => {
-    if (event.detail !== 'work') closeRating();
+    if (event.detail.view !== 'work' && event.detail.panel === studioPanel) closeRating();
   });
   let gesture;
   gallery.addEventListener('pointerdown', (event) => {
@@ -549,7 +543,7 @@
     window.OOXMEMasterPanelDrag.register({ experience: studioExperience, track: studioTrack, panels: studioPanels, getIndex: () => studioPanelIndex, moveTo: moveToStudioPanel, allowBottomControlNavigation: false });
     duplicateStudioPanel.querySelector('[data-auth-nav-trigger]')?.addEventListener('click', () => navigationTrigger?.click());
     duplicateStudioPanel.querySelectorAll('[data-auth-nav-item]').forEach((button) => button.addEventListener('click', () => navigationMenu?.querySelector(`[data-auth-nav-item="${button.dataset.authNavItem}"]`)?.click()));
-    duplicateStudioPanel.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption)));
+    duplicateStudioPanel.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption, duplicateStudioPanel)));
     const duplicateGallery = duplicateStudioPanel.querySelector('[data-studio-project-gallery]');
     let duplicateGesture;
     duplicateGallery?.addEventListener('pointerdown', (event) => {
