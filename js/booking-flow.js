@@ -315,65 +315,6 @@ experience?.addEventListener('scroll', event => {
   experience.scrollTop = 0;
   alignBookingTrack();
 }, true);
-const consultationViewport = window.visualViewport;
-const consultationWritableFields = [...document.querySelectorAll('.booking-panel :is(input, textarea)')];
-let activeConsultationField = null;
-let activeConsultationGroup = null;
-let consultationFocusShift = 0;
-const resetConsultationInputPosition = () => {
-  if (!activeConsultationGroup) return;
-  activeConsultationGroup.classList.remove('is-keyboard-active');
-  activeConsultationGroup.style.removeProperty('--consultation-keyboard-shift');
-  activeConsultationField = null;
-  activeConsultationGroup = null;
-  consultationFocusShift = 0;
-};
-const updateConsultationInputPosition = () => {
-  if (!activeConsultationField || !activeConsultationGroup || document.activeElement !== activeConsultationField) {
-    resetConsultationInputPosition();
-    return;
-  }
-  const viewport = consultationViewport;
-  if (!viewport || window.innerHeight - viewport.height <= 120) {
-    consultationFocusShift = 0;
-    activeConsultationGroup.classList.remove('is-keyboard-active');
-    activeConsultationGroup.style.removeProperty('--consultation-keyboard-shift');
-    return;
-  }
-  const panel = activeConsultationField.closest('.master-panel');
-  const panelSafe = parseFloat(getComputedStyle(panel || document.documentElement).getPropertyValue('--panel-safe')) || 16;
-  const inputBounds = activeConsultationField.getBoundingClientRect();
-  const baseTop = inputBounds.top - consultationFocusShift;
-  const baseBottom = inputBounds.bottom - consultationFocusShift;
-  const safeTop = viewport.offsetTop + panelSafe;
-  const safeBottom = viewport.offsetTop + viewport.height - panelSafe;
-  const requiredShift = Math.max(0, baseBottom - safeBottom);
-  const allowedShift = Math.max(0, baseTop - safeTop);
-  consultationFocusShift = -Math.min(requiredShift, allowedShift);
-  activeConsultationGroup.style.setProperty('--consultation-keyboard-shift', `${consultationFocusShift}px`);
-  activeConsultationGroup.classList.toggle('is-keyboard-active', consultationFocusShift !== 0);
-};
-consultationWritableFields.forEach(field => {
-  field.addEventListener('focus', () => {
-    const nextGroup = field.closest('[data-promo-form], [data-customer-form]');
-    if (activeConsultationGroup && activeConsultationGroup !== nextGroup) {
-      activeConsultationGroup.classList.remove('is-keyboard-active');
-      activeConsultationGroup.style.removeProperty('--consultation-keyboard-shift');
-    }
-    activeConsultationField = field;
-    activeConsultationGroup = nextGroup;
-    consultationFocusShift = 0;
-    window.requestAnimationFrame(updateConsultationInputPosition);
-    window.setTimeout(updateConsultationInputPosition, 80);
-  });
-  field.addEventListener('blur', () => {
-    window.setTimeout(() => {
-      if (!consultationWritableFields.includes(document.activeElement)) resetConsultationInputPosition();
-    });
-  });
-});
-consultationViewport?.addEventListener('resize', updateConsultationInputPosition);
-consultationViewport?.addEventListener('scroll', updateConsultationInputPosition);
 document.querySelectorAll('[data-customer-form] [data-field]').forEach((field) => {
   const key = field.dataset.field;
   field.addEventListener('input', () => {
@@ -729,30 +670,6 @@ const resizeSearch = () => {
   searchInput.style.height = `${textHeight}px`;
   searchOverlayField.style.height = `${Math.max(48, textHeight + 24)}px`;
 };
-const viewport=window.visualViewport;
-const fullViewport=viewport?.height??innerHeight;
-let searchKeyboardShift=0;
-const resetSearchInputPosition=()=>{
-  searchKeyboardShift=0;
-  searchOverlay.classList.remove('is-keyboard-open');
-  searchOverlayField.style.removeProperty('--search-keyboard-shift');
-};
-const updateKeyboard=()=>{
-  if(!viewport) return;
-  const keyboardOpen=document.activeElement===searchInput&&fullViewport-viewport.height>120;
-  searchOverlay.classList.toggle('is-keyboard-open',keyboardOpen);
-  if(!keyboardOpen){
-    searchKeyboardShift=0;
-    searchOverlayField.style.removeProperty('--search-keyboard-shift');
-    return;
-  }
-  const safe=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--panel-safe'))||16;
-  const bounds=searchOverlayField.getBoundingClientRect();
-  const keyboardTop=viewport.offsetTop+viewport.height-safe;
-  const unshiftedBottom=bounds.bottom-searchKeyboardShift;
-  searchKeyboardShift=Math.min(0,keyboardTop-unshiftedBottom);
-  searchOverlayField.style.setProperty('--search-keyboard-shift',`${searchKeyboardShift}px`);
-};
 document.querySelectorAll('[data-search-toggle]').forEach(button=>button.addEventListener('click',event=>{
   event.stopPropagation();
   if (searchOverlay.hidden || !searchOverlay.classList.contains('is-open')) openSearch();
@@ -761,7 +678,6 @@ document.querySelectorAll('[data-search-toggle]').forEach(button=>button.addEven
 searchOverlay.addEventListener('click', event => {
   if (event.target !== searchInput) {
     searchInput.blur();
-    resetSearchInputPosition();
   }
   closeSearch();
 });
@@ -769,7 +685,6 @@ searchOverlayField.addEventListener('click', event => event.stopPropagation());
 searchOverlayField.addEventListener('pointerdown', event => {
   if (event.target !== searchInput && document.activeElement === searchInput) {
     searchInput.blur();
-    resetSearchInputPosition();
   }
 });
 searchOverlay.querySelectorAll('.search-overlay-links a, [data-search-suggestion]').forEach(option=>option.addEventListener('click',event=>{
@@ -777,8 +692,4 @@ searchOverlay.querySelectorAll('.search-overlay-links a, [data-search-suggestion
   closeSearch();
 }));
 searchInput.addEventListener('input',()=>{const q=searchInput.value.trim();searchOverlay.classList.toggle('is-typing',!!q);suggestion.hidden=true;updateSearchResults(q);resizeSearch()});
-searchInput.addEventListener('focus',updateKeyboard);
-searchInput.addEventListener('blur',()=>setTimeout(updateKeyboard));
-viewport?.addEventListener('resize',updateKeyboard);
-viewport?.addEventListener('scroll',updateKeyboard);
 applyLanguage(language);updateConsultationPromoCopy();renderCalendar();renderChoices();renderSummary();updateConfirmationPanel();reveal();if(state.offerToken) void refreshServerPromotion({ showFeedback: true });

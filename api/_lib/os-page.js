@@ -10,7 +10,7 @@ const login = () => `${head('OOXME OS — Sign in')}<body class="os-page"><main 
 
 const cards = items => `<section class="os-grid">${items.map(([name, key]) => `<article class="os-card" data-state="unavailable" data-os-service="${key}"><div class="os-card-details"><div class="os-card-heading"><h2 data-os-text="${key}">${name}</h2><span class="os-card-dot" aria-hidden="true"></span></div><p data-os-status data-os-initial-status="loading">Loading…</p><small data-os-meta></small></div></article>`).join('')}</section>`;
 const dashboardPanel = items => `<section class="master-panel-screen is-active os-screen"><article class="master-panel os-panel">${panelHeader()}${items.length ? `<section class="master-panel-content os-content os-dashboard-content">${cards(items)}</section>` : '<section class="master-panel-content os-content os-dashboard-empty" aria-hidden="true"></section>'}${dashboardFooter()}</article></section>`;
-const currentAccountsPanel = () => `<section class="master-panel-screen is-active os-screen"><article class="master-panel os-panel">${panelHeader()}<section class="master-panel-content os-content homepage-account-panel os-current-accounts-content"><div class="homepage-account-selector" data-os-accounts-mode data-active="current" role="tablist" aria-label="Account mode"><span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-os-accounts-mode-option="current" role="tab" aria-selected="true" data-os-text="current">Current</button><button type="button" data-os-accounts-mode-option="edit" role="tab" aria-selected="false" data-os-text="edit">Edit</button></div><div class="homepage-account-selector" data-os-accounts-type data-active="employee" role="tablist" aria-label="Account type"><span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-os-accounts-type-option="employee" role="tab" aria-selected="true" data-os-text="employee">Employee</button><button type="button" data-os-accounts-type-option="client" role="tab" aria-selected="false" data-os-text="client">Client</button></div><div class="os-current-accounts-divider" aria-hidden="true"></div><section class="os-current-accounts-list" data-os-current-accounts-list aria-live="polite"></section></section>${dashboardFooter()}</article></section>`;
+const currentAccountsPanel = () => `<section class="master-panel-screen is-active os-screen"><article class="master-panel os-panel">${panelHeader()}<section class="master-panel-content os-content homepage-account-panel os-current-accounts-content"><div class="homepage-account-selector" data-os-accounts-mode data-active="current" role="tablist" aria-label="Account mode"><span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-os-accounts-mode-option="current" role="tab" aria-selected="true" data-os-text="current">Current</button><button type="button" data-os-accounts-mode-option="edit" role="tab" aria-selected="false" data-os-text="edit">Edit</button></div><div class="homepage-account-selector" data-os-accounts-type data-active="employee" role="tablist" aria-label="Account type"><span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-os-accounts-type-option="employee" role="tab" aria-selected="true" data-os-text="employee">Employee</button><button type="button" data-os-accounts-type-option="client" role="tab" aria-selected="false" data-os-text="client">Client</button></div><section class="os-current-accounts-list" data-os-current-accounts-list aria-live="polite"></section></section>${dashboardFooter()}</article></section>`;
 
 const dashboardScript = `<script>
 let osStatusData={};
@@ -71,9 +71,9 @@ const currentAccountsScript = `<script>
   const input = (name, placeholder, value = '', inputType = 'text', required = false) => {
     const field = document.createElement('input'); field.name = name; field.type = inputType; field.placeholder = placeholder; field.value = value || ''; field.autocomplete = name === 'username' ? 'username' : inputType === 'password' ? 'new-password' : 'off'; field.required = required; return field;
   };
-  const button = (label, className, handler, iconPath = '') => {
+  const button = (label, className, handler, iconPath = '', iconOnly = false) => {
     const control = document.createElement('button'); control.type = 'button'; control.className = className; control.setAttribute('aria-label', label); control.title = label;
-    if (iconPath) { const icon = document.createElement('img'); icon.src = iconPath; icon.alt = ''; const caption = document.createElement('span'); caption.textContent = label; control.append(icon, caption); }
+    if (iconPath) { const icon = document.createElement('img'); icon.src = iconPath; icon.alt = ''; control.append(icon); if (!iconOnly) { const caption = document.createElement('span'); caption.textContent = label; control.append(caption); } }
     else control.textContent = label;
     control.addEventListener('click', handler); return control;
   };
@@ -85,9 +85,10 @@ const currentAccountsScript = `<script>
     select.addEventListener('change', () => onChange(select.value)); return select;
   };
   const actionControls = () => {
-    const controls = document.createElement('div'); controls.className = 'os-current-account-actions';
+    const controls = document.createElement('div'); controls.className = 'os-current-account-actions'; controls.dataset.active = state.action || '';
+    const indicator = document.createElement('span'); indicator.className = 'os-current-account-actions-indicator'; indicator.setAttribute('aria-hidden', 'true'); controls.append(indicator);
     [['create', 'addNew', '/assets/icons/New/ADD.svg'], ['delete', 'deleteAccount', '/assets/icons/New/DELETE.svg'], ['update', 'editExisting', '/assets/icons/New/EDIT.svg']].forEach(([action, label, icon]) => {
-      const control = button(text(label), 'os-current-account-action', () => { state.action = action; state.selectedId = ''; state.deleteConfirm = false; render(); }, icon);
+      const control = button(text(label), 'os-current-account-action', () => { state.action = action; state.selectedId = ''; state.deleteConfirm = false; render(); }, icon, true);
       control.dataset.osAccountAction = action; control.classList.toggle('is-active', action === state.action); controls.append(control);
     });
     return controls;

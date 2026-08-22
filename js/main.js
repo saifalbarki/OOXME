@@ -49,21 +49,12 @@ document.querySelectorAll('[data-language-toggle]').forEach((button) => button.a
 window.addEventListener('storage', (event) => { if (event.key === 'ooxme-language') applyLanguage(event.newValue === 'ar' ? 'ar' : 'en'); });
 const searchOverlay = document.querySelector('[data-search-overlay]');
 const searchSuggestion = document.querySelector('[data-search-suggestion]');
-const visualViewport = window.visualViewport;
-const initialVisualViewportHeight = visualViewport?.height ?? window.innerHeight;
 let searchCloseTimer;
 const searchOverlayCloseDuration = 1450;
 const resizeSearchInput = () => {
   searchInput.style.height = '24px';
   searchInput.style.height = `${searchInput.scrollHeight}px`;
   searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 24)}px`;
-};
-const updateKeyboardSafeArea = () => {
-  if (!visualViewport) return;
-  searchOverlay.style.setProperty('--visual-viewport-height', `${visualViewport.height}px`);
-  searchOverlay.style.setProperty('--visual-viewport-top', `${visualViewport.offsetTop}px`);
-  const keyboardOpen = document.activeElement === searchInput && initialVisualViewportHeight - visualViewport.height > 120;
-  searchOverlay.classList.toggle('is-keyboard-open', keyboardOpen);
 };
 const updateSearchState = () => {
   const query = searchInput.value.trim();
@@ -95,10 +86,6 @@ document.querySelectorAll('[data-search-toggle]').forEach((button) => button.add
 searchOverlay.addEventListener('click', () => setSearchOpen(false));
 searchOverlay.querySelectorAll('a, label, [data-search-suggestion]').forEach((element) => element.addEventListener('click', (event) => event.stopPropagation()));
 searchInput.addEventListener('input', updateSearchState);
-searchInput.addEventListener('focus', updateKeyboardSafeArea);
-searchInput.addEventListener('blur', () => window.setTimeout(updateKeyboardSafeArea, 0));
-visualViewport?.addEventListener('resize', updateKeyboardSafeArea);
-visualViewport?.addEventListener('scroll', updateKeyboardSafeArea);
 const panelIds = ['intro', 'portfolio', 'plans', 'services', 'consultation', 'contact', 'employee-dashboard'];
 const originalPanels = [...track.querySelectorAll('.master-panel-screen')];
 originalPanels.forEach((panel, index) => { panel.dataset.panelId = panelIds[index]; });

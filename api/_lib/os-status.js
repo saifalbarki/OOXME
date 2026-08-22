@@ -77,7 +77,7 @@ const drive = async () => {
   try { const result = await driveApi('/about?fields=storageQuota'); const quota = result.storageQuota || {}; return { state: 'ready', label: 'Connected', detail: quota.limit ? `Storage: ${Math.round((Number(quota.usage || 0) / Number(quota.limit)) * 100)}% used` : 'Storage available' }; } catch { return { state: 'error', label: 'Unavailable', detail: 'Drive status check failed' }; }
 };
 const neon = async () => {
-  if (!process.env.DATABASE_URL) return limited('Database URL required');
+  if (!(process.env.OOXME_DATABASE_URL || process.env.DATABASE_URL)) return limited('Database URL required');
   try { await query('SELECT 1'); return { state: 'ready', label: 'Connected', detail: 'Read-only health check passed' }; } catch { return { state: 'error', label: 'Unavailable', detail: 'Database status check failed' }; }
 };
 const openai = async () => {

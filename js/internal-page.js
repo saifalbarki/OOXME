@@ -55,15 +55,6 @@ const setSearchOpen = (open) => {
 document.querySelectorAll('[data-search-toggle]').forEach((button) => button.addEventListener('click', () => setSearchOpen(searchOverlay.hidden)));
 searchOverlay.addEventListener('click', () => setSearchOpen(false));
 searchOverlay.querySelectorAll('a, label, [data-search-suggestion]').forEach((element) => element.addEventListener('click', (event) => event.stopPropagation()));
-const visualViewport = window.visualViewport;
-const initialVisualViewportHeight = visualViewport?.height ?? window.innerHeight;
-const updateKeyboardSafeArea = () => {
-  if (!visualViewport) return;
-  searchOverlay.style.setProperty('--visual-viewport-height', `${visualViewport.height}px`);
-  searchOverlay.style.setProperty('--visual-viewport-top', `${visualViewport.offsetTop}px`);
-  const keyboardOpen = document.activeElement === searchInput && initialVisualViewportHeight - visualViewport.height > 120;
-  searchOverlay.classList.toggle('is-keyboard-open', keyboardOpen);
-};
 const resizeSearchInput = () => {
   searchInput.style.height = '24px';
   searchInput.style.height = `${searchInput.scrollHeight}px`;
@@ -76,7 +67,3 @@ searchInput.addEventListener('input', () => {
   if (query) searchSuggestion.textContent = root.lang === 'ar' ? `اقتراح: «${query}»` : `Search for “${query}”`;
   resizeSearchInput();
 });
-searchInput.addEventListener('focus', updateKeyboardSafeArea);
-searchInput.addEventListener('blur', () => window.setTimeout(updateKeyboardSafeArea, 0));
-visualViewport?.addEventListener('resize', updateKeyboardSafeArea);
-visualViewport?.addEventListener('scroll', updateKeyboardSafeArea);
