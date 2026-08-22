@@ -25,7 +25,7 @@ module.exports = async (request, response) => {
     if (request.method !== 'POST') return response.status(405).send('Method not allowed');
     response.setHeader('Set-Cookie', clearCookie());
     response.setHeader('Cache-Control', 'no-store');
-    return response.redirect(303, '/os/login');
+    return response.redirect(303, request.query?.returnTo === '/' ? '/' : '/os/login');
   }
   if (route === 'status') {
     if (request.method !== 'GET') return response.status(405).send('Method not allowed');

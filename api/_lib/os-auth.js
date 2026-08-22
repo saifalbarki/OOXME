@@ -45,7 +45,9 @@ const credentialsValid = (username, password) => {
   return equal(username, values.username) && equal(password, values.password);
 };
 
-const sessionCookie = () => `${cookieName}=${issue()}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAgeSeconds}${process.env.VERCEL ? '; Secure' : ''}`;
+// Deliberately omit Max-Age/Expires: OS authentication ends with the browser
+// session, while the signed token still enforces its server-side expiry.
+const sessionCookie = () => `${cookieName}=${issue()}; Path=/; HttpOnly; SameSite=Strict${process.env.VERCEL ? '; Secure' : ''}`;
 const clearCookie = () => `${cookieName}=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${process.env.VERCEL ? '; Secure' : ''}`;
 
 module.exports = { configured, valid, credentialsValid, sessionCookie, clearCookie };

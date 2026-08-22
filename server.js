@@ -27,7 +27,7 @@ const handleOs = async (request, response, requestPath, query) => {
     if (!credentialsValid(body.username, body.password)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"invalid_credentials"}');
     return send(response, 204, { 'Set-Cookie': sessionCookie(), 'Cache-Control': 'no-store' });
   }
-  if (requestPath === '/api/os/logout' && request.method === 'POST') return send(response, 303, { Location: '/os/login', 'Set-Cookie': clearCookie(), 'Cache-Control': 'no-store' });
+  if (requestPath === '/api/os/logout' && request.method === 'POST') return send(response, 303, { Location: query.get('returnTo') === '/' ? '/' : '/os/login', 'Set-Cookie': clearCookie(), 'Cache-Control': 'no-store' });
   if (requestPath === '/api/os/index' && query.get('route') === 'status' && request.method === 'GET') {
     if (!valid(request)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"unauthorized"}');
     return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify(await allStatuses()));
