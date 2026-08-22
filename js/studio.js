@@ -541,8 +541,26 @@
       window.setTimeout(() => studioPanels[studioPanelIndex].classList.add('is-active'), 620);
     };
     window.OOXMEMasterPanelDrag.register({ experience: studioExperience, track: studioTrack, panels: studioPanels, getIndex: () => studioPanelIndex, moveTo: moveToStudioPanel, allowBottomControlNavigation: false });
-    duplicateStudioPanel.querySelector('[data-auth-nav-trigger]')?.addEventListener('click', () => navigationTrigger?.click());
-    duplicateStudioPanel.querySelectorAll('[data-auth-nav-item]').forEach((button) => button.addEventListener('click', () => navigationMenu?.querySelector(`[data-auth-nav-item="${button.dataset.authNavItem}"]`)?.click()));
+    const duplicateNavigation = duplicateStudioPanel.querySelector('[data-authenticated-navigation]');
+    const duplicateNavigationTrigger = duplicateNavigation?.querySelector('[data-auth-nav-trigger]');
+    const duplicateNavigationMenu = duplicateNavigation?.querySelector('[data-auth-nav-menu]');
+    // Panel 2 is a visual proxy only: Panel 1 remains the sole shared navigation controller.
+    const syncDuplicateNavigation = () => {
+      if (!navigation || !duplicateNavigation) return;
+      duplicateNavigation.className = navigation.className;
+      duplicateNavigationTrigger?.setAttribute('aria-expanded', navigationTrigger?.getAttribute('aria-expanded') || 'false');
+      if (duplicateNavigationMenu && navigationMenu) {
+        duplicateNavigationMenu.dataset.active = navigationMenu.dataset.active;
+        duplicateNavigationMenu.querySelectorAll('[data-auth-nav-item]').forEach((button) => {
+          const source = navigationMenu.querySelector(`[data-auth-nav-item="${button.dataset.authNavItem}"]`);
+          button.setAttribute('aria-pressed', source?.getAttribute('aria-pressed') || 'false');
+        });
+      }
+    };
+    syncDuplicateNavigation();
+    if (navigation) new MutationObserver(syncDuplicateNavigation).observe(navigation, { attributes: true, subtree: true, attributeFilter: ['class', 'aria-expanded', 'aria-pressed', 'data-active'] });
+    duplicateNavigationTrigger?.addEventListener('click', () => navigationTrigger?.click());
+    duplicateNavigationMenu?.querySelectorAll('[data-auth-nav-item]').forEach((button) => button.addEventListener('click', () => navigationMenu?.querySelector(`[data-auth-nav-item="${button.dataset.authNavItem}"]`)?.click()));
     duplicateStudioPanel.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption, duplicateStudioPanel)));
     const duplicateGallery = duplicateStudioPanel.querySelector('[data-studio-project-gallery]');
     let duplicateGesture;
@@ -582,7 +600,7 @@
     const duplicateClientCopy = duplicateStudioPanel.querySelector('[data-studio-client-copy]');
     const [duplicateName, duplicateSince, duplicateDescription] = duplicateClientCopy?.querySelectorAll(':scope > :is(strong, p)') || [];
     if (duplicateName && duplicateSince && duplicateDescription) {
-      Object.assign(duplicateName.dataset, { en: 'Basra Mall', ar: 'البصري مول' });
+      Object.assign(duplicateName.dataset, { en: 'Albasri Mall', ar: 'البصري مول' });
       duplicateName.textContent = duplicateName.dataset[root.lang === 'ar' ? 'ar' : 'en'];
       Object.assign(duplicateSince.dataset, { en: 'Since 10 January 2026', ar: 'منذ 10 يناير 2026' });
       duplicateSince.textContent = duplicateSince.dataset[root.lang === 'ar' ? 'ar' : 'en'];
