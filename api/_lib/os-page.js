@@ -42,34 +42,121 @@ const currentAccountsScript = `<script>
   const modeSelector = document.querySelector('[data-os-accounts-mode]');
   const typeSelector = document.querySelector('[data-os-accounts-type]');
   if (!list || !modeSelector || !typeSelector) return;
-  let accounts = [];
+  const endpoint = '/api/os/accounts';
+  const state = { accounts: [], action: null, selectedId: '', deleteConfirm: false };
   const text = key => window.OOXMEOS?.copy?.[window.OOXMEOS.language]?.[key] || key;
+  const type = () => typeSelector.dataset.active;
+  const profileKey = () => type() === 'employee' ? 'jobTitle' : 'companyName';
+  const profileValue = account => type() === 'employee' ? account.job_title : account.company_name;
+  const displayValue = account => type() === 'employee' ? account.employee_display_name : account.client_display_name;
+  const typeAccounts = () => state.accounts.filter(account => account.account_type === type());
   const formatDate = value => value ? new Intl.DateTimeFormat(window.OOXMEOS?.language === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(value)) : '';
   const setSelector = (selector, value, attribute) => {
     selector.dataset.active = value;
     selector.querySelectorAll('button').forEach(button => button.setAttribute('aria-selected', String(button.dataset[attribute] === value)));
   };
-  const render = () => {
-    list.replaceChildren();
-    const type = typeSelector.dataset.active;
-    const current = accounts.filter(account => account.account_type === type && account.status === 'active');
-    if (!current.length) { const empty = document.createElement('p'); empty.className = 'os-current-accounts-empty'; empty.textContent = text('noAccounts'); list.append(empty); return; }
+  const request = async body => {
+    const response = await fetch(endpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const result = await response.json().catch(() => ({}));
+    if (response.status === 401) { location.assign('/os/login'); throw new Error('unauthorized'); }
+    if (!response.ok) throw new Error(result.error || 'account_action_failed');
+    return result;
+  };
+  const load = async () => {
+    const response = await fetch(endpoint, { credentials: 'same-origin' });
+    if (!response.ok) throw new Error('accounts_unavailable');
+    state.accounts = await response.json();
+    if (!Array.isArray(state.accounts)) state.accounts = [];
+  };
+  const input = (name, placeholder, value = '', inputType = 'text', required = false) => {
+    const field = document.createElement('input'); field.name = name; field.type = inputType; field.placeholder = placeholder; field.value = value || ''; field.autocomplete = name === 'username' ? 'username' : inputType === 'password' ? 'new-password' : 'off'; field.required = required; return field;
+  };
+  const button = (label, className, handler, icon = '') => {
+    const control = document.createElement('button'); control.type = 'button'; control.className = className; control.setAttribute('aria-label', label); control.title = label; control.textContent = icon || label; control.addEventListener('click', handler); return control;
+  };
+  const empty = message => { const node = document.createElement('p'); node.className = 'os-current-accounts-empty'; node.textContent = message; return node; };
+  const accountSelect = onChange => {
+    const select = document.createElement('select'); select.className = 'os-current-account-select'; select.name = 'account';
+    const initial = document.createElement('option'); initial.value = ''; initial.textContent = text('selectAccount'); select.append(initial);
+    typeAccounts().forEach(account => { const option = document.createElement('option'); option.value = account.id; option.textContent = displayValue(account) || account.username; select.append(option); });
+    select.addEventListener('change', () => onChange(select.value)); return select;
+  };
+  const actionControls = () => {
+    const controls = document.createElement('div'); controls.className = 'os-current-account-actions';
+    controls.append(
+      button(text('addNew'), 'os-current-account-action', () => { state.action = 'create'; state.selectedId = ''; render(); }, '+'),
+      button(text('deleteAccount'), 'os-current-account-action', () => { state.action = 'delete'; state.selectedId = ''; state.deleteConfirm = false; render(); }, '⌫'),
+      button(text('editExisting'), 'os-current-account-action', () => { state.action = 'update'; state.selectedId = ''; render(); }, '✎')
+    );
+    controls.querySelectorAll('button').forEach(control => control.classList.toggle('is-active', ({ '+': 'create', '⌫': 'delete', '✎': 'update' }[control.textContent] === state.action)));
+    return controls;
+  };
+  const formFields = (account, withPassword) => {
+    const form = document.createElement('form'); form.className = 'os-current-account-form';
+    form.append(input('username', text('username'), account?.username, 'text', true));
+    form.append(input('displayName', text('displayName'), account && displayValue(account), 'text', true));
+    form.append(input('profile', text(profileKey()), account && profileValue(account)));
+    if (withPassword) form.append(input('password', text('password'), '', 'password', true));
+    return form;
+  };
+  const renderCurrent = () => {
+    const current = typeAccounts();
+    if (!current.length) { list.append(empty(text('noAccounts'))); return; }
     current.forEach(account => {
-      const row = document.createElement('article'); row.className = 'os-current-account-row'; row.dataset.state = 'healthy';
+      const row = document.createElement('article'); row.className = 'os-current-account-row'; row.dataset.state = account.status === 'active' ? 'healthy' : account.status;
       const details = document.createElement('div'); details.className = 'os-current-account-details';
-      const name = document.createElement('strong'); name.textContent = type === 'employee' ? (account.employee_display_name || account.username) : (account.client_display_name || account.username);
-      const role = document.createElement('span'); role.textContent = type === 'employee' ? (account.job_title || account.username) : (account.company_name || account.username);
+      const name = document.createElement('strong'); name.textContent = displayValue(account) || account.username;
+      const role = document.createElement('span'); role.textContent = profileValue(account) || account.username;
       const period = document.createElement('small'); period.textContent = [formatDate(account.created_at), text('present')].filter(Boolean).join(' → ');
       const dot = document.createElement('span'); dot.className = 'os-card-dot os-current-account-dot'; dot.setAttribute('aria-hidden', 'true');
       details.append(name, role, period); row.append(details, dot); list.append(row);
     });
   };
-  modeSelector.querySelectorAll('[data-os-accounts-mode-option]').forEach(button => button.addEventListener('click', () => setSelector(modeSelector, button.dataset.osAccountsModeOption, 'osAccountsModeOption')));
-  typeSelector.querySelectorAll('[data-os-accounts-type-option]').forEach(button => button.addEventListener('click', () => { setSelector(typeSelector, button.dataset.osAccountsTypeOption, 'osAccountsTypeOption'); render(); }));
-  fetch('/api/os/accounts', { credentials: 'same-origin' })
-    .then(response => { if (!response.ok) throw new Error('accounts_unavailable'); return response.json(); })
-    .then(data => { accounts = Array.isArray(data) ? data : []; render(); })
-    .catch(() => { const error = document.createElement('p'); error.className = 'os-current-accounts-empty'; error.textContent = text('accountLoadFailed'); list.replaceChildren(error); });
+  const renderCreate = () => {
+    const form = formFields(null, true); const actions = document.createElement('div'); actions.className = 'os-current-account-confirm-actions';
+    const error = empty(''); error.classList.add('os-current-account-error');
+    const cancel = button(text('cancel'), 'os-current-account-cancel', () => { state.action = null; render(); });
+    const confirm = button(text('confirm'), 'homepage-account-login', async () => {
+      const values = new FormData(form); error.textContent = '';
+      try { await request({ action: 'create', accountType: type(), username: values.get('username'), password: values.get('password'), displayName: values.get('displayName'), ...(type() === 'employee' ? { jobTitle: values.get('profile') } : { companyName: values.get('profile') }) }); await load(); state.action = null; render(); } catch (exception) { error.textContent = text(exception.message); }
+    });
+    actions.append(cancel, confirm); list.append(form, actions, error);
+  };
+  const renderDelete = () => {
+    const select = accountSelect(id => { state.selectedId = id; state.deleteConfirm = false; render(); }); select.value = state.selectedId; list.append(select);
+    if (!state.selectedId) return;
+    if (!state.deleteConfirm) {
+      const actions = document.createElement('div'); actions.className = 'os-current-account-confirm-actions';
+      const cancel = button(text('cancel'), 'os-current-account-cancel', () => { state.selectedId = ''; render(); });
+      const remove = button(text('deleteAccount'), 'os-current-account-delete', () => { state.deleteConfirm = true; render(); }, '⌫');
+      actions.append(cancel, remove); list.append(actions); return;
+    }
+    const warning = document.createElement('section'); warning.className = 'os-current-account-warning'; warning.textContent = text('deleteConfirm');
+    const actions = document.createElement('div'); actions.className = 'os-current-account-confirm-actions';
+    const cancel = button(text('cancel'), 'os-current-account-cancel', () => { state.deleteConfirm = false; render(); });
+    const confirm = button(text('confirm'), 'os-current-account-delete', async () => { try { await request({ action: 'delete', id: state.selectedId }); await load(); state.action = null; state.selectedId = ''; state.deleteConfirm = false; render(); } catch (exception) { list.append(empty(text(exception.message))); } });
+    actions.append(cancel, confirm); list.append(warning, actions);
+  };
+  const renderUpdate = () => {
+    const select = accountSelect(id => { state.selectedId = id; render(); }); select.value = state.selectedId; list.append(select);
+    const account = typeAccounts().find(item => item.id === state.selectedId); if (!account) return;
+    const form = formFields(account, false); const actions = document.createElement('div'); actions.className = 'os-current-account-confirm-actions';
+    const error = empty(''); error.classList.add('os-current-account-error');
+    const cancel = button(text('cancel'), 'os-current-account-cancel', () => { state.selectedId = ''; render(); });
+    const confirm = button(text('confirm'), 'homepage-account-login', async () => { const values = new FormData(form); error.textContent = ''; try { await request({ action: 'update', id: account.id, username: values.get('username'), displayName: values.get('displayName'), ...(type() === 'employee' ? { jobTitle: values.get('profile') } : { companyName: values.get('profile') }) }); await load(); state.action = null; state.selectedId = ''; render(); } catch (exception) { error.textContent = text(exception.message); } });
+    actions.append(cancel, confirm); list.append(form, actions, error);
+  };
+  const render = () => {
+    list.replaceChildren();
+    if (modeSelector.dataset.active === 'current') { renderCurrent(); return; }
+    list.append(actionControls());
+    if (state.action === 'create') renderCreate();
+    if (state.action === 'delete') renderDelete();
+    if (state.action === 'update') renderUpdate();
+  };
+  modeSelector.querySelectorAll('[data-os-accounts-mode-option]').forEach(button => button.addEventListener('click', () => { setSelector(modeSelector, button.dataset.osAccountsModeOption, 'osAccountsModeOption'); state.action = null; state.selectedId = ''; state.deleteConfirm = false; render(); }));
+  typeSelector.querySelectorAll('[data-os-accounts-type-option]').forEach(button => button.addEventListener('click', () => { setSelector(typeSelector, button.dataset.osAccountsTypeOption, 'osAccountsTypeOption'); state.selectedId = ''; state.deleteConfirm = false; render(); }));
+  load().then(render).catch(() => { list.replaceChildren(empty(text('accountLoadFailed'))); });
 })();
 </script>`;
 
