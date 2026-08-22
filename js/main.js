@@ -154,6 +154,7 @@ employeeDashboardMenu?.querySelectorAll('button').forEach((button) => button.add
   employeeDashboardMenu.querySelectorAll('button').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
   employeeDashboardMenu.dataset.active = ['account', 'gallery', 'home', 'search', 'menu'][buttons.indexOf(button)];
 }));
+document.querySelector('[data-employee-dashboard-menu-notifications]')?.addEventListener('click', () => setHomepageNotificationsOpen(true));
 document.addEventListener('pointerdown', (event) => {
   if (employeeDashboardNavigation?.classList.contains('is-menu-open') && !event.target.closest('[data-employee-dashboard-navigation]')) setEmployeeDashboardMenuOpen(false);
 });
@@ -312,7 +313,22 @@ document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () =>
 homepageNotifications?.addEventListener('click', (event) => {
   if (!event.target.closest('.homepage-notifications-panel')) setHomepageNotificationsOpen(false);
 });
-homepageNotifications?.querySelectorAll('[data-notification]').forEach((notification) => notification.addEventListener('click', () => {
+const renderSharedNotifications = (notifications) => {
+  const list = homepageNotifications?.querySelector('.homepage-notifications-list');
+  if (!list || !Array.isArray(notifications)) return;
+  list.replaceChildren(...notifications.map(notification => {
+    const item = document.createElement('button'); item.type = 'button'; item.className = 'homepage-notification'; item.dataset.notification = ''; item.setAttribute('aria-expanded', 'false');
+    const summary = document.createElement('span'); summary.className = 'homepage-notification-summary'; const summaryCopy = document.createElement('span'); const title = document.createElement('strong'); title.textContent = notification.title; const date = document.createElement('time'); date.dateTime = notification.publish_date; date.textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(notification.publish_date)); summaryCopy.append(title, date); const unread = document.createElement('span'); unread.className = 'homepage-notification-unread'; unread.setAttribute('aria-hidden', 'true'); summary.append(summaryCopy, unread);
+    const details = document.createElement('span'); details.className = 'homepage-notification-details'; const copy = document.createElement('span'); copy.className = 'homepage-notification-copy'; copy.textContent = notification.body; details.append(copy); item.append(summary, details); return item;
+  }));
+};
+const loadSharedNotifications = async () => {
+  try { const response = await fetch('/api/accounts/index?route=notifications', { credentials: 'same-origin' }); if (response.ok) renderSharedNotifications(await response.json()); } catch (_) {}
+};
+loadSharedNotifications();
+homepageNotifications?.addEventListener('click', (event) => {
+  const notification = event.target.closest('[data-notification]');
+  if (!notification) return;
   const expanded = !notification.classList.contains('is-expanded');
   homepageNotifications.querySelectorAll('[data-notification].is-expanded').forEach((openNotification) => {
     openNotification.classList.remove('is-expanded');
@@ -323,7 +339,7 @@ homepageNotifications?.querySelectorAll('[data-notification]').forEach((notifica
   notification.setAttribute('aria-expanded', String(expanded));
   window.clearTimeout(homepageNotificationSelectionTimer);
   homepageNotificationSelectionTimer = window.setTimeout(() => notification.classList.remove('is-selected'), 340);
-}));
+});
 homepageSearch?.addEventListener('pointerdown', (event) => {
   if (!event.target.closest('.homepage-search-panel')) setHomepageSearchOpen(false);
 });
@@ -354,6 +370,7 @@ homepageAccount?.querySelectorAll('.homepage-account-login').forEach((button) =>
     });
     const account = await response.json().catch(() => ({}));
     if (!response.ok || account.accountType !== expectedAccountType) throw new Error('invalid_credentials');
+    await loadSharedNotifications();
     if (account.accountType === 'employee') location.assign('/?panel=employee-dashboard');
   } catch (_) {
     usernameInput.setAttribute('aria-invalid', 'true');

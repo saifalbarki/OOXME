@@ -3,6 +3,8 @@ const { configured, valid, credentialsValid, sessionCookie, clearCookie } = requ
 const { login, dashboard, accountManagement } = require('../_lib/os-page');
 const { allStatuses } = require('../_lib/os-status');
 const accountAdmin = require('../_lib/account-admin');
+const promoAdmin = require('../_lib/promo-admin');
+const notificationAdmin = require('../_lib/notification-admin');
 
 module.exports = async (request, response) => {
   const route = request.query?.route || 'dashboard';
@@ -33,6 +35,12 @@ module.exports = async (request, response) => {
     response.setHeader('Cache-Control', 'no-store');
     return response.status(200).json(await allStatuses());
   }
+  if (route === 'summary') {
+    if (request.method !== 'GET') return response.status(405).send('Method not allowed');
+    if (!valid(request)) return response.status(401).json({ error: 'unauthorized' });
+    response.setHeader('Cache-Control', 'no-store');
+    return response.status(200).json(await accountAdmin.summary());
+  }
   if (route === 'accounts-page') {
     if (request.method !== 'GET') return response.status(405).send('Method not allowed');
     if (!valid(request)) return response.redirect(303, '/os/login');
@@ -57,6 +65,37 @@ module.exports = async (request, response) => {
     } catch (error) {
       if (error.code === '23505') return response.status(409).json({ error: 'username_unavailable' });
       return response.status(error.code === 'account_not_found' ? 404 : 400).json({ error: error.code || 'account_action_failed' });
+    }
+  }
+  if (route === 'promotions') {
+    if (!valid(request)) return response.status(401).json({ error: 'unauthorized' });
+    response.setHeader('Cache-Control', 'no-store');
+    try {
+      if (request.method === 'GET') return response.status(200).json(await promoAdmin.list());
+      if (request.method !== 'POST') return response.status(405).json({ error: 'method_not_allowed' });
+      const body = await readJson(request);
+      const actions = { create: promoAdmin.create, update: promoAdmin.update, delete: promoAdmin.remove };
+      if (!actions[body.action]) return response.status(400).json({ error: 'invalid_promotion_action' });
+      const result = await actions[body.action](body);
+      return response.status(200).json({ ok: true, ...(typeof result === 'string' ? { id: result } : result) });
+    } catch (error) {
+      if (error.code === '23505') return response.status(409).json({ error: 'promo_code_unavailable' });
+      return response.status(error.code === 'promotion_not_found' ? 404 : 400).json({ error: error.code || 'promotion_action_failed' });
+    }
+  }
+  if (route === 'notifications') {
+    if (!valid(request)) return response.status(401).json({ error: 'unauthorized' });
+    response.setHeader('Cache-Control', 'no-store');
+    try {
+      if (request.method === 'GET') return response.status(200).json(await notificationAdmin.list());
+      if (request.method !== 'POST') return response.status(405).json({ error: 'method_not_allowed' });
+      const body = await readJson(request);
+      const actions = { create: notificationAdmin.create, update: notificationAdmin.update, delete: notificationAdmin.remove };
+      if (!actions[body.action]) return response.status(400).json({ error: 'invalid_notification_action' });
+      const result = await actions[body.action](body);
+      return response.status(200).json({ ok: true, ...(result ? { notification: result } : {}) });
+    } catch (error) {
+      return response.status(error.code === 'notification_not_found' ? 404 : 400).json({ error: error.code || 'notification_action_failed' });
     }
   }
   if (request.method !== 'GET') return response.status(405).send('Method not allowed');

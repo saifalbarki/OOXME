@@ -33,7 +33,7 @@ async function migrate() {
         throw error;
       }
     }
-    const expectedTables = ['bookings', 'promotions', 'promotion_redemptions', 'offer_tokens', 'booking_holds', 'idempotency_keys', 'users', 'employee_profiles', 'client_profiles', 'projects', 'tasks', 'files', 'sessions'];
+    const expectedTables = ['bookings', 'promotions', 'promotion_redemptions', 'offer_tokens', 'booking_holds', 'idempotency_keys', 'users', 'employee_profiles', 'client_profiles', 'projects', 'tasks', 'files', 'sessions', 'notifications'];
     const tables = await client.query("SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ANY($1::text[]) ORDER BY tablename", [expectedTables]);
     const verifiedTables = new Set(tables.rows.map((row) => row.tablename));
     const missingTables = expectedTables.filter((table) => !verifiedTables.has(table));

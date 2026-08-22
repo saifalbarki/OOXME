@@ -15,6 +15,14 @@ const detailQuery = `SELECT users.id, users.username, users.account_type, users.
 
 const list = async () => (await query(`${detailQuery} ORDER BY users.created_at DESC`)).rows;
 const details = async (id) => (await query(`${detailQuery} WHERE users.id = $1 LIMIT 1`, [id])).rows[0] || null;
+const summary = async () => (await query(`SELECT
+  count(*) FILTER (WHERE account_type = 'employee' AND status = 'active')::int AS active_employees,
+  count(*) FILTER (WHERE account_type = 'employee')::int AS employees,
+  count(*) FILTER (WHERE account_type = 'client' AND status = 'active')::int AS active_clients,
+  count(*) FILTER (WHERE account_type = 'client')::int AS clients,
+  (SELECT count(*)::int FROM promotions WHERE promotion_type = 'public_promo' AND status = 'active') AS active_discount_codes,
+  (SELECT count(*)::int FROM promotions WHERE promotion_type = 'public_promo') AS discount_codes
+  FROM users`)).rows[0];
 
 const create = async ({ username: rawUsername, password, accountType, displayName, jobTitle, companyName }) => {
   const accountUsername = username(rawUsername);
@@ -64,4 +72,4 @@ const remove = async ({ id }) => {
   if (!result.rowCount) { const error = new Error('account_not_found'); error.code = 'account_not_found'; throw error; }
 };
 
-module.exports = { create, details, list, remove, resetPassword, setStatus, update };
+module.exports = { create, details, list, remove, resetPassword, setStatus, summary, update };
