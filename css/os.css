@@ -108,3 +108,13 @@ html[dir="rtl"] .os-current-accounts-content { --overlay-text-size: clamp(13.5px
 /* OS login adopts the shared writable-field baseline without changing its geometry. */
 .os-login .homepage-search-field input.ooxme-writable-field { --ooxme-writable-font-size: 16px; color: var(--color-ink); font-size: var(--ooxme-writable-font-size) !important; font-weight: 700; line-height: 1.35; text-align: center; transform: none; }
 .os-login .homepage-search-field input.ooxme-writable-field::placeholder { color: rgba(13, 13, 13, .48); font-size: inherit; font-weight: 400; text-align: center; }
+
+/* Authenticated OS uses three equal navigation thirds on every dashboard panel. */
+.os-footer .homepage-bottom-menu { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.os-footer .homepage-bottom-menu [data-auth-nav-item="discount"] { grid-column: 1; }
+.os-footer .homepage-bottom-menu [data-auth-nav-item="home"] { grid-column: 2; }
+.os-footer .homepage-bottom-menu [data-auth-nav-item="users"] { grid-column: 3; }
+.os-footer .homepage-bottom-menu-indicator { width: calc(100% / 3); }
+.os-footer .homepage-bottom-menu[data-active="discount"] .homepage-bottom-menu-indicator { left: 0; }
+.os-footer .homepage-bottom-menu[data-active="home"] .homepage-bottom-menu-indicator { left: calc(100% / 3); }
+.os-footer .homepage-bottom-menu[data-active="users"] .homepage-bottom-menu-indicator { left: calc((100% / 3) * 2); }
