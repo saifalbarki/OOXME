@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>OOXME STUDIO</title>
+    <link rel="canonical" href="https://ooxme.com/studio" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="favicon.svg" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script src="js/authenticated-navigation.js" defer></script>
+    <script src="js/studio.js" defer></script>
+  </head>
+  <body class="studio-page">
+    <main class="master-panel-experience">
+      <section class="master-panel-screen is-active studio-panel">
+        <article class="master-panel">
+          <section class="master-panel-content studio-content">
+            <article class="homepage-account-panel studio-card">
+              <div class="homepage-account-selector studio-selector" data-studio-selector data-active="work" role="tablist" aria-label="Studio view">
+                <span class="homepage-account-selector-indicator" aria-hidden="true"></span>
+                <button type="button" data-studio-option="work" role="tab" aria-selected="true">Our Work</button>
+                <button type="button" data-studio-option="client" role="tab" aria-selected="false">Our Client</button>
+              </div>
+              <section class="studio-work-gallery project-panel--al-basri-primary" data-studio-work-gallery aria-label="Our Work">
+                <div class="project-gallery is-al-basri-mall-story" data-studio-project-gallery>
+                  <div class="project-gallery-viewport"><div class="project-gallery-track"></div></div>
+                  <div class="project-gallery-dots" aria-hidden="true"></div>
+                </div>
+              </section>
+              <section class="studio-client-copy" data-studio-client-copy hidden aria-label="Our Client">
+                <strong data-en="Basra Mall" data-ar="البصري مول">Basra Mall</strong>
+                <p data-en="10 January 2026" data-ar="10 يناير 2026">10 January 2026</p>
+                <p class="studio-client-description" data-en="We provide Basra Mall with a monthly brand management package covering social media management, content creation, photography, and design. We also developed and refined the visual identity to create a more consistent and professional brand presence. This work contributed to gradual sales growth, stronger audience engagement, and an increase in followers and interested customers." data-ar="نقدم للبصري مول باقة شهرية متكاملة لإدارة العلامة التجارية، تشمل إدارة حسابات التواصل الاجتماعي، صناعة المحتوى، التصوير، والتصميم. كما عملنا على تطوير وتحسين الهوية البصرية لبناء حضور أكثر اتساقاً واحترافية للعلامة. وأسهم هذا العمل في تحقيق نمو تدريجي في المبيعات، وزيادة التفاعل، وارتفاع أعداد المتابعين والعملاء المهتمين.">We provide Basra Mall with a monthly brand management package covering social media management, content creation, photography, and design. We also developed and refined the visual identity to create a more consistent and professional brand presence. This work contributed to gradual sales growth, stronger audience engagement, and an increase in followers and interested customers.</p>
+              </section>
+            </article>
+          </section>
+          <footer class="master-panel-footer homepage-bottom-navigation" data-authenticated-navigation>
+            <button class="master-panel-continue" type="button" data-auth-nav-trigger aria-label="Open navigation" aria-expanded="false"><span class="swipe-control"><span></span><span class="swipe-control-line"></span></span></button>
+            <nav class="homepage-bottom-menu" data-auth-nav-menu data-active="gallery" aria-label="Homepage navigation">
+              <span class="homepage-bottom-menu-indicator" aria-hidden="true"></span>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="account" aria-pressed="false"><img src="assets/icons/New/PROFILE.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button is-active" type="button" data-auth-nav-item="gallery" data-auth-nav-destination="/studio" aria-pressed="true"><img src="assets/icons/New/FILE.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="home" data-auth-nav-destination="/" aria-pressed="false"><img src="assets/icons/New/HOME.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="search" aria-pressed="false"><img src="assets/icons/New/SEARCH.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="menu" aria-pressed="false"><img src="assets/icons/New/NOTIFICATION.svg" alt="" /></button>
+            </nav>
+          </footer>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

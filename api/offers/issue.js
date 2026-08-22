@@ -11,7 +11,7 @@ module.exports = async (request, response) => {
   if (request.method !== 'POST') return methodNotAllowed(response, ['POST']);
   try {
     const promo = await loadPromoConfig('FREE');
-    if (!promo || !promo.active || promo.type !== 'private_offer' || !promo.source_restrictions.includes('plan_cta') || !promo.allowed_durations || promo.allowed_durations.length !== 1 || !promo.campaign_source || !Number.isInteger(promo.token_ttl_minutes) || promo.token_ttl_minutes <= 0) return json(response, 503, { error: 'offer_unavailable' });
+    if (!promo || promo.status !== 'active' || promo.type !== 'private_offer' || !promo.source_restrictions.includes('plan_cta') || !promo.allowed_durations || promo.allowed_durations.length !== 1 || !promo.campaign_source || !Number.isInteger(promo.token_ttl_minutes) || promo.token_ttl_minutes <= 0) return json(response, 503, { error: 'offer_unavailable' });
     const issuedSession = crypto.randomBytes(24).toString('base64url');
     const requestFingerprint = fingerprint(request);
     const token = crypto.randomBytes(32).toString('base64url');
@@ -26,7 +26,7 @@ module.exports = async (request, response) => {
       await client.query(
         `INSERT INTO offer_tokens (id, token_hash, status, campaign_source, service_code, promotion_id, promo_code_normalized, granted_duration_minutes, discount_type, discount_value, issued_session_hash, request_fingerprint_hash, expires_at)
          VALUES ($1, $2, 'issued', $3, 'consultation', $4, $5, $6, $7, $8, $9, $10, $11)`,
-        [crypto.randomUUID(), hashToken(token), promo.campaign_source, promo.promotionId, promo.code, promo.allowed_durations[0], promo.discount.type, promo.discount.value, hashOfferSession(issuedSession), requestFingerprint, expiresAt]
+        [crypto.randomUUID(), hashToken(token), promo.campaign_source, promo.id, promo.code, promo.allowed_durations[0], promo.discount.type, promo.discount.value, hashOfferSession(issuedSession), requestFingerprint, expiresAt]
       );
       return { expiresAt };
     });

@@ -8,7 +8,7 @@
 :where(a, button, input, select, textarea, [role="button"]):focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
 html, body { min-height: 100%; }
 body { margin: 0; overflow: hidden; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-english); }
-:is(.homepage, .os-page) { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); --homepage-notifications-width: min(calc(100% - (var(--x) * 4)), var(--layout-content-max)); --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
+:is(.homepage, .os-page, .studio-page) { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); --homepage-notifications-width: min(calc(100% - (var(--x) * 4)), var(--layout-content-max)); --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
 .homepage .master-panel-experience { height: var(--ooxme-stable-viewport-height); min-height: var(--ooxme-stable-viewport-height); }
 @supports (-webkit-touch-callout: none) { html.homepage { min-height: -webkit-fill-available; } body.homepage { min-height: var(--ooxme-stable-viewport-height); } }
 .homepage .intro-panel .master-panel { background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; }
@@ -223,6 +223,28 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .employee-dashboard-progress i.is-complete { background: var(--color-brand); }
 @media (max-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel-content { padding-bottom: calc(var(--homepage-white-card-height) - 8px - var(--bottom-control-line-thickness)); } }
 @media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel-content { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; padding-bottom: var(--x); column-gap: var(--x); } .employee-dashboard-identity { grid-column: 1; } .employee-dashboard-status-card { grid-column: 2; } }
+/* Canonical Studio baseline: keep this scoped layout free of generic Master Panel overrides. */
+.studio-panel .master-panel { grid-template-rows: minmax(0, 1fr) auto; isolation: isolate; background: transparent; }
+.studio-panel .master-panel::before { position: absolute; z-index: 0; inset: -12px; background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; content: ''; filter: blur(5px); transform: scale(1.04); }
+.studio-panel .master-panel > * { position: relative; z-index: 1; }
+.studio-content { --studio-navigation-height: calc(var(--homepage-white-card-height) - 8px); display: grid; align-content: stretch; justify-items: center; width: 100%; margin-inline: auto; padding: var(--x) 0 calc(var(--studio-navigation-height) + (var(--x) * 2) - var(--bottom-control-area-height)); text-align: center; }
+.studio-card { position: relative; grid-template-rows: auto minmax(0, 1fr); align-content: start; width: calc(100% - (var(--x) * 2)); min-height: 0; padding: var(--x); border-radius: var(--radius-box); background: rgba(255, 255, 255, .94); box-shadow: 0 18px 48px rgba(13, 13, 13, .16); }
+.studio-selector { border-radius: var(--radius-control); }
+.studio-selector .homepage-account-selector-indicator { border-radius: calc(var(--radius-control) - var(--homepage-account-selector-inset)); }
+.studio-selector[data-active="client"] .homepage-account-selector-indicator { left: calc(50% + var(--homepage-account-selector-inset)); }
+.studio-work-gallery { align-self: end; width: 100%; min-height: 0; }
+.studio-work-gallery[hidden] { display: none; }
+.studio-work-gallery.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story { --gallery-deck-image-radius: var(--radius-control); position: static; inset: auto; bottom: auto; translate: none; width: 100%; }
+.studio-client-copy { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; width: auto; gap: var(--x); color: #777; font-size: var(--overlay-text-size); line-height: 1.35; pointer-events: none; text-align: center; }
+.studio-client-copy[hidden] { display: none; }
+.studio-client-copy :is(strong, p) { margin: 0; font: inherit; font-size: inherit; line-height: inherit; }
+.studio-client-copy strong { color: var(--color-ink); font-weight: 700; }
+.studio-panel .studio-content .studio-client-copy p:not(.master-panel-label) { font-weight: 400; }
+.studio-panel .studio-content .studio-client-copy p:last-child { font-weight: 500; }
+.studio-client-description { justify-self: center; width: 60%; max-width: 60%; text-align: justify; text-align-last: auto; }
+html[dir="rtl"] .studio-client-copy { direction: rtl; font-family: var(--font-arabic); }
+html[dir="rtl"] .studio-panel .studio-client-copy p:not(.master-panel-label) { font-size: var(--overlay-text-size); line-height: 1.35; }
+@media (min-aspect-ratio: 4 / 3) { .studio-panel .master-panel::before { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
 @media (min-aspect-ratio: 4 / 3) { .homepage-notifications-panel { padding-top: calc(var(--x) * 2); } .homepage-notifications-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--x); } }
 .homepage-bottom-navigation.is-menu-open:not(.is-menu-closing) .homepage-bottom-menu-indicator { transition-delay: .1s, 0s; }
 .homepage-bottom-navigation.is-menu-open:not(.is-menu-closing) [data-home-menu-home] { transition-delay: 0s; }
@@ -803,7 +825,7 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 }
 /* Retain the approved, pre-refactor header anchor exactly. */
 .master-panel-header { padding: var(--panel-safe) var(--panel-safe) 0; }
-.master-panel-content {
+.master-panel-content:not(.studio-content) {
   container-type: inline-size;
   min-height: 0;
   row-gap: var(--layout-major-gap);
@@ -836,7 +858,7 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 }
 
 @media (min-aspect-ratio: 4 / 3) {
-  .master-panel-content {
+  .master-panel-content:not(.studio-content) {
     /* Text occupies the top tracks; the flexible track keeps primary content
        attached to the lower safe boundary rather than vertically centering it. */
     align-content: stretch;
@@ -882,7 +904,7 @@ html[dir="rtl"] .plan-detail-cards { font-family:var(--font-arabic); direction:r
 }
 
 @media (min-aspect-ratio: 4 / 3) and (max-height: 480px) {
-  .master-panel-content { row-gap: var(--layout-compact-gap); }
+  .master-panel-content:not(.studio-content) { row-gap: var(--layout-compact-gap); }
   .master-panel-content h1 { font-size: clamp(24px, 4vw, 40px); }
   .master-panel-content p { font-size: clamp(10px, 1.15vw, 12px); }
   .portfolio-options > :is(a, button),

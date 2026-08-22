@@ -305,7 +305,8 @@ document.querySelector('[data-home-menu-home]')?.addEventListener('click', () =>
   });
 });
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => setHomepageAccountOpen(true)));
-document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery'));
+document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => location.assign('/studio')));
+document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/studio'));
 document.querySelector('[data-home-menu-search]')?.addEventListener('click', () => queueHomepageMenuSelection('search', () => setHomepageSearchOpen(true)));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
   setHomepageNotificationsOpen(true);
