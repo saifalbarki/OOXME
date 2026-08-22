@@ -26,6 +26,7 @@
     });
     if (workGallery) workGallery.hidden = view !== 'work';
     if (clientCopy) clientCopy.hidden = view !== 'client';
+    document.dispatchEvent(new CustomEvent('studio-view-change', { detail: view }));
   };
 
   selector.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption)));
@@ -201,7 +202,18 @@
   const viewport = gallery.querySelector('.project-gallery-viewport');
   const rail = gallery.querySelector('.project-gallery-track');
   const card = document.querySelector('.studio-card');
+  const rating = workGallery.querySelector('[data-studio-rating]');
+  const ratingTrigger = rating?.querySelector('[data-rating-open]');
+  const ratingForm = rating?.querySelector('[data-rating-form]');
+  const ratingClose = rating?.querySelector('[data-rating-close]');
+  const ratingSubmit = rating?.querySelector('[data-rating-submit]');
+  const ratingOptions = rating ? [...rating.querySelectorAll('[data-rating-value]')] : [];
   const state = { index: 0, manualDirection: 1, dragging: false };
+  let ratingPaused = false;
+  let ratingSubmitted = false;
+  let selectedRating = 0;
+  let pausedDeckAnimations = [];
+  let ratingTransitionTimers = [];
   const landscapeQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
   const circularDistance = (index, center, count) => {
     let distance = index - center;
@@ -228,9 +240,11 @@
     const viewportHeight = viewport.clientHeight;
     const activeHeight = slides[state.index]?.offsetHeight || viewportHeight;
     if (!viewportHeight || !activeHeight) return;
-    const layerExposure = Math.min(16, Math.max(9, activeHeight * .04));
+    const fullLayerExposure = Math.min(16, Math.max(9, activeHeight * .04));
+    // Keep the approved stack count, while narrowing only the portrait reveal.
+    const layerExposure = fullLayerExposure * .58;
     const availableRise = Math.max(0, viewportHeight - activeHeight);
-    const maxDepth = Math.min(4, images.length - 1, Math.floor(availableRise / layerExposure));
+    const maxDepth = Math.min(4, images.length - 1, Math.floor(availableRise / fullLayerExposure));
     const range = Math.max(72, viewport.clientWidth * .24);
     const dragProgress = Math.min(1, Math.abs(dragX) / range);
     const direction = dragX ? (dragX < 0 ? 1 : -1) : state.manualDirection;
@@ -313,12 +327,87 @@
     viewport.style.height = `${height}px`;
   };
   const move = (direction) => {
+    if (ratingPaused) return;
     state.manualDirection = direction;
     state.index = (state.index + direction + images.length) % images.length;
     render();
   };
+  const pauseWorkDeck = () => {
+    if (ratingPaused) return;
+    ratingPaused = true;
+    gallery.classList.add('is-rating-paused');
+    rating?.classList.add('is-rating-paused');
+    pausedDeckAnimations = gallery.getAnimations?.({ subtree: true }).filter((animation) => animation.playState === 'running') || [];
+    pausedDeckAnimations.forEach((animation) => animation.pause());
+  };
+  const resumeWorkDeck = () => {
+    if (!ratingPaused) return;
+    ratingPaused = false;
+    gallery.classList.remove('is-rating-paused');
+    rating?.classList.remove('is-rating-paused');
+    pausedDeckAnimations.forEach((animation) => {
+      try { animation.play(); } catch (_) {}
+    });
+    pausedDeckAnimations = [];
+  };
+  const clearRatingTimers = () => {
+    ratingTransitionTimers.forEach((timer) => window.clearTimeout(timer));
+    ratingTransitionTimers = [];
+  };
+  const setRatingOpenState = (open) => document.body.classList.toggle('studio-rating-open', open);
+  const closeRating = () => {
+    if (!rating || !rating.classList.contains('is-open') || ratingSubmitted) return;
+    clearRatingTimers();
+    rating.classList.remove('is-open', 'is-confirming', 'is-heart');
+    setRatingOpenState(false);
+    resumeWorkDeck();
+    window.setTimeout(() => ratingTrigger?.focus(), 240);
+  };
+  const openRating = () => {
+    if (!rating || ratingSubmitted) return;
+    pauseWorkDeck();
+    rating.classList.add('is-open');
+    setRatingOpenState(true);
+  };
+  ratingTrigger?.addEventListener('click', openRating);
+  ratingClose?.addEventListener('click', closeRating);
+  ratingOptions.forEach((option) => option.addEventListener('click', () => {
+    if (ratingSubmitted) return;
+    selectedRating = Number(option.dataset.ratingValue);
+    ratingOptions.forEach((star) => {
+      const value = Number(star.dataset.ratingValue);
+      star.classList.toggle('is-selected', value <= selectedRating);
+      star.setAttribute('aria-checked', String(value === selectedRating));
+    });
+    if (ratingSubmit) ratingSubmit.disabled = false;
+  }));
+  const submitRating = () => {
+    if (!selectedRating || ratingSubmitted || !rating) return;
+    ratingSubmitted = true;
+    ratingSubmit.disabled = true;
+    rating.classList.add('is-confirming');
+    ratingTransitionTimers.push(window.setTimeout(() => rating.classList.add('is-heart'), 820));
+    ratingTransitionTimers.push(window.setTimeout(() => {
+      rating.classList.remove('is-open', 'is-confirming', 'is-heart');
+      rating.classList.add('is-submitted');
+      ratingTrigger.disabled = true;
+      ratingTrigger.setAttribute('aria-label', root.lang === 'ar' ? 'تم إرسال التقييم' : 'Rating submitted');
+      setRatingOpenState(false);
+      resumeWorkDeck();
+    }, 1720));
+  };
+  ratingSubmit?.addEventListener('click', submitRating);
+  ratingForm?.addEventListener('submit', (event) => { event.preventDefault(); submitRating(); });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeRating();
+  });
+  document.addEventListener('studio-view-change', (event) => {
+    if (event.detail !== 'work') closeRating();
+  });
   let gesture;
   gallery.addEventListener('pointerdown', (event) => {
+    if (event.target.closest('[data-studio-rating]')) return;
+    if (ratingPaused) { event.preventDefault(); return; }
     gesture = { x: event.clientX, lastX: event.clientX, lastTime: performance.now(), pointerId: event.pointerId };
     state.dragging = true;
     gallery.setPointerCapture?.(event.pointerId);
@@ -348,8 +437,8 @@
   };
   gallery.addEventListener('pointerup', finishGesture);
   gallery.addEventListener('pointercancel', () => { state.dragging = false; gesture = null; render(); });
-  window.addEventListener('resize', () => { containGallery(); render(); });
-  landscapeQuery.addEventListener('change', () => { containGallery(); render(); });
+  window.addEventListener('resize', () => { if (!ratingPaused) { containGallery(); render(); } });
+  landscapeQuery.addEventListener('change', () => { if (!ratingPaused) { containGallery(); render(); } });
   window.requestAnimationFrame(() => { containGallery(); render(); });
-  window.setInterval(() => { if (!workGallery.hidden) move(state.manualDirection); }, 2000);
+  window.setInterval(() => { if (!workGallery.hidden && !ratingPaused) move(state.manualDirection); }, 2000);
 })();

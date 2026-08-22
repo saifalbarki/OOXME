@@ -24,6 +24,34 @@
                 <button type="button" data-studio-option="client" role="tab" aria-selected="false">Our Client</button>
               </div>
               <section class="studio-work-gallery project-panel--al-basri-primary" data-studio-work-gallery aria-label="Our Work">
+                <section class="studio-rating" data-studio-rating aria-label="Rate this work">
+                  <button class="studio-rating-trigger" type="button" data-rating-open aria-label="Rate this work">
+                    <span class="studio-rating-loop" aria-hidden="true">
+                      <img src="assets/icons/New/STAR.svg" alt="" />
+                      <img src="assets/icons/New/STAR.svg" alt="" />
+                      <img src="assets/icons/New/STAR.svg" alt="" />
+                      <img src="assets/icons/New/STAR.svg" alt="" />
+                      <img src="assets/icons/New/STAR.svg" alt="" />
+                    </span>
+                  </button>
+                  <form class="studio-rating-card" data-rating-form novalidate>
+                    <button class="studio-rating-close" type="button" data-rating-close aria-label="Close rating">×</button>
+                    <div class="studio-rating-form-content" data-rating-content>
+                      <div class="studio-rating-stars" role="radiogroup" aria-label="Rating">
+                        <button type="button" role="radio" aria-checked="false" data-rating-value="1" aria-label="1 star"><img src="assets/icons/New/STAR.svg" alt="" /></button>
+                        <button type="button" role="radio" aria-checked="false" data-rating-value="2" aria-label="2 stars"><img src="assets/icons/New/STAR.svg" alt="" /></button>
+                        <button type="button" role="radio" aria-checked="false" data-rating-value="3" aria-label="3 stars"><img src="assets/icons/New/STAR.svg" alt="" /></button>
+                        <button type="button" role="radio" aria-checked="false" data-rating-value="4" aria-label="4 stars"><img src="assets/icons/New/STAR.svg" alt="" /></button>
+                        <button type="button" role="radio" aria-checked="false" data-rating-value="5" aria-label="5 stars"><img src="assets/icons/New/STAR.svg" alt="" /></button>
+                      </div>
+                      <p data-en="Rate what you saw — your opinion matters" data-ar="قيّم ما شاهدته — رأيك يهمنا">Rate what you saw — your opinion matters</p>
+                      <label class="studio-rating-comment"><textarea rows="2" data-rating-comment data-en-placeholder="Optional comment" data-ar-placeholder="تعليق اختياري" placeholder="Optional comment"></textarea></label>
+                      <button class="studio-rating-submit" type="button" data-rating-submit disabled><span data-en="Submit rating" data-ar="إرسال التقييم">Submit rating</span></button>
+                    </div>
+                    <p class="studio-rating-confirmation" data-rating-confirmation data-en="Thank you for your feedback" data-ar="شكراً لملاحظاتك">Thank you for your feedback</p>
+                    <span class="studio-rating-morph" aria-hidden="true"><img class="studio-rating-heart" src="assets/icons/New/SMILE HEART.svg" alt="" /><img class="studio-rating-final-star" src="assets/icons/New/STAR.svg" alt="" /></span>
+                  </form>
+                </section>
                 <div class="project-gallery is-al-basri-mall-story" data-studio-project-gallery>
                   <div class="project-gallery-viewport"><div class="project-gallery-track"></div></div>
                   <div class="project-gallery-dots" aria-hidden="true"></div>
