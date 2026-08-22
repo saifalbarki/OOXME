@@ -237,6 +237,10 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .studio-work-gallery { align-self: end; width: 100%; min-height: 0; }
 .studio-work-gallery[hidden] { display: none; }
 .studio-work-gallery.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story { --gallery-deck-image-radius: var(--radius-control); position: static; inset: auto; bottom: auto; translate: none; width: 100%; }
+@media (max-aspect-ratio: 4 / 3) {
+  /* Match the lower shared control line while preserving the gallery's bottom anchor. */
+  .studio-work-gallery { justify-self: center; width: calc(60% + (var(--x) * 2.4)); }
+}
 .studio-client-copy { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; width: auto; gap: var(--x); color: #777; font-size: var(--overlay-text-size); line-height: 1.35; pointer-events: none; text-align: center; }
 .studio-client-copy[hidden] { display: none; }
 .studio-client-copy :is(strong, p) { margin: 0; font: inherit; font-size: inherit; line-height: inherit; }
