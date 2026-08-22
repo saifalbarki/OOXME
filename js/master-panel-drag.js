@@ -533,6 +533,8 @@ let ooxmeImagePress = null;
 const getOoxmePreviewImage = (target) => {
   if (!(target instanceof Element)) return null;
   const image = target.closest('.project-gallery-slide, .payment-qr-placeholder > img');
+  // Studio gallery gestures stay local to their cards; they never open the shared image preview.
+  if (image?.closest('.studio-panel [data-studio-project-gallery]')) return null;
   return image instanceof HTMLImageElement ? image : null;
 };
 const closeOoxmeImagePreview = () => {
