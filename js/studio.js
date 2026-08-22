@@ -4,6 +4,9 @@
     root.lang = language;
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[language]; });
+    document.querySelectorAll('[data-en-placeholder][data-ar-placeholder]').forEach((input) => {
+      input.placeholder = input.dataset[language + 'Placeholder'];
+    });
   };
   let language = 'en';
   try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
@@ -16,13 +19,170 @@
   if (!selector) return;
   const workGallery = document.querySelector('[data-studio-work-gallery]');
   const clientCopy = document.querySelector('[data-studio-client-copy]');
+  const setStudioView = (view) => {
+    selector.dataset.active = view;
+    selector.querySelectorAll('[data-studio-option]').forEach((option) => {
+      option.setAttribute('aria-selected', String(option.dataset.studioOption === view));
+    });
+    if (workGallery) workGallery.hidden = view !== 'work';
+    if (clientCopy) clientCopy.hidden = view !== 'client';
+  };
 
-  selector.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => {
-    selector.dataset.active = button.dataset.studioOption;
-    selector.querySelectorAll('[data-studio-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
-    if (workGallery) workGallery.hidden = button.dataset.studioOption !== 'work';
-    if (clientCopy) clientCopy.hidden = button.dataset.studioOption !== 'client';
+  selector.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption)));
+
+  const navigation = document.querySelector('[data-authenticated-navigation]');
+  const navigationTrigger = navigation?.querySelector('[data-auth-nav-trigger]');
+  const navigationMenu = navigation?.querySelector('[data-auth-nav-menu]');
+  const notifications = document.querySelector('[data-notifications]');
+  const search = document.querySelector('[data-home-search]');
+  const account = document.querySelector('[data-home-account]');
+  const searchInput = document.querySelector('[data-home-search-input]');
+  const searchSuggestions = document.querySelector('[data-home-search-suggestions]');
+  const overlayByItem = { account, search, menu: notifications };
+  const overlayClassByItem = { account: 'homepage-account-open', search: 'homepage-search-open', menu: 'homepage-notifications-open' };
+  let overlayCloseTimer;
+  let notificationSelectionTimer;
+
+  const setNavigationOpen = (open) => {
+    if (!navigation || !navigationTrigger || navigation.classList.contains('is-menu-open') === open) return;
+    navigationTrigger.click();
+  };
+  const setOverlayOpen = (item, open) => {
+    const overlay = overlayByItem[item];
+    const className = overlayClassByItem[item];
+    if (!overlay || !className) return;
+    window.clearTimeout(overlayCloseTimer);
+    if (open) {
+      overlay.hidden = false;
+      overlay.setAttribute('aria-hidden', 'false');
+      window.requestAnimationFrame(() => {
+        document.body.classList.add(className);
+        overlay.classList.add('is-open');
+        if (item === 'search') renderSearchSuggestions();
+      });
+      return;
+    }
+    overlay.classList.remove('is-open');
+    document.body.classList.remove(className);
+    overlay.setAttribute('aria-hidden', 'true');
+    overlayCloseTimer = window.setTimeout(() => { overlay.hidden = true; }, 360);
+    window.setTimeout(() => setNavigationOpen(true), 0);
+  };
+  const searchEntries = [
+    { en: 'Reengineered', ar: 'إعادة هندسة' },
+    { en: 'Ooxme v4.0', ar: 'التحديث الرابع لأوكسوم' },
+    { en: 'Redesign Website', ar: 'إعادة تصميم الموقع' },
+    { en: 'The Client Profile', ar: 'ملف العميل' },
+    { en: 'The Gallery', ar: 'المعرض' },
+    { en: 'Notifications', ar: 'الإشعارات' }
+  ];
+  const renderSearchSuggestions = () => {
+    if (!searchInput || !searchSuggestions) return;
+    const query = searchInput.value.trim().toLocaleLowerCase();
+    const matches = searchEntries
+      .map((entry, index) => {
+        const label = entry[root.lang === 'ar' ? 'ar' : 'en'];
+        const position = label.toLocaleLowerCase().indexOf(query);
+        const overlap = [...query].filter((character) => label.toLocaleLowerCase().includes(character)).length;
+        return { entry, index, score: position < 0 ? 100 - overlap : position };
+      })
+      .sort((a, b) => a.score - b.score || a.index - b.index)
+      .slice(0, 3);
+    searchSuggestions.hidden = false;
+    searchSuggestions.replaceChildren(...matches.map(({ entry }) => {
+      const suggestion = document.createElement('button');
+      suggestion.type = 'button';
+      suggestion.className = 'homepage-search-suggestion';
+      suggestion.textContent = entry[root.lang === 'ar' ? 'ar' : 'en'];
+      return suggestion;
+    }));
+  };
+  const loadNotifications = async () => {
+    const list = notifications?.querySelector('.homepage-notifications-list');
+    if (!list) return;
+    try {
+      const response = await fetch('/api/accounts/index?route=notifications', { credentials: 'same-origin' });
+      const records = await response.json();
+      if (!response.ok || !Array.isArray(records)) return;
+      list.replaceChildren(...records.map((record) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'homepage-notification';
+        item.dataset.notification = '';
+        item.setAttribute('aria-expanded', 'false');
+        item.innerHTML = '<span class="homepage-notification-summary"><span><strong></strong><time></time></span><span class="homepage-notification-unread" aria-hidden="true"></span></span><span class="homepage-notification-details"><span class="homepage-notification-copy"></span></span>';
+        item.querySelector('strong').textContent = record.title;
+        item.querySelector('time').dateTime = record.publish_date;
+        item.querySelector('time').textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(record.publish_date));
+        item.querySelector('.homepage-notification-copy').textContent = record.body;
+        return item;
+      }));
+    } catch (_) {}
+  };
+  navigationMenu?.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => {
+    const item = button.dataset.authNavItem;
+    if (item === 'gallery') setStudioView('work');
+    if (item in overlayByItem) setOverlayOpen(item, true);
   }));
+  notifications?.addEventListener('click', (event) => {
+    const item = event.target.closest('[data-notification]');
+    if (!item) {
+      if (!event.target.closest('.homepage-notifications-panel')) setOverlayOpen('menu', false);
+      return;
+    }
+    const expanded = !item.classList.contains('is-expanded');
+    notifications.querySelectorAll('[data-notification].is-expanded').forEach((openItem) => {
+      openItem.classList.remove('is-expanded');
+      openItem.setAttribute('aria-expanded', 'false');
+    });
+    item.classList.toggle('is-expanded', expanded);
+    item.classList.add('is-read', 'is-selected');
+    item.setAttribute('aria-expanded', String(expanded));
+    window.clearTimeout(notificationSelectionTimer);
+    notificationSelectionTimer = window.setTimeout(() => item.classList.remove('is-selected'), 340);
+  });
+  search?.addEventListener('pointerdown', (event) => {
+    if (!event.target.closest('.homepage-search-panel')) setOverlayOpen('search', false);
+  });
+  account?.addEventListener('pointerdown', (event) => {
+    if (!event.target.closest('.homepage-account-panel')) setOverlayOpen('account', false);
+  });
+  account?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
+    const accountSelector = account.querySelector('[data-home-account-selector]');
+    accountSelector.dataset.active = button.dataset.homeAccountType;
+    accountSelector.querySelectorAll('[data-home-account-type]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
+  }));
+  account?.querySelector('.homepage-account-login')?.addEventListener('click', async (buttonEvent) => {
+    const loginButton = buttonEvent.currentTarget;
+    const [usernameInput, passwordInput] = account.querySelectorAll('[data-home-account-input]');
+    const expectedAccountType = account.querySelector('[data-home-account-selector]')?.dataset.active;
+    loginButton.disabled = true;
+    loginButton.setAttribute('aria-busy', 'true');
+    usernameInput.removeAttribute('aria-invalid');
+    passwordInput.removeAttribute('aria-invalid');
+    try {
+      const response = await fetch('/api/accounts/login', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: usernameInput.value, password: passwordInput.value })
+      });
+      const accountResult = await response.json().catch(() => ({}));
+      if (!response.ok || accountResult.accountType !== expectedAccountType) throw new Error('invalid_credentials');
+      await loadNotifications();
+      if (accountResult.accountType === 'employee') location.assign('/?panel=employee-dashboard');
+    } catch (_) {
+      usernameInput.setAttribute('aria-invalid', 'true');
+      passwordInput.setAttribute('aria-invalid', 'true');
+      passwordInput.focus();
+    } finally {
+      loginButton.disabled = false;
+      loginButton.removeAttribute('aria-busy');
+    }
+  });
+  searchInput?.addEventListener('input', renderSearchSuggestions);
+  searchSuggestions?.addEventListener('click', (event) => event.stopPropagation());
+  loadNotifications();
 
   if (!workGallery) return;
 

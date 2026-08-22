@@ -20,6 +20,8 @@ body { margin: 0; overflow: hidden; background: var(--color-paper); color: var(-
 .homepage .intro-panel .master-panel-content p:not(.master-panel-label) { white-space: pre-line; }
 .homepage .intro-panel .master-panel > :is(.master-panel-header, .master-panel-content, .master-panel-footer) { transition: opacity .36s cubic-bezier(.22, .61, .36, 1); }
 :is(.homepage-notifications-open, .homepage-search-open, .homepage-account-open) .intro-panel .master-panel > :is(.master-panel-header, .master-panel-content, .master-panel-footer) { opacity: 0; }
+.studio-panel .studio-content { transition: opacity .36s cubic-bezier(.22, .61, .36, 1); }
+:is(.homepage-notifications-open, .homepage-search-open, .homepage-account-open) .studio-panel .studio-content { opacity: 0; pointer-events: none; }
 button { font: inherit; }
 .master-panel-experience { position: relative; height: var(--ooxme-stable-viewport-height); overflow: hidden; isolation: isolate; background: transparent; touch-action: pan-x; }
 .project-experience { touch-action: pan-x; }
@@ -241,7 +243,8 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .studio-client-copy strong { color: var(--color-ink); font-weight: 700; }
 .studio-panel .studio-content .studio-client-copy p:not(.master-panel-label) { font-weight: 400; }
 .studio-panel .studio-content .studio-client-copy p:last-child { font-weight: 500; }
-.studio-client-description { justify-self: center; width: 60%; max-width: 60%; text-align: justify; text-align-last: auto; }
+.studio-client-description { justify-self: center; width: 60%; max-width: 60%; text-align: justify; text-align-last: center; }
+@media (min-aspect-ratio: 4 / 3) { .studio-panel .studio-content .studio-client-description { width: calc(60vw - (var(--x) * 1.2)); max-width: calc(60vw - (var(--x) * 1.2)); } }
 html[dir="rtl"] .studio-client-copy { direction: rtl; font-family: var(--font-arabic); }
 html[dir="rtl"] .studio-panel .studio-client-copy p:not(.master-panel-label) { font-size: var(--overlay-text-size); line-height: 1.35; }
 @media (min-aspect-ratio: 4 / 3) { .studio-panel .master-panel::before { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
