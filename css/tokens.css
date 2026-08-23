@@ -52,6 +52,8 @@
 }
 
 html[dir="rtl"] { --ooxme-language-font-scale: var(--ooxme-arabic-font-scale); }
+.ooxme-language-english { font-family: var(--font-english) !important; direction: ltr; }
+.ooxme-language-arabic { font-family: var(--font-arabic) !important; direction: rtl; }
 
 @media (min-aspect-ratio: 4 / 3) {
   :root {

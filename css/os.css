@@ -104,6 +104,9 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 @media (hover: none) and (pointer: coarse) { .os-current-account-form input { width: 100%; transform: none; } }
 @media (max-aspect-ratio: 4 / 3) { .os-current-accounts-content { padding-bottom: var(--x); } .os-current-accounts-list { overflow-y: auto; } }
 
+/* All OS writable controls stay at 16px on mobile to prevent focus zoom. */
+@media (max-aspect-ratio: 4 / 3) { .os-page :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { font-size: 16px !important; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; } }
+
 /* OS login adopts the shared writable-field baseline without changing its geometry. */
 .os-login .homepage-search-field input.ooxme-writable-field { color: var(--color-ink); font-weight: 700; line-height: 1.35; text-align: center; transform: none; }
 .os-login .homepage-search-field input.ooxme-writable-field::placeholder { color: rgba(13, 13, 13, .48); font-size: inherit; font-weight: 400; text-align: center; }

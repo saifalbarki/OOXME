@@ -14,7 +14,8 @@ textarea.ooxme-writable-field--centered-entry { height: var(--ooxme-writable-ent
 /* Portrait writable fields share the Login control's visual text token. */
 @media (max-aspect-ratio: 4 / 3) {
   :root { --ooxme-portrait-writable-font-size: var(--overlay-text-size, clamp(10.5px, 1.2vw, 13.5px)); }
-  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([data-ooxme-ios-zoom-safe]), textarea, select) { color: var(--color-ink); font-size: var(--ooxme-portrait-writable-font-size) !important; font-weight: 700; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  /* Keep every writable control at the iOS no-zoom threshold without moving its container. */
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([data-ooxme-ios-zoom-safe]), textarea, select) { color: var(--color-ink); font-size: 16px !important; font-weight: 700; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
   :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea)::placeholder { color: var(--color-secondary-control); font-size: inherit; font-weight: 400; opacity: 1; }
 }
 html, body { min-height: 100%; }
@@ -2079,5 +2080,15 @@ html[dir="rtl"] .service-tile.is-expanded { font-family: var(--font-arabic); dir
     grid-template-columns: repeat(4, minmax(0, 1fr));
     width: min(100%, calc(112dvh + var(--homepage-white-card-height)), var(--layout-content-max));
   }
-  .services-grid > .service-tile:nth-child(8) { display: none; }
+.services-grid > .service-tile:nth-child(8) { display: none; }
+}
+
+/* Canonical mobile focus baseline: every writable control is 16px to prevent iOS zoom. */
+@media (max-aspect-ratio: 4 / 3) {
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea, select) {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
 }

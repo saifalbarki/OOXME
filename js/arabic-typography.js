@@ -10,6 +10,12 @@
   const targets = scope => [...scope.querySelectorAll(controls + ', ' + text)].filter(element => (
     !element.matches('[data-ooxme-ios-zoom-safe]') && (element.matches(controls) || isTextLeaf(element))
   ));
+  const setLanguageFont = element => {
+    const content = element.matches(controls) ? (element.value || element.placeholder || element.textContent) : element.textContent;
+    const arabic = /[\u0600-\u06ff]/u.test(content || '');
+    element.classList.toggle('ooxme-language-arabic', arabic);
+    element.classList.toggle('ooxme-language-english', Boolean((content || '').trim()) && !arabic);
+  };
 
   const restore = element => {
     const previous = saved.get(element);
@@ -23,8 +29,9 @@
     const arabic = root.dir === 'rtl';
     const scale = Number.parseFloat(getComputedStyle(root).getPropertyValue('--ooxme-language-font-scale')) || 1;
     targets(scope).forEach(element => {
+      setLanguageFont(element);
       restore(element);
-      if (!arabic) return;
+      if (!arabic || element.matches(controls)) return;
       const size = Number.parseFloat(getComputedStyle(element).fontSize);
       if (!Number.isFinite(size)) return;
       saved.set(element, { value: element.style.getPropertyValue('font-size'), priority: element.style.getPropertyPriority('font-size') });
@@ -36,7 +43,7 @@
   document.addEventListener('DOMContentLoaded', schedule, { once: true });
   new MutationObserver(records => {
     if (records.some(record => record.type === 'attributes' || record.addedNodes.length)) schedule();
-  }).observe(root, { attributes: true, attributeFilter: ['dir', 'lang'], childList: true, subtree: true });
+  }).observe(root, { attributes: true, attributeFilter: ['dir', 'lang', 'placeholder'], childList: true, subtree: true });
   window.addEventListener('resize', () => {
     window.clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(schedule, 120);
