@@ -1,6 +1,6 @@
 const { readJson } = require('../_lib/http');
 const { authenticate, createSession, sessionCookie, sessionFromRequest } = require('../_lib/account-auth');
-const { forAudience } = require('../_lib/notification-admin');
+const { forAudience, forPublic } = require('../_lib/notification-admin');
 
 const login = async (request, response) => {
   if (request.method !== 'POST') return response.status(405).json({ error: 'method_not_allowed' });
@@ -29,12 +29,19 @@ const notifications = async (request, response) => {
   return response.status(200).json(await forAudience(user.accountType));
 };
 
+const publicNotifications = async (request, response) => {
+  if (request.method !== 'GET') return response.status(405).json({ error: 'method_not_allowed' });
+  response.setHeader('Cache-Control', 'no-store');
+  return response.status(200).json(await forPublic());
+};
+
 module.exports = async (request, response) => {
   try {
     const route = request.query?.route || '';
     if (route === 'login') return await login(request, response);
     if (route === 'session') return await currentSession(request, response);
     if (route === 'notifications') return await notifications(request, response);
+    if (route === 'public-notifications') return await publicNotifications(request, response);
     return response.status(404).json({ error: 'not_found' });
   } catch (error) {
     console.error('account request failed', error.message);

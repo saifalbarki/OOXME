@@ -128,6 +128,7 @@ const homepageAccount = document.querySelector('[data-home-account]');
 const homepageServices = document.querySelector('[data-home-services]');
 const homepageLanguage = document.querySelector('[data-home-language]');
 const homepageLanguageSelector = document.querySelector('[data-home-language-selector]');
+const homepageNotificationDot = document.querySelector('[data-homepage-notification-dot]');
 const homepageSearchInput = document.querySelector('[data-home-search-input]');
 const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
 const normalizeSharedNotificationLayout = (container) => container?.querySelectorAll('[data-notification]').forEach((item) => {
@@ -222,6 +223,7 @@ const setHomepageNotificationsOpen = (open) => {
   window.clearTimeout(homepageNotificationsCloseTimer);
   if (open) {
     setHomepageMenuOpen(false);
+    loadSharedNotifications();
     homepageNotifications.hidden = false;
     homepageNotifications.setAttribute('aria-hidden', 'false');
     window.requestAnimationFrame(() => {
@@ -388,9 +390,16 @@ const renderSharedNotifications = (notifications) => {
     const summary = document.createElement('span'); summary.className = 'homepage-notification-summary'; const summaryCopy = document.createElement('span'); const title = document.createElement('strong'); title.textContent = notification.title; const date = document.createElement('time'); date.dateTime = notification.publish_date; date.textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(notification.publish_date)); summaryCopy.append(title); const unread = document.createElement('span'); unread.className = 'homepage-notification-unread'; unread.setAttribute('aria-hidden', 'true'); summary.append(summaryCopy, unread);
     const details = document.createElement('span'); details.className = 'homepage-notification-details'; const copy = document.createElement('span'); copy.className = 'homepage-notification-copy'; copy.textContent = notification.body; details.append(copy, date); item.append(summary, details); return item;
   }));
+  if (homepageNotificationDot) homepageNotificationDot.hidden = notifications.length === 0;
 };
 const loadSharedNotifications = async () => {
-  try { const response = await fetch('/api/accounts/index?route=notifications', { credentials: 'same-origin' }); if (response.ok) renderSharedNotifications(await response.json()); } catch (_) {}
+  try {
+    const response = await fetch('/api/accounts/index?route=public-notifications', { credentials: 'same-origin' });
+    if (!response.ok) throw new Error('notification_load_failed');
+    renderSharedNotifications(await response.json());
+  } catch (_) {
+    renderSharedNotifications([]);
+  }
 };
 loadSharedNotifications();
 homepageNotifications?.addEventListener('click', (event) => {

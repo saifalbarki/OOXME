@@ -47,7 +47,11 @@
   --type-control-line-height: 1.35;
   --font-english: OOXMEEnglish, Arial, sans-serif;
   --font-arabic: OOXMEArabic, Tahoma, sans-serif;
+  --ooxme-language-font-scale: 1;
+  --ooxme-arabic-font-scale: .9;
 }
+
+html[dir="rtl"] { --ooxme-language-font-scale: var(--ooxme-arabic-font-scale); }
 
 @media (min-aspect-ratio: 4 / 3) {
   :root {

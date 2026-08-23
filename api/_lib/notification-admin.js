@@ -19,6 +19,13 @@ const forAudience = async (accountType) => (await query(
     LIMIT 3`,
   [accountType === 'employee' ? 'employees' : 'clients']
 )).rows.map(row);
+const forPublic = async () => (await query(
+  `SELECT id, title, body, publish_date, audience
+     FROM notifications
+    WHERE status = 'published' AND publish_date <= now() AND audience = 'everyone'
+    ORDER BY publish_date DESC, created_at DESC
+    LIMIT 3`
+)).rows.map(row);
 
 const create = async ({ title, body, publishDate, audience, status = 'published' }) => {
   const published = date(publishDate);
@@ -54,4 +61,4 @@ const remove = async (id) => {
   if (!result.rowCount) { const error = new Error('notification_not_found'); error.code = 'notification_not_found'; throw error; }
 };
 
-module.exports = { create, forAudience, list, remove, update };
+module.exports = { create, forAudience, forPublic, list, remove, update };

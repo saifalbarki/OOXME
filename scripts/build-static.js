@@ -16,7 +16,10 @@ fs.mkdirSync(output, { recursive: true });
 
 for (const name of fs.readdirSync(sourceRoot)) {
   if (name.endsWith('.html')) {
-    fs.copyFileSync(path.join(sourceRoot, name), path.join(output, name));
+    const source = fs.readFileSync(path.join(sourceRoot, name), 'utf8');
+    const sharedTypography = '<script src="js/arabic-typography.js" defer></script>';
+    const page = source.includes(sharedTypography) ? source : source.replace('</head>', sharedTypography + '</head>');
+    fs.writeFileSync(path.join(output, name), page);
   }
 }
 
