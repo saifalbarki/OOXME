@@ -41,7 +41,9 @@
       dashboard.addEventListener('scroll', () => { clearTimeout(scrollTimer); scrollTimer = setTimeout(updatePanelControls, 140); }, { passive: true });
     }
     trigger.addEventListener('click', event => { event.stopPropagation(); navigation.classList.contains('is-menu-open') ? close() : open(); });
-    menu.querySelectorAll('button').forEach(button => button.addEventListener('click', () => {
+    menu.querySelectorAll('button').forEach(button => {
+      if (button.hasAttribute('data-brand-management-services-toggle')) return;
+      button.addEventListener('click', () => {
       if (button.disabled) return;
       if (button.hasAttribute('data-auth-nav-noop')) return;
       if (button.dataset.authNavPanel) {
@@ -63,7 +65,8 @@
         return;
       }
       button.dataset.authNavDestination ? location.assign(button.dataset.authNavDestination) : close();
-    }));
+      });
+    });
     document.addEventListener('pointerdown', event => { if (!navigation.classList.contains('is-menu-open')) return; resetInactivity(); if (!event.target.closest('[data-authenticated-navigation]')) close(); });
     document.addEventListener('pointermove', resetInactivity, { passive: true });
     document.addEventListener('keydown', resetInactivity);

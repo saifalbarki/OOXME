@@ -37,7 +37,7 @@
   const mainToggle = document.querySelector('[data-brand-management-main-toggle]');
   mainToggle?.addEventListener('click', event => {
     event.preventDefault();
-    event.stopPropagation();
+    event.stopImmediatePropagation();
     setMainNavigation(true);
   });
   mainNavigation?.querySelector('[data-auth-nav-item="services"]')?.addEventListener('click', event => {
