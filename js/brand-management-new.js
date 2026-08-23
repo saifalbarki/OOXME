@@ -4,9 +4,7 @@
   const pill = document.querySelector('[data-brand-management-pill]');
   const selector = document.querySelector('[data-brand-management-selector]');
   const statePanels = [...document.querySelectorAll('[data-brand-management-panel]')];
-  const detailsList = document.querySelector('[data-brand-management-details-list]');
   let state = 'work';
-  let detailsSelectionTimer;
   const applyLanguage = next => {
     const language = next === 'ar' ? 'ar' : 'en';
     root.lang = language;
@@ -28,20 +26,6 @@
     event.stopImmediatePropagation();
     setState(button.dataset.brandManagementContext);
   }));
-  detailsList?.addEventListener('click', event => {
-    const item = event.target.closest('[data-notification]');
-    if (!item || !detailsList.contains(item)) return;
-    const expanded = !item.classList.contains('is-expanded');
-    detailsList.querySelectorAll('[data-notification].is-expanded').forEach(openItem => {
-      openItem.classList.remove('is-expanded');
-      openItem.setAttribute('aria-expanded', 'false');
-    });
-    item.classList.toggle('is-expanded', expanded);
-    item.classList.add('is-read', 'is-selected');
-    item.setAttribute('aria-expanded', String(expanded));
-    window.clearTimeout(detailsSelectionTimer);
-    detailsSelectionTimer = window.setTimeout(() => item.classList.remove('is-selected'), 340);
-  });
   window.addEventListener('storage', event => { if (event.key === 'ooxme-language') applyLanguage(event.newValue); });
   let language = 'en';
   try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
