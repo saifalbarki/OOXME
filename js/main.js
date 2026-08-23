@@ -32,15 +32,17 @@ document.querySelectorAll('[data-progress]').forEach((progress) => {
   }));
 });
 const searchInput = document.querySelector('[data-search-input]');
-const applyLanguage = (language) => {
-  root.lang = language;
-  root.dir = language === 'ar' ? 'rtl' : 'ltr';
-  document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[language]; });
-  searchInput.placeholder = searchInput.dataset[`${language}Placeholder`];
-  document.querySelectorAll('[data-home-search-input]').forEach((input) => { input.placeholder = input.dataset[`${language}Placeholder`]; });
-  document.querySelectorAll('[data-home-account-input]').forEach((input) => { input.placeholder = input.dataset[`${language}Placeholder`]; });
-  document.querySelectorAll('[data-language-toggle]').forEach((button) => button.setAttribute('aria-label', language === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'));
-  try { localStorage.setItem('ooxme-language', language); } catch (_) {}
+const applyLanguage = (next) => {
+  language = next;
+  root.lang = next;
+  root.dir = next === 'ar' ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[next]; });
+  searchInput.placeholder = searchInput.dataset[`${next}Placeholder`];
+  document.querySelectorAll('[data-home-search-input]').forEach((input) => { input.placeholder = input.dataset[`${next}Placeholder`]; });
+  document.querySelectorAll('[data-home-account-input]').forEach((input) => { input.placeholder = input.dataset[`${next}Placeholder`]; });
+  document.querySelectorAll('[data-language-toggle]').forEach((button) => button.setAttribute('aria-label', next === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'));
+  try { localStorage.setItem('ooxme-language', next); } catch (_) {}
+  window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: next } }));
 };
 let language = 'en';
 try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
@@ -124,6 +126,8 @@ const homepageNotifications = document.querySelector('[data-notifications]');
 const homepageSearch = document.querySelector('[data-home-search]');
 const homepageAccount = document.querySelector('[data-home-account]');
 const homepageServices = document.querySelector('[data-home-services]');
+const homepageLanguage = document.querySelector('[data-home-language]');
+const homepageLanguageSelector = document.querySelector('[data-home-language-selector]');
 const homepageSearchInput = document.querySelector('[data-home-search-input]');
 const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
 const normalizeSharedNotificationLayout = (container) => container?.querySelectorAll('[data-notification]').forEach((item) => {
@@ -150,6 +154,7 @@ let homepageNotificationSelectionTimer;
 let homepageSearchCloseTimer;
 let homepageAccountCloseTimer;
 let homepageServicesCloseTimer;
+let homepageLanguageCloseTimer;
 let employeeDashboardMenuTimer;
 const setEmployeeDashboardMenuOpen = (open) => {
   if (!employeeDashboardNavigation || !employeeDashboardMenuTrigger) return;
@@ -320,6 +325,30 @@ const setHomepageServicesOpen = (open) => {
   homepageServicesCloseTimer = window.setTimeout(() => { homepageServices.hidden = true; }, 360);
   setHomepageMenuOpen(true);
 };
+const setHomepageLanguageOpen = (open) => {
+  if (!homepageLanguage || !homepageLanguageSelector) return;
+  window.clearTimeout(homepageLanguageCloseTimer);
+  if (open) {
+    const activeLanguage = root.lang === 'ar' ? 'ar' : 'en';
+    homepageLanguageSelector.dataset.active = activeLanguage;
+    homepageLanguageSelector.querySelectorAll('[data-home-language-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.homeLanguageOption === activeLanguage)));
+    setHomepageMenuOpen(false);
+    homepageLanguage.hidden = false;
+    homepageLanguage.setAttribute('aria-hidden', 'false');
+    prepareHomepageOverlayMotion(homepageLanguage);
+    window.requestAnimationFrame(() => {
+      document.body.classList.add('homepage-language-open');
+      homepageLanguage.classList.add('is-open');
+    });
+    return;
+  }
+  prepareHomepageOverlayMotion(homepageLanguage);
+  homepageLanguage.classList.remove('is-open');
+  document.body.classList.remove('homepage-language-open');
+  homepageLanguage.setAttribute('aria-hidden', 'true');
+  homepageLanguageCloseTimer = window.setTimeout(() => { homepageLanguage.hidden = true; }, 360);
+  setHomepageMenuOpen(true);
+};
 document.querySelector('[data-employee-dashboard-menu-services]')?.addEventListener('click', () => setHomepageServicesOpen(true));
 const queueHomepageMenuSelection = (active, action) => {
   setHomepageMenuActive(active);
@@ -340,19 +369,7 @@ homepageMenuTrigger?.addEventListener('click', (event) => {
   setHomepageMenuOpen(!homepageBottomNavigation.classList.contains('is-menu-open'));
 });
 document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => setHomepageMenuOpen(false)));
-document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => {
-  if (homepageMenu?.dataset.active === 'home') {
-    queueHomepageMenuSelection('home', () => {
-      applyLanguage(root.lang === 'ar' ? 'en' : 'ar');
-      setHomepageMenuOpen(false);
-    });
-    return;
-  }
-  queueHomepageMenuSelection('home', () => {
-    setHomepageMenuOpen(false);
-    moveTo(0);
-  });
-});
+document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => queueHomepageMenuSelection('home', () => setHomepageLanguageOpen(true)));
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => setHomepageAccountOpen(true)));
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => location.assign('/studio')));
 document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/studio'));
@@ -399,6 +416,16 @@ homepageAccount?.addEventListener('pointerdown', (event) => {
 homepageServices?.addEventListener('pointerdown', (event) => {
   if (!event.target.closest('.homepage-services-panel')) setHomepageServicesOpen(false);
 });
+homepageLanguage?.addEventListener('pointerdown', (event) => {
+  if (!event.target.closest('.homepage-account-panel')) setHomepageLanguageOpen(false);
+});
+homepageLanguageSelector?.querySelectorAll('[data-home-language-option]').forEach((button) => button.addEventListener('click', () => {
+  const next = button.dataset.homeLanguageOption;
+  applyLanguage(next);
+  homepageLanguageSelector.dataset.active = next;
+  homepageLanguageSelector.querySelectorAll('[data-home-language-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
+  setHomepageLanguageOpen(false);
+}));
 homepageServices?.querySelectorAll('[data-home-services-option]').forEach((button) => button.addEventListener('click', () => {
   const selector = homepageServices.querySelector('[data-home-services-selector]');
   const panel = homepageServices.querySelector('[data-home-services-panel]');
