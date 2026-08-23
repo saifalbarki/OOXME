@@ -18,6 +18,88 @@ textarea.ooxme-writable-field--centered-entry { height: var(--ooxme-writable-ent
   :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([data-ooxme-ios-zoom-safe]), textarea, select) { color: var(--color-ink); font-size: 16px !important; font-weight: 700; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
   :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea)::placeholder { color: var(--color-secondary-control); font-size: inherit; font-weight: 400; opacity: 1; }
 }
+
+/* Brand Management New uses the Studio shell with a temporary two-state card. */
+.brand-management-new-page { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); --homepage-notifications-width: min(calc(100% - (var(--x) * 4)), var(--layout-content-max)); --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
+.brand-management-new-page .brand-management-new-master-panel { grid-template-rows: minmax(0, 1fr) auto; isolation: isolate; background: transparent; }
+.brand-management-new-page .brand-management-new-master-panel::before { position: absolute; z-index: 0; inset: -12px; background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; content: ''; filter: blur(5px); transform: scale(1.04); }
+.brand-management-new-page .brand-management-new-master-panel > :not(.brand-management-contextual-navigation):not(.brand-management-main-navigation) { position: relative; z-index: 1; }
+.brand-management-new-content { padding-bottom: calc(var(--studio-navigation-height) + (var(--x) * 2) + var(--bottom-control-area-height)); }
+.brand-management-new-card { display: grid; grid-template-rows: auto minmax(0, 1fr); align-content: start; }
+.brand-management-new-state { display: grid; align-content: center; justify-items: center; gap: var(--x); min-height: 0; color: var(--color-ink); text-align: center; }
+.brand-management-new-state[hidden] { display: none; }
+.brand-management-new-state h1, .brand-management-new-state p { margin: 0; font: inherit; }
+.brand-management-new-state h1 { font-size: clamp(18px, 3vw, 32px); font-weight: 700; }
+.brand-management-new-state p { max-width: 42ch; color: var(--color-secondary-control); font-size: var(--overlay-text-size); line-height: 1.45; }
+.brand-management-contextual-navigation { position: absolute; z-index: 4; right: var(--x); bottom: var(--x); left: var(--x); display: flex; align-items: center; justify-content: space-between; gap: var(--x); height: calc(var(--homepage-white-card-height) - 8px); pointer-events: none; }
+.brand-management-contextual-pill, .brand-management-contextual-services { pointer-events: auto; }
+.brand-management-contextual-pill { --brand-management-nav-height: calc(var(--homepage-white-card-height) - 8px); position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; width: calc(var(--brand-management-nav-height) * 3); height: var(--brand-management-nav-height); overflow: hidden; border-radius: min(var(--panel-radius), calc(var(--brand-management-nav-height) / 2)); background: #fff; box-shadow: 0 12px 30px rgba(13, 13, 13, .14); direction: ltr; }
+.brand-management-contextual-indicator { position: absolute; z-index: 0; inset: var(--bottom-control-line-thickness); left: var(--bottom-control-line-thickness); width: calc(50% - (var(--bottom-control-line-thickness) * 2)); border-radius: 999px; background: #f1f3f7; transition: left .34s cubic-bezier(.22, .61, .36, 1); }
+.brand-management-contextual-pill[data-active="details"] .brand-management-contextual-indicator { left: calc(50% + var(--bottom-control-line-thickness)); }
+.brand-management-contextual-pill button, .brand-management-contextual-services { position: relative; z-index: 1; display: grid; place-items: center; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; }
+.brand-management-contextual-pill img, .brand-management-contextual-services img { width: calc(var(--header-element-size) * 1.2); height: calc(var(--header-element-size) * 1.2); object-fit: contain; }
+.brand-management-contextual-services { flex: 0 0 auto; width: calc(var(--homepage-white-card-height) - 8px); height: calc(var(--homepage-white-card-height) - 8px); border-radius: 50%; background: #fff; box-shadow: 0 12px 30px rgba(13, 13, 13, .14); }
+.brand-management-main-navigation[hidden] { display: none; }
+.brand-management-main-navigation { position: absolute; z-index: 5; right: 0; bottom: 0; left: 0; }
+.brand-management-main-navigation .homepage-bottom-menu { width: 60%; }
+.brand-management-main-navigation.is-menu-open .homepage-bottom-menu { width: var(--homepage-navigation-width); }
+@media (min-aspect-ratio: 4 / 3) { .brand-management-new-page .brand-management-new-master-panel::before { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
+@media (max-aspect-ratio: 4 / 3) { .brand-management-new-content { padding-bottom: calc(var(--studio-navigation-height) + (var(--x) * 2) + var(--bottom-control-area-height)); } }
+
+/* Brand Management contextual navigation: same open-nav baseline, without the legacy line control. */
+.brand-management-new-page .brand-management-contextual-navigation {
+  position: absolute;
+  justify-content: space-between;
+}
+.brand-management-new-page .studio-panel .master-panel > .brand-management-contextual-navigation,
+.brand-management-new-page .studio-panel .master-panel > .brand-management-main-navigation {
+  position: absolute;
+}
+.brand-management-new-page .brand-management-contextual-services {
+  order: 1;
+}
+.brand-management-new-page .brand-management-contextual-pill {
+  order: 0;
+}
+.brand-management-new-page .brand-management-contextual-pill img {
+  width: calc(var(--header-element-size) * 1.8);
+  height: calc(var(--header-element-size) * 1.8);
+}
+.brand-management-new-page .brand-management-main-navigation .master-panel-continue {
+  display: none;
+}
+.brand-management-new-page .brand-management-contextual-navigation,
+.brand-management-new-page .brand-management-main-navigation {
+  transition: opacity .24s ease;
+}
+.brand-management-new-page .brand-management-contextual-navigation.brand-management-contextual-hidden,
+.brand-management-new-page .brand-management-main-navigation.brand-management-main-navigation-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.brand-management-new-page .brand-management-contextual-navigation:not(.brand-management-contextual-hidden),
+.brand-management-new-page .brand-management-main-navigation:not(.brand-management-main-navigation-hidden) {
+  opacity: 1;
+  pointer-events: auto;
+}
+.brand-management-new-page .brand-management-main-navigation {
+  top: auto;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--bottom-control-area-height);
+  min-height: var(--bottom-control-area-height);
+}
+.brand-management-new-page .brand-management-main-navigation .homepage-bottom-menu {
+  bottom: var(--x);
+}
+.brand-management-new-page .brand-management-main-navigation[hidden],
+.brand-management-new-page .brand-management-contextual-navigation[hidden] {
+  display: flex;
+}
+.brand-management-new-page .brand-management-new-content {
+  padding-bottom: calc(var(--studio-navigation-height) + (var(--x) * 2));
+}
 html, body { min-height: 100%; }
 body { margin: 0; overflow: hidden; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-english); }
 :is(.homepage, .os-page, .studio-page) { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); --homepage-notifications-width: min(calc(100% - (var(--x) * 4)), var(--layout-content-max)); --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
@@ -2091,4 +2173,9 @@ html[dir="rtl"] .service-tile.is-expanded { font-family: var(--font-arabic); dir
     text-size-adjust: 100%;
     touch-action: manipulation;
   }
+}
+
+/* Brand Management card baseline: keep its bottom exactly x above the fixed open navigation. */
+.brand-management-new-page .brand-management-new-content {
+  padding-bottom: calc(var(--studio-navigation-height) + (var(--x) * 2));
 }

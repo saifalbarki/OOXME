@@ -185,6 +185,7 @@
     panel.dataset.active = button.dataset.homeServicesOption;
     selector.querySelectorAll('[data-home-services-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
   }));
+  services?.querySelectorAll('[data-brand-management-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/brand-management-new'); }));
   account?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
     const accountSelector = account.querySelector('[data-home-account-selector]');
     accountSelector.dataset.active = button.dataset.homeAccountType;

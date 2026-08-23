@@ -442,6 +442,7 @@ homepageServices?.querySelectorAll('[data-home-services-option]').forEach((butto
   panel.dataset.active = button.dataset.homeServicesOption;
   selector.querySelectorAll('[data-home-services-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
 }));
+document.querySelectorAll('[data-brand-management-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/brand-management-new'); }));
 homepageAccount?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
   const selector = homepageAccount.querySelector('[data-home-account-selector]');
   if (!selector) return;

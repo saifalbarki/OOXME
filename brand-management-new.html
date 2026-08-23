@@ -1,0 +1,56 @@
+<!doctype html>
+<html class="brand-management-new-page" lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Brand Management | OOXME</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/os.css" />
+  </head>
+  <body class="brand-management-new-page">
+    <main class="master-panel-experience brand-management-new-experience">
+      <section class="master-panel-screen studio-panel is-active">
+        <article class="master-panel brand-management-new-master-panel">
+          <section class="studio-content brand-management-new-content">
+            <article class="homepage-account-panel studio-card brand-management-new-card">
+              <div class="homepage-account-selector studio-selector brand-management-new-selector" data-brand-management-selector data-active="work" role="tablist" aria-label="Brand Management view">
+                <span class="homepage-account-selector-indicator" aria-hidden="true"></span>
+                <button type="button" data-brand-management-state="work" role="tab" aria-selected="true"><span data-en="Overview" data-ar="نظرة عامة">Overview</span></button>
+                <button type="button" data-brand-management-state="details" role="tab" aria-selected="false"><span data-en="Details" data-ar="التفاصيل">Details</span></button>
+              </div>
+              <section class="brand-management-new-state" data-brand-management-panel="work">
+                <h1 data-en="Brand Management" data-ar="إدارة العلامة التجارية">Brand Management</h1>
+                <p data-en="Temporary overview content for the new Brand Management experience." data-ar="محتوى مؤقت لنظرة عامة على تجربة إدارة العلامة التجارية الجديدة.">Temporary overview content for the new Brand Management experience.</p>
+              </section>
+              <section class="brand-management-new-state" data-brand-management-panel="details" hidden>
+                <h1 data-en="Brand Management Details" data-ar="تفاصيل إدارة العلامة التجارية">Brand Management Details</h1>
+                <p data-en="Temporary details content. This panel will be replaced later." data-ar="محتوى مؤقت للتفاصيل. سيتم استبدال هذه اللوحة لاحقاً.">Temporary details content. This panel will be replaced later.</p>
+              </section>
+            </article>
+          </section>
+          <div class="brand-management-contextual-navigation" data-brand-management-contextual>
+            <button class="brand-management-contextual-services" type="button" data-brand-management-main-toggle aria-label="Open main navigation"><img src="assets/icons/New/SERVICES.svg" alt="" /></button>
+            <div class="brand-management-contextual-pill" data-brand-management-pill data-active="work">
+              <span class="brand-management-contextual-indicator" aria-hidden="true"></span>
+              <button type="button" data-brand-management-context="work" aria-label="Overview" aria-pressed="true"><img src="assets/icons/New/ARROW LEFT.svg" alt="" /></button>
+              <button type="button" data-brand-management-context="details" aria-label="Details" aria-pressed="false"><img src="assets/icons/New/ARROW RIGHT.svg" alt="" /></button>
+            </div>
+          </div>
+          <footer class="master-panel-footer homepage-bottom-navigation brand-management-main-navigation brand-management-main-navigation-hidden is-menu-open" data-authenticated-navigation>
+            <button class="master-panel-continue" type="button" data-auth-nav-trigger aria-label="Open navigation" aria-expanded="false"><span class="swipe-control"><span></span><span class="swipe-control-line"></span></span></button>
+            <nav class="homepage-bottom-menu" data-auth-nav-menu data-active="services" aria-label="Main navigation">
+              <span class="homepage-bottom-menu-indicator" aria-hidden="true"></span>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="account" data-auth-nav-destination="/os/accounts" aria-label="Account" aria-pressed="false"><img src="assets/icons/New/PROFILE.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="gallery" data-auth-nav-destination="/studio" aria-label="Studio" aria-pressed="false"><img src="assets/icons/New/FILE.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="home" data-auth-nav-destination="/" aria-label="Home" aria-pressed="false"><img src="assets/icons/New/HOME.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="menu" aria-label="Notifications" aria-pressed="false"><img src="assets/icons/New/NOTIFICATION.svg" alt="" /></button>
+              <button class="homepage-bottom-menu-button" type="button" data-auth-nav-item="services" data-auth-nav-noop aria-label="Services" aria-pressed="true"><img src="assets/icons/New/SERVICES.svg" alt="" /></button>
+            </nav>
+          </footer>
+        </article>
+      </section>
+    </main>
+    <script src="js/authenticated-navigation.js"></script>
+    <script src="js/brand-management-new.js"></script>
+  </body>
+</html>
