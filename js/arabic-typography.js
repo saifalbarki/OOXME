@@ -7,7 +7,9 @@
 
   const hasOwnText = element => [...element.childNodes].some(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
   const isTextLeaf = element => hasOwnText(element) && ![...element.children].some(child => child.matches?.(text) && hasOwnText(child));
-  const targets = scope => [...scope.querySelectorAll(controls + ', ' + text)].filter(element => element.matches(controls) || isTextLeaf(element));
+  const targets = scope => [...scope.querySelectorAll(controls + ', ' + text)].filter(element => (
+    !element.matches('[data-ooxme-ios-zoom-safe]') && (element.matches(controls) || isTextLeaf(element))
+  ));
 
   const restore = element => {
     const previous = saved.get(element);

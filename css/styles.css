@@ -14,7 +14,7 @@ textarea.ooxme-writable-field--centered-entry { height: var(--ooxme-writable-ent
 /* Portrait writable fields share the Login control's visual text token. */
 @media (max-aspect-ratio: 4 / 3) {
   :root { --ooxme-portrait-writable-font-size: var(--overlay-text-size, clamp(10.5px, 1.2vw, 13.5px)); }
-  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea, select) { color: var(--color-ink); font-size: var(--ooxme-portrait-writable-font-size) !important; font-weight: 700; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([data-ooxme-ios-zoom-safe]), textarea, select) { color: var(--color-ink); font-size: var(--ooxme-portrait-writable-font-size) !important; font-weight: 700; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea)::placeholder { color: var(--color-secondary-control); font-size: inherit; font-weight: 400; opacity: 1; }
 }
 html, body { min-height: 100%; }
@@ -224,6 +224,13 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .homepage-account-selector button { position: relative; z-index: 1; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; cursor: pointer; }
 .homepage-account-form .homepage-search-field input { width: 100%; min-height: var(--homepage-account-control-height); height: var(--homepage-account-control-height); max-height: var(--homepage-account-control-height); border: 0; border-radius: var(--homepage-account-control-radius); text-align: center; }.homepage-account-form .homepage-search-field input::placeholder { font-size: .875em; text-align: center; }
 .homepage-account-login { display: block; width: 100%; min-height: var(--homepage-account-control-height); height: var(--homepage-account-control-height); max-height: var(--homepage-account-control-height); padding: 0 var(--x); border: 0; border-radius: var(--homepage-account-control-radius); background: var(--color-brand); color: #fff; font: inherit; font-size: var(--overlay-text-size); line-height: 1.35; cursor: pointer; }
+/* iOS only zooms focused text fields below 16px. This keeps a 16px input
+   internally while its transformed, clipped surface retains the approved visual scale. */
+@media (max-aspect-ratio: 4 / 3) {
+  .homepage-account-form .homepage-search-field { position: relative; height: var(--homepage-account-control-height); overflow: hidden; }
+  .homepage-account-form .homepage-search-field input[data-ooxme-ios-zoom-safe][data-ooxme-ios-zoom-safe][data-ooxme-ios-zoom-safe] { --homepage-account-input-scale: .65625; position: absolute; top: 0; left: 0; box-sizing: border-box; width: calc(100% / var(--homepage-account-input-scale)); min-width: calc(100% / var(--homepage-account-input-scale)); min-height: calc(var(--homepage-account-control-height) / var(--homepage-account-input-scale)); height: calc(var(--homepage-account-control-height) / var(--homepage-account-input-scale)); max-height: none; font-size: 16px !important; touch-action: manipulation; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; transform: scale(var(--homepage-account-input-scale)); transform-origin: top left; }
+  html[dir="rtl"] .homepage-account-form .homepage-search-field input[data-ooxme-ios-zoom-safe] { --homepage-account-input-scale: .590625; }
+}
 @media (max-aspect-ratio: 4 / 3) { .homepage-account-panel { --homepage-account-control-height: 38px; padding-bottom: var(--x); }.homepage-account-login { line-height: 1.1; } }
 .employee-dashboard-panel .master-panel { isolation: isolate; background: transparent; }.employee-dashboard-panel .master-panel::before { position: absolute; z-index: 0; inset: -12px; background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; content: ''; filter: blur(5px); transform: scale(1.04); }.employee-dashboard-panel .master-panel > * { position: relative; z-index: 1; }@media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel::before { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
 .employee-dashboard-panel .master-panel-control { opacity: 0; pointer-events: none; }
