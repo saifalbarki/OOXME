@@ -24,7 +24,7 @@ const applyLanguage = (next) => {
   document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[next]; });
   searchInput.placeholder = searchInput.dataset[`${next}Placeholder`];
   document.querySelectorAll('[data-home-search-input]').forEach((input) => { input.placeholder = input.dataset[`${next}Placeholder`]; });
-  document.querySelectorAll('[data-home-account-input]').forEach((input) => { input.placeholder = input.dataset[`${next}Placeholder`]; });
+  document.querySelectorAll('[data-home-account-input], [data-employee-dashboard-edit-input]').forEach((input) => { input.placeholder = input.dataset[`${next}Placeholder`]; });
   document.querySelectorAll('[data-language-toggle]').forEach((button) => button.setAttribute('aria-label', next === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'));
   try { localStorage.setItem('ooxme-language', next); } catch (_) {}
   window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: next } }));

@@ -49,11 +49,18 @@
             </header>
             <div class="master-panel-content employee-dashboard-content">
               <section class="employee-dashboard-identity" aria-label="Employee information">
-                <div class="employee-dashboard-avatar" aria-hidden="true"><img src="assets/icons/New/PROFILE.svg" alt="" /></div>
+                <div class="employee-dashboard-avatar"><img src="assets/icons/New/PROFILE.svg" alt="" /><button class="employee-dashboard-avatar-edit" type="button" aria-label="Change employee image" disabled><img src="assets/icons/New/EDIT.svg" alt="" /></button></div>
                 <article class="employee-dashboard-card employee-dashboard-info-card">
                   <strong data-en="Employee name" data-ar="اسم الموظف">Employee name</strong>
                   <span data-en="Job title" data-ar="المسمى الوظيفي">Job title</span>
                   <span data-en="Employee ID" data-ar="معرّف الموظف">Employee ID</span>
+                  <form class="employee-dashboard-edit-form" aria-label="Edit employee information">
+                    <label><input type="text" autocomplete="name" data-employee-dashboard-edit-input data-ooxme-ios-zoom-safe data-en-placeholder="Name" data-ar-placeholder="الاسم" placeholder="Name" aria-label="Name" /></label>
+                    <label><input type="text" autocomplete="username" data-employee-dashboard-edit-input data-ooxme-ios-zoom-safe data-en-placeholder="Username or Email" data-ar-placeholder="اسم المستخدم أو البريد الإلكتروني" placeholder="Username or Email" aria-label="Username or Email" /></label>
+                    <label><input type="password" autocomplete="new-password" data-employee-dashboard-edit-input data-ooxme-ios-zoom-safe data-en-placeholder="New Code" data-ar-placeholder="الرمز الجديد" placeholder="New Code" aria-label="New Code" /></label>
+                    <label><input type="password" autocomplete="new-password" data-employee-dashboard-edit-input data-ooxme-ios-zoom-safe data-en-placeholder="Confirm New Code" data-ar-placeholder="تأكيد الرمز الجديد" placeholder="Confirm New Code" aria-label="Confirm New Code" /></label>
+                    <button type="button" disabled><span data-en="Confirm" data-ar="تأكيد">Confirm</span></button>
+                  </form>
                 </article>
               </section>
               <article class="employee-dashboard-card employee-dashboard-status-card">
