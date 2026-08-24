@@ -147,6 +147,14 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .brand-management-new-page .brand-management-new-overview-copy {
   inset: 0 0 calc((var(--homepage-account-control-height) * 2) + var(--x));
 }
+
+/* Consultation shell: empty panel only, reusing the Brand Management navigation geometry. */
+.consultation-page { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
+.consultation-page .consultation-master-panel { grid-template-rows: minmax(0, 1fr) auto; isolation: isolate; background: transparent; }
+.consultation-page .consultation-master-panel > :not(.brand-management-contextual-navigation) { position: relative; z-index: 1; }
+.consultation-page .consultation-content { align-content: start; padding: var(--x) 0 0; }
+.consultation-page .consultation-selector-shell { width: calc(100% - (var(--x) * 2)); gap: 0; padding: 0; background: transparent; box-shadow: none; }
+.consultation-page .consultation-selector { width: 100%; }
 @media (min-aspect-ratio: 4 / 3) {
   .brand-management-new-page .brand-management-new-overview-copy {
     inset: 0 0 calc(var(--homepage-account-control-height) + var(--x));
