@@ -208,7 +208,7 @@ window.OOXMEMasterPanelDrag = {
       if (!panel) return null;
       return [...panel.querySelectorAll('a[href]')].find((link) => {
         if (
-          link.matches('.master-panel-continue, .plan-detail-cta, [aria-disabled="true"], [data-service-option], [data-consultation-option]') ||
+          link.matches('.master-panel-continue, [aria-disabled="true"]') ||
           link.hasAttribute('disabled') ||
           link.target === '_blank'
         ) return false;
@@ -431,31 +431,6 @@ window.OOXMEMasterPanelDrag = {
   }
 };
 
-// Growth-plan CTAs issue a secure consultation offer before navigating to booking.
-const GROWTH_PLAN_SUBSCRIPTIONS_ENABLED = true;
-const blockGrowthPlanSubscription = (event) => {
-  if (
-    GROWTH_PLAN_SUBSCRIPTIONS_ENABLED ||
-    !document.querySelector('[data-growth-track]') ||
-    !event.target.closest('.plan-detail-cta')
-  ) return;
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
-};
-document.addEventListener('click', blockGrowthPlanSubscription, true);
-document.addEventListener('auxclick', blockGrowthPlanSubscription, true);
-
-window.addEventListener('DOMContentLoaded', () => {
-  try {
-    if (document.querySelector('[data-growth-track]')) {
-      window.OOXMEMasterPanelDrag.register(Function('return { experience, track, panels, getIndex: () => current, moveTo }')());
-    } else if (document.querySelector('[data-service-track]')) {
-      window.OOXMEMasterPanelDrag.register(Function('return { experience, track, panels, getIndex: () => current, moveTo: move }')());
-    }
-  } catch (_) {}
-});
-
 const productionMetadata = {
   '/index.html': {
     en: ['OOXME | Brand Management & Business Development', 'OOXME provides brand management and business development for ambitious businesses.'],
@@ -464,7 +439,6 @@ const productionMetadata = {
   '/project-gallery.html': { en: ['Portfolio | OOXME', 'Selected OOXME brand-management work.'], ar: ['الأعمال | اوكسوم', 'أعمال مختارة من اوكسوم.'] },
   '/brands-designed-gallery.html': { en: ['Portfolio | OOXME', 'Selected OOXME brand-design work.'], ar: ['الأعمال | اوكسوم', 'أعمال مختارة من اوكسوم.'] },
   '/unique-works-gallery.html': { en: ['Portfolio | OOXME', 'Selected unique OOXME work.'], ar: ['الأعمال | اوكسوم', 'أعمال مميزة من اوكسوم.'] },
-  '/growth-plan.html': { en: ['Growth Plans | OOXME', 'OOXME growth plans for focused business support.'], ar: ['خطط النمو | اوكسوم', 'خطط نمو من اوكسوم لدعم الأعمال.'] },
   '/booking.html': { en: ['Consultation | OOXME', 'Book a consultation with OOXME.'], ar: ['استشارة | اوكسوم', 'احجز استشارة مع اوكسوم.'] }
 };
 const setMetadataTitle = (path, english, arabic) => {
@@ -476,10 +450,7 @@ setMetadataTitle('/index.html', 'OOXME', '\u0627\u0648\u0643\u0633\u0648\u0645')
 setMetadataTitle('/project-gallery.html', 'OOXME — Brands We Manage', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0627\u0644\u0639\u0644\u0627\u0645\u0627\u062a \u0627\u0644\u062a\u064a \u0646\u062f\u064a\u0631\u0647\u0627');
 setMetadataTitle('/brands-designed-gallery.html', 'OOXME — Brands We Designed', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0627\u0644\u0639\u0644\u0627\u0645\u0627\u062a \u0627\u0644\u062a\u064a \u0635\u0645\u0645\u0646\u0627\u0647\u0627');
 setMetadataTitle('/unique-works-gallery.html', 'OOXME — Unique Works', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0623\u0639\u0645\u0627\u0644 \u0645\u0645\u064a\u0632\u0629');
-setMetadataTitle('/growth-plan.html', 'OOXME — Growth Plans', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u062e\u0637\u0637 \u0627\u0644\u0646\u0645\u0648');
 setMetadataTitle('/booking.html', 'OOXME — Booking', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u062d\u062c\u0632 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0629');
-productionMetadata['/brand-management.html'] = { en: ['OOXME — Brand Management', 'OOXME brand-management services.'], ar: ['\u0627\u0648\u0643\u0633\u0648\u0645 — \u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0639\u0644\u0627\u0645\u0629 \u0627\u0644\u062a\u062c\u0627\u0631\u064a\u0629', ''] };
-productionMetadata['/coexistence.html'] = { en: ['OOXME — Connect WhatsApp Business App', 'Connect the OOXME WhatsApp Business App.'], ar: ['\u0627\u0648\u0643\u0633\u0648\u0645 — \u0631\u0628\u0637 \u062a\u0637\u0628\u064a\u0642 \u0648\u0627\u062a\u0633\u0627\u0628 \u0644\u0644\u0623\u0639\u0645\u0627\u0644', ''] };
 const setHeadMeta = (selector, attribute, content) => {
   let element = document.head.querySelector(selector);
   if (!element) {

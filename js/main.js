@@ -1,20 +1,5 @@
 const track = document.querySelector('[data-master-track]');
 const HOMEPAGE_NAVIGATION_LOCKED = false;
-const SERVICES_NAVIGATION_ENABLED = true;
-const CONSULTATION_NAVIGATION_ENABLED = true;
-const blockNavigation = (selector, enabled) => document.querySelectorAll(selector).forEach((action) => action.addEventListener('click', (event) => {
-  if (enabled) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-}, true));
-blockNavigation('[data-service-option]:not([data-service-option="brand-management"])', SERVICES_NAVIGATION_ENABLED);
-blockNavigation('[data-consultation-option]', CONSULTATION_NAVIGATION_ENABLED);
-const brandsWeDesignedLink = document.querySelector('[data-portfolio-option="brands-we-designed"]');
-if (brandsWeDesignedLink) brandsWeDesignedLink.href = 'brands-designed-gallery.html';
-const uniqueWorksLink = document.querySelector('[data-portfolio-option="unique-works"]');
-if (uniqueWorksLink) uniqueWorksLink.href = 'unique-works-gallery.html';
-const moreServicesLink = document.querySelector('[data-service-option="more-services"]');
-if (moreServicesLink) moreServicesLink.href = 'services.html';
 const experience = document.querySelector('.master-panel-experience');
 const root = document.documentElement;
 const setStableViewportHeight = () => root.style.setProperty('--ooxme-stable-viewport-height', `${window.innerHeight}px`);
@@ -88,12 +73,9 @@ document.querySelectorAll('[data-search-toggle]').forEach((button) => button.add
 searchOverlay.addEventListener('click', () => setSearchOpen(false));
 searchOverlay.querySelectorAll('a, label, [data-search-suggestion]').forEach((element) => element.addEventListener('click', (event) => event.stopPropagation()));
 searchInput.addEventListener('input', updateSearchState);
-const panelIds = ['intro', 'portfolio', 'plans', 'services', 'consultation', 'contact', 'employee-dashboard'];
+const panelIds = ['intro', 'employee-dashboard'];
 const originalPanels = [...track.querySelectorAll('.master-panel-screen')];
 originalPanels.forEach((panel, index) => { panel.dataset.panelId = panelIds[index]; });
-const plansPanel = track.querySelector('[data-panel-id="plans"]');
-const servicesPanel = track.querySelector('[data-panel-id="services"]');
-if (plansPanel && servicesPanel) track.insertBefore(servicesPanel, plansPanel);
 const panels = [...document.querySelectorAll('.master-panel-screen')];
 track.style.height = `calc(var(--ooxme-stable-viewport-height) * ${panels.length})`;
 const requestedPanel = new URLSearchParams(window.location.search).get('panel');
