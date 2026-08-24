@@ -53,12 +53,12 @@ html[dir="rtl"] .brand-management-new-details .homepage-notification-copy ul { t
 .brand-management-new-state h1, .brand-management-new-state p { margin: 0; font: inherit; }
 .brand-management-new-state h1 { font-size: clamp(18px, 3vw, 32px); font-weight: 700; }
 .brand-management-new-state p { max-width: 42ch; color: var(--color-secondary-control); font-size: var(--overlay-text-size); line-height: 1.45; }
-.brand-management-new-overview-subtitle { position: relative; color: var(--color-secondary-control); font-weight: 700; }
+.brand-management-new-overview-subtitle { position: relative; color: var(--color-secondary-control); font-weight: 800; }
 .brand-management-new-overview-subtitle-base, .brand-management-new-overview-subtitle-shine { display: block; }
 .brand-management-new-overview-subtitle-shine { position: absolute; inset: 0; color: transparent; background: linear-gradient(110deg, transparent 0%, transparent 42%, color-mix(in srgb, var(--color-blue) 88%, transparent) 49%, color-mix(in srgb, var(--color-blue) 55%, white) 50%, color-mix(in srgb, var(--color-blue) 88%, transparent) 51%, transparent 58%, transparent 100%) -20% 50% / 260% 100% no-repeat; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; pointer-events: none; animation: brand-management-subtitle-shine 4.5s ease-in-out infinite; will-change: background-position; }
-@keyframes brand-management-subtitle-shine { 0% { background-position: -20% 50%; } 88.889%, 100% { background-position: 220% 50%; } }
+@keyframes brand-management-subtitle-shine { 0% { background-position: 220% 50%; } 100% { background-position: -20% 50%; } }
 html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: brand-management-subtitle-shine-rtl; }
-@keyframes brand-management-subtitle-shine-rtl { 0% { background-position: 220% 50%; } 88.889%, 100% { background-position: -20% 50%; } }
+@keyframes brand-management-subtitle-shine-rtl { 0% { background-position: -20% 50%; } 100% { background-position: 220% 50%; } }
 @media (prefers-reduced-motion: reduce) { .brand-management-new-overview-subtitle-shine, html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation: none; background: none; -webkit-text-fill-color: transparent; } }
 .brand-management-new-overview-actions { position: absolute; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: 1fr; gap: var(--x); }
 .brand-management-new-overview-box { display: grid; place-items: center; width: 100%; height: var(--homepage-account-control-height); min-height: var(--homepage-account-control-height); padding: 0 var(--x); border: 0; border-radius: var(--homepage-account-control-radius); color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); line-height: 1.35; text-align: center; }
