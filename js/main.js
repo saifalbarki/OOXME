@@ -342,10 +342,12 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
     if (!infoCard || !avatar || employeeDashboardPanelOneState !== 'edit') {
       infoCard?.style.removeProperty('--employee-dashboard-edit-extension');
       avatar?.style.removeProperty('--employee-dashboard-avatar-restore-offset');
+      avatar?.style.removeProperty('--employee-dashboard-avatar-portrait-offset');
       employeeDashboardPanelOne.removeAttribute('data-employee-dashboard-panel-one-landscape-columns');
       return;
     }
     if (window.matchMedia('(min-aspect-ratio: 4 / 3)').matches) {
+      avatar.style.removeProperty('--employee-dashboard-avatar-portrait-offset');
       avatar.style.removeProperty('--employee-dashboard-avatar-restore-offset');
       infoCard.style.height = 'auto';
       const previousAvatarTop = avatar.getBoundingClientRect().top;
@@ -361,6 +363,7 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
     const navigationBounds = employeeDashboardPanelOneNavigation.getBoundingClientRect();
     const x = Number.parseFloat(getComputedStyle(infoCard).paddingTop) || 0;
     infoCard.style.setProperty('--employee-dashboard-edit-extension', `${Math.max(0, navigationBounds.top - x - cardBounds.bottom)}px`);
+    avatar.style.setProperty('--employee-dashboard-avatar-portrait-offset', `${Math.max(0, infoCard.getBoundingClientRect().top - x - avatar.getBoundingClientRect().bottom)}px`);
   };
   const setEmployeeDashboardPanelOneState = (next) => {
     employeeDashboardPanelOneState = next === 'edit' ? 'edit' : 'current';
