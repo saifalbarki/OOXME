@@ -166,7 +166,7 @@ const setupEmployeeDashboardPanels = () => {
   detailsView.className = 'employee-dashboard-task-details';
   detailsView.setAttribute('aria-label', panelTwoLabels.en.details);
   detailsView.hidden = true;
-  detailsView.innerHTML = '<section class="employee-dashboard-task-details-section employee-dashboard-task-details-overview employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-task-detail-title></strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><p data-task-detail-description></p></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-updates employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Progress Updates" data-ar="تحديثات التقدم">Progress Updates</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-update-list"><p><span data-en="Monthly direction reviewed and approved." data-ar="تمت مراجعة التوجه الشهري واعتماده.">Monthly direction reviewed and approved.</span><time data-en="Today, 09:30" data-ar="اليوم، 09:30">Today, 09:30</time></p><p><span data-en="Production brief prepared for the next step." data-ar="تم إعداد موجز الإنتاج للخطوة التالية.">Production brief prepared for the next step.</span><time data-en="Yesterday, 16:10" data-ar="أمس، 16:10">Yesterday, 16:10</time></p><p><span data-en="Task owner confirmed the delivery plan." data-ar="أكد مسؤول المهمة خطة التسليم.">Task owner confirmed the delivery plan.</span><time data-en="28 Aug 2026, 11:45" data-ar="28 أغسطس 2026، 11:45">28 Aug 2026, 11:45</time></p></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-timeline employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Timeline" data-ar="الجدول الزمني">Timeline</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-detail-boxes"><span><small data-en="Start Date" data-ar="تاريخ البدء">Start Date</small><b data-task-detail-start></b></span><span><small data-en="Delivery Date" data-ar="تاريخ التسليم">Delivery Date</small><b data-task-detail-delivery></b></span><span><small data-en="Time Remaining" data-ar="الوقت المتبقي">Time Remaining</small><b data-task-detail-remaining></b></span></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-files employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Files" data-ar="الملفات">Files</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-detail-boxes"><span><small data-en="Required Files" data-ar="الملفات المطلوبة">Required Files</small><b>3</b></span><span><small data-en="Uploaded Files" data-ar="الملفات المرفوعة">Uploaded Files</small><b>1</b></span><span><small data-en="Remaining Files" data-ar="الملفات المتبقية">Remaining Files</small><b>2</b></span></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-actions"><h2 data-en="Actions" data-ar="الإجراءات">Actions</h2><div><button type="button" data-en="Start Task" data-ar="بدء المهمة">Start Task</button><button type="button" data-en="Add Update" data-ar="إضافة تحديث">Add Update</button><button type="button" data-en="Upload Files" data-ar="رفع الملفات">Upload Files</button></div></section>';
+  detailsView.innerHTML = '<section class="employee-dashboard-task-details-section employee-dashboard-task-details-overview employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-task-detail-title></strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><p data-task-detail-description></p></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-updates employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Progress Updates" data-ar="تحديثات التقدم">Progress Updates</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-update-list"><p><span data-en="Monthly direction reviewed and approved." data-ar="تمت مراجعة التوجه الشهري واعتماده.">Monthly direction reviewed and approved.</span><time data-en="Today, 09:30" data-ar="اليوم، 09:30">Today, 09:30</time></p><p><span data-en="Production brief prepared for the next step." data-ar="تم إعداد موجز الإنتاج للخطوة التالية.">Production brief prepared for the next step.</span><time data-en="Yesterday, 16:10" data-ar="أمس، 16:10">Yesterday, 16:10</time></p><p><span data-en="Task owner confirmed the delivery plan." data-ar="أكد مسؤول المهمة خطة التسليم.">Task owner confirmed the delivery plan.</span><time data-en="28 Aug 2026, 11:45" data-ar="28 أغسطس 2026، 11:45">28 Aug 2026, 11:45</time></p></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-timeline employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Timeline" data-ar="الجدول الزمني">Timeline</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-detail-boxes"><span><small data-en="Start Date" data-ar="تاريخ البدء">Start Date</small><b data-task-detail-start></b></span><span><small data-en="Delivery Date" data-ar="تاريخ التسليم">Delivery Date</small><b data-task-detail-delivery></b></span><span><small data-en="Time Remaining" data-ar="الوقت المتبقي">Time Remaining</small><b data-task-detail-remaining></b></span></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-files employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Files" data-ar="الملفات">Files</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-detail-boxes"><span><small data-en="Required Files" data-ar="الملفات المطلوبة">Required Files</small><b>3</b></span><span><small data-en="Uploaded Files" data-ar="الملفات المرفوعة">Uploaded Files</small><b>1</b></span><span><small data-en="Remaining Files" data-ar="الملفات المتبقية">Remaining Files</small><b>2</b></span></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-actions"><h2 data-en="Actions" data-ar="الإجراءات">Actions</h2><div><button type="button" data-en="Start Task" data-ar="بدء المهمة">Start Task</button><button type="button" data-en="Add Update" data-ar="إضافة تحديث">Add Update</button><button type="button" data-employee-dashboard-upload-files-action data-en="Upload Files" data-ar="رفع الملفات">Upload Files</button></div></section>';
   if (isClientDashboard) {
     const [startTask, , uploadFiles] = detailsView.querySelectorAll('.employee-dashboard-task-details-actions button');
     Object.assign(startTask.dataset, { en: 'Add Request', ar: 'إضافة طلب' });
@@ -204,6 +204,7 @@ const setupEmployeeDashboardPanels = () => {
     selectorProxy.setAttribute('aria-label', labels.view);
     timeline.setAttribute('aria-label', labels.timeline);
     detailsView.setAttribute('aria-label', labels.details);
+    emptyPanel.querySelectorAll('[data-employee-dashboard-panel-two-input]').forEach((input) => { input.placeholder = input.dataset[`${copy}Placeholder`]; });
     navigationProxy?.querySelector('[data-employee-dashboard-home]')?.setAttribute('aria-label', labels.home);
     navigationProxy?.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-label', button.dataset.employeeDashboardContext === 'details' ? labels.detailsOption : labels.progress));
     emptyPanel.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[copy]; });
@@ -301,8 +302,49 @@ const setupEmployeeDashboardPanels = () => {
   navigationProxy.classList.add('employee-dashboard-contextual-navigation-proxy');
   navigationProxy.removeAttribute('data-employee-dashboard-contextual');
   const contextPillProxy = navigationProxy.querySelector('[data-employee-dashboard-context-pill]');
+  const addUpdateCard = !isClientDashboard ? document.createElement('form') : null;
+  if (addUpdateCard) {
+    addUpdateCard.className = 'employee-dashboard-add-update-card';
+    addUpdateCard.hidden = true;
+    addUpdateCard.setAttribute('aria-label', 'Add update');
+    addUpdateCard.innerHTML = '<label><textarea rows="1" data-employee-dashboard-panel-two-input data-employee-dashboard-add-update-input data-ooxme-ios-zoom-safe data-en-placeholder="Write an update" data-ar-placeholder="اكتب تحديثاً" placeholder="Write an update" aria-label="Write an update"></textarea></label><button type="button" data-en="Submit" data-ar="إرسال">Submit</button>';
+  }
+  const uploadFilesCard = !isClientDashboard ? document.createElement('form') : null;
+  if (uploadFilesCard) {
+    uploadFilesCard.className = 'employee-dashboard-upload-files-card';
+    uploadFilesCard.hidden = true;
+    uploadFilesCard.setAttribute('aria-label', 'Upload files');
+    uploadFilesCard.innerHTML = '<label><input type="text" data-employee-dashboard-panel-two-input data-employee-dashboard-upload-files-input data-ooxme-ios-zoom-safe data-en-placeholder="File Name" data-ar-placeholder="اسم الملف" placeholder="File Name" aria-label="File Name"></label><button type="button" data-employee-dashboard-upload-files-add data-en="Add File" data-ar="إضافة ملف">Add File</button><button type="button" data-en="Submit" data-ar="إرسال">Submit</button>';
+  }
+  const panelTwoActionCards = [addUpdateCard, uploadFilesCard].filter(Boolean);
+  const setPanelTwoActionCard = (activeCard, action = '') => {
+    const active = Boolean(activeCard);
+    emptyPanel.dataset.employeeDashboardPanelTwoAction = action;
+    emptyCard.hidden = active;
+    panelTwoActionCards.forEach((card) => { card.hidden = card !== activeCard; });
+  };
+  const setAddUpdateOpen = (open) => {
+    if (!addUpdateCard) return;
+    setPanelTwoActionCard(open ? addUpdateCard : null, open ? 'add-update' : '');
+    if (open) {
+      const input = addUpdateCard.querySelector('[data-employee-dashboard-add-update-input]');
+      const label = input?.parentElement;
+      if (input && label) {
+        const scale = window.matchMedia('(max-aspect-ratio: 4 / 3)').matches ? .65625 : 1;
+        input.style.height = 'auto';
+        const height = Math.max(label.clientHeight, input.scrollHeight * scale);
+        label.style.height = `${height}px`;
+        input.style.height = `${height / scale}px`;
+      }
+    }
+  };
+  const setUploadFilesOpen = (open) => {
+    if (!uploadFilesCard) return;
+    setPanelTwoActionCard(open ? uploadFilesCard : null, open ? 'upload-files' : '');
+  };
   let panelTwoState = 'progress';
   const setPanelTwoState = (next) => {
+    if (panelTwoActionCards.some((card) => card.hidden === false)) setPanelTwoActionCard(null);
     panelTwoState = next === 'details' ? 'details' : 'progress';
     const arrowState = panelTwoState === 'details' ? 'details' : 'work';
     selectorProxy.dataset.active = panelTwoState;
@@ -325,11 +367,27 @@ const setupEmployeeDashboardPanels = () => {
     event.stopPropagation();
     setPanelTwoState(panelTwoState === 'details' ? 'progress' : 'details');
   }));
+  if (addUpdateCard) {
+    const updateInput = addUpdateCard.querySelector('[data-employee-dashboard-add-update-input]');
+    const updateField = updateInput?.parentElement;
+    const resizeUpdateInput = () => {
+      if (!updateInput || !updateField) return;
+      const scale = window.matchMedia('(max-aspect-ratio: 4 / 3)').matches ? .65625 : 1;
+      updateInput.style.height = 'auto';
+      const height = Math.max(updateField.clientHeight, updateInput.scrollHeight * scale);
+      updateField.style.height = `${height}px`;
+      updateInput.style.height = `${height / scale}px`;
+    };
+    updateInput?.addEventListener('input', resizeUpdateInput);
+    const [, addUpdateButton, uploadFilesButton] = detailsView.querySelectorAll('.employee-dashboard-task-details-actions button');
+    addUpdateButton?.addEventListener('click', () => setAddUpdateOpen(true));
+    uploadFilesButton?.addEventListener('click', () => setUploadFilesOpen(true));
+  }
   taskItems.forEach((task, index) => task.addEventListener('click', () => {
     if (index === activeTaskIndex && panelTwoState === 'progress') setPanelTwoState('details');
   }));
   setPanelTwoState(panelTwoState);
-  emptyMasterPanel.append(emptyCard, navigationProxy);
+  emptyMasterPanel.append(emptyCard, ...panelTwoActionCards, navigationProxy);
   emptyPanel.append(emptyMasterPanel);
   localizePanelTwo(language);
 
@@ -412,7 +470,7 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
   }));
   setEmployeeDashboardPanelOneState('current');
   window.addEventListener('resize', () => {
-    if (document.activeElement?.matches('[data-employee-dashboard-edit-input]')) return;
+    if (document.activeElement?.matches('[data-employee-dashboard-edit-input], [data-employee-dashboard-add-update-input], [data-employee-dashboard-upload-files-input]')) return;
     requestAnimationFrame(sizeEmployeeDashboardPanelOneEditCard);
   });
 }
