@@ -4,6 +4,7 @@
   const pill = document.querySelector('[data-brand-management-pill]');
   const selector = document.querySelector('[data-brand-management-selector]');
   const statePanels = [...document.querySelectorAll('[data-brand-management-panel]')];
+  const detailCards = [...document.querySelectorAll('[data-brand-management-detail-card]')];
   let state = 'work';
   const applyLanguage = next => {
     const language = next === 'ar' ? 'ar' : 'en';
@@ -21,6 +22,14 @@
     statePanels.forEach(panel => { panel.hidden = panel.dataset.brandManagementPanel !== state; });
   };
   selector?.querySelectorAll('[data-brand-management-state]').forEach(button => button.addEventListener('click', () => setState(button.dataset.brandManagementState)));
+  detailCards.forEach(detailCard => detailCard.addEventListener('click', () => {
+    const expanded = !detailCard.classList.contains('is-expanded');
+    detailCards.forEach(card => {
+      const isCurrent = card === detailCard && expanded;
+      card.classList.toggle('is-expanded', isCurrent);
+      card.setAttribute('aria-expanded', String(isCurrent));
+    });
+  }));
   pill?.querySelectorAll('[data-brand-management-context]').forEach(button => button.addEventListener('click', event => {
     event.preventDefault();
     event.stopImmediatePropagation();

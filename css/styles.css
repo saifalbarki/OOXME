@@ -27,7 +27,21 @@ textarea.ooxme-writable-field--centered-entry { height: var(--ooxme-writable-ent
 .brand-management-new-content { padding-bottom: calc(var(--studio-navigation-height) + (var(--x) * 2) + var(--bottom-control-area-height)); }
 .brand-management-new-card { display: grid; grid-template-rows: auto minmax(0, 1fr); align-content: start; }
 .brand-management-new-state { position: relative; display: grid; align-content: center; justify-items: center; gap: var(--x); min-height: 0; color: var(--color-ink); text-align: center; }
+.brand-management-new-details { align-content: start; justify-items: stretch; }
+.brand-management-new-details-list { display: grid; width: 100%; gap: var(--x); }
+.brand-management-new-details-column { display: contents; }
+.brand-management-new-details-column:first-child [data-brand-management-detail-card]:nth-child(1) { order: 1; }
+.brand-management-new-details-column:nth-child(2) [data-brand-management-detail-card]:nth-child(1) { order: 2; }
+.brand-management-new-details-column:first-child [data-brand-management-detail-card]:nth-child(2) { order: 3; }
+.brand-management-new-details-column:nth-child(2) [data-brand-management-detail-card]:nth-child(2) { order: 4; }
+.brand-management-new-details [data-brand-management-detail-card].is-expanded .homepage-notification-details { gap: calc(var(--x) * .5); }
+.brand-management-new-details [data-brand-management-detail-card].is-expanded .homepage-notification-copy { display: grid; gap: 0; }
+.brand-management-new-details [data-brand-management-detail-card].is-expanded .homepage-notification-copy ul { margin: 0; padding-inline-start: 1.25em; }
 .brand-management-new-state[hidden] { display: none; }
+@media (min-aspect-ratio: 4 / 3) {
+  .brand-management-new-details-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--x); row-gap: 0; align-items: start; }
+  .brand-management-new-details-column { display: grid; align-content: start; align-self: start; min-width: 0; gap: var(--x); }
+}
 .brand-management-new-overview-copy { inset: 0 0 calc((var(--homepage-account-control-height) * 2) + var(--x)); gap: var(--x); }
 .brand-management-new-overview-copy .studio-client-description { width: 60%; max-width: 60%; }
 .brand-management-new-state h1, .brand-management-new-state p { margin: 0; font: inherit; }

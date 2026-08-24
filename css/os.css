@@ -22,7 +22,7 @@ html[dir="rtl"] .os-dashboard-content .os-title-row { flex-direction: row-revers
 .os-dashboard-content .os-card { overflow: hidden; }
 .os-dashboard-content .os-card { padding-block: clamp(8px, 1.2dvh, 14px); padding-inline: clamp(12px, 1.5vw, 20px); }
 .os-login { margin-bottom: var(--homepage-standard-card-bottom-inset); }
-.os-login input { font-size: 16px; }
+.os-login input { background: #fff; font-size: var(--overlay-text-size); }
 .os-login label:focus-within { outline: 0; outline-offset: 0; background: color-mix(in srgb, var(--color-paper) 94%, var(--color-brand)); box-shadow: 0 3px 14px rgba(17, 77, 216, .08); }
 .os-card[data-state="healthy"] .os-card-dot, .os-card[data-state="ready"] .os-card-dot { --status-dot-color: #27834b; }
 .os-card[data-state="limited"] .os-card-dot { --status-dot-color: #d6a512; }
@@ -109,6 +109,7 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 
 /* OS login adopts the shared writable-field baseline without changing its geometry. */
 .os-login .homepage-search-field input.ooxme-writable-field { color: var(--color-ink); font-weight: 700; line-height: 1.35; text-align: center; transform: none; }
+.os-login .homepage-search-field input.ooxme-writable-field { background: #fff; font-size: var(--overlay-text-size); }
 .os-login .homepage-search-field input.ooxme-writable-field::placeholder { color: rgba(13, 13, 13, .48); font-size: inherit; font-weight: 400; text-align: center; }
 
 /* Authenticated OS uses three equal navigation thirds on every dashboard panel. */
