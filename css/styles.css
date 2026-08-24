@@ -429,7 +429,7 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .employee-dashboard-progress i.is-complete { background: var(--color-brand); }
 @media (max-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel-content { padding-bottom: calc(var(--homepage-white-card-height) - 8px - var(--bottom-control-line-thickness)); } }
 @media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel-content { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; padding-bottom: var(--x); column-gap: var(--x); } .employee-dashboard-identity { grid-column: 1; } .employee-dashboard-status-card { grid-column: 2; } }
-@media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .employee-dashboard-status-card, .employee-dashboard-panel .employee-dashboard-metric, .employee-dashboard-panel .employee-dashboard-progress { min-width: 0; } .employee-dashboard-panel .employee-dashboard-progress { max-width: 100%; box-sizing: border-box; } }
+@media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .employee-dashboard-status-card { grid-template-columns: minmax(0, 1fr); } .employee-dashboard-panel .employee-dashboard-status-card, .employee-dashboard-panel .employee-dashboard-metric, .employee-dashboard-panel .employee-dashboard-progress { min-width: 0; } .employee-dashboard-panel .employee-dashboard-metric, .employee-dashboard-panel .employee-dashboard-progress { width: 100%; max-width: 100%; box-sizing: border-box; } }
 .employee-dashboard-content :is(strong, span, p, .employee-dashboard-status) { font-size: var(--overlay-text-size); }
 .employee-dashboard-panel .master-panel-content { padding: 0; }
 .employee-dashboard-panel .master-panel-content.employee-dashboard-content { padding: 0; }
