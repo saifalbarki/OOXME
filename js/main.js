@@ -184,19 +184,16 @@ const setupEmployeeDashboardPanels = () => {
   };
   const timelineLine = timeline.querySelector('.employee-dashboard-timeline-line');
   const updateTimelineLineFade = () => {
-    const visibleTasks = taskItems.filter((task) => !task.classList.contains('is-focus-hidden'));
-    const firstVisible = visibleTasks[0];
-    const lastVisible = visibleTasks[visibleTasks.length - 1];
-    if (!timelineLine || !firstVisible || !lastVisible) return;
+    if (!timelineLine) return;
     const timelineRect = timeline.getBoundingClientRect();
     const cardRect = timeline.closest('.employee-dashboard-empty-card')?.getBoundingClientRect();
     const xValue = cardRect ? (timelineRect.left - cardRect.left) / 2 : 0;
-    const firstRect = firstVisible.getBoundingClientRect();
-    const lastRect = lastVisible.getBoundingClientRect();
-    timelineLine.style.setProperty('--timeline-line-top-fade-start', `${firstRect.top - timelineRect.top - (xValue * 2)}px`);
-    timelineLine.style.setProperty('--timeline-line-top-fade-end', `${firstRect.top - timelineRect.top}px`);
-    timelineLine.style.setProperty('--timeline-line-bottom-fade-start', `${lastRect.bottom - timelineRect.top + (xValue * 2)}px`);
-    timelineLine.style.setProperty('--timeline-line-bottom-fade-end', `${lastRect.bottom - timelineRect.top + (xValue * 4)}px`);
+    const lineHeight = timelineLine.getBoundingClientRect().height;
+    const fadeSize = xValue * 2;
+    timelineLine.style.setProperty('--timeline-line-top-fade-start', '0px');
+    timelineLine.style.setProperty('--timeline-line-top-fade-end', `${fadeSize}px`);
+    timelineLine.style.setProperty('--timeline-line-bottom-fade-start', `${Math.max(0, lineHeight - fadeSize)}px`);
+    timelineLine.style.setProperty('--timeline-line-bottom-fade-end', `${lineHeight}px`);
   };
   const setTaskFocus = (nextIndex, animate = true) => {
     activeTaskIndex = Math.max(0, Math.min(taskItems.length - 1, nextIndex));
