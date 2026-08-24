@@ -205,6 +205,17 @@ const setupEmployeeDashboardPanels = () => {
     timeline.setAttribute('aria-label', labels.timeline);
     detailsView.setAttribute('aria-label', labels.details);
     emptyPanel.querySelectorAll('[data-employee-dashboard-panel-two-input]').forEach((input) => { input.placeholder = input.dataset[`${copy}Placeholder`]; });
+    const startTaskSelect = emptyPanel.querySelector('[data-employee-dashboard-start-task-select]');
+    if (startTaskSelect) {
+      const selectedTask = startTaskSelect.value || String(activeTaskIndex);
+      startTaskSelect.replaceChildren(...demoTasks.map((task, index) => {
+        const option = document.createElement('option');
+        option.value = String(index);
+        option.textContent = task[language === 'ar' ? 'ar' : 'en'].title;
+        return option;
+      }));
+      startTaskSelect.value = selectedTask;
+    }
     navigationProxy?.querySelector('[data-employee-dashboard-home]')?.setAttribute('aria-label', labels.home);
     navigationProxy?.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-label', button.dataset.employeeDashboardContext === 'details' ? labels.detailsOption : labels.progress));
     emptyPanel.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[copy]; });
@@ -316,7 +327,14 @@ const setupEmployeeDashboardPanels = () => {
     uploadFilesCard.setAttribute('aria-label', 'Upload files');
     uploadFilesCard.innerHTML = '<label><input type="text" data-employee-dashboard-panel-two-input data-employee-dashboard-upload-files-input data-ooxme-ios-zoom-safe data-en-placeholder="File Name" data-ar-placeholder="اسم الملف" placeholder="File Name" aria-label="File Name"></label><button type="button" data-employee-dashboard-upload-files-add data-en="Add File" data-ar="إضافة ملف">Add File</button><button type="button" data-en="Submit" data-ar="إرسال">Submit</button>';
   }
-  const panelTwoActionCards = [addUpdateCard, uploadFilesCard].filter(Boolean);
+  const startTaskCard = !isClientDashboard ? document.createElement('form') : null;
+  if (startTaskCard) {
+    startTaskCard.className = 'employee-dashboard-start-task-card';
+    startTaskCard.hidden = true;
+    startTaskCard.setAttribute('aria-label', 'Start task');
+    startTaskCard.innerHTML = '<label><select data-employee-dashboard-start-task-select data-ooxme-ios-zoom-safe aria-label="Choose Task"></select></label><button type="button" data-en="Start" data-ar="بدء">Start</button>';
+  }
+  const panelTwoActionCards = [addUpdateCard, uploadFilesCard, startTaskCard].filter(Boolean);
   const setPanelTwoActionCard = (activeCard, action = '') => {
     const active = Boolean(activeCard);
     emptyPanel.dataset.employeeDashboardPanelTwoAction = action;
@@ -341,6 +359,11 @@ const setupEmployeeDashboardPanels = () => {
   const setUploadFilesOpen = (open) => {
     if (!uploadFilesCard) return;
     setPanelTwoActionCard(open ? uploadFilesCard : null, open ? 'upload-files' : '');
+  };
+  const setStartTaskOpen = (open) => {
+    if (!startTaskCard) return;
+    if (open) startTaskCard.querySelector('[data-employee-dashboard-start-task-select]').value = String(activeTaskIndex);
+    setPanelTwoActionCard(open ? startTaskCard : null, open ? 'start-task' : '');
   };
   let panelTwoState = 'progress';
   const setPanelTwoState = (next) => {
@@ -379,7 +402,8 @@ const setupEmployeeDashboardPanels = () => {
       updateInput.style.height = `${height / scale}px`;
     };
     updateInput?.addEventListener('input', resizeUpdateInput);
-    const [, addUpdateButton, uploadFilesButton] = detailsView.querySelectorAll('.employee-dashboard-task-details-actions button');
+    const [startTaskButton, addUpdateButton, uploadFilesButton] = detailsView.querySelectorAll('.employee-dashboard-task-details-actions button');
+    startTaskButton?.addEventListener('click', () => setStartTaskOpen(true));
     addUpdateButton?.addEventListener('click', () => setAddUpdateOpen(true));
     uploadFilesButton?.addEventListener('click', () => setUploadFilesOpen(true));
   }
