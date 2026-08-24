@@ -336,6 +336,18 @@ const employeeDashboardPanelOneSelector = employeeDashboardPanelOne?.querySelect
 const employeeDashboardPanelOneNavigation = employeeDashboardPanelOne?.querySelector('[data-employee-dashboard-contextual]');
 if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDashboardPanelOneNavigation) {
   let employeeDashboardPanelOneState = 'current';
+  const sizeEmployeeDashboardPanelOneEditCard = () => {
+    const infoCard = employeeDashboardPanelOne.querySelector('.employee-dashboard-info-card');
+    if (!infoCard || employeeDashboardPanelOneState !== 'edit' || !window.matchMedia('(max-aspect-ratio: 4 / 3)').matches) {
+      infoCard?.style.removeProperty('--employee-dashboard-edit-extension');
+      return;
+    }
+    infoCard.style.removeProperty('--employee-dashboard-edit-extension');
+    const cardBounds = infoCard.getBoundingClientRect();
+    const navigationBounds = employeeDashboardPanelOneNavigation.getBoundingClientRect();
+    const x = Number.parseFloat(getComputedStyle(infoCard).paddingTop) || 0;
+    infoCard.style.setProperty('--employee-dashboard-edit-extension', `${Math.max(0, navigationBounds.top - x - cardBounds.bottom)}px`);
+  };
   const setEmployeeDashboardPanelOneState = (next) => {
     employeeDashboardPanelOneState = next === 'edit' ? 'edit' : 'current';
     const bottomState = employeeDashboardPanelOneState === 'edit' ? 'details' : 'work';
@@ -345,6 +357,7 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
     const pill = employeeDashboardPanelOneNavigation.querySelector('[data-employee-dashboard-context-pill]');
     pill?.setAttribute('data-active', bottomState);
     employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === bottomState)));
+    requestAnimationFrame(sizeEmployeeDashboardPanelOneEditCard);
   };
   employeeDashboardPanelOneSelector.querySelectorAll('[data-employee-dashboard-panel-one-option]').forEach((option) => option.addEventListener('click', () => setEmployeeDashboardPanelOneState(option.dataset.employeeDashboardPanelOneOption)));
   employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
@@ -353,6 +366,7 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
     setEmployeeDashboardPanelOneState(button.dataset.employeeDashboardContext === 'details' ? 'edit' : 'current');
   }));
   setEmployeeDashboardPanelOneState('current');
+  window.addEventListener('resize', () => requestAnimationFrame(sizeEmployeeDashboardPanelOneEditCard));
 }
 document.querySelectorAll('[data-employee-dashboard-selector]:not(.employee-dashboard-panel-two-selector)').forEach((selector) => {
   const panel = selector.closest('.employee-dashboard-panel');
