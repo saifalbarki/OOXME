@@ -318,7 +318,7 @@ const setupEmployeeDashboardPanels = () => {
     addUpdateCard.className = 'employee-dashboard-add-update-card';
     addUpdateCard.hidden = true;
     addUpdateCard.setAttribute('aria-label', 'Add update');
-    addUpdateCard.innerHTML = '<label><textarea rows="1" data-employee-dashboard-panel-two-input data-employee-dashboard-add-update-input data-ooxme-ios-zoom-safe data-en-placeholder="Write an update" data-ar-placeholder="اكتب تحديثاً" placeholder="Write an update" aria-label="Write an update"></textarea></label><button type="button" data-en="Submit" data-ar="إرسال">Submit</button>';
+    addUpdateCard.innerHTML = '<label><input type="text" data-employee-dashboard-panel-two-input data-employee-dashboard-add-update-input data-ooxme-ios-zoom-safe data-en-placeholder="Write an update" data-ar-placeholder="اكتب تحديثاً" placeholder="Write an update" aria-label="Write an update"></label><button type="button" data-en="Submit" data-ar="إرسال">Submit</button>';
   }
   const uploadFilesCard = !isClientDashboard ? document.createElement('form') : null;
   if (uploadFilesCard) {
@@ -345,17 +345,6 @@ const setupEmployeeDashboardPanels = () => {
   const setAddUpdateOpen = (open) => {
     if (!addUpdateCard) return;
     setPanelTwoActionCard(open ? addUpdateCard : null, open ? 'add-update' : '');
-    if (open) {
-      const input = addUpdateCard.querySelector('[data-employee-dashboard-add-update-input]');
-      const label = input?.parentElement;
-      if (input && label) {
-        const scale = window.matchMedia('(max-aspect-ratio: 4 / 3)').matches ? .65625 : 1;
-        input.style.height = 'auto';
-        const height = Math.max(label.clientHeight, input.scrollHeight * scale);
-        label.style.height = `${height}px`;
-        input.style.height = `${height / scale}px`;
-      }
-    }
   };
   const setUploadFilesOpen = (open) => {
     if (!uploadFilesCard) return;
@@ -396,17 +385,6 @@ const setupEmployeeDashboardPanels = () => {
     setPanelTwoState(panelTwoState === 'details' ? 'progress' : 'details');
   }));
   if (addUpdateCard) {
-    const updateInput = addUpdateCard.querySelector('[data-employee-dashboard-add-update-input]');
-    const updateField = updateInput?.parentElement;
-    const resizeUpdateInput = () => {
-      if (!updateInput || !updateField) return;
-      const scale = window.matchMedia('(max-aspect-ratio: 4 / 3)').matches ? .65625 : 1;
-      updateInput.style.height = 'auto';
-      const height = Math.max(updateField.clientHeight, updateInput.scrollHeight * scale);
-      updateField.style.height = `${height}px`;
-      updateInput.style.height = `${height / scale}px`;
-    };
-    updateInput?.addEventListener('input', resizeUpdateInput);
     const [startTaskButton, addUpdateButton, uploadFilesButton] = detailsView.querySelectorAll('.employee-dashboard-task-details-actions button');
     startTaskButton?.addEventListener('click', () => setStartTaskOpen(true));
     addUpdateButton?.addEventListener('click', () => setAddUpdateOpen(true));
