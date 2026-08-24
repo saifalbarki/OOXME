@@ -383,7 +383,10 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
     setEmployeeDashboardPanelOneState(button.dataset.employeeDashboardContext === 'details' ? 'edit' : 'current');
   }));
   setEmployeeDashboardPanelOneState('current');
-  window.addEventListener('resize', () => requestAnimationFrame(sizeEmployeeDashboardPanelOneEditCard));
+  window.addEventListener('resize', () => {
+    if (document.activeElement?.matches('[data-employee-dashboard-edit-input]')) return;
+    requestAnimationFrame(sizeEmployeeDashboardPanelOneEditCard);
+  });
 }
 document.querySelectorAll('[data-employee-dashboard-selector]:not(.employee-dashboard-panel-two-selector)').forEach((selector) => {
   const panel = selector.closest('.employee-dashboard-panel');

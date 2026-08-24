@@ -2026,6 +2026,8 @@ html[dir="rtl"] .booking-panel[data-step="promo"] .promo-input-card > .booking-m
   }
   html .employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-edit-form input[data-employee-dashboard-edit-input][data-ooxme-ios-zoom-safe],
   html .employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-edit-form input[data-employee-dashboard-edit-input][data-ooxme-ios-zoom-safe]::placeholder { font-size: var(--overlay-text-size) !important; }
+  .employee-dashboard-edit-form label { position: relative; }
+  html .employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-edit-form input[data-employee-dashboard-edit-input][data-ooxme-ios-zoom-safe] { position: absolute; top: 0; left: 0; width: calc(100% / .65625); min-width: calc(100% / .65625); height: calc(100% / .65625); min-height: calc(100% / .65625); max-height: none; font-size: 16px !important; transform: scale(.65625); transform-origin: top left; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; }
 }
 
 /* Brand Management card baseline: keep its bottom exactly x above the fixed open navigation. */
