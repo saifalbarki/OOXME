@@ -62,7 +62,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 @media (prefers-reduced-motion: reduce) { .brand-management-new-overview-subtitle-shine, html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation: none; background: none; -webkit-text-fill-color: transparent; } }
 .brand-management-new-overview-actions { position: absolute; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: 1fr; gap: var(--x); }
 .brand-management-new-overview-box { display: grid; place-items: center; width: 100%; height: var(--homepage-account-control-height); min-height: var(--homepage-account-control-height); padding: 0 var(--x); border: 0; border-radius: var(--homepage-account-control-radius); color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); line-height: 1.35; text-align: center; }
-.brand-management-new-overview-price { background: #f1f3f7; font-weight: 700; }
+.brand-management-new-overview-price { background: #F1F3F7; font-weight: 700; }
 .brand-management-new-overview-consultation { background: var(--color-brand); color: var(--color-paper); font-weight: 400; cursor: default; }
 @media (min-aspect-ratio: 4 / 3) { .brand-management-new-overview-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .brand-management-contextual-navigation { position: absolute; z-index: 4; right: var(--x); bottom: var(--x); left: var(--x); display: flex; align-items: center; justify-content: space-between; gap: var(--x); height: calc(var(--homepage-white-card-height) - 8px); pointer-events: none; }
