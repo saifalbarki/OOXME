@@ -147,41 +147,59 @@ const setupEmployeeDashboardPanels = () => {
   timeline.setAttribute('aria-label', 'Employee task timeline');
   timeline.innerHTML = '<span class="employee-dashboard-timeline-line" aria-hidden="true"></span><div class="employee-dashboard-task-viewport"><div class="employee-dashboard-task-track"></div></div>';
   const demoTasks = [
-    ['Campaign Launch', 'Prepare and launch the approved monthly campaign.'],
-    ['Content Planning', 'Prepare and approve the monthly content direction.'],
-    ['Photography Session', 'Complete the scheduled brand photography session.'],
-    ['Performance Review', 'Review campaign, content, and engagement performance.'],
-    ['Client Feedback', 'Review and apply the latest client feedback.']
+    { en: { title: 'Campaign Launch', description: 'Prepare and launch the approved monthly campaign.' }, ar: { title: 'إطلاق الحملة', description: 'إعداد وإطلاق الحملة الشهرية المعتمدة.' } },
+    { en: { title: 'Content Planning', description: 'Prepare and approve the monthly content direction.' }, ar: { title: 'تخطيط المحتوى', description: 'إعداد واعتماد توجه المحتوى الشهري.' } },
+    { en: { title: 'Photography Session', description: 'Complete the scheduled brand photography session.' }, ar: { title: 'جلسة التصوير', description: 'تنفيذ جلسة تصوير العلامة التجارية المجدولة.' } },
+    { en: { title: 'Performance Review', description: 'Review campaign, content, and engagement performance.' }, ar: { title: 'مراجعة الأداء', description: 'مراجعة أداء الحملة والمحتوى والتفاعل.' } },
+    { en: { title: 'Client Feedback', description: 'Review and apply the latest client feedback.' }, ar: { title: 'ملاحظات العميل', description: 'مراجعة أحدث ملاحظات العميل وتطبيقها.' } }
   ];
+  const panelTwoLabels = {
+    en: { view: 'Employee dashboard view', timeline: 'Employee task timeline', details: 'Task details', home: 'Home', progress: 'Progress', detailsOption: 'Details' },
+    ar: { view: 'عرض لوحة الموظف', timeline: 'الخط الزمني لمهام الموظف', details: 'تفاصيل المهمة', home: 'الرئيسية', progress: 'التقدم', detailsOption: 'التفاصيل' }
+  };
   const taskTrack = timeline.querySelector('.employee-dashboard-task-track');
-  taskTrack.innerHTML = demoTasks.map(([title, description]) => `<article class="employee-dashboard-task"><span class="employee-dashboard-task-dot" aria-hidden="true"></span><div class="employee-dashboard-task-copy"><strong>${title}</strong><p>${description}</p><div class="employee-dashboard-task-blocks" aria-hidden="true"><i class="is-in-progress">Status</i><i class="is-days-left">Time</i><i class="is-upload-started">Files</i></div></div></article>`).join('');
+  taskTrack.innerHTML = demoTasks.map((task) => `<article class="employee-dashboard-task"><span class="employee-dashboard-task-dot" aria-hidden="true"></span><div class="employee-dashboard-task-copy"><strong data-task-title data-en="${task.en.title}" data-ar="${task.ar.title}">${task.en.title}</strong><p data-task-description data-en="${task.en.description}" data-ar="${task.ar.description}">${task.en.description}</p><div class="employee-dashboard-task-blocks" aria-hidden="true"><i class="is-in-progress" data-en="Status" data-ar="الحالة">Status</i><i class="is-days-left" data-en="Time" data-ar="الوقت">Time</i><i class="is-upload-started" data-en="Files" data-ar="الملفات">Files</i></div></div></article>`).join('');
   const taskViewport = timeline.querySelector('.employee-dashboard-task-viewport');
   const taskItems = [...taskTrack.querySelectorAll('.employee-dashboard-task')];
   const landscapeTaskQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
   let activeTaskIndex = 0;
   let taskGesture = null;
   const taskDetailMeta = [
-    { start: '10 Sep 2026', delivery: '15 Sep 2026', remaining: '2–3 Days Left' },
-    { start: '01 Sep 2026', delivery: '05 Sep 2026', remaining: '2–3 Days Left' },
-    { start: '06 Sep 2026', delivery: '08 Sep 2026', remaining: 'On Track' },
-    { start: '20 Sep 2026', delivery: '25 Sep 2026', remaining: 'On Track' },
-    { start: '26 Sep 2026', delivery: '30 Sep 2026', remaining: '1 Day Left' }
+    { en: { start: '10 Sep 2026', delivery: '15 Sep 2026', remaining: '2–3 Days Left' }, ar: { start: '10 سبتمبر 2026', delivery: '15 سبتمبر 2026', remaining: 'متبقي 2–3 أيام' } },
+    { en: { start: '01 Sep 2026', delivery: '05 Sep 2026', remaining: '2–3 Days Left' }, ar: { start: '01 سبتمبر 2026', delivery: '05 سبتمبر 2026', remaining: 'متبقي 2–3 أيام' } },
+    { en: { start: '06 Sep 2026', delivery: '08 Sep 2026', remaining: 'On Track' }, ar: { start: '06 سبتمبر 2026', delivery: '08 سبتمبر 2026', remaining: 'في الموعد' } },
+    { en: { start: '20 Sep 2026', delivery: '25 Sep 2026', remaining: 'On Track' }, ar: { start: '20 سبتمبر 2026', delivery: '25 سبتمبر 2026', remaining: 'في الموعد' } },
+    { en: { start: '26 Sep 2026', delivery: '30 Sep 2026', remaining: '1 Day Left' }, ar: { start: '26 سبتمبر 2026', delivery: '30 سبتمبر 2026', remaining: 'متبقي يوم واحد' } }
   ];
   const detailsView = document.createElement('section');
   detailsView.className = 'employee-dashboard-task-details';
-  detailsView.setAttribute('aria-label', 'Task details');
+  detailsView.setAttribute('aria-label', panelTwoLabels.en.details);
   detailsView.hidden = true;
-  detailsView.innerHTML = '<section class="employee-dashboard-task-details-section employee-dashboard-task-details-overview employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-task-detail-title></strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><p data-task-detail-description></p></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-updates employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong>Progress Updates</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-update-list"><p><span>Monthly direction reviewed and approved.</span><time>Today, 09:30</time></p><p><span>Production brief prepared for the next step.</span><time>Yesterday, 16:10</time></p><p><span>Task owner confirmed the delivery plan.</span><time>28 Aug 2026, 11:45</time></p></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-timeline"><h2>Timeline</h2><div class="employee-dashboard-task-detail-boxes"><span><small>Start Date</small><b data-task-detail-start></b></span><span><small>Delivery Date</small><b data-task-detail-delivery></b></span><span><small>Time Remaining</small><b data-task-detail-remaining></b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-files"><h2>Files</h2><div class="employee-dashboard-task-detail-boxes"><span><small>Required Files</small><b>3</b></span><span><small>Uploaded Files</small><b>1</b></span><span><small>Remaining Files</small><b>2</b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-actions"><h2>Actions</h2><div><button type="button">Start Task</button><button type="button">Update Progress</button><button type="button">Upload Files</button></div></section>';
+  detailsView.innerHTML = '<section class="employee-dashboard-task-details-section employee-dashboard-task-details-overview employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-task-detail-title></strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><p data-task-detail-description></p></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-updates employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Progress Updates" data-ar="تحديثات التقدم">Progress Updates</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-update-list"><p><span data-en="Monthly direction reviewed and approved." data-ar="تمت مراجعة التوجه الشهري واعتماده.">Monthly direction reviewed and approved.</span><time data-en="Today, 09:30" data-ar="اليوم، 09:30">Today, 09:30</time></p><p><span data-en="Production brief prepared for the next step." data-ar="تم إعداد موجز الإنتاج للخطوة التالية.">Production brief prepared for the next step.</span><time data-en="Yesterday, 16:10" data-ar="أمس، 16:10">Yesterday, 16:10</time></p><p><span data-en="Task owner confirmed the delivery plan." data-ar="أكد مسؤول المهمة خطة التسليم.">Task owner confirmed the delivery plan.</span><time data-en="28 Aug 2026, 11:45" data-ar="28 أغسطس 2026، 11:45">28 Aug 2026, 11:45</time></p></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-timeline"><h2 data-en="Timeline" data-ar="الجدول الزمني">Timeline</h2><div class="employee-dashboard-task-detail-boxes"><span><small data-en="Start Date" data-ar="تاريخ البدء">Start Date</small><b data-task-detail-start></b></span><span><small data-en="Delivery Date" data-ar="تاريخ التسليم">Delivery Date</small><b data-task-detail-delivery></b></span><span><small data-en="Time Remaining" data-ar="الوقت المتبقي">Time Remaining</small><b data-task-detail-remaining></b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-files"><h2 data-en="Files" data-ar="الملفات">Files</h2><div class="employee-dashboard-task-detail-boxes"><span><small data-en="Required Files" data-ar="الملفات المطلوبة">Required Files</small><b>3</b></span><span><small data-en="Uploaded Files" data-ar="الملفات المرفوعة">Uploaded Files</small><b>1</b></span><span><small data-en="Remaining Files" data-ar="الملفات المتبقية">Remaining Files</small><b>2</b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-actions"><h2 data-en="Actions" data-ar="الإجراءات">Actions</h2><div><button type="button" data-en="Start Task" data-ar="بدء المهمة">Start Task</button><button type="button" data-en="Update Progress" data-ar="تحديث التقدم">Update Progress</button><button type="button" data-en="Upload Files" data-ar="رفع الملفات">Upload Files</button></div></section>';
   const renderTaskDetails = () => {
     const task = taskItems[activeTaskIndex];
     const meta = taskDetailMeta[activeTaskIndex] || taskDetailMeta[0];
+    const copy = language === 'ar' ? 'ar' : 'en';
     if (!task) return;
-    detailsView.querySelector('[data-task-detail-title]').textContent = task.querySelector('strong')?.textContent || '';
-    detailsView.querySelector('[data-task-detail-description]').textContent = task.querySelector('p')?.textContent || '';
-    detailsView.querySelector('[data-task-detail-start]').textContent = meta.start;
-    detailsView.querySelector('[data-task-detail-delivery]').textContent = meta.delivery;
-    detailsView.querySelector('[data-task-detail-remaining]').textContent = meta.remaining;
+    detailsView.querySelector('[data-task-detail-title]').textContent = demoTasks[activeTaskIndex]?.[copy]?.title || '';
+    detailsView.querySelector('[data-task-detail-description]').textContent = demoTasks[activeTaskIndex]?.[copy]?.description || '';
+    detailsView.querySelector('[data-task-detail-start]').textContent = meta[copy].start;
+    detailsView.querySelector('[data-task-detail-delivery]').textContent = meta[copy].delivery;
+    detailsView.querySelector('[data-task-detail-remaining]').textContent = meta[copy].remaining;
   };
+  const localizePanelTwo = (next = language) => {
+    const copy = next === 'ar' ? 'ar' : 'en';
+    const labels = panelTwoLabels[copy];
+    emptyPanel.setAttribute('dir', copy === 'ar' ? 'rtl' : 'ltr');
+    selectorProxy.setAttribute('aria-label', labels.view);
+    timeline.setAttribute('aria-label', labels.timeline);
+    detailsView.setAttribute('aria-label', labels.details);
+    navigationProxy?.querySelector('[data-employee-dashboard-home]')?.setAttribute('aria-label', labels.home);
+    navigationProxy?.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-label', button.dataset.employeeDashboardContext === 'details' ? labels.detailsOption : labels.progress));
+    emptyPanel.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[copy]; });
+    renderTaskDetails();
+  };
+  window.addEventListener('ooxme-language-change', (event) => localizePanelTwo(event.detail?.language));
   const detailsDisclosureItems = [...detailsView.querySelectorAll('[data-task-details-disclosure]')];
   const setDetailsDisclosure = (section, expanded) => {
     section.classList.toggle('is-expanded', expanded);
@@ -295,6 +313,7 @@ const setupEmployeeDashboardPanels = () => {
   setPanelTwoState(panelTwoState);
   emptyMasterPanel.append(emptyCard, navigationProxy);
   emptyPanel.append(emptyMasterPanel);
+  localizePanelTwo(language);
 
   track.hidden = true;
   employeeTrack.append(employeePanel, emptyPanel);
