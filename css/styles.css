@@ -391,7 +391,8 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .employee-dashboard-empty-card .employee-dashboard-top-selector { top: var(--x); right: var(--x); bottom: auto; left: var(--x); }
 .employee-dashboard-empty-card .employee-dashboard-top-selector[data-active="details"] .homepage-account-selector-indicator { left: calc(50% + var(--homepage-account-selector-inset)); }
 .employee-dashboard-empty-card .employee-dashboard-task-details { position: absolute; z-index: 2; top: calc(var(--homepage-account-control-height) + (var(--x) * 2)); right: calc(var(--x) * 2); bottom: var(--x); left: calc(var(--x) * 2); display: grid; align-content: start; gap: var(--x); overflow-y: auto; padding-bottom: var(--x); color: var(--color-ink); text-align: start; }
-.employee-dashboard-empty-card .employee-dashboard-task-details[hidden] { display: none; }
+.employee-dashboard-empty-card .employee-dashboard-panel-two-timeline[hidden],
+.employee-dashboard-empty-card .employee-dashboard-task-details[hidden] { display: none !important; }
 .employee-dashboard-empty-card .employee-dashboard-task-details-section { display: grid; align-content: start; gap: 8px; min-width: 0; }
 .employee-dashboard-empty-card .employee-dashboard-task-details-section h2 { margin: 0; font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.1; }
 .employee-dashboard-empty-card .employee-dashboard-task-details-overview strong { font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.1; }
