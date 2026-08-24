@@ -158,6 +158,8 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-selector .homepage-account-selector-indicator { border-radius: calc(var(--radius-box) - var(--homepage-account-selector-inset)); }
 .consultation-page .consultation-selector { background: #fff; }
 .consultation-page .consultation-selector .homepage-account-selector-indicator { background: #f1f3f7; }
+.consultation-page .brand-management-contextual-pill { background: #fff; }
+.consultation-page .brand-management-contextual-pill .brand-management-contextual-indicator { background: #f1f3f7; }
 .consultation-page .consultation-square-card { align-self: end; justify-self: center; width: calc(100% - (var(--x) * 2)); aspect-ratio: 1; border-radius: var(--radius-box); background: var(--color-paper); }
 @media (min-aspect-ratio: 4 / 3) {
   .brand-management-new-page .brand-management-new-overview-copy {
