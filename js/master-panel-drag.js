@@ -122,7 +122,7 @@ window.OOXMEMasterPanelDrag = {
 
     const interactiveSelector = [
       '.master-panel-continue', 'input', 'select', 'textarea', '[contenteditable="true"]',
-      '[data-project-gallery]', '[data-studio-project-gallery]', '[data-service-tile]', '.employee-dashboard-panel-two-timeline', '.employee-dashboard-task-details', '[data-search-overlay]', '.search-overlay',
+      '[data-project-gallery]', '[data-studio-project-gallery]', '[data-portfolio-option]', '[data-service-option]', '[data-consultation-option]', '[data-service-tile]', '.employee-dashboard-panel-two-timeline', '.employee-dashboard-task-details', '[data-search-overlay]', '.search-overlay',
       '.site-image-preview', '.calendar-month-menu'
     ].join(',');
     let drag = null;
@@ -317,7 +317,7 @@ window.OOXMEMasterPanelDrag = {
         window.setTimeout(() => { bottomLocked = false; }, 260);
       }, true);
     };
-    experience.querySelectorAll('.master-panel-continue').forEach(bindBottomControl);
+    experience.querySelectorAll('.master-panel-continue:not([data-home-menu-trigger])').forEach(bindBottomControl);
 
     const finish = (event, cancelled = false) => {
       if (!drag || event.pointerId !== drag.pointerId) return;

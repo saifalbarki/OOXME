@@ -1,5 +1,5 @@
 const track = document.querySelector('[data-master-track]');
-const HOMEPAGE_NAVIGATION_LOCKED = true;
+const HOMEPAGE_NAVIGATION_LOCKED = false;
 const SERVICES_NAVIGATION_ENABLED = true;
 const CONSULTATION_NAVIGATION_ENABLED = true;
 const blockNavigation = (selector, enabled) => document.querySelectorAll(selector).forEach((action) => action.addEventListener('click', (event) => {
@@ -117,7 +117,7 @@ const moveTo = (next) => {
   window.clearTimeout(panelTransitionTimer);
   panelTransitionTimer = window.setTimeout(() => revealPanel(panelIndex), 620);
 };
-if (!HOMEPAGE_NAVIGATION_LOCKED) window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => panelIndex, moveTo });
+if (!HOMEPAGE_NAVIGATION_LOCKED && requestedPanelId !== 'employee-dashboard') window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => panelIndex, moveTo });
 revealPanel(panelIndex);
 const setupEmployeeDashboardPanels = () => {
   if (requestedPanelId !== 'employee-dashboard' || !experience || !window.OOXMEMasterPanelDrag) return;
@@ -202,6 +202,14 @@ const setupEmployeeDashboardPanels = () => {
   window.addEventListener('ooxme-language-change', (event) => localizePanelTwo(event.detail?.language));
   const detailsDisclosureItems = [...detailsView.querySelectorAll('[data-task-details-disclosure]')];
   const setDetailsDisclosure = (section, expanded) => {
+    if (expanded) {
+      detailsDisclosureItems.forEach((item) => {
+        if (item === section) return;
+        item.classList.remove('is-expanded');
+        item.querySelector('[data-task-details-toggle]')?.setAttribute('aria-expanded', 'false');
+        item.querySelector('[data-task-details-content]')?.setAttribute('aria-hidden', 'true');
+      });
+    }
     section.classList.toggle('is-expanded', expanded);
     const toggle = section.querySelector('[data-task-details-toggle]');
     const content = section.querySelector('[data-task-details-content]');
