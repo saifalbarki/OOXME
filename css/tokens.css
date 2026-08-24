@@ -2,7 +2,16 @@
   --color-ink: #0d0d0d;
   --color-paper: #ffffff;
   --color-panel: #f1f3f7;
-  --color-brand: #071478;
+  /* Shared semantic palette. Keep all semantic color uses on these tokens. */
+  --color-blue: #60A5FA;
+  --color-green: #4ADE80;
+  --color-red: #F87171;
+  --color-yellow: #FACC15;
+  --color-blue-soft: color-mix(in srgb, var(--color-blue) 16%, var(--color-paper));
+  --color-green-soft: color-mix(in srgb, var(--color-green) 16%, var(--color-paper));
+  --color-red-soft: color-mix(in srgb, var(--color-red) 16%, var(--color-paper));
+  --color-yellow-soft: color-mix(in srgb, var(--color-yellow) 18%, var(--color-paper));
+  --color-brand: var(--color-blue);
   --color-secondary-control: #9aa0aa;
   --color-bottom-control: #b1b6be;
   --color-line: rgba(13, 13, 13, 0.17);
