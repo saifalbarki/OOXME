@@ -147,9 +147,9 @@ const setupEmployeeDashboardPanels = () => {
   timeline.setAttribute('aria-label', 'Employee task timeline');
   timeline.innerHTML = '<span class="employee-dashboard-timeline-line" aria-hidden="true"></span><div class="employee-dashboard-task-viewport"><div class="employee-dashboard-task-track"></div></div>';
   const demoTasks = [
+    ['Campaign Launch', 'Prepare and launch the approved monthly campaign.'],
     ['Content Planning', 'Prepare and approve the monthly content direction.'],
     ['Photography Session', 'Complete the scheduled brand photography session.'],
-    ['Campaign Launch', 'Prepare and launch the approved monthly campaign.'],
     ['Performance Review', 'Review campaign, content, and engagement performance.'],
     ['Client Feedback', 'Review and apply the latest client feedback.']
   ];
@@ -158,12 +158,12 @@ const setupEmployeeDashboardPanels = () => {
   const taskViewport = timeline.querySelector('.employee-dashboard-task-viewport');
   const taskItems = [...taskTrack.querySelectorAll('.employee-dashboard-task')];
   const landscapeTaskQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
-  let activeTaskIndex = 2;
+  let activeTaskIndex = 0;
   let taskGesture = null;
   const taskDetailMeta = [
+    { start: '10 Sep 2026', delivery: '15 Sep 2026', remaining: '2–3 Days Left' },
     { start: '01 Sep 2026', delivery: '05 Sep 2026', remaining: '2–3 Days Left' },
     { start: '06 Sep 2026', delivery: '08 Sep 2026', remaining: 'On Track' },
-    { start: '10 Sep 2026', delivery: '15 Sep 2026', remaining: '2–3 Days Left' },
     { start: '20 Sep 2026', delivery: '25 Sep 2026', remaining: 'On Track' },
     { start: '26 Sep 2026', delivery: '30 Sep 2026', remaining: '1 Day Left' }
   ];

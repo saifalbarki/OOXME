@@ -426,12 +426,13 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .employee-dashboard-empty-card .employee-dashboard-task-track .employee-dashboard-task:not(.is-active) .employee-dashboard-task-copy p { color: #b8bec6; }
 .employee-dashboard-empty-card .employee-dashboard-task-track .employee-dashboard-task:not(.is-active) .employee-dashboard-task-dot { background: #b5bbc4; box-shadow: none; }
 .employee-dashboard-empty-card .employee-dashboard-task-copy { gap: 8px; line-height: 1.1; }
+.employee-dashboard-empty-card .employee-dashboard-task-copy p + .employee-dashboard-task-blocks { margin-top: 8px; }
 .employee-dashboard-empty-card .employee-dashboard-task-copy strong, .employee-dashboard-empty-card .employee-dashboard-task-copy p, .employee-dashboard-empty-card .employee-dashboard-task-copy span { line-height: 1.1; }
-.employee-dashboard-empty-card .employee-dashboard-task-blocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; height: 20px; }
+.employee-dashboard-empty-card .employee-dashboard-task-blocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; height: 20px; margin-inline-start: calc((var(--x) + 8px) / -2); }
 .employee-dashboard-empty-card .employee-dashboard-task-blocks i { display: flex; align-items: center; justify-content: center; min-width: 0; height: 20px; box-sizing: border-box; border: 1px solid #8b919b; border-radius: 999px; background: #f1f2f4; color: #68707b; font-size: var(--overlay-text-size); font-style: normal; font-weight: 600; line-height: 1; text-align: center; white-space: nowrap; }
-.employee-dashboard-empty-card .employee-dashboard-task-blocks i.is-in-progress { border-color: #0d0d0d; border-style: dashed; background: #f1f2f4; }
-.employee-dashboard-empty-card .employee-dashboard-task-blocks i.is-days-left { border-color: #d64545; border-style: dashed; background: #fce7e7; }
-.employee-dashboard-empty-card .employee-dashboard-task-blocks i.is-upload-started { border-color: #31a354; border-style: dashed; background: #e5f6ea; }
+.employee-dashboard-empty-card .employee-dashboard-task-blocks i.is-in-progress { border-color: #0d0d0d; border-style: solid; background: #f1f2f4; }
+.employee-dashboard-empty-card .employee-dashboard-task-blocks i.is-days-left { border-color: #d64545; border-style: solid; background: #fce7e7; }
+.employee-dashboard-empty-card .employee-dashboard-task-blocks i.is-upload-started { border-color: #31a354; border-style: solid; background: #e5f6ea; }
 .employee-dashboard-empty-card .employee-dashboard-task:not(.is-active) .employee-dashboard-task-blocks i { border-color: #c7ccd3; border-style: solid; background: #f4f5f6; color: #aeb4bc; }
 @media (min-aspect-ratio: 4 / 3) { .employee-dashboard-empty-card .employee-dashboard-panel-two-timeline { grid-template-columns: minmax(0, 1fr); column-gap: 16px; } }
 @media (max-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel { --homepage-account-control-height: 38px; } }
