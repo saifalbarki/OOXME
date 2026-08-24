@@ -171,7 +171,7 @@ const setupEmployeeDashboardPanels = () => {
   detailsView.className = 'employee-dashboard-task-details';
   detailsView.setAttribute('aria-label', 'Task details');
   detailsView.hidden = true;
-  detailsView.innerHTML = '<section class="employee-dashboard-task-details-section employee-dashboard-task-details-overview"><strong data-task-detail-title></strong><p data-task-detail-description></p></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-timeline"><h2>Timeline</h2><div class="employee-dashboard-task-detail-boxes"><span><small>Start Date</small><b data-task-detail-start></b></span><span><small>Delivery Date</small><b data-task-detail-delivery></b></span><span><small>Time Remaining</small><b data-task-detail-remaining></b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-files"><h2>Files</h2><div class="employee-dashboard-task-detail-boxes"><span><small>Required Files</small><b>3</b></span><span><small>Uploaded Files</small><b>1</b></span><span><small>Remaining Files</small><b>2</b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-updates"><h2>Progress Updates</h2><div class="employee-dashboard-task-update-list"><p><span>Monthly direction reviewed and approved.</span><time>Today, 09:30</time></p><p><span>Production brief prepared for the next step.</span><time>Yesterday, 16:10</time></p><p><span>Task owner confirmed the delivery plan.</span><time>28 Aug 2026, 11:45</time></p></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-actions"><h2>Actions</h2><div><button type="button">Start Task</button><button type="button">Update Progress</button><button type="button">Upload Files</button></div></section>';
+  detailsView.innerHTML = '<section class="employee-dashboard-task-details-section employee-dashboard-task-details-overview employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-task-detail-title></strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><p data-task-detail-description></p></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-updates employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong>Progress Updates</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-update-list"><p><span>Monthly direction reviewed and approved.</span><time>Today, 09:30</time></p><p><span>Production brief prepared for the next step.</span><time>Yesterday, 16:10</time></p><p><span>Task owner confirmed the delivery plan.</span><time>28 Aug 2026, 11:45</time></p></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-timeline"><h2>Timeline</h2><div class="employee-dashboard-task-detail-boxes"><span><small>Start Date</small><b data-task-detail-start></b></span><span><small>Delivery Date</small><b data-task-detail-delivery></b></span><span><small>Time Remaining</small><b data-task-detail-remaining></b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-files"><h2>Files</h2><div class="employee-dashboard-task-detail-boxes"><span><small>Required Files</small><b>3</b></span><span><small>Uploaded Files</small><b>1</b></span><span><small>Remaining Files</small><b>2</b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-actions"><h2>Actions</h2><div><button type="button">Start Task</button><button type="button">Update Progress</button><button type="button">Upload Files</button></div></section>';
   const renderTaskDetails = () => {
     const task = taskItems[activeTaskIndex];
     const meta = taskDetailMeta[activeTaskIndex] || taskDetailMeta[0];
@@ -182,6 +182,19 @@ const setupEmployeeDashboardPanels = () => {
     detailsView.querySelector('[data-task-detail-delivery]').textContent = meta.delivery;
     detailsView.querySelector('[data-task-detail-remaining]').textContent = meta.remaining;
   };
+  const detailsDisclosureItems = [...detailsView.querySelectorAll('[data-task-details-disclosure]')];
+  const setDetailsDisclosure = (section, expanded) => {
+    section.classList.toggle('is-expanded', expanded);
+    const toggle = section.querySelector('[data-task-details-toggle]');
+    const content = section.querySelector('[data-task-details-content]');
+    toggle?.setAttribute('aria-expanded', String(expanded));
+    content?.setAttribute('aria-hidden', String(!expanded));
+  };
+  detailsDisclosureItems.forEach((section) => {
+    const toggle = section.querySelector('[data-task-details-toggle]');
+    toggle?.addEventListener('click', () => setDetailsDisclosure(section, !section.classList.contains('is-expanded')));
+    setDetailsDisclosure(section, false);
+  });
   const timelineLine = timeline.querySelector('.employee-dashboard-timeline-line');
   const updateTimelineLineFade = () => {
     if (!timelineLine) return;
@@ -264,7 +277,10 @@ const setupEmployeeDashboardPanels = () => {
     timeline.setAttribute('aria-hidden', String(panelTwoState === 'details'));
     detailsView.hidden = panelTwoState !== 'details';
     detailsView.setAttribute('aria-hidden', String(panelTwoState !== 'details'));
-    if (panelTwoState === 'details') renderTaskDetails();
+    if (panelTwoState === 'details') {
+      detailsDisclosureItems.forEach((section) => setDetailsDisclosure(section, false));
+      renderTaskDetails();
+    }
     navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === arrowState)));
   };
   selectorProxy.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.addEventListener('click', () => setPanelTwoState(option.dataset.employeeDashboardStateOption)));
