@@ -22,7 +22,7 @@ setStableViewportHeight();
 window.addEventListener('orientationchange', () => window.setTimeout(setStableViewportHeight, 160));
 document.querySelectorAll('[data-progress]').forEach((progress) => {
   const value = Math.min(100, Math.max(0, Number(progress.dataset.progress) || 0));
-  const segmentCount = 20;
+  const segmentCount = 30;
   const completedSegments = Math.round((value / 100) * segmentCount);
   progress.setAttribute('aria-valuenow', String(value));
   progress.replaceChildren(...Array.from({ length: segmentCount }, (_, index) => {
@@ -119,6 +119,208 @@ const moveTo = (next) => {
 };
 if (!HOMEPAGE_NAVIGATION_LOCKED) window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => panelIndex, moveTo });
 revealPanel(panelIndex);
+const setupEmployeeDashboardPanels = () => {
+  if (requestedPanelId !== 'employee-dashboard' || !experience || !window.OOXMEMasterPanelDrag) return;
+  const employeePanel = document.querySelector('.employee-dashboard-panel');
+  const employeeNavigation = employeePanel?.querySelector('[data-employee-dashboard-contextual]');
+  if (!employeePanel || !employeeNavigation) return;
+
+  const employeeTrack = document.createElement('div');
+  employeeTrack.className = 'master-panel-track employee-dashboard-track';
+  employeeTrack.style.height = 'calc(var(--ooxme-stable-viewport-height) * 2)';
+
+  const emptyPanel = document.createElement('section');
+  emptyPanel.className = 'master-panel-screen employee-dashboard-panel employee-dashboard-empty-panel';
+  const emptyMasterPanel = document.createElement('div');
+  emptyMasterPanel.className = 'master-panel';
+  const emptyCard = document.createElement('div');
+  emptyCard.className = 'employee-dashboard-empty-card';
+  const selectorProxy = document.createElement('div');
+  selectorProxy.className = 'homepage-account-selector studio-selector employee-dashboard-top-selector employee-dashboard-panel-two-selector';
+  selectorProxy.dataset.employeeDashboardSelector = '';
+  selectorProxy.dataset.active = 'progress';
+  selectorProxy.setAttribute('role', 'tablist');
+  selectorProxy.setAttribute('aria-label', 'Employee dashboard view');
+  selectorProxy.innerHTML = '<span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-employee-dashboard-state-option="progress" role="tab" aria-selected="true"><span data-en="Progress" data-ar="التقدم">Progress</span></button><button type="button" data-employee-dashboard-state-option="details" role="tab" aria-selected="false"><span data-en="Details" data-ar="التفاصيل">Details</span></button>';
+  const timeline = document.createElement('div');
+  timeline.className = 'employee-dashboard-timeline employee-dashboard-panel-two-timeline';
+  timeline.setAttribute('aria-label', 'Employee task timeline');
+  timeline.innerHTML = '<span class="employee-dashboard-timeline-line" aria-hidden="true"></span><div class="employee-dashboard-task-viewport"><div class="employee-dashboard-task-track"></div></div>';
+  const demoTasks = [
+    ['Content Planning', 'Prepare and approve the monthly content direction.'],
+    ['Photography Session', 'Complete the scheduled brand photography session.'],
+    ['Campaign Launch', 'Prepare and launch the approved monthly campaign.'],
+    ['Performance Review', 'Review campaign, content, and engagement performance.'],
+    ['Client Feedback', 'Review and apply the latest client feedback.']
+  ];
+  const taskTrack = timeline.querySelector('.employee-dashboard-task-track');
+  taskTrack.innerHTML = demoTasks.map(([title, description]) => `<article class="employee-dashboard-task"><span class="employee-dashboard-task-dot" aria-hidden="true"></span><div class="employee-dashboard-task-copy"><strong>${title}</strong><p>${description}</p><div class="employee-dashboard-task-blocks" aria-hidden="true"><i class="is-in-progress">Status</i><i class="is-days-left">Time</i><i class="is-upload-started">Files</i></div></div></article>`).join('');
+  const taskViewport = timeline.querySelector('.employee-dashboard-task-viewport');
+  const taskItems = [...taskTrack.querySelectorAll('.employee-dashboard-task')];
+  const landscapeTaskQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
+  let activeTaskIndex = 2;
+  let taskGesture = null;
+  const taskDetailMeta = [
+    { start: '01 Sep 2026', delivery: '05 Sep 2026', remaining: '2–3 Days Left' },
+    { start: '06 Sep 2026', delivery: '08 Sep 2026', remaining: 'On Track' },
+    { start: '10 Sep 2026', delivery: '15 Sep 2026', remaining: '2–3 Days Left' },
+    { start: '20 Sep 2026', delivery: '25 Sep 2026', remaining: 'On Track' },
+    { start: '26 Sep 2026', delivery: '30 Sep 2026', remaining: '1 Day Left' }
+  ];
+  const detailsView = document.createElement('section');
+  detailsView.className = 'employee-dashboard-task-details';
+  detailsView.setAttribute('aria-label', 'Task details');
+  detailsView.hidden = true;
+  detailsView.innerHTML = '<section class="employee-dashboard-task-details-section employee-dashboard-task-details-overview"><h2>Task Overview</h2><strong data-task-detail-title></strong><p data-task-detail-description></p></section><section class="employee-dashboard-task-details-section"><h2>Timeline</h2><div class="employee-dashboard-task-detail-boxes"><span><small>Start Date</small><b data-task-detail-start></b></span><span><small>Delivery Date</small><b data-task-detail-delivery></b></span><span><small>Time Remaining</small><b data-task-detail-remaining></b></span></div></section><section class="employee-dashboard-task-details-section"><h2>Files</h2><div class="employee-dashboard-task-detail-boxes"><span><small>Required Files</small><b>3</b></span><span><small>Uploaded Files</small><b>1</b></span><span><small>Remaining Files</small><b>2</b></span></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-updates"><h2>Progress Updates</h2><div class="employee-dashboard-task-update-list"><p><span>Monthly direction reviewed and approved.</span><time>Today, 09:30</time></p><p><span>Production brief prepared for the next step.</span><time>Yesterday, 16:10</time></p><p><span>Task owner confirmed the delivery plan.</span><time>28 Aug 2026, 11:45</time></p></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-actions"><h2>Actions</h2><div><button type="button">Start Task</button><button type="button">Update Progress</button><button type="button">Upload Files</button></div></section>';
+  const renderTaskDetails = () => {
+    const task = taskItems[activeTaskIndex];
+    const meta = taskDetailMeta[activeTaskIndex] || taskDetailMeta[0];
+    if (!task) return;
+    detailsView.querySelector('[data-task-detail-title]').textContent = task.querySelector('strong')?.textContent || '';
+    detailsView.querySelector('[data-task-detail-description]').textContent = task.querySelector('p')?.textContent || '';
+    detailsView.querySelector('[data-task-detail-start]').textContent = meta.start;
+    detailsView.querySelector('[data-task-detail-delivery]').textContent = meta.delivery;
+    detailsView.querySelector('[data-task-detail-remaining]').textContent = meta.remaining;
+  };
+  const timelineLine = timeline.querySelector('.employee-dashboard-timeline-line');
+  const updateTimelineLineFade = () => {
+    const visibleTasks = taskItems.filter((task) => !task.classList.contains('is-focus-hidden'));
+    const firstVisible = visibleTasks[0];
+    const lastVisible = visibleTasks[visibleTasks.length - 1];
+    if (!timelineLine || !firstVisible || !lastVisible) return;
+    const timelineRect = timeline.getBoundingClientRect();
+    const cardRect = timeline.closest('.employee-dashboard-empty-card')?.getBoundingClientRect();
+    const xValue = cardRect ? (timelineRect.left - cardRect.left) / 2 : 0;
+    const firstRect = firstVisible.getBoundingClientRect();
+    const lastRect = lastVisible.getBoundingClientRect();
+    timelineLine.style.setProperty('--timeline-line-top-fade-start', `${firstRect.top - timelineRect.top - (xValue * 2)}px`);
+    timelineLine.style.setProperty('--timeline-line-top-fade-end', `${firstRect.top - timelineRect.top}px`);
+    timelineLine.style.setProperty('--timeline-line-bottom-fade-start', `${lastRect.bottom - timelineRect.top + (xValue * 2)}px`);
+    timelineLine.style.setProperty('--timeline-line-bottom-fade-end', `${lastRect.bottom - timelineRect.top + (xValue * 4)}px`);
+  };
+  const setTaskFocus = (nextIndex, animate = true) => {
+    activeTaskIndex = Math.max(0, Math.min(taskItems.length - 1, nextIndex));
+    const visibleRadius = landscapeTaskQuery.matches ? 1 : 2;
+    taskItems.forEach((task, index) => {
+      task.classList.toggle('is-active', index === activeTaskIndex);
+      task.classList.toggle('is-focus-hidden', Math.abs(index - activeTaskIndex) > visibleRadius);
+    });
+    const activeTask = taskItems[activeTaskIndex];
+    if (!activeTask) return;
+    const offset = ((taskViewport.clientHeight - activeTask.offsetHeight) / 2) - activeTask.offsetTop;
+    taskTrack.style.transition = animate ? '' : 'none';
+    taskTrack.style.transform = `translate3d(0, ${offset}px, 0)`;
+    requestAnimationFrame(updateTimelineLineFade);
+    if (!animate) requestAnimationFrame(() => { taskTrack.style.transition = ''; });
+  };
+  taskTrack.addEventListener('transitionend', updateTimelineLineFade);
+  const finishTaskGesture = (event, cancelled = false) => {
+    if (!taskGesture || event.pointerId !== taskGesture.pointerId) return;
+    const travel = event.clientY - taskGesture.startY;
+    taskGesture = null;
+    timeline.releasePointerCapture?.(event.pointerId);
+    if (!cancelled && Math.abs(travel) >= 30) setTaskFocus(activeTaskIndex + (travel < 0 ? 1 : -1));
+    else setTaskFocus(activeTaskIndex);
+  };
+  timeline.addEventListener('pointerdown', (event) => {
+    if (panelTwoState !== 'progress' || event.button !== 0 || taskGesture) return;
+    const currentTransform = getComputedStyle(taskTrack).transform;
+    const transformMatch = currentTransform.match(/matrix3?\(([^)]+)\)/);
+    const transformValues = transformMatch ? transformMatch[1].split(',').map(Number) : [];
+    const currentOffset = transformValues.length === 16 ? transformValues[13] : (transformValues.length === 6 ? transformValues[5] : 0);
+    taskGesture = { pointerId: event.pointerId, startY: event.clientY, startOffset: currentOffset };
+    taskTrack.style.transition = 'none';
+    timeline.setPointerCapture?.(event.pointerId);
+    event.stopPropagation();
+  }, true);
+  timeline.addEventListener('pointermove', (event) => {
+    if (panelTwoState !== 'progress' || !taskGesture || event.pointerId !== taskGesture.pointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    taskTrack.style.transform = `translate3d(0, ${taskGesture.startOffset + event.clientY - taskGesture.startY}px, 0)`;
+  }, { capture: true, passive: false });
+  timeline.addEventListener('pointerup', (event) => finishTaskGesture(event), true);
+  timeline.addEventListener('pointercancel', (event) => finishTaskGesture(event, true), true);
+  timeline.addEventListener('wheel', (event) => {
+    if (panelTwoState !== 'progress' || Math.abs(event.deltaY) < 1) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setTaskFocus(activeTaskIndex + (event.deltaY > 0 ? 1 : -1));
+  }, { passive: false });
+  window.addEventListener('resize', () => setTaskFocus(activeTaskIndex, false));
+  landscapeTaskQuery.addEventListener?.('change', () => setTaskFocus(activeTaskIndex, false));
+  requestAnimationFrame(() => setTaskFocus(activeTaskIndex, false));
+  emptyCard.append(selectorProxy, timeline, detailsView);
+  const navigationProxy = employeeNavigation.cloneNode(true);
+  navigationProxy.classList.add('employee-dashboard-contextual-navigation-proxy');
+  navigationProxy.removeAttribute('data-employee-dashboard-contextual');
+  const contextPillProxy = navigationProxy.querySelector('[data-employee-dashboard-context-pill]');
+  let panelTwoState = 'progress';
+  const setPanelTwoState = (next) => {
+    panelTwoState = next === 'details' ? 'details' : 'progress';
+    const arrowState = panelTwoState === 'details' ? 'details' : 'work';
+    selectorProxy.dataset.active = panelTwoState;
+    selectorProxy.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.employeeDashboardStateOption === panelTwoState)));
+    emptyPanel.dataset.employeeDashboardState = panelTwoState;
+    contextPillProxy?.setAttribute('data-active', arrowState);
+    timeline.hidden = panelTwoState === 'details';
+    timeline.setAttribute('aria-hidden', String(panelTwoState === 'details'));
+    detailsView.hidden = panelTwoState !== 'details';
+    detailsView.setAttribute('aria-hidden', String(panelTwoState !== 'details'));
+    if (panelTwoState === 'details') renderTaskDetails();
+    navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === arrowState)));
+  };
+  selectorProxy.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.addEventListener('click', () => setPanelTwoState(option.dataset.employeeDashboardStateOption)));
+  navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setPanelTwoState(panelTwoState === 'details' ? 'progress' : 'details');
+  }));
+  taskItems.forEach((task, index) => task.addEventListener('click', () => {
+    if (index === activeTaskIndex && panelTwoState === 'progress') setPanelTwoState('details');
+  }));
+  setPanelTwoState(panelTwoState);
+  emptyMasterPanel.append(emptyCard, navigationProxy);
+  emptyPanel.append(emptyMasterPanel);
+
+  track.hidden = true;
+  employeeTrack.append(employeePanel, emptyPanel);
+  experience.append(employeeTrack);
+
+  const employeePanels = [employeePanel, emptyPanel];
+  let employeePanelIndex = 0;
+  const revealEmployeePanel = (index) => employeePanels.forEach((panel, panelNumber) => panel.classList.toggle('is-active', panelNumber === index));
+  const moveToEmployeePanel = (next) => {
+    const target = Math.max(0, Math.min(employeePanels.length - 1, next));
+    if (target === employeePanelIndex) return;
+    employeePanelIndex = target;
+    employeePanels.forEach((panel) => panel.classList.remove('is-active'));
+    employeeTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-employeePanelIndex}))`;
+    window.setTimeout(() => revealEmployeePanel(employeePanelIndex), 620);
+  };
+  revealEmployeePanel(employeePanelIndex);
+  window.OOXMEMasterPanelDrag.register({
+    experience,
+    track: employeeTrack,
+    panels: employeePanels,
+    getIndex: () => employeePanelIndex,
+    moveTo: moveToEmployeePanel
+  });
+
+};
+setupEmployeeDashboardPanels();
+document.querySelectorAll('[data-employee-dashboard-selector]:not(.employee-dashboard-panel-two-selector)').forEach((selector) => {
+  const panel = selector.closest('.employee-dashboard-panel');
+  const setState = (next) => {
+    const state = next === 'details' ? 'details' : 'progress';
+    selector.dataset.active = state;
+    panel?.setAttribute('data-employee-dashboard-state', state);
+    selector.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.employeeDashboardStateOption === state)));
+    panel?.querySelectorAll('[data-employee-dashboard-state]').forEach((statePanel) => { statePanel.hidden = statePanel.dataset.employeeDashboardState !== state; });
+  };
+  selector.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.addEventListener('click', () => setState(option.dataset.employeeDashboardStateOption)));
+  setState('progress');
+});
 const homepageBottomNavigation = document.querySelector('.homepage-bottom-navigation');
 const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
 const homepageMenu = document.querySelector('[data-home-menu]');

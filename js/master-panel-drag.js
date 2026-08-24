@@ -122,7 +122,7 @@ window.OOXMEMasterPanelDrag = {
 
     const interactiveSelector = [
       '.master-panel-continue', 'input', 'select', 'textarea', '[contenteditable="true"]',
-      '[data-project-gallery]', '[data-studio-project-gallery]', '[data-service-tile]', '[data-search-overlay]', '.search-overlay',
+      '[data-project-gallery]', '[data-studio-project-gallery]', '[data-service-tile]', '.employee-dashboard-panel-two-timeline', '.employee-dashboard-task-details', '[data-search-overlay]', '.search-overlay',
       '.site-image-preview', '.calendar-month-menu'
     ].join(',');
     let drag = null;
@@ -145,6 +145,7 @@ window.OOXMEMasterPanelDrag = {
       window.clearTimeout(wheelState.resetTimer);
     };
     const wheelIsReserved = (event) => {
+      if (event.target.closest('.employee-dashboard-panel-two-timeline')) return true;
       const active = document.activeElement;
       if (active?.matches?.('input, textarea, select, [contenteditable="true"]')) return true;
       if (document.querySelector('[data-search-overlay].is-open, .search-overlay.is-open, .site-image-preview.is-open')) return true;
