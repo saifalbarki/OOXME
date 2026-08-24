@@ -335,6 +335,7 @@ const setupEmployeeDashboardPanels = () => {
     startTaskCard.innerHTML = '<label><select data-employee-dashboard-start-task-select data-ooxme-ios-zoom-safe aria-label="Choose Task"></select></label><button type="button" data-en="Start" data-ar="بدء">Start</button>';
   }
   const panelTwoActionCards = [addUpdateCard, uploadFilesCard, startTaskCard].filter(Boolean);
+  const isPanelTwoActionOpen = () => panelTwoActionCards.some((card) => card.hidden === false);
   const setPanelTwoActionCard = (activeCard, action = '') => {
     const active = Boolean(activeCard);
     emptyPanel.dataset.employeeDashboardPanelTwoAction = action;
@@ -367,7 +368,7 @@ const setupEmployeeDashboardPanels = () => {
   };
   let panelTwoState = 'progress';
   const setPanelTwoState = (next) => {
-    if (panelTwoActionCards.some((card) => card.hidden === false)) setPanelTwoActionCard(null);
+    if (isPanelTwoActionOpen()) setPanelTwoActionCard(null);
     panelTwoState = next === 'details' ? 'details' : 'progress';
     const arrowState = panelTwoState === 'details' ? 'details' : 'work';
     selectorProxy.dataset.active = panelTwoState;
@@ -388,6 +389,10 @@ const setupEmployeeDashboardPanels = () => {
   navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
+    if (isPanelTwoActionOpen()) {
+      setPanelTwoActionCard(null);
+      return;
+    }
     setPanelTwoState(panelTwoState === 'details' ? 'progress' : 'details');
   }));
   if (addUpdateCard) {
@@ -413,6 +418,11 @@ const setupEmployeeDashboardPanels = () => {
   setPanelTwoState(panelTwoState);
   emptyMasterPanel.append(emptyCard, ...panelTwoActionCards, navigationProxy);
   emptyPanel.append(emptyMasterPanel);
+  emptyPanel.addEventListener('click', (event) => {
+    if (!isPanelTwoActionOpen()) return;
+    if (event.target.closest(':is(.employee-dashboard-add-update-card, .employee-dashboard-upload-files-card, .employee-dashboard-start-task-card, .employee-dashboard-task-details-actions, .employee-dashboard-contextual-navigation-proxy)')) return;
+    setPanelTwoActionCard(null);
+  });
   localizePanelTwo(language);
 
   track.hidden = true;
