@@ -121,7 +121,7 @@ window.OOXMEMasterPanelDrag = {
     updateBottomProgress();
 
     const interactiveSelector = [
-      '.master-panel-continue', 'input', 'select', 'textarea', '[contenteditable="true"]',
+      '.master-panel-continue', 'input', 'select', 'textarea', '[contenteditable="true"]', '.employee-dashboard-panel:not(.employee-dashboard-empty-panel) .employee-dashboard-contextual-navigation',
       '[data-project-gallery]', '[data-studio-project-gallery]', '[data-portfolio-option]', '[data-service-option]', '[data-consultation-option]', '[data-service-tile]', '.employee-dashboard-panel-two-timeline', '.employee-dashboard-task-details', '[data-search-overlay]', '.search-overlay',
       '.site-image-preview', '.calendar-month-menu'
     ].join(',');

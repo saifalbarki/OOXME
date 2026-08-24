@@ -372,6 +372,12 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .employee-dashboard-panel .master-panel { --homepage-account-control-height: 42px; --homepage-account-control-radius: var(--radius-control); isolation: isolate; background: transparent; }.employee-dashboard-panel .master-panel::before { position: absolute; z-index: 0; inset: -12px; background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; content: ''; filter: blur(5px); transform: scale(1.04); }.employee-dashboard-panel .master-panel > * { position: relative; z-index: 1; }@media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel::before { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
 .employee-dashboard-panel .master-panel-control { opacity: 0; pointer-events: none; }
 .employee-dashboard-panel .master-panel-logo img { filter: brightness(0) invert(1); }
+.employee-dashboard-panel:not(.employee-dashboard-empty-panel) .master-panel-header { position: absolute; z-index: 2; top: var(--x); right: var(--x); left: var(--x); display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; justify-items: center; box-sizing: border-box; min-height: 0; padding: var(--x); border-radius: var(--card-radius); background: var(--color-paper); }
+.employee-dashboard-panel:not(.employee-dashboard-empty-panel) .master-panel-logo { display: none; }
+.employee-dashboard-panel:not(.employee-dashboard-empty-panel) .master-panel-control { display: none; }
+.employee-dashboard-panel:not(.employee-dashboard-empty-panel) .employee-dashboard-panel-one-selector { width: 100%; }
+.employee-dashboard-panel:not(.employee-dashboard-empty-panel) .employee-dashboard-panel-one-selector[data-active="edit"] .homepage-account-selector-indicator { left: calc(50% + var(--homepage-account-selector-inset)); }
+.employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-status-card { visibility: hidden; pointer-events: none; }
 .employee-dashboard-panel .master-panel-content { position: absolute; right: 0; bottom: calc((var(--homepage-white-card-height) - 8px) + (var(--x) * 2)); left: 0; display: grid; align-content: end; justify-items: center; width: var(--homepage-navigation-width); height: auto; margin-inline: auto; padding: 0; gap: var(--x); text-align: center; transform: none; }
 .employee-dashboard-content { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; }
 .employee-dashboard-identity { display: grid; justify-items: center; width: 100%; gap: var(--x); }
@@ -464,6 +470,8 @@ html[dir="rtl"] .employee-dashboard-empty-panel .employee-dashboard-empty-card {
 html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-top-selector { direction: rtl; }
 html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-top-selector .homepage-account-selector-indicator { right: var(--homepage-account-selector-inset); left: auto; transition: right .34s cubic-bezier(.22, .61, .36, 1); }
 html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-top-selector[data-active="details"] .homepage-account-selector-indicator { right: calc(50% + var(--homepage-account-selector-inset)); left: auto; }
+html[dir="rtl"] .employee-dashboard-panel:not(.employee-dashboard-empty-panel) .employee-dashboard-panel-one-selector .homepage-account-selector-indicator { right: var(--homepage-account-selector-inset); left: auto; }
+html[dir="rtl"] .employee-dashboard-panel:not(.employee-dashboard-empty-panel) .employee-dashboard-panel-one-selector[data-active="edit"] .homepage-account-selector-indicator { right: calc(50% + var(--homepage-account-selector-inset)); left: auto; }
 html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-task { direction: rtl; grid-template-columns: 8px minmax(0, 1fr); }
 html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-task-copy { direction: rtl; text-align: right; }
 html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-task-blocks { direction: rtl; margin-inline-start: 0; margin-inline-end: 0; }

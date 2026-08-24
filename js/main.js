@@ -331,6 +331,29 @@ const setupEmployeeDashboardPanels = () => {
 
 };
 setupEmployeeDashboardPanels();
+const employeeDashboardPanelOne = document.querySelector('.employee-dashboard-panel:not(.employee-dashboard-empty-panel)');
+const employeeDashboardPanelOneSelector = employeeDashboardPanelOne?.querySelector('.employee-dashboard-panel-one-selector');
+const employeeDashboardPanelOneNavigation = employeeDashboardPanelOne?.querySelector('[data-employee-dashboard-contextual]');
+if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDashboardPanelOneNavigation) {
+  let employeeDashboardPanelOneState = 'current';
+  const setEmployeeDashboardPanelOneState = (next) => {
+    employeeDashboardPanelOneState = next === 'edit' ? 'edit' : 'current';
+    const bottomState = employeeDashboardPanelOneState === 'edit' ? 'details' : 'work';
+    employeeDashboardPanelOne.dataset.employeeDashboardPanelOneState = employeeDashboardPanelOneState;
+    employeeDashboardPanelOneSelector.dataset.active = employeeDashboardPanelOneState;
+    employeeDashboardPanelOneSelector.querySelectorAll('[data-employee-dashboard-panel-one-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.employeeDashboardPanelOneOption === employeeDashboardPanelOneState)));
+    const pill = employeeDashboardPanelOneNavigation.querySelector('[data-employee-dashboard-context-pill]');
+    pill?.setAttribute('data-active', bottomState);
+    employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === bottomState)));
+  };
+  employeeDashboardPanelOneSelector.querySelectorAll('[data-employee-dashboard-panel-one-option]').forEach((option) => option.addEventListener('click', () => setEmployeeDashboardPanelOneState(option.dataset.employeeDashboardPanelOneOption)));
+  employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setEmployeeDashboardPanelOneState(button.dataset.employeeDashboardContext === 'details' ? 'edit' : 'current');
+  }));
+  setEmployeeDashboardPanelOneState('current');
+}
 document.querySelectorAll('[data-employee-dashboard-selector]:not(.employee-dashboard-panel-two-selector)').forEach((selector) => {
   const panel = selector.closest('.employee-dashboard-panel');
   const setState = (next) => {
