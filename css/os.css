@@ -67,7 +67,10 @@ html[lang="ar"] .os-page { font-family: var(--font-arabic); }
 
 .os-current-accounts-content { --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); box-sizing: border-box; display: grid; grid-template-rows: auto auto minmax(0, 1fr); align-content: stretch; justify-items: center; padding: var(--x); gap: var(--x); }
 .os-current-accounts-content .homepage-account-selector { width: 100%; }
-.homepage-account-selector[data-os-panel-three-type][data-active="notifications"] .homepage-account-selector-indicator { left: calc(50% + var(--homepage-account-selector-inset)); }
+.os-panel-three-type-selector { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.os-panel-three-type-selector .homepage-account-selector-indicator { width: calc((100% / 3) - (var(--homepage-account-selector-inset) * 2)); transition: left .34s cubic-bezier(.22, .61, .36, 1); }
+.os-panel-three-type-selector[data-active="notifications"] .homepage-account-selector-indicator { left: calc((100% / 3) + var(--homepage-account-selector-inset)); }
+.os-panel-three-type-selector[data-active="tasks"] .homepage-account-selector-indicator { left: calc(((100% / 3) * 2) + var(--homepage-account-selector-inset)); }
 .os-current-accounts-list { display: grid; align-content: start; justify-items: center; width: 100%; min-height: 0; overflow: auto; gap: var(--x); }
 .os-current-account-row { display: flex; align-items: start; justify-content: space-between; width: 100%; min-height: var(--homepage-account-control-height); box-sizing: border-box; padding: calc(var(--x) * .65) var(--x); gap: var(--x); border-radius: var(--card-radius); background: var(--color-paper); }
 .os-current-account-details { display: grid; min-width: 0; gap: 2px; text-align: start; }
@@ -103,6 +106,12 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 .os-current-account-error { width: 100%; min-height: 0; color: var(--color-red); text-align: center; }
 @media (hover: none) and (pointer: coarse) { .os-current-account-form input { width: 100%; transform: none; } }
 @media (max-aspect-ratio: 4 / 3) { .os-current-accounts-content { padding-bottom: var(--x); } .os-current-accounts-list { overflow-y: auto; } }
+@media (max-aspect-ratio: 4 / 3) {
+  .os-panel-three-type-selector { grid-template-columns: 1fr; grid-template-rows: repeat(3, minmax(0, 1fr)); }
+  .os-panel-three-type-selector .homepage-account-selector-indicator { inset-block: auto; top: var(--homepage-account-selector-inset); left: var(--homepage-account-selector-inset); width: auto; height: calc((100% / 3) - (var(--homepage-account-selector-inset) * 2)); transition: top .34s cubic-bezier(.22, .61, .36, 1); }
+  .os-panel-three-type-selector[data-active="notifications"] .homepage-account-selector-indicator { top: calc((100% / 3) + var(--homepage-account-selector-inset)); left: var(--homepage-account-selector-inset); }
+  .os-panel-three-type-selector[data-active="tasks"] .homepage-account-selector-indicator { top: calc(((100% / 3) * 2) + var(--homepage-account-selector-inset)); left: var(--homepage-account-selector-inset); }
+}
 
 /* All OS writable controls stay at 16px on mobile to prevent focus zoom. */
 @media (max-aspect-ratio: 4 / 3) { .os-page :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { font-size: 16px !important; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; } }
