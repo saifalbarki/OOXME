@@ -397,9 +397,14 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 }
 @media (min-aspect-ratio: 4 / 3) {
   .employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-info-card { height: calc(102px + (var(--x) * 4)); }
+  .employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-avatar { transform: translateY(var(--employee-dashboard-avatar-restore-offset, 0px)); }
   .employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-avatar-edit { right: 50%; bottom: calc(var(--x) * -.1); transform: translateX(50%); }
   .employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-edit-form { inset: var(--x); grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(3, 34px); gap: var(--x); }
   .employee-dashboard-panel:not(.employee-dashboard-empty-panel):has(.employee-dashboard-panel-one-selector[data-active="edit"]) .employee-dashboard-edit-form button { grid-column: 1 / -1; }
+  .employee-dashboard-panel[data-employee-dashboard-panel-one-landscape-columns="true"] .employee-dashboard-identity { display: contents; }
+  .employee-dashboard-panel[data-employee-dashboard-panel-one-landscape-columns="true"] .employee-dashboard-avatar { grid-column: 1; grid-row: 1; align-self: start; justify-self: center; }
+  .employee-dashboard-panel[data-employee-dashboard-panel-one-landscape-columns="true"] .employee-dashboard-info-card { grid-column: 2; grid-row: 1; align-self: end; }
+  .employee-dashboard-panel[data-employee-dashboard-panel-one-landscape-columns="true"] .employee-dashboard-status-card { display: none; }
 }
 .employee-dashboard-panel .master-panel-content { position: absolute; right: 0; bottom: calc((var(--homepage-white-card-height) - 8px) + (var(--x) * 2)); left: 0; display: grid; align-content: end; justify-items: center; width: var(--homepage-navigation-width); height: auto; margin-inline: auto; padding: 0; gap: var(--x); text-align: center; transform: none; }
 .employee-dashboard-content { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; }

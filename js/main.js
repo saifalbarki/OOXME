@@ -338,10 +338,24 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
   let employeeDashboardPanelOneState = 'current';
   const sizeEmployeeDashboardPanelOneEditCard = () => {
     const infoCard = employeeDashboardPanelOne.querySelector('.employee-dashboard-info-card');
-    if (!infoCard || employeeDashboardPanelOneState !== 'edit' || !window.matchMedia('(max-aspect-ratio: 4 / 3)').matches) {
+    const avatar = employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar');
+    if (!infoCard || !avatar || employeeDashboardPanelOneState !== 'edit') {
       infoCard?.style.removeProperty('--employee-dashboard-edit-extension');
+      avatar?.style.removeProperty('--employee-dashboard-avatar-restore-offset');
+      employeeDashboardPanelOne.removeAttribute('data-employee-dashboard-panel-one-landscape-columns');
       return;
     }
+    if (window.matchMedia('(min-aspect-ratio: 4 / 3)').matches) {
+      avatar.style.removeProperty('--employee-dashboard-avatar-restore-offset');
+      infoCard.style.height = 'auto';
+      const previousAvatarTop = avatar.getBoundingClientRect().top;
+      infoCard.style.removeProperty('height');
+      employeeDashboardPanelOne.dataset.employeeDashboardPanelOneLandscapeColumns = 'true';
+      avatar.style.setProperty('--employee-dashboard-avatar-restore-offset', `${previousAvatarTop - avatar.getBoundingClientRect().top}px`);
+      return;
+    }
+    avatar.style.removeProperty('--employee-dashboard-avatar-restore-offset');
+    employeeDashboardPanelOne.removeAttribute('data-employee-dashboard-panel-one-landscape-columns');
     infoCard.style.removeProperty('--employee-dashboard-edit-extension');
     const cardBounds = infoCard.getBoundingClientRect();
     const navigationBounds = employeeDashboardPanelOneNavigation.getBoundingClientRect();
