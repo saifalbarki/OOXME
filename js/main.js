@@ -172,6 +172,20 @@ const setupEmployeeDashboardPanels = () => {
     Object.assign(startTask.dataset, { en: 'Add Request', ar: 'إضافة طلب' });
     Object.assign(uploadFiles.dataset, { en: 'Download Files', ar: 'تحميل الملفات' });
   }
+  if (!isClientDashboard) {
+    detailsView.querySelectorAll('.employee-dashboard-task-update-list p').forEach((update) => {
+      const copy = update.querySelector('span');
+      const time = update.querySelector('time');
+      if (!copy || !time) return;
+      const by = document.createElement('small');
+      by.className = 'employee-dashboard-task-update-by';
+      by.dataset.en = 'By Employee';
+      by.dataset.ar = 'بواسطة الموظف';
+      by.textContent = by.dataset[language === 'ar' ? 'ar' : 'en'];
+      copy.classList.add('employee-dashboard-task-update-copy');
+      update.replaceChildren(copy, by, time);
+    });
+  }
   const renderTaskDetails = () => {
     const task = taskItems[activeTaskIndex];
     const meta = taskDetailMeta[activeTaskIndex] || taskDetailMeta[0];
