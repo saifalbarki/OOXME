@@ -13,14 +13,14 @@
         <article class="master-panel brand-management-new-master-panel consultation-master-panel">
           <section class="studio-content consultation-content">
             <div class="homepage-account-panel consultation-selector-shell">
-              <div class="homepage-account-selector studio-selector brand-management-new-selector consultation-selector" data-brand-management-selector data-active="work" role="tablist" aria-label="Consultation view">
+              <div class="homepage-account-selector studio-selector brand-management-new-selector consultation-selector" data-brand-management-selector data-active="details" role="tablist" aria-label="Consultation view">
                 <span class="homepage-account-selector-indicator" aria-hidden="true"></span>
-                <button type="button" data-brand-management-state="work" role="tab" aria-selected="true"><span data-en="Overview" data-ar="نظرة عامة">Overview</span></button>
-                <button type="button" data-brand-management-state="details" role="tab" aria-selected="false"><span data-en="Book" data-ar="احجز">Book</span></button>
+                <button type="button" data-brand-management-state="work" role="tab" aria-selected="false"><span data-en="Overview" data-ar="نظرة عامة">Overview</span></button>
+                <button type="button" data-brand-management-state="details" role="tab" aria-selected="true"><span data-en="Book" data-ar="احجز">Book</span></button>
               </div>
             </div>
-            <div class="consultation-square-card" aria-hidden="true"></div>
-            <section class="consultation-book-card" data-book-card hidden aria-label="Book consultation">
+            <div class="consultation-square-card" aria-hidden="true" hidden></div>
+            <section class="consultation-book-card" data-book-card aria-label="Book consultation">
               <section class="consultation-book-stage" data-book-stage="information">
                 <div class="consultation-book-stage-heading"><strong data-en="Information" data-ar="المعلومات">Information</strong></div>
                 <div class="consultation-book-fields">
@@ -44,25 +44,13 @@
                   <label><select data-book-field="duration" required aria-label="Duration"><option value="" data-en="Duration" data-ar="المدة">Duration</option><option value="30" data-en="30 minutes" data-ar="30 دقيقة">30 minutes</option><option value="60" data-en="60 minutes" data-ar="60 دقيقة">60 minutes</option></select></label>
                 </div>
               </section>
-              <section class="consultation-book-stage" data-book-stage="review" hidden>
-                <div class="consultation-book-stage-heading"><strong data-en="Review" data-ar="المراجعة">Review</strong></div>
-                <dl class="consultation-review" data-book-review></dl>
-              </section>
-              <section class="consultation-book-stage" data-book-stage="payment" hidden>
-                <div class="consultation-book-stage-heading"><strong data-en="Payment" data-ar="الدفع">Payment</strong></div>
-                <p class="consultation-book-received" data-en="Your booking has been received. Choose a payment method to complete your reservation." data-ar="تم استلام حجزك. اختر طريقة الدفع لإكمال الحجز.">Your booking has been received. Choose a payment method to complete your reservation.</p>
-                <div class="consultation-payment-options">
-                  <button type="button" class="consultation-payment-box" data-book-payment="zain"><img src="assets/payment/zaincash.png" alt="Zain Cash" /><span data-en="Zain Cash" data-ar="زين كاش">Zain Cash</span></button>
-                  <button type="button" class="consultation-payment-box" data-book-payment="superqi"><img src="assets/payment/super qi.png" alt="SuperQi" /><span data-en="SuperQi" data-ar="سوبر كي">SuperQi</span></button>
-                </div>
-              </section>
             </section>
           </section>
           <div class="brand-management-contextual-navigation" data-brand-management-contextual>
             <a class="brand-management-contextual-services" href="/" data-brand-management-home aria-label="Home"><img src="assets/icons/New/HOME.svg" alt="" /></a>
-            <div class="brand-management-contextual-pill" data-brand-management-pill data-active="work">
+            <div class="brand-management-contextual-pill" data-brand-management-pill data-active="details">
               <span class="brand-management-contextual-indicator" aria-hidden="true"></span>
-              <button type="button" data-brand-management-context="work" aria-label="Previous" aria-pressed="false" disabled><img src="assets/icons/New/ARROW LEFT 02.svg" alt="" /></button>
+              <button type="button" data-brand-management-context="work" aria-label="Previous" aria-pressed="false"><img src="assets/icons/New/ARROW LEFT 02.svg" alt="" /></button>
               <button type="button" data-brand-management-context="details" aria-label="Next" aria-pressed="false"><img src="assets/icons/New/ARROW RIGHT 02.svg" alt="" /></button>
             </div>
           </div>
