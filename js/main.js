@@ -585,6 +585,7 @@ const setHomepageMenuOpen = (open) => {
 };
 const setHomepageStudioOpen = (open) => {
   if (!homepageStudioSelection) return;
+  homepageStudioSelection.querySelectorAll('[data-home-studio-option]').forEach((button) => button.classList.remove('is-activating'));
   if (open) {
     setHomepageMenuOpen(true);
     window.clearTimeout(homepageMenuInactivityTimer);
