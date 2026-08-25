@@ -35,6 +35,24 @@
   };
 
   const getValue = name => fields[name]?.value?.trim() || '';
+  const numericContentPattern = /[\d\u0660-\u0669\u06F0-\u06F9]+(?:[.,:/\-\u066B\u066C][\d\u0660-\u0669\u06F0-\u06F9]+)*/g;
+  const renderNumericContent = (element, text) => {
+    if (!element) return;
+    const value = String(text ?? '');
+    const fragment = document.createDocumentFragment();
+    let cursor = 0;
+    value.replace(numericContentPattern, (match, offset) => {
+      if (offset > cursor) fragment.append(value.slice(cursor, offset));
+      const numeric = document.createElement('span');
+      numeric.className = 'consultation-numeric-content';
+      numeric.textContent = match;
+      fragment.append(numeric);
+      cursor = offset + match.length;
+      return match;
+    });
+    if (cursor < value.length) fragment.append(value.slice(cursor));
+    element.replaceChildren(fragment);
+  };
   const renderWeekdays = () => {
     if (!calendarWeekdays) return;
     const weekdays = language === 'ar' ? ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -49,17 +67,21 @@
     const calendarYear = displayedCalendar.getFullYear();
     const calendarMonth = displayedCalendar.getMonth();
     const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
-    if (calendarMonthLabel) calendarMonthLabel.textContent = new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(displayedCalendar);
+    const firstWeekday = new Date(calendarYear, calendarMonth, 1).getDay();
+    const rowCount = Math.ceil((firstWeekday + daysInMonth) / 7);
+    const totalCells = rowCount * 7;
+    if (calendarMonthLabel) renderNumericContent(calendarMonthLabel, new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(displayedCalendar));
     renderWeekdays();
-    calendarDays.style.gridTemplateRows = `repeat(${Math.ceil(daysInMonth / 7)}, minmax(0, 1fr))`;
-    calendarDays.replaceChildren(...Array.from({ length: daysInMonth }, (_, index) => {
-      const day = index + 1;
+    calendarDays.style.gridTemplateRows = `repeat(${rowCount}, minmax(0, 1fr))`;
+    calendarDays.replaceChildren(...Array.from({ length: totalCells }, (_, cellIndex) => {
+      const day = cellIndex - firstWeekday + 1;
+      if (day < 1 || day > daysInMonth) return document.createElement('span');
       const date = new Date(calendarYear, calendarMonth, day);
       const dateValue = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const button = document.createElement('button');
       button.type = 'button';
       button.dataset.bookDate = dateValue;
-      button.textContent = String(day);
+      renderNumericContent(button, String(day));
       button.disabled = date < new Date(calendarToday.getFullYear(), calendarToday.getMonth(), calendarToday.getDate());
       button.classList.toggle('is-selected', selectedDate === dateValue);
       return button;
@@ -82,13 +104,13 @@
       ? { name: 'الاسم', email: 'البريد الإلكتروني', phone: 'الهاتف', sector: 'قطاع العمل', topic: 'موضوع الاستشارة', additional: 'معلومات إضافية', discountCode: 'كود الخصم', date: 'التاريخ', time: 'الوقت', duration: 'المدة', none: '—' }
       : { name: 'Name', email: 'Email', phone: 'Phone', sector: 'Business Sector', topic: 'Consultation Topic', additional: 'Additional Information', discountCode: 'Discount Code', date: 'Date', time: 'Time', duration: 'Duration', none: '—' };
     const rows = [[copy.name, getValue('name') || copy.none], [copy.email, getValue('email') || copy.none], [copy.phone, getValue('phone') || copy.none], [copy.sector, selectedOptionText('sector') || copy.none], [copy.topic, selectedOptionText('topic') || copy.none], [copy.additional, getValue('additional') || copy.none], [copy.discountCode, getValue('discount') || copy.none], [copy.date, selectedDate || copy.none], [copy.time, selectedOptionText('time') || copy.none], [copy.duration, selectedOptionText('duration') || copy.none]];
-    review.replaceChildren(...rows.map(([termText, valueText]) => { const row = document.createElement('div'); const term = document.createElement('dt'); const value = document.createElement('dd'); term.textContent = termText; value.textContent = valueText; row.append(term, value); return row; }));
+    review.replaceChildren(...rows.map(([termText, valueText]) => { const row = document.createElement('div'); const term = document.createElement('dt'); const value = document.createElement('dd'); term.textContent = termText; renderNumericContent(value, valueText); row.append(term, value); return row; }));
   };
   const isScheduleValid = () => Boolean(selectedDate && getValue('time') && getValue('duration'));
   const syncSelectDisplays = () => {
     selectDisplays.forEach(display => {
       const select = display.previousElementSibling;
-      display.textContent = select?.selectedOptions?.[0]?.textContent?.trim() || '';
+      renderNumericContent(display, select?.selectedOptions?.[0]?.textContent?.trim() || '');
       display.classList.toggle('is-placeholder', !select?.value);
       display.classList.toggle('is-selected', Boolean(select?.value));
     });
@@ -97,7 +119,7 @@
     fieldDisplays.forEach(display => {
       const field = display.previousElementSibling;
       const hasValue = Boolean(field?.value);
-      display.textContent = hasValue ? field.value : (field?.placeholder || '');
+      renderNumericContent(display, hasValue ? field.value : (field?.placeholder || ''));
       display.classList.toggle('is-placeholder', !hasValue);
       display.classList.toggle('is-selected', hasValue);
     });

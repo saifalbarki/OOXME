@@ -149,6 +149,21 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 }
 
 /* Consultation shell: empty panel only, reusing the Brand Management navigation geometry. */
+@font-face {
+  font-family: 'Consultation SF Pro Display';
+  src: url('../assets/fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Consultation SF Pro Display';
+  src: url('../assets/fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+.consultation-page .consultation-numeric-content { font-family: 'Consultation SF Pro Display', sans-serif; }
 .consultation-page { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
 .consultation-page .consultation-master-panel { grid-template-rows: minmax(0, 1fr) auto; isolation: isolate; background: transparent; }
 .consultation-page .consultation-master-panel > :not(.brand-management-contextual-navigation) { position: relative; z-index: 1; }
@@ -208,7 +223,7 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 .consultation-page .consultation-calendar-month { margin-bottom: var(--x); }
 .consultation-page .consultation-calendar-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--x) * .35); min-height: 0; }
 .consultation-page .consultation-calendar-weekdays { margin-bottom: var(--x); }
-.consultation-page .consultation-calendar-weekdays > span { min-width: 0; width: min(100%, calc(var(--consultation-book-input-height) * 1.12)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; opacity: 1; box-shadow: none; }
+.consultation-page .consultation-calendar-weekdays > span { min-width: 0; width: min(100%, calc(var(--consultation-book-input-height) * 1.12)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 700; opacity: 1; box-shadow: none; }
 .consultation-page .consultation-calendar-viewport { min-height: 0; overflow: hidden; touch-action: pan-y; }
 .consultation-page .consultation-calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--x) * .35); min-height: 0; height: 100%; will-change: transform; }
 .consultation-page .consultation-calendar-days button { min-width: 0; width: min(100%, calc(var(--consultation-book-input-height) * 1.12)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; cursor: pointer; opacity: 1; box-shadow: none; }
