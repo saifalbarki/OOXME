@@ -183,6 +183,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] { display: flex; flex-direction: column; }
 .consultation-page .consultation-book-stage[hidden], .consultation-page .consultation-book-card[hidden] { display: none; }
 .consultation-page .consultation-book-stage-heading { color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; }
+.consultation-page .consultation-book-stage:is([data-book-stage="information"], [data-book-stage="schedule"], [data-book-stage="review"]) .consultation-book-stage-heading { font-weight: 700; }
 .consultation-page .consultation-book-fields { display: grid; gap: var(--x); }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields { align-self: stretch; flex: 0 0 auto; margin-top: auto; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-input-field:has([data-book-field="additional"]) input { min-height: calc((var(--consultation-book-input-height) * 2) + var(--x)); height: calc((var(--consultation-book-input-height) * 2) + var(--x)); }

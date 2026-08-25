@@ -132,7 +132,7 @@
     forwardButton.disabled = false;
     backButton.setAttribute('aria-pressed', String(inBook && stageIndex > 0));
     forwardButton.setAttribute('aria-pressed', String(inBook));
-    pill?.setAttribute('data-active', inBook && stageIndex % 2 === 0 ? 'details' : 'work');
+    pill?.setAttribute('data-active', inBook && (stageIndex === 1 || stageIndex % 2 === 0) ? 'details' : 'work');
     renderReview();
   };
   const setStage = next => {
