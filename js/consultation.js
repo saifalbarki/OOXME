@@ -238,7 +238,7 @@
   });
   try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
   applyLanguage(language);
-  setMode('details');
+  setMode('work');
   window.addEventListener('storage', event => { if (event.key === 'ooxme-language') applyLanguage(event.newValue); });
   window.addEventListener('ooxme-language-change', event => applyLanguage(event.detail?.language));
 })();

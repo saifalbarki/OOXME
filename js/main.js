@@ -591,10 +591,14 @@ const resetHomepageServicesOptions = () => {
   });
 };
 const setHomepageMenuOpen = (open) => {
+  const wasOpen = homepageBottomNavigation?.classList.contains('is-menu-open');
   if (!open) {
     window.clearTimeout(homepageMenuSelectionTimer);
     resetHomepageStudioOptions();
     resetHomepageServicesOptions();
+    setHomepageMenuActive('home');
+  } else if (!wasOpen && !homepageMenu?.classList.contains('is-studio-options') && !homepageMenu?.classList.contains('is-services-options')) {
+    setHomepageMenuActive('home');
   }
   window.clearTimeout(homepageMenuCloseTimer);
   if (open) {
@@ -619,6 +623,7 @@ const setHomepageStudioOpen = (open) => {
     return;
   }
   setHomepageMenuOpen(true);
+  homepageMenu.dataset.studioActive = 'clients';
   homepageMenu.setAttribute('aria-label', 'Studio options');
   homepageMenu.querySelectorAll('[data-home-studio-option]').forEach((button) => {
     button.setAttribute('aria-hidden', 'false');
@@ -651,6 +656,7 @@ const setHomepageServicesContextOpen = (open) => {
     return;
   }
   setHomepageMenuOpen(true);
+  homepageMenu.dataset.servicesActive = 'consultation';
   homepageMenu.setAttribute('aria-label', 'Services');
   homepageMenu.querySelectorAll('[data-home-services-option]').forEach((button) => {
     button.setAttribute('aria-hidden', 'false');
