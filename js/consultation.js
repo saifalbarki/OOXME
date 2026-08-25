@@ -10,6 +10,11 @@
   const forwardButton = document.querySelector('[data-brand-management-context="details"]');
   const pill = document.querySelector('[data-brand-management-pill]');
   const review = document.querySelector('[data-book-review]');
+  const calendarDays = document.querySelector('[data-book-calendar-days]');
+  const calendarHeading = document.querySelector('.consultation-calendar-heading');
+  const calendarViewport = document.querySelector('[data-book-calendar-viewport]');
+  const calendarMonthLabel = document.querySelector('[data-book-calendar-month]');
+  const calendarWeekdays = document.querySelector('[data-book-calendar-weekdays]');
   const fields = Object.fromEntries([...document.querySelectorAll('[data-book-field]')].map(field => [field.dataset.bookField, field]));
   const fieldDisplays = [...document.querySelectorAll('[data-book-field-display]')];
   const selectDisplays = [...document.querySelectorAll('[data-book-select-display]')];
@@ -18,6 +23,12 @@
   let stageIndex = 0;
   let selectedDate = '';
   let language = 'en';
+  const calendarToday = new Date();
+  let displayedCalendar = new Date(calendarToday.getFullYear(), calendarToday.getMonth(), 1);
+  let swipeStartX = null;
+  let swipeStartY = null;
+  let swipeTracking = false;
+  let ignoreNextCalendarClick = false;
 
   const labels = {
     en: { view: 'Consultation view', home: 'Home', previous: 'Previous', next: 'Next' },
@@ -25,6 +36,46 @@
   };
 
   const getValue = name => fields[name]?.value?.trim() || '';
+  const renderWeekdays = () => {
+    if (!calendarWeekdays) return;
+    const weekdays = language === 'ar' ? ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    calendarWeekdays.replaceChildren(...weekdays.map(day => {
+      const label = document.createElement('span');
+      label.textContent = day;
+      return label;
+    }));
+  };
+  const renderCalendar = () => {
+    if (!calendarDays) return;
+    const calendarYear = displayedCalendar.getFullYear();
+    const calendarMonth = displayedCalendar.getMonth();
+    const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    if (calendarMonthLabel) calendarMonthLabel.textContent = new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(displayedCalendar);
+    renderWeekdays();
+    calendarDays.style.gridTemplateRows = `repeat(${Math.ceil(daysInMonth / 7)}, minmax(0, 1fr))`;
+    calendarDays.replaceChildren(...Array.from({ length: daysInMonth }, (_, index) => {
+      const day = index + 1;
+      const date = new Date(calendarYear, calendarMonth, day);
+      const dateValue = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.bookDate = dateValue;
+      button.textContent = String(day);
+      button.disabled = date < new Date(calendarToday.getFullYear(), calendarToday.getMonth(), calendarToday.getDate());
+      button.classList.toggle('is-selected', selectedDate === dateValue);
+      return button;
+    }));
+  };
+  const animateCalendarMonth = delta => {
+    if (!calendarDays || delta === 0) return;
+    displayedCalendar = new Date(displayedCalendar.getFullYear(), displayedCalendar.getMonth() + delta, 1);
+    calendarDays.style.transition = 'none';
+    calendarDays.style.transform = `translateX(${delta > 0 ? '100%' : '-100%'})`;
+    renderCalendar();
+    calendarDays.offsetWidth;
+    calendarDays.style.transition = 'transform 220ms ease-out';
+    calendarDays.style.transform = 'translateX(0)';
+  };
   const selectedOptionText = name => fields[name]?.selectedOptions?.[0]?.textContent?.trim() || '';
   const renderReview = () => {
     if (!review) return;
@@ -84,6 +135,7 @@
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.querySelectorAll('[data-en][data-ar]').forEach(element => { element.textContent = element.dataset[language]; });
     document.querySelectorAll('[data-en-placeholder][data-ar-placeholder]').forEach(element => { element.placeholder = element.dataset[language + 'Placeholder']; });
+    renderCalendar();
     syncFieldDisplays();
     syncSelectDisplays();
     topSelector?.setAttribute('aria-label', labels[language].view);
@@ -109,11 +161,45 @@
   });
   Object.values(fields).forEach(field => field?.addEventListener('input', () => { syncFieldDisplays(); updateNavigation(); }));
   Object.values(fields).forEach(field => field?.addEventListener('change', () => { syncSelectDisplays(); updateNavigation(); }));
-  document.querySelectorAll('[data-book-date]').forEach(button => button.addEventListener('click', () => {
+  calendarDays?.addEventListener('click', event => {
+    if (ignoreNextCalendarClick) {
+      ignoreNextCalendarClick = false;
+      return;
+    }
+    const button = event.target.closest('[data-book-date]');
+    if (!button || button.disabled) return;
     selectedDate = button.dataset.bookDate || '';
-    document.querySelectorAll('[data-book-date]').forEach(day => day.classList.toggle('is-selected', day === button));
+    calendarDays.querySelectorAll('[data-book-date]').forEach(day => day.classList.toggle('is-selected', day === button));
     updateNavigation();
-  }));
+  });
+  calendarViewport?.addEventListener('pointerdown', event => {
+    swipeStartX = event.clientX;
+    swipeStartY = event.clientY;
+    swipeTracking = true;
+    calendarViewport.setPointerCapture?.(event.pointerId);
+  });
+  calendarViewport?.addEventListener('pointermove', event => {
+    if (!swipeTracking || swipeStartX === null || swipeStartY === null) return;
+    if (Math.abs(event.clientX - swipeStartX) > 8 && Math.abs(event.clientX - swipeStartX) > Math.abs(event.clientY - swipeStartY)) event.preventDefault();
+  });
+  calendarViewport?.addEventListener('pointerup', event => {
+    if (!swipeTracking || swipeStartX === null || swipeStartY === null) return;
+    const deltaX = event.clientX - swipeStartX;
+    const deltaY = event.clientY - swipeStartY;
+    swipeTracking = false;
+    swipeStartX = null;
+    swipeStartY = null;
+    if (Math.abs(deltaX) >= 48 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      event.preventDefault();
+      ignoreNextCalendarClick = true;
+      animateCalendarMonth(deltaX < 0 ? 1 : -1);
+    }
+  });
+  calendarViewport?.addEventListener('pointercancel', () => {
+    swipeTracking = false;
+    swipeStartX = null;
+    swipeStartY = null;
+  });
   document.querySelectorAll('[data-book-payment]').forEach(button => button.addEventListener('click', () => {
     document.querySelectorAll('[data-book-payment]').forEach(option => option.classList.toggle('is-selected', option === button));
   }));
