@@ -186,6 +186,7 @@
     selector.querySelectorAll('[data-home-services-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
   }));
   services?.querySelectorAll('[data-brand-management-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/brand-management-new'); }));
+  services?.querySelectorAll('[data-consultation-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/consultation'); }));
   account?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
     const accountSelector = account.querySelector('[data-home-account-selector]');
     accountSelector.dataset.active = button.dataset.homeAccountType;
@@ -225,19 +226,10 @@
 
   if (!workGallery) return;
 
-  // Panel 1 uses the supplied Hijab project sequence in numeric filename order.
-  const images = ['01', '02', '03', '04'].map((name) => `assets/projects/hijab/${name}.jpg`);
-  // Panel 2 keeps the established Basra Mall source sequence.
-  const panelTwoImages = [
-    '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13',
-    'photo_9_2026-08-02_22-22-30', 'photo_10_2026-08-02_22-22-30', 'photo_11_2026-08-02_22-22-30',
-    'photo_12_2026-08-02_22-22-30', 'photo_13_2026-08-02_22-22-30', 'photo_14_2026-08-02_22-22-30',
-    'photo_15_2026-08-02_22-22-30', 'photo_16_2026-08-02_22-22-30', 'photo_17_2026-08-02_22-22-30',
-    'photo_18_2026-08-02_22-22-30', 'photo_19_2026-08-02_22-22-30', 'photo_20_2026-08-02_22-22-30',
-    'photo_21_2026-08-02_22-22-30', 'photo_22_2026-08-02_22-22-30', 'photo_23_2026-08-02_22-22-30',
-    'photo_24_2026-08-02_22-22-30', 'photo_30_2026-08-02_22-22-30', 'photo_31_2026-08-02_22-22-30',
-    'photo_32_2026-08-02_22-22-30'
-  ].map((name) => `assets/projects/mall albasri/design/optimized/${name}.webp`);
+  // Panel 1 uses the supplied Fatimah project sequence in numeric filename order.
+  const images = ['01', '02', '03', '04'].map((name) => `assets/projects/fatimah/${name}.png`);
+  // Panel 2 uses the supplied Arjwan project sequence in numeric filename order.
+  const panelTwoImages = ['01', '02', '03', '04'].map((name) => `assets/projects/arjwan/optimized/${name}.webp`);
   const gallery = workGallery.querySelector('[data-studio-project-gallery]');
   const viewport = gallery.querySelector('.project-gallery-viewport');
   const rail = gallery.querySelector('.project-gallery-track');
@@ -392,9 +384,8 @@
     viewport.style.removeProperty('height');
     gallery.style.removeProperty('--story-active-height');
     if (!landscapeQuery.matches) {
-      // Preserve the Portfolio Story crop while letting the portrait card span
-      // the Studio group from one exact X inset to the other.
-      gallery.style.setProperty('--story-active-height', `${viewport.clientWidth * 16 / 9}px`);
+      // Fit the square Panel 1 card group between the Studio card's exact X insets.
+      gallery.style.setProperty('--story-active-height', `${gallery.clientWidth}px`);
       return;
     }
     const cardStyle = getComputedStyle(card);
@@ -601,11 +592,11 @@
     const duplicateClientCopy = duplicateStudioPanel.querySelector('[data-studio-client-copy]');
     const [duplicateName, duplicateSince, duplicateDescription] = duplicateClientCopy?.querySelectorAll(':scope > :is(strong, p)') || [];
     if (duplicateName && duplicateSince && duplicateDescription) {
-      Object.assign(duplicateName.dataset, { en: 'Albasri Mall', ar: 'البصري مول' });
+      Object.assign(duplicateName.dataset, { en: 'Al-Arjwan Company', ar: 'شركة الارجوان' });
       duplicateName.textContent = duplicateName.dataset[root.lang === 'ar' ? 'ar' : 'en'];
-      Object.assign(duplicateSince.dataset, { en: 'Since 10 January 2026', ar: 'منذ 10 يناير 2026' });
+      Object.assign(duplicateSince.dataset, { en: 'May 2026', ar: 'مايو 2026' });
       duplicateSince.textContent = duplicateSince.dataset[root.lang === 'ar' ? 'ar' : 'en'];
-      Object.assign(duplicateDescription.dataset, { en: 'We provide Basra Mall with a monthly brand management package covering social media management, content creation, photography, and design. We also developed and refined the visual identity to create a more consistent and professional brand presence. This work contributed to gradual sales growth, stronger audience engagement, and an increase in followers and interested customers.', ar: 'نقدم للبصري مول باقة شهرية متكاملة لإدارة العلامة التجارية، تشمل إدارة حسابات التواصل الاجتماعي، صناعة المحتوى، التصوير، والتصميم. كما عملنا على تطوير وتحسين الهوية البصرية لبناء حضور أكثر اتساقاً واحترافية للعلامة. وأسهم هذا العمل في تحقيق نمو تدريجي في المبيعات، وزيادة التفاعل، وارتفاع أعداد المتابعين والعملاء المهتمين.' });
+      Object.assign(duplicateDescription.dataset, { en: 'Al-Arjwan Company visual identity work, shown across the project’s selected compositions.', ar: 'مشاهد هوية شركة الارجوان تعرض التكوينات المختارة الخاصة بالمشروع.' });
       duplicateDescription.textContent = duplicateDescription.dataset[root.lang === 'ar' ? 'ar' : 'en'];
     }
     syncDuplicateStudioPanel();

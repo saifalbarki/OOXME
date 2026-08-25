@@ -1255,6 +1255,7 @@ html[dir="rtl"] .booking-panel :is(.promo-input-card > input, .customer-writing-
   .booking-panel { --consultation-writable-font-size: clamp(9px, .9vw, 11px); }
 }
 @media (max-width: 420px) { .booking-selectors { grid-template-columns: 1fr; } .booking-selectors .booking-card { padding: var(--space-half); } }
+@media (max-aspect-ratio: 4 / 3) { .selected-works-page .studio-work-gallery { width: 100%; } }
 /* Shared Portfolio project composition: top text grows down; each gallery and
    its dots occupy the bottom grid track. Project-specific gallery types still
    own their image rendering and interaction, not their vertical anchor. */
