@@ -18,8 +18,14 @@
   const fieldDisplays = [...document.querySelectorAll('[data-book-field-display]')];
   const selectDisplays = [...document.querySelectorAll('[data-book-select-display]')];
   const stageNames = ['information', 'schedule', 'review', 'payment'];
+  const navigationStateKey = 'consultation-last-navigation-direction';
   let mode = 'book';
   let stageIndex = 0;
+  let lastNavigationDirection = pill?.dataset.active === 'work' ? 'work' : 'details';
+  try {
+    const savedDirection = sessionStorage.getItem(navigationStateKey);
+    if (savedDirection === 'work' || savedDirection === 'details') lastNavigationDirection = savedDirection;
+  } catch (_) {}
   let selectedDate = '';
   let language = 'en';
   const calendarToday = new Date();
@@ -126,13 +132,18 @@
   };
   const isInformationValid = () => Boolean(getValue('name') && fields.email?.checkValidity() && getValue('phone').length >= 7 && getValue('sector') && getValue('topic'));
 
+  const setNavigationDirection = direction => {
+    lastNavigationDirection = direction === 'work' ? 'work' : 'details';
+    try { sessionStorage.setItem(navigationStateKey, lastNavigationDirection); } catch (_) {}
+    pill?.setAttribute('data-active', lastNavigationDirection);
+    backButton?.setAttribute('aria-pressed', String(lastNavigationDirection === 'work'));
+    forwardButton?.setAttribute('aria-pressed', String(lastNavigationDirection === 'details'));
+  };
   const updateNavigation = () => {
     const inBook = mode === 'book';
     backButton.disabled = !inBook;
     forwardButton.disabled = false;
-    backButton.setAttribute('aria-pressed', String(inBook && stageIndex > 0));
-    forwardButton.setAttribute('aria-pressed', String(inBook));
-    pill?.setAttribute('data-active', inBook && (stageIndex === 1 || stageIndex % 2 === 0) ? 'details' : 'work');
+    setNavigationDirection(lastNavigationDirection);
     renderReview();
   };
   const setStage = next => {
@@ -174,9 +185,11 @@
   }));
   backButton?.addEventListener('click', () => {
     if (mode !== 'book') return;
+    setNavigationDirection('work');
     if (stageIndex === 0) setMode('work'); else setStage(stageIndex - 1);
   });
   forwardButton?.addEventListener('click', () => {
+    setNavigationDirection('details');
     if (mode !== 'book') { stageIndex = 0; setMode('details'); return; }
     if (stageIndex === 1) { window.location.assign('/consultation-review'); return; }
     if (stageIndex === stageNames.length - 1) setMode('work'); else setStage(stageIndex + 1);

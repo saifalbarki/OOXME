@@ -184,6 +184,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-book-stage[hidden], .consultation-page .consultation-book-card[hidden] { display: none; }
 .consultation-page .consultation-book-stage-heading { color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; }
 .consultation-page .consultation-book-stage:is([data-book-stage="information"], [data-book-stage="schedule"], [data-book-stage="review"]) .consultation-book-stage-heading { font-weight: 700; }
+.consultation-page .consultation-book-stage:is([data-book-stage="information"], [data-book-stage="schedule"], [data-book-stage="review"]) .consultation-book-stage-heading > strong { font-weight: 700; }
 .consultation-page .consultation-book-fields { display: grid; gap: var(--x); }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields { align-self: stretch; flex: 0 0 auto; margin-top: auto; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-input-field:has([data-book-field="additional"]) input { min-height: calc((var(--consultation-book-input-height) * 2) + var(--x)); height: calc((var(--consultation-book-input-height) * 2) + var(--x)); }
@@ -220,6 +221,7 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 .consultation-page .consultation-calendar { display: grid; grid-template-rows: auto auto minmax(0, 1fr); height: calc(var(--consultation-book-input-height) * 4); min-height: calc(var(--consultation-book-input-height) * 4); column-gap: var(--x); row-gap: 0; padding: var(--x); border-radius: var(--radius-control); background: #f1f3f7; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-calendar { flex: 1 1 auto; height: auto; min-height: 0; margin-top: 0; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-book-schedule-fields { flex: 0 0 auto; }
+.consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-select-display { white-space: nowrap; }
 .consultation-page .consultation-calendar-month { color: var(--color-secondary-control); font-size: var(--overlay-text-size); font-weight: 400; text-align: center; }
 .consultation-page .consultation-calendar-month { margin-bottom: var(--x); }
 .consultation-page .consultation-calendar-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--x) * .35); min-height: 0; }
@@ -247,6 +249,7 @@ html[dir="rtl"] .consultation-page .consultation-review dd { text-align: start; 
 .consultation-review-route-page .consultation-review-route-card { align-self: stretch; justify-self: center; display: grid; width: calc(100% - (var(--x) * 2)); min-height: 0; padding: var(--x); border-radius: var(--radius-box); background: var(--color-paper); overflow: auto; }
 .consultation-review-route-page .consultation-review-route-stage { display: flex; flex-direction: column; min-height: 0; gap: var(--x); }
 .consultation-review-route-page .consultation-review-route-heading { color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; }
+.consultation-review-route-page .consultation-review-route-heading > strong { font-weight: 700; }
 .consultation-review-route-page .consultation-review-route-list { display: flex; flex: 1 1 auto; flex-direction: column; justify-content: flex-end; min-height: 0; margin: 0; }
 .consultation-review-route-page .consultation-review-route-list > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: var(--x); width: 100%; padding: calc(var(--x) * .55) 0; border-bottom: 1px solid var(--color-line); font-size: var(--overlay-text-size); }
 .consultation-review-route-page .consultation-review-route-list > div:last-child { border-bottom: 0; }
