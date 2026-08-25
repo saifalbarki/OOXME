@@ -171,8 +171,11 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields { align-self: stretch; flex: 0 0 auto; margin-top: auto; }
 .consultation-page .consultation-book-fields label { display: block; min-width: 0; }
 .consultation-page .consultation-select-field { position: relative; }
+.consultation-page .consultation-select-field select { -webkit-appearance: none; appearance: none; background-image: none; }
+.consultation-page .consultation-select-field select::-ms-expand { display: none; }
 .consultation-page .consultation-input-field { position: relative; }
 .consultation-page .consultation-input-field:has([data-book-field="discount"]) :is(input, textarea) { background: var(--color-blue); }
+.consultation-page .consultation-input-field:has([data-book-field="discount"]) .consultation-field-display { color: #000; }
 .consultation-page .consultation-book-fields :is(input, select, textarea) { display: block; width: 100%; min-height: var(--consultation-book-input-height); height: var(--consultation-book-input-height); padding: 0 var(--x); border: 0; border-radius: var(--radius-control); outline: 0; background: #f1f3f7; color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); line-height: 1.35; text-align: center; }
 .consultation-page .consultation-book-fields textarea { height: calc((var(--consultation-book-input-height) * 2) + var(--x)); padding-block: calc(var(--x) * .5); resize: vertical; text-align: start; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields :is(input, select, textarea) { font-size: var(--overlay-text-size) !important; text-align: center; }
@@ -181,7 +184,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-book-stage[data-book-stage="information"] select:is([data-book-field="sector"], [data-book-field="topic"]) { -webkit-appearance: none; appearance: none; background-image: none; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] select:is([data-book-field="sector"], [data-book-field="topic"])::-ms-expand { display: none; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] select:is([data-book-field="sector"], [data-book-field="topic"]) { font: inherit !important; font-family: inherit !important; font-size: var(--overlay-text-size) !important; font-weight: 400 !important; font-style: normal !important; font-stretch: 100% !important; letter-spacing: normal !important; line-height: 1.35 !important; font-feature-settings: normal !important; font-variation-settings: normal !important; text-transform: none !important; text-rendering: auto; font-synthesis: none !important; text-align: center !important; text-indent: 0; -webkit-text-fill-color: currentColor; }
-.consultation-page .consultation-select-field select:is([data-book-field="sector"], [data-book-field="topic"]) { position: relative; z-index: 1; color: transparent !important; -webkit-text-fill-color: transparent; }
+.consultation-page .consultation-select-field select { position: relative; z-index: 1; color: transparent !important; -webkit-text-fill-color: transparent; }
 .consultation-page :is(.consultation-select-display, .consultation-field-display) { position: absolute; z-index: 2; inset: 0; display: grid; place-items: center; padding: 0 var(--x); pointer-events: none; font: inherit; font-family: inherit; font-size: var(--overlay-text-size); font-weight: 400; font-style: normal; font-stretch: 100%; letter-spacing: normal; line-height: 1.35; font-feature-settings: normal; font-variation-settings: normal; text-transform: none; text-align: center; direction: inherit; color: #000; white-space: pre-wrap; overflow: hidden; }
 .consultation-page :is(.consultation-select-display, .consultation-field-display).is-placeholder { color: var(--color-secondary-control); }
 .consultation-page :is(.consultation-select-display, .consultation-field-display).is-selected { font-weight: 700; }

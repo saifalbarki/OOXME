@@ -24,6 +24,7 @@
   };
 
   const getValue = name => fields[name]?.value?.trim() || '';
+  const isScheduleValid = () => Boolean(selectedDate && getValue('time') && getValue('duration'));
   const syncSelectDisplays = () => {
     selectDisplays.forEach(display => {
       const select = display.previousElementSibling;
@@ -46,7 +47,7 @@
   const updateNavigation = () => {
     const inBook = mode === 'book';
     backButton.disabled = !inBook;
-    forwardButton.disabled = inBook && (stageIndex !== 0 || !isInformationValid());
+    forwardButton.disabled = inBook && (stageIndex === 0 ? !isInformationValid() : true);
     backButton.setAttribute('aria-pressed', String(inBook && stageIndex > 0));
     forwardButton.setAttribute('aria-pressed', String(inBook && stageIndex === 0 && isInformationValid()));
     pill?.setAttribute('data-active', inBook ? (stageIndex === 0 ? 'details' : 'work') : 'work');
