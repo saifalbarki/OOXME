@@ -193,7 +193,9 @@
   });
   forwardButton?.addEventListener('click', () => {
     setNavigationDirection('details');
-    if (mode !== 'book') { stageIndex = 0; setMode('details'); return; }
+    // Overview is the terminal destination for the arrow flow. Entering Book
+    // from Overview remains an explicit top-selector or CTA action.
+    if (mode !== 'book') return;
     if (stageIndex === stageNames.length - 1) setMode('work'); else setStage(stageIndex + 1);
   });
   overviewCta?.addEventListener('click', () => {

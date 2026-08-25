@@ -1,7 +1,7 @@
 (() => {
   const numericPattern = /[\d\u0660-\u0669\u06F0-\u06F9]+(?:[.,:/\-\u066B\u066C][\d\u0660-\u0669\u06F0-\u06F9]+)*/gu;
   const numericOnlyPattern = /^[\s\d\u0660-\u0669\u06F0-\u06F9.,:/\-+()\u066B\u066C]+$/u;
-  const ignoredSelector = 'script, style, svg, textarea, select, option, input, [contenteditable], .ooxme-numeric-content, .consultation-numeric-content';
+  const ignoredSelector = 'script, style, svg, textarea, select, option, input, [contenteditable], [data-numeric-typography-ignore], .ooxme-numeric-content, .consultation-numeric-content';
   let scheduled = false;
 
   const isNumericOnly = value => Boolean(value?.trim()) && numericOnlyPattern.test(value.trim());

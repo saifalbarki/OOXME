@@ -70,7 +70,7 @@ document.addEventListener('click', (event) => {
 }, true);
 
 window.OOXMEMasterPanelDrag = {
-  register({ experience, track, panels, getIndex, moveTo, allowGestureNavigation = true, allowBottomControlNavigation = allowGestureNavigation }) {
+  register({ experience, track, panels, getIndex, moveTo, allowGestureNavigation = true, allowBottomControlNavigation = allowGestureNavigation, wrapBottomTap = true }) {
     if (!experience || !track || track.dataset.masterPanelDragBound) return;
     track.dataset.masterPanelDragBound = 'true';
 
@@ -222,7 +222,8 @@ window.OOXMEMasterPanelDrag = {
       if (action === 'tap') {
         const managedAction = new CustomEvent('ooxme:bottom-action', { cancelable: true, detail: { action, activeIndex } });
         if (!experience.dispatchEvent(managedAction)) return;
-        moveTo(activeIndex === panels.length - 1 ? 0 : activeIndex + 1);
+        const target = wrapBottomTap ? (activeIndex === panels.length - 1 ? 0 : activeIndex + 1) : Math.min(panels.length - 1, activeIndex + 1);
+        if (target !== activeIndex) moveTo(target);
       } else if (action === 'right' && window.history.length > 1) {
         window.history.back();
       } else if (action === 'left') {

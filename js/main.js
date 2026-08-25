@@ -424,7 +424,8 @@ const setupEmployeeDashboardPanels = () => {
     track: employeeTrack,
     panels: employeePanels,
     getIndex: () => employeePanelIndex,
-    moveTo: moveToEmployeePanel
+    moveTo: moveToEmployeePanel,
+    wrapBottomTap: false
   });
 
 };
@@ -434,7 +435,7 @@ const employeeDashboardPanelOneSelector = employeeDashboardPanelOne?.querySelect
 const employeeDashboardPanelOneNavigation = employeeDashboardPanelOne?.querySelector('[data-employee-dashboard-contextual]');
 if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDashboardPanelOneNavigation) {
   let employeeDashboardPanelOneState = 'current';
-  const sizeEmployeeDashboardPanelOneEditCard = () => {
+  const sizeEmployeeDashboardPanelOneEditCard = (preservedAvatarTop = null) => {
     const infoCard = employeeDashboardPanelOne.querySelector('.employee-dashboard-info-card');
     const avatar = employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar');
     if (!infoCard || !avatar || employeeDashboardPanelOneState !== 'edit') {
@@ -448,7 +449,7 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
       avatar.style.removeProperty('--employee-dashboard-avatar-portrait-offset');
       avatar.style.removeProperty('--employee-dashboard-avatar-restore-offset');
       infoCard.style.height = 'auto';
-      const previousAvatarTop = avatar.getBoundingClientRect().top;
+      const previousAvatarTop = preservedAvatarTop ?? avatar.getBoundingClientRect().top;
       infoCard.style.removeProperty('height');
       employeeDashboardPanelOne.dataset.employeeDashboardPanelOneLandscapeColumns = 'true';
       avatar.style.setProperty('--employee-dashboard-avatar-restore-offset', `${previousAvatarTop - avatar.getBoundingClientRect().top}px`);
@@ -461,9 +462,14 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
     const navigationBounds = employeeDashboardPanelOneNavigation.getBoundingClientRect();
     const x = Number.parseFloat(getComputedStyle(infoCard).paddingTop) || 0;
     infoCard.style.setProperty('--employee-dashboard-edit-extension', `${Math.max(0, navigationBounds.top - x - cardBounds.bottom)}px`);
-    avatar.style.setProperty('--employee-dashboard-avatar-portrait-offset', `${Math.max(0, infoCard.getBoundingClientRect().top - x - avatar.getBoundingClientRect().bottom)}px`);
+    const currentAvatarTop = avatar.getBoundingClientRect().top;
+    const targetAvatarTop = preservedAvatarTop ?? currentAvatarTop;
+    avatar.style.setProperty('--employee-dashboard-avatar-portrait-offset', `${targetAvatarTop - currentAvatarTop}px`);
   };
   const setEmployeeDashboardPanelOneState = (next) => {
+    const preservedAvatarTop = next === 'edit' && employeeDashboardPanelOneState !== 'edit'
+      ? employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar')?.getBoundingClientRect().top ?? null
+      : null;
     employeeDashboardPanelOneState = next === 'edit' ? 'edit' : 'current';
     const bottomState = employeeDashboardPanelOneState === 'edit' ? 'details' : 'work';
     employeeDashboardPanelOne.dataset.employeeDashboardPanelOneState = employeeDashboardPanelOneState;
@@ -472,7 +478,7 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
     const pill = employeeDashboardPanelOneNavigation.querySelector('[data-employee-dashboard-context-pill]');
     pill?.setAttribute('data-active', bottomState);
     employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === bottomState)));
-    requestAnimationFrame(sizeEmployeeDashboardPanelOneEditCard);
+    requestAnimationFrame(() => sizeEmployeeDashboardPanelOneEditCard(preservedAvatarTop));
   };
   employeeDashboardPanelOneSelector.querySelectorAll('[data-employee-dashboard-panel-one-option]').forEach((option) => option.addEventListener('click', () => setEmployeeDashboardPanelOneState(option.dataset.employeeDashboardPanelOneOption)));
   employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
