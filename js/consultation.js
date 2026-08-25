@@ -90,12 +90,6 @@
       renderNumericContent(button, String(day));
       button.disabled = date < new Date(calendarToday.getFullYear(), calendarToday.getMonth(), calendarToday.getDate());
       button.classList.toggle('is-selected', selectedDate === dateValue);
-      if (!button.disabled) {
-        const availabilityDot = document.createElement('span');
-        availabilityDot.className = 'consultation-calendar-availability-dot';
-        availabilityDot.setAttribute('aria-hidden', 'true');
-        button.append(availabilityDot);
-      }
       return button;
     }));
   };
@@ -197,7 +191,6 @@
   forwardButton?.addEventListener('click', () => {
     setNavigationDirection('details');
     if (mode !== 'book') { stageIndex = 0; setMode('details'); return; }
-    if (stageIndex === 1) { window.location.assign('/consultation-review'); return; }
     if (stageIndex === stageNames.length - 1) setMode('work'); else setStage(stageIndex + 1);
   });
   Object.values(fields).forEach(field => field?.addEventListener('input', () => { syncFieldDisplays(); updateNavigation(); }));

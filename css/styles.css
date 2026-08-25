@@ -227,6 +227,7 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 .consultation-page .consultation-calendar-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--x) * .35); min-height: 0; }
 .consultation-page .consultation-calendar-weekdays { margin-bottom: var(--x); }
 .consultation-page .consultation-calendar-weekdays > span { min-width: 0; width: min(100%, calc(var(--consultation-book-input-height) * 1.12)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 700; opacity: 1; box-shadow: none; }
+.consultation-page .consultation-calendar-weekdays > span { background: transparent; background-image: none; border-radius: 0; }
 .consultation-page .consultation-calendar-viewport { min-height: 0; overflow: hidden; touch-action: pan-y; }
 .consultation-page .consultation-calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--x) * .35); min-height: 0; height: 100%; will-change: transform; }
 .consultation-page .consultation-calendar-days button { min-width: 0; width: min(100%, calc(var(--consultation-book-input-height) * 1.12)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; cursor: pointer; opacity: 1; box-shadow: none; }
@@ -234,8 +235,6 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 .consultation-page .consultation-calendar-days button:disabled { background: var(--color-paper); background-image: none; color: var(--color-secondary-control); cursor: default; opacity: 1; box-shadow: none; }
 .consultation-page .consultation-calendar-days button,
 .consultation-page .consultation-calendar-days button:is(.is-selected, :disabled) { background: transparent; background-image: none; border-radius: 0; font-weight: 700; }
-.consultation-page .consultation-calendar-days button { position: relative; }
-.consultation-page .consultation-calendar-days .consultation-calendar-availability-dot { position: absolute; bottom: calc(var(--x) * .2); left: 50%; width: 4px; height: 4px; border-radius: 50%; background: var(--color-green); content: ''; transform: translateX(-50%); }
 .consultation-page .consultation-review { display: grid; margin: 0; gap: 0; }
 .consultation-page .consultation-review > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--x); padding: calc(var(--x) * .55) 0; border-bottom: 1px solid var(--color-line); font-size: var(--overlay-text-size); }
 .consultation-page .consultation-review > div:last-child { border-bottom: 0; }
