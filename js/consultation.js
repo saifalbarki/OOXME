@@ -76,7 +76,7 @@
     const firstWeekday = new Date(calendarYear, calendarMonth, 1).getDay();
     const rowCount = Math.ceil((firstWeekday + daysInMonth) / 7);
     const totalCells = rowCount * 7;
-    if (calendarMonthLabel) renderNumericContent(calendarMonthLabel, new Intl.DateTimeFormat(language, { month: 'long', year: 'numeric' }).format(displayedCalendar));
+    if (calendarMonthLabel) renderNumericContent(calendarMonthLabel, new Intl.DateTimeFormat(language, { month: 'long' }).format(displayedCalendar));
     renderWeekdays();
     calendarDays.style.gridTemplateRows = `repeat(${rowCount}, minmax(0, 1fr))`;
     calendarDays.replaceChildren(...Array.from({ length: totalCells }, (_, cellIndex) => {
@@ -90,6 +90,12 @@
       renderNumericContent(button, String(day));
       button.disabled = date < new Date(calendarToday.getFullYear(), calendarToday.getMonth(), calendarToday.getDate());
       button.classList.toggle('is-selected', selectedDate === dateValue);
+      if (!button.disabled) {
+        const availabilityDot = document.createElement('span');
+        availabilityDot.className = 'consultation-calendar-availability-dot';
+        availabilityDot.setAttribute('aria-hidden', 'true');
+        button.append(availabilityDot);
+      }
       return button;
     }));
   };
