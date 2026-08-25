@@ -222,8 +222,7 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-calendar { flex: 1 1 auto; height: auto; min-height: 0; margin-top: 0; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-book-schedule-fields { flex: 0 0 auto; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-select-display { white-space: nowrap; }
-.consultation-page .consultation-book-stage[data-book-stage="schedule"] select[data-book-field="duration"] + .consultation-select-display,
-.consultation-page .consultation-book-stage[data-book-stage="schedule"] select[data-book-field="duration"] + .consultation-select-display * { white-space: nowrap; word-break: keep-all; overflow-wrap: normal; }
+.consultation-page .consultation-book-stage[data-book-stage="schedule"] select[data-book-field="duration"] + .consultation-select-display { display: block; width: 100%; min-width: 0; max-width: none; white-space: nowrap; word-break: keep-all; overflow-wrap: normal; overflow: hidden; text-overflow: clip; line-height: 1.35; }
 .consultation-page .consultation-calendar-month { color: var(--color-secondary-control); font-size: var(--overlay-text-size); font-weight: 400; text-align: center; }
 .consultation-page .consultation-calendar-month { margin-bottom: var(--x); }
 .consultation-page .consultation-calendar-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--x) * .35); min-height: 0; }

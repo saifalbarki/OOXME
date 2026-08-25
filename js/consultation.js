@@ -116,7 +116,9 @@
   const syncSelectDisplays = () => {
     selectDisplays.forEach(display => {
       const select = display.previousElementSibling;
-      renderNumericContent(display, select?.selectedOptions?.[0]?.textContent?.trim() || '');
+      const selectedText = select?.selectedOptions?.[0]?.textContent?.trim() || '';
+      if (select?.dataset.bookField === 'duration') display.replaceChildren(document.createTextNode(selectedText));
+      else renderNumericContent(display, selectedText);
       display.classList.toggle('is-placeholder', !select?.value);
       display.classList.toggle('is-selected', Boolean(select?.value));
     });
