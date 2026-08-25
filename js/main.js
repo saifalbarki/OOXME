@@ -624,7 +624,7 @@ const setHomepageStudioOpen = (open) => {
     button.setAttribute('aria-hidden', 'false');
     button.setAttribute('tabindex', '0');
   });
-  window.requestAnimationFrame(() => homepageMenu.classList.add('is-studio-options'));
+  homepageMenu.classList.add('is-studio-options');
   resetHomepageMenuInactivityTimer();
 };
 homepageMenu?.querySelectorAll('[data-home-studio-option]').forEach((button) => button.addEventListener('click', (event) => {
@@ -656,7 +656,7 @@ const setHomepageServicesContextOpen = (open) => {
     button.setAttribute('aria-hidden', 'false');
     button.setAttribute('tabindex', '0');
   });
-  window.requestAnimationFrame(() => homepageMenu.classList.add('is-services-options'));
+  homepageMenu.classList.add('is-services-options');
   resetHomepageMenuInactivityTimer();
 };
 homepageMenu?.querySelectorAll('[data-home-services-option]').forEach((button) => button.addEventListener('click', (event) => {
