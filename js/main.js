@@ -650,6 +650,10 @@ homepageMenu?.querySelectorAll('[data-home-studio-option]').forEach((button) => 
       window.location.assign('/studio');
       return;
     }
+    if (button.dataset.homeStudioOption === 'selected-works') {
+      window.location.assign('/selected-works');
+      return;
+    }
     homepageMenu.removeAttribute('data-studio-active');
     homepageStudioNavigationLocked = false;
     resetHomepageMenuInactivityTimer();
