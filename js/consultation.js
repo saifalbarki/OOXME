@@ -4,6 +4,7 @@
   const topSelector = document.querySelector('[data-brand-management-selector]');
   const topButtons = [...document.querySelectorAll('[data-brand-management-state]')];
   const squareCard = document.querySelector('.consultation-square-card');
+  const overviewCta = document.querySelector('[data-consultation-overview-cta]');
   const bookCard = document.querySelector('[data-book-card]');
   const stages = [...document.querySelectorAll('[data-book-stage]')];
   const backButton = document.querySelector('[data-brand-management-context="work"]');
@@ -194,6 +195,10 @@
     setNavigationDirection('details');
     if (mode !== 'book') { stageIndex = 0; setMode('details'); return; }
     if (stageIndex === stageNames.length - 1) setMode('work'); else setStage(stageIndex + 1);
+  });
+  overviewCta?.addEventListener('click', () => {
+    stageIndex = 0;
+    setMode('details');
   });
   Object.values(fields).forEach(field => field?.addEventListener('input', () => { syncFieldDisplays(); updateNavigation(); }));
   Object.values(fields).forEach(field => field?.addEventListener('change', () => { syncSelectDisplays(); updateNavigation(); }));
