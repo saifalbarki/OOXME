@@ -11,7 +11,6 @@
   const pill = document.querySelector('[data-brand-management-pill]');
   const review = document.querySelector('[data-book-review]');
   const calendarDays = document.querySelector('[data-book-calendar-days]');
-  const calendarHeading = document.querySelector('.consultation-calendar-heading');
   const calendarViewport = document.querySelector('[data-book-calendar-viewport]');
   const calendarMonthLabel = document.querySelector('[data-book-calendar-month]');
   const calendarWeekdays = document.querySelector('[data-book-calendar-weekdays]');

@@ -200,18 +200,17 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields :is(input, textarea):not(:placeholder-shown) { color: #000; font-weight: 700; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields input:not(:placeholder-shown) { line-height: normal !important; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields select:is([data-book-field="sector"], [data-book-field="topic"]):valid { color: #000; font-weight: 400 !important; }
-.consultation-page .consultation-calendar { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr); height: calc(var(--consultation-book-input-height) * 4); min-height: calc(var(--consultation-book-input-height) * 4); column-gap: var(--x); row-gap: 0; padding: var(--x); border-radius: var(--radius-control); background: #f1f3f7; }
+.consultation-page .consultation-calendar { display: grid; grid-template-rows: auto auto minmax(0, 1fr); height: calc(var(--consultation-book-input-height) * 4); min-height: calc(var(--consultation-book-input-height) * 4); column-gap: var(--x); row-gap: 0; padding: var(--x); border-radius: var(--radius-control); background: #f1f3f7; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-calendar { flex: 1 1 auto; height: auto; min-height: 0; margin-top: 0; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-book-schedule-fields { flex: 0 0 auto; }
-.consultation-page .consultation-calendar-heading, .consultation-page .consultation-calendar-month { color: var(--color-secondary-control); font-size: var(--overlay-text-size); font-weight: 400; text-align: center; }
-.consultation-page .consultation-calendar-heading { margin-bottom: calc(var(--x) * .75); }
+.consultation-page .consultation-calendar-month { color: var(--color-secondary-control); font-size: var(--overlay-text-size); font-weight: 400; text-align: center; }
 .consultation-page .consultation-calendar-month { margin-bottom: var(--x); }
 .consultation-page .consultation-calendar-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--x) * .35); min-height: 0; }
 .consultation-page .consultation-calendar-weekdays { margin-bottom: var(--x); }
-.consultation-page .consultation-calendar-weekdays > span { min-width: 0; width: min(100%, var(--consultation-book-input-height)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; opacity: 1; box-shadow: none; }
+.consultation-page .consultation-calendar-weekdays > span { min-width: 0; width: min(100%, calc(var(--consultation-book-input-height) * 1.12)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; opacity: 1; box-shadow: none; }
 .consultation-page .consultation-calendar-viewport { min-height: 0; overflow: hidden; touch-action: pan-y; }
 .consultation-page .consultation-calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: calc(var(--x) * .35); min-height: 0; height: 100%; will-change: transform; }
-.consultation-page .consultation-calendar-days button { min-width: 0; width: min(100%, var(--consultation-book-input-height)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; cursor: pointer; opacity: 1; box-shadow: none; }
+.consultation-page .consultation-calendar-days button { min-width: 0; width: min(100%, calc(var(--consultation-book-input-height) * 1.12)); aspect-ratio: 1; justify-self: center; align-self: center; display: grid; place-items: center; border: 0; border-radius: 50%; background: var(--color-paper); background-image: none; color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; cursor: pointer; opacity: 1; box-shadow: none; }
 .consultation-page .consultation-calendar-days button.is-selected { background: var(--color-paper); background-image: none; color: var(--color-brand); font-weight: 400; opacity: 1; box-shadow: none; }
 .consultation-page .consultation-calendar-days button:disabled { background: var(--color-paper); background-image: none; color: var(--color-secondary-control); cursor: default; opacity: 1; box-shadow: none; }
 .consultation-page .consultation-review { display: grid; margin: 0; gap: 0; }
@@ -238,7 +237,7 @@ html[dir="rtl"] .consultation-page .consultation-review dd { text-align: start; 
   }
   .consultation-page .consultation-calendar-weekdays > span,
   .consultation-page .consultation-calendar-days button {
-    width: min(100%, calc(var(--consultation-book-input-height) * .48));
+    width: min(100%, calc(var(--consultation-book-input-height) * .58));
   }
 }
 @media (min-aspect-ratio: 4 / 3) {
