@@ -145,7 +145,9 @@
   const updateNavigation = () => {
     const inBook = mode === 'book';
     backButton.disabled = !inBook;
-    forwardButton.disabled = false;
+    forwardButton.disabled = inBook && stageIndex === stageNames.length - 1;
+    backButton?.setAttribute('aria-disabled', String(backButton.disabled));
+    forwardButton?.setAttribute('aria-disabled', String(forwardButton.disabled));
     setNavigationDirection(lastNavigationDirection);
     renderReview();
   };
@@ -183,20 +185,19 @@
 
   topButtons.forEach(button => button.addEventListener('click', () => {
     const next = button.dataset.brandManagementState;
-    if (next === 'details' && mode !== 'book') stageIndex = 0;
+    if (next === 'details') stageIndex = 0;
     setMode(next);
   }));
   backButton?.addEventListener('click', () => {
-    if (mode !== 'book') return;
+    if (backButton.disabled || mode !== 'book') return;
     setNavigationDirection('work');
     if (stageIndex === 0) setMode('work'); else setStage(stageIndex - 1);
   });
   forwardButton?.addEventListener('click', () => {
+    if (forwardButton.disabled) return;
     setNavigationDirection('details');
-    // Overview is the terminal destination for the arrow flow. Entering Book
-    // from Overview remains an explicit top-selector or CTA action.
-    if (mode !== 'book') return;
-    if (stageIndex === stageNames.length - 1) setMode('work'); else setStage(stageIndex + 1);
+    if (mode !== 'book') { stageIndex = 0; setMode('details'); return; }
+    setStage(stageIndex + 1);
   });
   overviewCta?.addEventListener('click', () => {
     stageIndex = 0;
