@@ -149,7 +149,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 }
 
 /* Consultation shell: empty panel only, reusing the Brand Management navigation geometry. */
-.consultation-page { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); --consultation-z: var(--bottom-control-line-thickness); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
+.consultation-page { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
 .consultation-page .consultation-master-panel { grid-template-rows: minmax(0, 1fr) auto; isolation: isolate; background: transparent; }
 .consultation-page .consultation-master-panel > :not(.brand-management-contextual-navigation) { position: relative; z-index: 1; }
 .consultation-page .consultation-content { grid-template-rows: auto minmax(0, 1fr); align-content: stretch; gap: var(--x); padding: var(--x) 0 calc(var(--studio-navigation-height) + (var(--x) * 2)); }
@@ -164,12 +164,9 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-content[data-book-mode="book"] .consultation-square-card { display: none; }
 .consultation-page .consultation-book-card { --consultation-book-input-height: 42px; align-self: stretch; justify-self: center; display: grid; width: calc(100% - (var(--x) * 2)); min-height: 0; padding: var(--x); border-radius: var(--radius-box); background: var(--color-paper); overflow: auto; }
 .consultation-page .consultation-book-stage { display: grid; align-content: start; min-height: 0; gap: var(--x); }
-.consultation-page .consultation-book-stage[data-book-stage="information"] { align-content: end; margin-bottom: calc(var(--x) * -1); padding-bottom: var(--consultation-z); }
 .consultation-page .consultation-book-stage[hidden], .consultation-page .consultation-book-card[hidden] { display: none; }
 .consultation-page .consultation-book-stage-heading { color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; }
 .consultation-page .consultation-book-fields { display: grid; gap: var(--x); }
-.consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields { gap: var(--consultation-z); margin-inline: calc(var(--consultation-z) - var(--x)); }
-.consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields :is(input, select, textarea) { border-radius: var(--radius-box); }
 .consultation-page .consultation-book-fields label { display: block; min-width: 0; }
 .consultation-page .consultation-book-fields :is(input, select, textarea) { display: block; width: 100%; min-height: var(--consultation-book-input-height); height: var(--consultation-book-input-height); padding: 0 var(--x); border: 0; border-radius: var(--radius-control); outline: 0; background: #f1f3f7; color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); line-height: 1.35; text-align: center; }
 .consultation-page .consultation-book-fields textarea { height: calc((var(--consultation-book-input-height) * 2) + var(--x)); padding-block: calc(var(--x) * .5); resize: vertical; text-align: start; }
@@ -181,7 +178,6 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-book-stage[data-book-stage="information"] select:is([data-book-field="sector"], [data-book-field="topic"]) { font-size: var(--overlay-text-size) !important; font-weight: 400; line-height: 1.35; text-align: center; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] select:is([data-book-field="sector"], [data-book-field="topic"]) option { font-family: inherit; font-size: var(--overlay-text-size); font-weight: 400; line-height: 1.35; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields textarea { padding-block: calc((calc((var(--consultation-book-input-height) * 2) + var(--x)) - (1em * 1.35)) / 2); text-align: center; }
-.consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields textarea[data-book-field="additional"] { height: var(--consultation-book-input-height); min-height: var(--consultation-book-input-height); padding-block: 0; resize: none; }
 html[dir="ltr"] .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields :is(input, select, textarea) { direction: ltr; }
 html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields :is(input, select, textarea) { direction: rtl; }
 .consultation-page .consultation-book-fields :is(input, textarea)::placeholder { color: var(--color-secondary-control); opacity: 1; }
