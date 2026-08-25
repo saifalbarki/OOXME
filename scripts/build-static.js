@@ -18,7 +18,9 @@ for (const name of fs.readdirSync(sourceRoot)) {
   if (name.endsWith('.html')) {
     const source = fs.readFileSync(path.join(sourceRoot, name), 'utf8');
     const sharedTypography = '<script src="js/arabic-typography.js" defer></script>';
-    const page = source.includes(sharedTypography) ? source : source.replace('</head>', sharedTypography + '</head>');
+    const sharedNumericTypography = '<script src="js/numeric-typography.js" defer></script>';
+    const pageWithTypography = source.includes(sharedTypography) ? source : source.replace('</head>', sharedTypography + '</head>');
+    const page = pageWithTypography.includes(sharedNumericTypography) ? pageWithTypography : pageWithTypography.replace('</head>', sharedNumericTypography + '</head>');
     fs.writeFileSync(path.join(output, name), page);
   }
 }

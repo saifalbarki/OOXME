@@ -7,7 +7,7 @@ const { allStatuses } = require('./api/_lib/os-status');
 const accountAdmin = require('./api/_lib/account-admin');
 
 const root = __dirname;
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2' };
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2' };
 const send = (response, status, headers, body = '') => { response.writeHead(status, headers); response.end(body); };
 const readBody = (request) => new Promise((resolve, reject) => { let raw = ''; request.on('data', chunk => { raw += chunk; if (raw.length > 10_000) request.destroy(); }); request.on('end', () => { try { resolve(JSON.parse(raw || '{}')); } catch (error) { reject(error); } }); request.on('error', reject); });
 const handleOs = async (request, response, requestPath, query) => {
@@ -61,8 +61,13 @@ const server = http.createServer((request, response) => {
     : (fs.existsSync(resolved) ? resolved : cleanRoute);
   fs.readFile(target, (error, content) => {
     if (error) { response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); response.end('Not found'); return; }
+    const isHtml = path.extname(target).toLowerCase() === '.html';
+    const sharedTypography = '<script src="js/arabic-typography.js" defer></script>';
+    const sharedNumericTypography = '<script src="js/numeric-typography.js" defer></script>';
+    const pageWithTypography = isHtml && !content.includes(sharedTypography) ? content.toString('utf8').replace('</head>', sharedTypography + '</head>') : content;
+    const page = isHtml && !pageWithTypography.includes(sharedNumericTypography) ? pageWithTypography.replace('</head>', sharedNumericTypography + '</head>') : pageWithTypography;
     response.writeHead(200, { 'Content-Type': types[path.extname(target).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
-    response.end(content);
+    response.end(page);
   });
   }).catch(() => send(response, 400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"invalid_request"}'));
 });
