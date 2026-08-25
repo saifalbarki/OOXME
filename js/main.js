@@ -536,6 +536,7 @@ let homepageAccountCloseTimer;
 let homepageServicesCloseTimer;
 let homepageLanguageCloseTimer;
 let homepageStudioOptionTimer;
+let homepageServicesOptionTimer;
 let employeeDashboardMenuTimer;
 const setEmployeeDashboardMenuOpen = (open) => {
   if (!employeeDashboardNavigation || !employeeDashboardMenuTrigger) return;
@@ -566,6 +567,7 @@ const resetHomepageMenuInactivityTimer = () => {
   homepageMenuInactivityTimer = window.setTimeout(() => setHomepageMenuOpen(false), 5000);
 };
 let homepageStudioNavigationLocked = false;
+let homepageServicesNavigationLocked = false;
 const resetHomepageStudioOptions = () => {
   window.clearTimeout(homepageStudioOptionTimer);
   homepageStudioNavigationLocked = false;
@@ -577,10 +579,22 @@ const resetHomepageStudioOptions = () => {
     button.setAttribute('tabindex', '-1');
   });
 };
+const resetHomepageServicesOptions = () => {
+  window.clearTimeout(homepageServicesOptionTimer);
+  homepageServicesNavigationLocked = false;
+  homepageMenu?.classList.remove('is-services-options');
+  homepageMenu?.removeAttribute('data-services-active');
+  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
+  homepageMenu?.querySelectorAll('[data-home-services-option]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'true');
+    button.setAttribute('tabindex', '-1');
+  });
+};
 const setHomepageMenuOpen = (open) => {
   if (!open) {
     window.clearTimeout(homepageMenuSelectionTimer);
     resetHomepageStudioOptions();
+    resetHomepageServicesOptions();
   }
   window.clearTimeout(homepageMenuCloseTimer);
   if (open) {
@@ -628,6 +642,32 @@ homepageMenu?.querySelectorAll('[data-home-studio-option]').forEach((button) => 
     homepageMenu.removeAttribute('data-studio-active');
     homepageStudioNavigationLocked = false;
     resetHomepageMenuInactivityTimer();
+  }, 500);
+}));
+const setHomepageServicesContextOpen = (open) => {
+  if (!homepageMenu) return;
+  if (!open) {
+    resetHomepageServicesOptions();
+    return;
+  }
+  setHomepageMenuOpen(true);
+  homepageMenu.setAttribute('aria-label', 'Services');
+  homepageMenu.querySelectorAll('[data-home-services-option]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'false');
+    button.setAttribute('tabindex', '0');
+  });
+  window.requestAnimationFrame(() => homepageMenu.classList.add('is-services-options'));
+  resetHomepageMenuInactivityTimer();
+};
+homepageMenu?.querySelectorAll('[data-home-services-option]').forEach((button) => button.addEventListener('click', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  if (!homepageMenu.classList.contains('is-services-options') || homepageServicesNavigationLocked) return;
+  homepageServicesNavigationLocked = true;
+  window.clearTimeout(homepageMenuInactivityTimer);
+  homepageMenu.dataset.servicesActive = button.dataset.homeServicesOption;
+  homepageServicesOptionTimer = window.setTimeout(() => {
+    window.location.assign(button.dataset.homeServicesOption === 'consultation' ? '/consultation' : '/brand-management-new');
   }, 500);
 }));
 const closeHomepageStudioOutside = (event) => {
@@ -815,7 +855,7 @@ document.querySelector('[data-home-menu-home]')?.addEventListener('click', () =>
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => setHomepageAccountOpen(true)));
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => setHomepageStudioOpen(true)));
 document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/studio'));
-document.querySelector('[data-home-menu-services]')?.addEventListener('click', () => queueHomepageMenuSelection('services', () => setHomepageServicesOpen(true)));
+document.querySelector('[data-home-menu-services]')?.addEventListener('click', () => queueHomepageMenuSelection('services', () => setHomepageServicesContextOpen(true)));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
   setHomepageNotificationsOpen(true);
 }));

@@ -422,6 +422,14 @@ html[dir="rtl"] .homepage-studio-nav-option-content { direction: rtl; }
 .homepage-bottom-navigation.is-menu-open .homepage-bottom-menu.is-studio-options .homepage-bottom-menu-indicator { width: calc(50% - (var(--homepage-bottom-nav-highlight-inset) * 2)); opacity: 0; transition-delay: 0s; }
 .homepage-bottom-navigation.is-menu-open .homepage-bottom-menu.is-studio-options[data-studio-active="clients"] .homepage-bottom-menu-indicator { left: var(--homepage-bottom-nav-highlight-inset); opacity: 1; }
 .homepage-bottom-navigation.is-menu-open .homepage-bottom-menu.is-studio-options[data-studio-active="selected-works"] .homepage-bottom-menu-indicator { left: calc(50% + var(--homepage-bottom-nav-highlight-inset)); opacity: 1; }
+.homepage-services-nav-option { position: absolute; z-index: 1; top: 0; bottom: 0; display: grid; place-items: center; width: 50%; min-width: 0; padding: 0 var(--x); border: 0; background: transparent; color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .18s ease; }
+.homepage-services-nav-option[data-home-services-option="consultation"] { left: 0; }
+.homepage-services-nav-option[data-home-services-option="brand-management"] { right: 0; }
+.homepage-bottom-menu.is-services-options .homepage-bottom-menu-button { opacity: 0; transform: scale(1); pointer-events: none; transition-delay: 0s; }
+.homepage-bottom-menu.is-services-options .homepage-services-nav-option { opacity: 1; pointer-events: auto; transition-delay: .14s; }
+.homepage-bottom-navigation.is-menu-open .homepage-bottom-menu.is-services-options .homepage-bottom-menu-indicator { width: calc(50% - (var(--homepage-bottom-nav-highlight-inset) * 2)); opacity: 0; transition-delay: 0s; }
+.homepage-bottom-navigation.is-menu-open .homepage-bottom-menu.is-services-options[data-services-active="consultation"] .homepage-bottom-menu-indicator { left: var(--homepage-bottom-nav-highlight-inset); opacity: 1; }
+.homepage-bottom-navigation.is-menu-open .homepage-bottom-menu.is-services-options[data-services-active="brand-management"] .homepage-bottom-menu-indicator { left: calc(50% + var(--homepage-bottom-nav-highlight-inset)); opacity: 1; }
 .homepage-bottom-navigation { --homepage-alignment-x: var(--x); }
 .homepage-bottom-menu, .homepage-bottom-navigation.is-menu-open .homepage-bottom-menu { bottom: var(--homepage-alignment-x); }
 .homepage-notifications { position: fixed; z-index: 20; inset: 0; padding: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .36s ease, visibility 0s linear .36s; }
