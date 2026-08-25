@@ -249,11 +249,13 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 html[dir="rtl"] .consultation-page .consultation-book-fields textarea { direction: rtl; text-align: start; }
 html[dir="rtl"] .consultation-page .consultation-review dd { text-align: start; }
 .consultation-review-route-page .consultation-review-route-content { grid-template-rows: auto minmax(0, 1fr); align-content: stretch; gap: var(--x); padding: var(--x) 0 calc(var(--studio-navigation-height) + (var(--x) * 2)); }
-.consultation-review-route-page .consultation-review-route-card { align-self: stretch; justify-self: center; display: grid; width: calc(100% - (var(--x) * 2)); min-height: 0; padding: var(--x); border-radius: var(--radius-box); background: var(--color-paper); overflow: auto; }
+.consultation-review-route-page .consultation-review-route-card { --consultation-book-input-height: 42px; align-self: stretch; justify-self: center; display: grid; width: calc(100% - (var(--x) * 2)); min-height: 0; padding: var(--x); border-radius: var(--radius-box); background: var(--color-paper); overflow: auto; }
 .consultation-review-route-page .consultation-review-route-stage { display: flex; flex-direction: column; min-height: 0; gap: var(--x); }
 .consultation-review-route-page .consultation-review-route-heading { color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; }
 .consultation-review-route-page .consultation-review-route-heading > strong { font-weight: 700; }
-.consultation-review-route-page .consultation-review-route-list { display: flex; flex: 1 1 auto; flex-direction: column; justify-content: flex-end; min-height: 0; margin: 0; }
+.consultation-review-route-page .consultation-review-route-message { margin: 0; color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 400; line-height: 1.35; text-align: center; }
+.consultation-review-route-page .consultation-review-route-download { display: grid; place-items: center; width: 100%; min-height: var(--consultation-book-input-height); height: var(--consultation-book-input-height); box-sizing: border-box; padding: 0 var(--x); border: 0; border-radius: var(--radius-control); background: var(--color-blue); color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; line-height: 1.35; text-align: center; cursor: pointer; }
+.consultation-review-route-page .consultation-review-route-list { display: flex; flex: 0 0 auto; flex-direction: column; justify-content: flex-start; min-height: 0; margin: 0; }
 .consultation-review-route-page .consultation-review-route-list > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: var(--x); width: 100%; padding: calc(var(--x) * .55) 0; border-bottom: 1px solid var(--color-line); font-size: var(--overlay-text-size); }
 .consultation-review-route-page .consultation-review-route-list > div:last-child { border-bottom: 0; }
 .consultation-review-route-page .consultation-review-route-list dt { color: var(--color-secondary-control); text-align: start; }
@@ -261,6 +263,7 @@ html[dir="rtl"] .consultation-page .consultation-review dd { text-align: start; 
 html[dir="rtl"] .consultation-review-route-page .consultation-review-route-list dd { text-align: end; }
 @media (min-aspect-ratio: 4 / 3) { .consultation-page .consultation-book-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .consultation-page .consultation-book-fields label:has(textarea) { grid-column: 1 / -1; } .consultation-page .consultation-book-schedule-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-aspect-ratio: 4 / 3) { .consultation-page .consultation-book-card { --consultation-book-input-height: 38px; } }
+@media (max-aspect-ratio: 4 / 3) { .consultation-review-route-page .consultation-review-route-card { --consultation-book-input-height: 38px; } }
 @media (max-aspect-ratio: 4 / 3) {
   .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-calendar {
     flex: 0 0 calc((var(--consultation-book-input-height) * 6) + (var(--x) * 5));
