@@ -170,6 +170,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-book-stage-heading { color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; }
 .consultation-page .consultation-book-fields { display: grid; gap: var(--x); }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields { align-self: stretch; flex: 0 0 auto; margin-top: auto; }
+.consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-input-field:has([data-book-field="additional"]) input { min-height: calc((var(--consultation-book-input-height) * 2) + var(--x)); height: calc((var(--consultation-book-input-height) * 2) + var(--x)); }
 .consultation-page .consultation-book-fields label { display: block; min-width: 0; }
 .consultation-page .consultation-select-field { position: relative; }
 .consultation-page .consultation-select-field select { -webkit-appearance: none; appearance: none; background-image: none; }
@@ -240,9 +241,9 @@ html[dir="rtl"] .consultation-review-route-page .consultation-review-route-list 
 @media (max-aspect-ratio: 4 / 3) { .consultation-page .consultation-book-card { --consultation-book-input-height: 38px; } }
 @media (max-aspect-ratio: 4 / 3) {
   .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-calendar {
-    flex: 0 0 calc((var(--consultation-book-input-height) * 5) + (var(--x) * 5));
-    height: calc((var(--consultation-book-input-height) * 5) + (var(--x) * 5));
-    min-height: calc((var(--consultation-book-input-height) * 5) + (var(--x) * 5));
+    flex: 0 0 calc((var(--consultation-book-input-height) * 6) + (var(--x) * 5));
+    height: calc((var(--consultation-book-input-height) * 6) + (var(--x) * 5));
+    min-height: calc((var(--consultation-book-input-height) * 6) + (var(--x) * 5));
     margin-top: auto;
   }
   .consultation-page .consultation-calendar-weekdays > span,
