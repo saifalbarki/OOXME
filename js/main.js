@@ -507,6 +507,7 @@ const homepageAccount = document.querySelector('[data-home-account]');
 const homepageServices = document.querySelector('[data-home-services]');
 const homepageLanguage = document.querySelector('[data-home-language]');
 const homepageLanguageSelector = document.querySelector('[data-home-language-selector]');
+const homepageStudioSelection = document.querySelector('[data-home-studio-selection]');
 const homepageNotificationDot = document.querySelector('[data-homepage-notification-dot]');
 const homepageSearchInput = document.querySelector('[data-home-search-input]');
 const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
@@ -582,6 +583,38 @@ const setHomepageMenuOpen = (open) => {
   document.body.classList.toggle('homepage-navigation-open', open);
   resetHomepageMenuInactivityTimer();
 };
+const setHomepageStudioOpen = (open) => {
+  if (!homepageStudioSelection) return;
+  if (open) {
+    setHomepageMenuOpen(true);
+    window.clearTimeout(homepageMenuInactivityTimer);
+    homepageStudioSelection.hidden = false;
+    homepageStudioSelection.setAttribute('aria-hidden', 'false');
+    window.requestAnimationFrame(() => {
+      document.body.classList.add('homepage-studio-open');
+      homepageStudioSelection.classList.add('is-open');
+    });
+    return;
+  }
+  homepageStudioSelection.classList.remove('is-open');
+  document.body.classList.remove('homepage-studio-open');
+  homepageStudioSelection.setAttribute('aria-hidden', 'true');
+  homepageStudioSelection.hidden = true;
+};
+let homepageStudioNavigationLocked = false;
+homepageStudioSelection?.querySelectorAll('[data-home-studio-option]').forEach((button) => button.addEventListener('click', (event) => {
+  event.stopPropagation();
+  if (button.dataset.homeStudioOption !== 'clients' || homepageStudioNavigationLocked) return;
+  homepageStudioNavigationLocked = true;
+  button.classList.add('is-activating');
+  window.setTimeout(() => window.location.assign('/studio'), 250);
+}));
+const closeHomepageStudioOutside = (event) => {
+  const target = event.target instanceof Element ? event.target : null;
+  if (document.body.classList.contains('homepage-studio-open') && !target?.closest('[data-home-studio-selection]')) setHomepageStudioOpen(false);
+};
+document.addEventListener('pointerdown', closeHomepageStudioOutside, true);
+document.addEventListener('click', closeHomepageStudioOutside, true);
 const setHomepageMenuActive = (active) => {
   if (!homepageMenu) return;
   homepageMenu.dataset.active = active;
@@ -601,6 +634,7 @@ const setHomepageNotificationsOpen = (open) => {
   if (!homepageNotifications) return;
   window.clearTimeout(homepageNotificationsCloseTimer);
   if (open) {
+    setHomepageStudioOpen(false);
     setHomepageMenuOpen(false);
     loadSharedNotifications();
     homepageNotifications.hidden = false;
@@ -645,6 +679,7 @@ const setHomepageSearchOpen = (open) => {
   if (!homepageSearch) return;
   window.clearTimeout(homepageSearchCloseTimer);
   if (open) {
+    setHomepageStudioOpen(false);
     setHomepageMenuOpen(false);
     homepageSearch.hidden = false;
     homepageSearch.setAttribute('aria-hidden', 'false');
@@ -667,6 +702,7 @@ const setHomepageAccountOpen = (open) => {
   if (!homepageAccount) return;
   window.clearTimeout(homepageAccountCloseTimer);
   if (open) {
+    setHomepageStudioOpen(false);
     setHomepageMenuOpen(false);
     homepageAccount.hidden = false;
     homepageAccount.setAttribute('aria-hidden', 'false');
@@ -688,6 +724,7 @@ const setHomepageServicesOpen = (open) => {
   if (!homepageServices) return;
   window.clearTimeout(homepageServicesCloseTimer);
   if (open) {
+    setHomepageStudioOpen(false);
     setHomepageMenuOpen(false);
     setEmployeeDashboardMenuOpen(false);
     homepageServices.hidden = false;
@@ -710,6 +747,7 @@ const setHomepageLanguageOpen = (open) => {
   if (!homepageLanguage || !homepageLanguageSelector) return;
   window.clearTimeout(homepageLanguageCloseTimer);
   if (open) {
+    setHomepageStudioOpen(false);
     const activeLanguage = root.lang === 'ar' ? 'ar' : 'en';
     homepageLanguageSelector.dataset.active = activeLanguage;
     homepageLanguageSelector.querySelectorAll('[data-home-language-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.homeLanguageOption === activeLanguage)));
@@ -752,7 +790,7 @@ homepageMenuTrigger?.addEventListener('click', (event) => {
 document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => setHomepageMenuOpen(false)));
 document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => queueHomepageMenuSelection('home', () => setHomepageLanguageOpen(true)));
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => setHomepageAccountOpen(true)));
-document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => location.assign('/studio')));
+document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => setHomepageStudioOpen(true)));
 document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/studio'));
 document.querySelector('[data-home-menu-services]')?.addEventListener('click', () => queueHomepageMenuSelection('services', () => setHomepageServicesOpen(true)));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {

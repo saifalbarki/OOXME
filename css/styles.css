@@ -412,6 +412,13 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .homepage-bottom-menu-button img { width: var(--homepage-bottom-nav-icon-size); height: var(--homepage-bottom-nav-icon-size); object-fit: contain; }
 .homepage-notification-dot { --status-dot-color: var(--color-red); position: absolute; top: calc(50% - (var(--homepage-bottom-nav-icon-size) / 2) - 2px); left: calc(50% + (var(--homepage-bottom-nav-icon-size) / 2) - 2px); width: clamp(5px, .7vw, 7px); aspect-ratio: 1; border-radius: 50%; }
 .homepage .site-image-preview:not(.is-open) { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.homepage-studio-selection { --homepage-bottom-nav-height: calc(var(--homepage-white-card-height) - 8px); --homepage-bottom-nav-radius: min(var(--panel-radius), calc(var(--homepage-bottom-nav-height) / 2)); position: absolute; z-index: 3; right: auto; bottom: calc(var(--homepage-bottom-nav-height) + (var(--x) * 2)); left: 50%; display: grid; grid-template-rows: repeat(2, var(--homepage-bottom-nav-height)); gap: var(--x); width: var(--homepage-navigation-width); opacity: 0; visibility: hidden; pointer-events: none; transform: translate(-50%, var(--x)); transition: opacity .34s ease, visibility 0s linear .34s, transform .34s cubic-bezier(.22, .61, .36, 1); }
+.homepage-studio-selection.is-open { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0); transition-delay: 0s; }
+.homepage-studio-selection button { display: grid; width: 100%; height: var(--homepage-bottom-nav-height); place-items: center; padding: 0 var(--x); border: 0; border-radius: var(--homepage-bottom-nav-radius); background: #fff; color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; cursor: pointer; box-shadow: 0 12px 30px rgba(13, 13, 13, .14); }
+.homepage-studio-selection button[data-home-studio-option="selected-works"] { cursor: default; }
+.homepage-studio-selection button.is-activating { background: var(--color-blue); color: #fff; }
+.homepage-studio-open .intro-panel .master-panel > :is(.master-panel-header, .master-panel-content) { opacity: 0; pointer-events: none; }
+.homepage-studio-open .homepage-bottom-navigation .homepage-bottom-menu { opacity: 0; pointer-events: none; }
 .homepage-bottom-navigation { --homepage-alignment-x: var(--x); }
 .homepage-bottom-menu, .homepage-bottom-navigation.is-menu-open .homepage-bottom-menu { bottom: var(--homepage-alignment-x); }
 .homepage-notifications { position: fixed; z-index: 20; inset: 0; padding: 0; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .36s ease, visibility 0s linear .36s; }
