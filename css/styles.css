@@ -163,7 +163,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
   font-weight: 700;
   font-display: swap;
 }
-.consultation-page .consultation-numeric-content { font-family: 'Consultation SF Pro Display', sans-serif; }
+.consultation-page .consultation-numeric-content { font-family: 'Consultation SF Pro Display', sans-serif !important; }
 .consultation-page { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
 .consultation-page .consultation-master-panel { grid-template-rows: minmax(0, 1fr) auto; isolation: isolate; background: transparent; }
 .consultation-page .consultation-master-panel > :not(.brand-management-contextual-navigation) { position: relative; z-index: 1; }
