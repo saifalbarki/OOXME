@@ -10,6 +10,8 @@
   const forwardButton = document.querySelector('[data-brand-management-context="details"]');
   const pill = document.querySelector('[data-brand-management-pill]');
   const fields = Object.fromEntries([...document.querySelectorAll('[data-book-field]')].map(field => [field.dataset.bookField, field]));
+  const fieldDisplays = [...document.querySelectorAll('[data-book-field-display]')];
+  const selectDisplays = [...document.querySelectorAll('[data-book-select-display]')];
   const stageNames = ['information', 'schedule'];
   let mode = 'book';
   let stageIndex = 0;
@@ -22,6 +24,23 @@
   };
 
   const getValue = name => fields[name]?.value?.trim() || '';
+  const syncSelectDisplays = () => {
+    selectDisplays.forEach(display => {
+      const select = display.previousElementSibling;
+      display.textContent = select?.selectedOptions?.[0]?.textContent?.trim() || '';
+      display.classList.toggle('is-placeholder', !select?.value);
+      display.classList.toggle('is-selected', Boolean(select?.value));
+    });
+  };
+  const syncFieldDisplays = () => {
+    fieldDisplays.forEach(display => {
+      const field = display.previousElementSibling;
+      const hasValue = Boolean(field?.value);
+      display.textContent = hasValue ? field.value : (field?.placeholder || '');
+      display.classList.toggle('is-placeholder', !hasValue);
+      display.classList.toggle('is-selected', hasValue);
+    });
+  };
   const isInformationValid = () => Boolean(getValue('name') && fields.email?.checkValidity() && getValue('phone').length >= 7 && getValue('sector') && getValue('topic'));
 
   const updateNavigation = () => {
@@ -53,6 +72,8 @@
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.querySelectorAll('[data-en][data-ar]').forEach(element => { element.textContent = element.dataset[language]; });
     document.querySelectorAll('[data-en-placeholder][data-ar-placeholder]').forEach(element => { element.placeholder = element.dataset[language + 'Placeholder']; });
+    syncFieldDisplays();
+    syncSelectDisplays();
     topSelector?.setAttribute('aria-label', labels[language].view);
     document.querySelector('[data-brand-management-home]')?.setAttribute('aria-label', labels[language].home);
     backButton?.setAttribute('aria-label', labels[language].previous);
@@ -73,8 +94,8 @@
     if (mode !== 'book') { setMode('details'); return; }
     if (stageIndex === 0 && isInformationValid()) setStage(1);
   });
-  Object.values(fields).forEach(field => field?.addEventListener('input', updateNavigation));
-  Object.values(fields).forEach(field => field?.addEventListener('change', updateNavigation));
+  Object.values(fields).forEach(field => field?.addEventListener('input', () => { syncFieldDisplays(); updateNavigation(); }));
+  Object.values(fields).forEach(field => field?.addEventListener('change', () => { syncSelectDisplays(); updateNavigation(); }));
   document.querySelectorAll('[data-book-date]').forEach(button => button.addEventListener('click', () => {
     selectedDate = button.dataset.bookDate || '';
     document.querySelectorAll('[data-book-date]').forEach(day => day.classList.toggle('is-selected', day === button));
