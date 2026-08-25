@@ -17,7 +17,7 @@
   const fields = Object.fromEntries([...document.querySelectorAll('[data-book-field]')].map(field => [field.dataset.bookField, field]));
   const fieldDisplays = [...document.querySelectorAll('[data-book-field-display]')];
   const selectDisplays = [...document.querySelectorAll('[data-book-select-display]')];
-  const stageNames = ['information', 'schedule', 'review', 'payment'];
+  const stageNames = ['information', 'schedule', 'review'];
   const navigationStateKey = 'consultation-last-navigation-direction';
   let mode = 'book';
   let stageIndex = 0;
@@ -107,9 +107,9 @@
   const renderReview = () => {
     if (!review) return;
     const copy = language === 'ar'
-      ? { name: 'الاسم', email: 'البريد الإلكتروني', phone: 'الهاتف', sector: 'قطاع العمل', topic: 'موضوع الاستشارة', additional: 'معلومات إضافية', discountCode: 'كود الخصم', date: 'التاريخ', time: 'الوقت', duration: 'المدة', none: '—' }
-      : { name: 'Name', email: 'Email', phone: 'Phone', sector: 'Business Sector', topic: 'Consultation Topic', additional: 'Additional Information', discountCode: 'Discount Code', date: 'Date', time: 'Time', duration: 'Duration', none: '—' };
-    const rows = [[copy.name, getValue('name') || copy.none], [copy.email, getValue('email') || copy.none], [copy.phone, getValue('phone') || copy.none], [copy.sector, selectedOptionText('sector') || copy.none], [copy.topic, selectedOptionText('topic') || copy.none], [copy.additional, getValue('additional') || copy.none], [copy.discountCode, getValue('discount') || copy.none], [copy.date, selectedDate || copy.none], [copy.time, selectedOptionText('time') || copy.none], [copy.duration, selectedOptionText('duration') || copy.none]];
+      ? { name: 'الاسم', email: 'البريد الإلكتروني', phone: 'الهاتف', sector: 'قطاع العمل', topic: 'موضوع الاستشارة', date: 'التاريخ', time: 'الوقت', duration: 'المدة', fee: 'الرسوم', discount: 'الخصم', finalFee: 'الرسوم النهائية', none: '—' }
+      : { name: 'Name', email: 'Email', phone: 'Phone', sector: 'Business Sector', topic: 'Consultation Topic', date: 'Date', time: 'Time', duration: 'Duration', fee: 'Fee', discount: 'Discount', finalFee: 'Final Fee', none: '—' };
+    const rows = [[copy.name, getValue('name') || copy.none], [copy.email, getValue('email') || copy.none], [copy.phone, getValue('phone') || copy.none], [copy.sector, selectedOptionText('sector') || copy.none], [copy.topic, selectedOptionText('topic') || copy.none], [copy.date, selectedDate || copy.none], [copy.time, selectedOptionText('time') || copy.none], [copy.duration, selectedOptionText('duration') || copy.none], [copy.fee, copy.none], [copy.discount, copy.none], [copy.finalFee, copy.none]];
     review.replaceChildren(...rows.map(([termText, valueText]) => { const row = document.createElement('div'); const term = document.createElement('dt'); const value = document.createElement('dd'); term.textContent = termText; renderNumericContent(value, valueText); row.append(term, value); return row; }));
   };
   const isScheduleValid = () => Boolean(selectedDate && getValue('time') && getValue('duration'));
@@ -234,9 +234,6 @@
     swipeStartX = null;
     swipeStartY = null;
   });
-  document.querySelectorAll('[data-book-payment]').forEach(button => button.addEventListener('click', () => {
-    document.querySelectorAll('[data-book-payment]').forEach(option => option.classList.toggle('is-selected', option === button));
-  }));
   try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
   applyLanguage(language);
   setMode('details');

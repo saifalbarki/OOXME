@@ -235,35 +235,18 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 .consultation-page .consultation-calendar-days button:disabled { background: var(--color-paper); background-image: none; color: var(--color-secondary-control); cursor: default; opacity: 1; box-shadow: none; }
 .consultation-page .consultation-calendar-days button,
 .consultation-page .consultation-calendar-days button:is(.is-selected, :disabled) { background: transparent; background-image: none; border-radius: 0; font-weight: 700; }
-.consultation-page .consultation-review { display: grid; margin: 0; gap: 0; }
-.consultation-page .consultation-review > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--x); padding: calc(var(--x) * .55) 0; border-bottom: 1px solid var(--color-line); font-size: var(--overlay-text-size); }
-.consultation-page .consultation-review > div:last-child { border-bottom: 0; }
-.consultation-page .consultation-review dt { color: var(--color-secondary-control); }
-.consultation-page .consultation-review dd { margin: 0; color: var(--color-ink); font-weight: 700; text-align: end; }
-.consultation-page .consultation-book-received { margin: 0; color: var(--color-secondary-control); font-size: var(--overlay-text-size); line-height: 1.45; text-align: center; }
-.consultation-page .consultation-payment-options { display: grid; gap: var(--x); }
-.consultation-page .consultation-payment-box { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--x); min-height: var(--consultation-book-input-height); padding: var(--x); border: 0; border-radius: var(--radius-control); background: #f1f3f7; color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); font-weight: 700; text-align: start; cursor: pointer; }
-.consultation-page .consultation-payment-box.is-selected { box-shadow: inset 0 0 0 2px var(--color-brand); }
-.consultation-page .consultation-payment-box img { width: calc(var(--consultation-book-input-height) * 1.35); height: calc(var(--consultation-book-input-height) * .7); object-fit: contain; object-position: center; }
 .consultation-page .brand-management-contextual-pill button:disabled { cursor: default; opacity: .35; }
 html[dir="rtl"] .consultation-page .consultation-book-fields textarea { direction: rtl; text-align: start; }
-html[dir="rtl"] .consultation-page .consultation-review dd { text-align: start; }
-.consultation-review-route-page .consultation-review-route-content { grid-template-rows: auto minmax(0, 1fr); align-content: stretch; gap: var(--x); padding: var(--x) 0 calc(var(--studio-navigation-height) + (var(--x) * 2)); }
-.consultation-review-route-page .consultation-review-route-card { --consultation-book-input-height: 42px; align-self: stretch; justify-self: center; display: grid; width: calc(100% - (var(--x) * 2)); min-height: 0; padding: var(--x); border-radius: var(--radius-box); background: var(--color-paper); overflow: auto; }
-.consultation-review-route-page .consultation-review-route-stage { display: flex; flex-direction: column; min-height: 0; gap: var(--x); }
-.consultation-review-route-page .consultation-review-route-heading { color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 700; line-height: 1.35; text-align: center; }
-.consultation-review-route-page .consultation-review-route-heading > strong { font-weight: 700; }
-.consultation-review-route-page .consultation-review-route-message { margin: 0; color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 400; line-height: 1.35; text-align: center; }
-.consultation-review-route-page .consultation-review-route-download { display: grid; place-items: center; width: 100%; min-height: var(--consultation-book-input-height); height: var(--consultation-book-input-height); box-sizing: border-box; padding: 0 var(--x); border: 0; border-radius: var(--radius-control); background: var(--color-blue); color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; line-height: 1.35; text-align: center; cursor: pointer; }
-.consultation-review-route-page .consultation-review-route-list { display: flex; flex: 0 0 auto; flex-direction: column; justify-content: flex-start; min-height: 0; margin: 0; }
-.consultation-review-route-page .consultation-review-route-list > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: var(--x); width: 100%; padding: calc(var(--x) * .55) 0; border-bottom: 1px solid var(--color-line); font-size: var(--overlay-text-size); }
-.consultation-review-route-page .consultation-review-route-list > div:last-child { border-bottom: 0; }
-.consultation-review-route-page .consultation-review-route-list dt { color: var(--color-secondary-control); text-align: start; }
-.consultation-review-route-page .consultation-review-route-list dd { margin: 0; color: var(--color-ink); font-weight: 700; text-align: end; }
-html[dir="rtl"] .consultation-review-route-page .consultation-review-route-list dd { text-align: end; }
+.consultation-page .consultation-book-stage[data-book-stage="review"] .consultation-book-review-message { margin: 0; color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 400; line-height: 1.35; text-align: center; }
+.consultation-page .consultation-book-stage[data-book-stage="review"] .consultation-book-review-download { display: grid; place-items: center; width: 100%; min-height: var(--consultation-book-input-height); height: var(--consultation-book-input-height); box-sizing: border-box; padding: 0 var(--x); border: 0; border-radius: var(--radius-control); background: var(--color-blue); color: #000; font: inherit; font-size: var(--overlay-text-size); font-weight: 400; line-height: 1.35; text-align: center; cursor: pointer; }
+.consultation-page .consultation-book-stage[data-book-stage="review"] .consultation-book-review { display: flex; flex: 0 0 auto; flex-direction: column; justify-content: flex-start; min-height: 0; margin: 0; }
+.consultation-page .consultation-book-stage[data-book-stage="review"] .consultation-book-review > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: var(--x); width: 100%; padding: calc(var(--x) * .55) 0; border-bottom: 1px solid var(--color-line); font-size: var(--overlay-text-size); }
+.consultation-page .consultation-book-stage[data-book-stage="review"] .consultation-book-review > div:last-child { border-bottom: 0; }
+.consultation-page .consultation-book-stage[data-book-stage="review"] .consultation-book-review dt { color: var(--color-secondary-control); text-align: start; }
+.consultation-page .consultation-book-stage[data-book-stage="review"] .consultation-book-review dd { margin: 0; color: var(--color-ink); font-weight: 700; text-align: end; }
+html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="review"] .consultation-book-review dd { text-align: end; }
 @media (min-aspect-ratio: 4 / 3) { .consultation-page .consultation-book-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .consultation-page .consultation-book-fields label:has(textarea) { grid-column: 1 / -1; } .consultation-page .consultation-book-schedule-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-aspect-ratio: 4 / 3) { .consultation-page .consultation-book-card { --consultation-book-input-height: 38px; } }
-@media (max-aspect-ratio: 4 / 3) { .consultation-review-route-page .consultation-review-route-card { --consultation-book-input-height: 38px; } }
 @media (max-aspect-ratio: 4 / 3) {
   .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-calendar {
     flex: 0 0 calc((var(--consultation-book-input-height) * 6) + (var(--x) * 5));
