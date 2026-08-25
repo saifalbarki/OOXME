@@ -635,7 +635,7 @@ const closeHomepageStudioOutside = (event) => {
   if (!homepageMenu?.classList.contains('is-studio-options') || target?.closest('.homepage-bottom-navigation')) return;
   event.preventDefault();
   event.stopImmediatePropagation();
-  setHomepageStudioOpen(false);
+  setHomepageMenuOpen(false);
 };
 document.addEventListener('pointerdown', closeHomepageStudioOutside, true);
 const setHomepageMenuActive = (active) => {
