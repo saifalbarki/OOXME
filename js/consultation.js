@@ -156,6 +156,7 @@
   });
   forwardButton?.addEventListener('click', () => {
     if (mode !== 'book') { stageIndex = 0; setMode('details'); return; }
+    if (stageIndex === 1) { window.location.assign('/consultation-review'); return; }
     if (stageIndex === stageNames.length - 1) setMode('work'); else setStage(stageIndex + 1);
   });
   Object.values(fields).forEach(field => field?.addEventListener('input', () => { syncFieldDisplays(); updateNavigation(); }));
