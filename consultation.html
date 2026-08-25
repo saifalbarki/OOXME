@@ -44,6 +44,18 @@
                   <label class="consultation-select-field"><select data-book-field="duration" required aria-label="Duration"><option value="" data-en="Duration" data-ar="المدة">Duration</option><option value="30" data-en="30 minutes" data-ar="30 دقيقة">30 minutes</option><option value="60" data-en="60 minutes" data-ar="60 دقيقة">60 minutes</option></select><span class="consultation-select-display" data-book-select-display aria-hidden="true"></span></label>
                 </div>
               </section>
+              <section class="consultation-book-stage" data-book-stage="review" hidden>
+                <div class="consultation-book-stage-heading"><strong data-en="Review" data-ar="المراجعة">Review</strong></div>
+                <dl class="consultation-review" data-book-review></dl>
+              </section>
+              <section class="consultation-book-stage" data-book-stage="payment" hidden>
+                <div class="consultation-book-stage-heading"><strong data-en="Booking Received / Payment" data-ar="تم استلام الحجز / الدفع">Booking Received / Payment</strong></div>
+                <p class="consultation-book-received" data-en="Your booking has been received. Choose a payment method to complete your reservation." data-ar="تم استلام حجزك. اختر طريقة الدفع لإكمال الحجز.">Your booking has been received. Choose a payment method to complete your reservation.</p>
+                <div class="consultation-payment-options">
+                  <button type="button" class="consultation-payment-box" data-book-payment="zain"><img src="assets/payment/zaincash.png" alt="Zain Cash" /><span data-en="Zain Cash" data-ar="زين كاش">Zain Cash</span></button>
+                  <button type="button" class="consultation-payment-box" data-book-payment="superqi"><img src="assets/payment/super qi.png" alt="SuperQi" /><span data-en="SuperQi" data-ar="سوبر كي">SuperQi</span></button>
+                </div>
+              </section>
             </section>
           </section>
           <div class="brand-management-contextual-navigation" data-brand-management-contextual>
