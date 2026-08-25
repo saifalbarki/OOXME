@@ -19,7 +19,7 @@
   const selectDisplays = [...document.querySelectorAll('[data-book-select-display]')];
   const stageNames = ['information', 'schedule', 'review'];
   const navigationStateKey = 'consultation-last-navigation-direction';
-  let mode = 'book';
+  let mode = 'work';
   let stageIndex = 0;
   let lastNavigationDirection = pill?.dataset.active === 'work' ? 'work' : 'details';
   try {
