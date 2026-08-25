@@ -507,7 +507,6 @@ const homepageAccount = document.querySelector('[data-home-account]');
 const homepageServices = document.querySelector('[data-home-services]');
 const homepageLanguage = document.querySelector('[data-home-language]');
 const homepageLanguageSelector = document.querySelector('[data-home-language-selector]');
-const homepageStudioSelection = document.querySelector('[data-home-studio-selection]');
 const homepageNotificationDot = document.querySelector('[data-homepage-notification-dot]');
 const homepageSearchInput = document.querySelector('[data-home-search-input]');
 const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
@@ -536,6 +535,7 @@ let homepageSearchCloseTimer;
 let homepageAccountCloseTimer;
 let homepageServicesCloseTimer;
 let homepageLanguageCloseTimer;
+let homepageStudioOptionTimer;
 let employeeDashboardMenuTimer;
 const setEmployeeDashboardMenuOpen = (open) => {
   if (!employeeDashboardNavigation || !employeeDashboardMenuTrigger) return;
@@ -565,8 +565,23 @@ const resetHomepageMenuInactivityTimer = () => {
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
   homepageMenuInactivityTimer = window.setTimeout(() => setHomepageMenuOpen(false), 5000);
 };
+let homepageStudioNavigationLocked = false;
+const resetHomepageStudioOptions = () => {
+  window.clearTimeout(homepageStudioOptionTimer);
+  homepageStudioNavigationLocked = false;
+  homepageMenu?.classList.remove('is-studio-options');
+  homepageMenu?.removeAttribute('data-studio-active');
+  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
+  homepageMenu?.querySelectorAll('[data-home-studio-option]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'true');
+    button.setAttribute('tabindex', '-1');
+  });
+};
 const setHomepageMenuOpen = (open) => {
-  if (!open) window.clearTimeout(homepageMenuSelectionTimer);
+  if (!open) {
+    window.clearTimeout(homepageMenuSelectionTimer);
+    resetHomepageStudioOptions();
+  }
   window.clearTimeout(homepageMenuCloseTimer);
   if (open) {
     homepageBottomNavigation?.classList.remove('is-menu-closing');
@@ -584,38 +599,45 @@ const setHomepageMenuOpen = (open) => {
   resetHomepageMenuInactivityTimer();
 };
 const setHomepageStudioOpen = (open) => {
-  if (!homepageStudioSelection) return;
-  homepageStudioSelection.querySelectorAll('[data-home-studio-option]').forEach((button) => button.classList.remove('is-activating'));
-  if (open) {
-    setHomepageMenuOpen(true);
-    window.clearTimeout(homepageMenuInactivityTimer);
-    homepageStudioSelection.hidden = false;
-    homepageStudioSelection.setAttribute('aria-hidden', 'false');
-    window.requestAnimationFrame(() => {
-      document.body.classList.add('homepage-studio-open');
-      homepageStudioSelection.classList.add('is-open');
-    });
+  if (!homepageMenu) return;
+  if (!open) {
+    resetHomepageStudioOptions();
     return;
   }
-  homepageStudioSelection.classList.remove('is-open');
-  document.body.classList.remove('homepage-studio-open');
-  homepageStudioSelection.setAttribute('aria-hidden', 'true');
-  homepageStudioSelection.hidden = true;
+  setHomepageMenuOpen(true);
+  homepageMenu.setAttribute('aria-label', 'Studio options');
+  homepageMenu.querySelectorAll('[data-home-studio-option]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'false');
+    button.setAttribute('tabindex', '0');
+  });
+  window.requestAnimationFrame(() => homepageMenu.classList.add('is-studio-options'));
+  resetHomepageMenuInactivityTimer();
 };
-let homepageStudioNavigationLocked = false;
-homepageStudioSelection?.querySelectorAll('[data-home-studio-option]').forEach((button) => button.addEventListener('click', (event) => {
+homepageMenu?.querySelectorAll('[data-home-studio-option]').forEach((button) => button.addEventListener('click', (event) => {
+  event.preventDefault();
   event.stopPropagation();
-  if (button.dataset.homeStudioOption !== 'clients' || homepageStudioNavigationLocked) return;
+  if (!homepageMenu.classList.contains('is-studio-options') || homepageStudioNavigationLocked) return;
   homepageStudioNavigationLocked = true;
-  button.classList.add('is-activating');
-  window.setTimeout(() => window.location.assign('/studio'), 250);
+  window.clearTimeout(homepageMenuInactivityTimer);
+  homepageMenu.dataset.studioActive = button.dataset.homeStudioOption;
+  homepageStudioOptionTimer = window.setTimeout(() => {
+    if (button.dataset.homeStudioOption === 'clients') {
+      window.location.assign('/studio');
+      return;
+    }
+    homepageMenu.removeAttribute('data-studio-active');
+    homepageStudioNavigationLocked = false;
+    resetHomepageMenuInactivityTimer();
+  }, 500);
 }));
 const closeHomepageStudioOutside = (event) => {
   const target = event.target instanceof Element ? event.target : null;
-  if (document.body.classList.contains('homepage-studio-open') && !target?.closest('[data-home-studio-selection]')) setHomepageStudioOpen(false);
+  if (!homepageMenu?.classList.contains('is-studio-options') || target?.closest('.homepage-bottom-navigation')) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  setHomepageStudioOpen(false);
 };
 document.addEventListener('pointerdown', closeHomepageStudioOutside, true);
-document.addEventListener('click', closeHomepageStudioOutside, true);
 const setHomepageMenuActive = (active) => {
   if (!homepageMenu) return;
   homepageMenu.dataset.active = active;
@@ -905,7 +927,7 @@ document.addEventListener('pointerdown', (event) => {
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
   resetHomepageMenuInactivityTimer();
   if (event.target.closest('[data-language-toggle]')) return;
-  if (event.target.closest('.homepage-bottom-menu-button, [data-home-menu-trigger]')) return;
+  if (event.target.closest('.homepage-bottom-navigation')) return;
   setHomepageMenuOpen(false);
   event.preventDefault();
   event.stopPropagation();
