@@ -3,6 +3,9 @@
   const applyLanguage = (language) => {
     root.lang = language;
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.querySelector('[data-studio-home]')?.setAttribute('aria-label', language === 'ar' ? 'الرئيسية' : 'Home');
+    document.querySelector('[data-studio-context="work"]')?.setAttribute('aria-label', language === 'ar' ? 'السابق' : 'Previous');
+    document.querySelector('[data-studio-context="details"]')?.setAttribute('aria-label', language === 'ar' ? 'التالي' : 'Next');
     document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[language]; });
     document.querySelectorAll('[data-en-placeholder][data-ar-placeholder]').forEach((input) => {
       input.placeholder = input.dataset[language + 'Placeholder'];
@@ -251,6 +254,22 @@
   let studioTrack;
   let studioPanels = [];
   let studioPanelIndex = 0;
+  let moveToStudioPanel = () => {};
+  const contextualNavigation = document.querySelector('[data-studio-contextual]');
+  const contextualPill = contextualNavigation?.querySelector('[data-studio-contextual-pill]');
+  const contextualBack = contextualNavigation?.querySelector('[data-studio-context="work"]');
+  const contextualForward = contextualNavigation?.querySelector('[data-studio-context="details"]');
+  const updateContextualNavigation = () => {
+    const atFirstPanel = studioPanelIndex === 0;
+    const atLastPanel = studioPanelIndex === studioPanels.length - 1;
+    contextualPill?.setAttribute('data-active', atFirstPanel ? 'work' : 'details');
+    contextualBack?.toggleAttribute('disabled', atFirstPanel);
+    contextualForward?.toggleAttribute('disabled', atLastPanel);
+    contextualBack?.setAttribute('aria-disabled', String(atFirstPanel));
+    contextualForward?.setAttribute('aria-disabled', String(atLastPanel));
+    contextualBack?.setAttribute('aria-pressed', String(atFirstPanel));
+    contextualForward?.setAttribute('aria-pressed', String(atLastPanel));
+  };
   const state = { index: 0, manualDirection: 1, dragging: false };
   let galleryRotationTimer;
   const landscapeQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
@@ -277,12 +296,18 @@
     rail.append(image);
     return image;
   });
+  const syncGalleryAspectClass = (image = slides[state.index]) => {
+    if (!image?.naturalWidth || !image.naturalHeight) return;
+    const ratio = image.naturalWidth / image.naturalHeight;
+    gallery.classList.toggle('is-portrait', ratio < 1);
+    gallery.classList.toggle('is-square', Math.abs(ratio - 1) < 0.01);
+  };
   const ensureSlideSource = (index, priority = 'low') => {
     const normalizedIndex = ((Math.round(index) % images.length) + images.length) % images.length;
     const slide = slides[normalizedIndex];
     if (!slide || slide.hasAttribute('src')) return;
     slide.fetchPriority = priority;
-    slide.addEventListener('load', () => { containGallery(); render(); }, { once: true });
+    slide.addEventListener('load', () => { syncGalleryAspectClass(); containGallery(); render(); }, { once: true });
     slide.src = slide.dataset.src;
   };
   const primeSlides = (center, direction, count) => {
@@ -361,6 +386,9 @@
   const syncDuplicateStudioPanel = () => {
     if (!duplicateStudioPanel) return;
     const duplicateSlides = duplicateStudioPanel.querySelectorAll('.project-gallery-slide');
+    const duplicateGallery = duplicateStudioPanel.querySelector('[data-studio-project-gallery]');
+    duplicateGallery?.classList.toggle('is-portrait', gallery.classList.contains('is-portrait'));
+    duplicateGallery?.classList.toggle('is-square', gallery.classList.contains('is-square'));
     slides.forEach((slide, index) => {
       const duplicateSlide = duplicateSlides[index];
       if (!duplicateSlide) return;
@@ -370,6 +398,7 @@
     });
   };
   const render = (center) => {
+    syncGalleryAspectClass();
     landscapeQuery.matches ? renderLandscape(center) : renderPortrait(center);
     syncDuplicateStudioPanel();
   };
@@ -462,7 +491,7 @@
     studioTrack.append(studioPanel, duplicateStudioPanel);
     studioPanels = [studioPanel, duplicateStudioPanel];
     studioTrack.style.height = 'calc(var(--ooxme-stable-viewport-height) * 2)';
-    const moveToStudioPanel = (next) => {
+    moveToStudioPanel = (next) => {
       const target = Math.max(0, Math.min(studioPanels.length - 1, next));
       if (target === studioPanelIndex) return;
       studioPanelIndex = target;
@@ -470,6 +499,7 @@
       studioPanels.forEach((panel) => panel.classList.remove('is-active'));
       studioTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-studioPanelIndex}))`;
       window.setTimeout(() => studioPanels[studioPanelIndex].classList.add('is-active'), 620);
+      updateContextualNavigation();
     };
     window.OOXMEMasterPanelDrag.register({ experience: studioExperience, track: studioTrack, panels: studioPanels, getIndex: () => studioPanelIndex, moveTo: moveToStudioPanel, allowBottomControlNavigation: false });
     const duplicateNavigation = duplicateStudioPanel.querySelector('[data-authenticated-navigation]');
@@ -538,6 +568,15 @@
     }
     syncDuplicateStudioPanel();
   };
+  contextualBack?.addEventListener('click', () => {
+    if (contextualBack.disabled) return;
+    moveToStudioPanel(studioPanelIndex - 1);
+  });
+  contextualForward?.addEventListener('click', () => {
+    if (contextualForward.disabled) return;
+    moveToStudioPanel(studioPanelIndex + 1);
+  });
+  updateContextualNavigation();
   window.requestAnimationFrame(() => { containGallery(); render(); window.setTimeout(createSecondStudioPanel, 1100); });
   resetStudioGallery();
   document.addEventListener('visibilitychange', () => {

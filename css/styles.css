@@ -62,7 +62,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .brand-management-new-overview-actions { position: absolute; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: 1fr; gap: var(--x); }
 .brand-management-new-overview-box { display: grid; place-items: center; width: 100%; height: var(--homepage-account-control-height); min-height: var(--homepage-account-control-height); padding: 0 var(--x); border: 0; border-radius: var(--homepage-account-control-radius); color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); line-height: 1.35; text-align: center; }
 .brand-management-new-overview-price-text { display: block; width: 100%; min-width: 0; text-align: center; }
-.brand-management-new-overview-price { background: var(--color-panel); font-weight: 700; }
+.brand-management-new-overview-price { background: var(--color-surface-soft); font-weight: 700; }
 .brand-management-new-overview-consultation { background: var(--color-brand); color: var(--color-paper); font-weight: 400; cursor: pointer; }
 @media (min-aspect-ratio: 4 / 3) { .brand-management-new-overview-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .brand-management-contextual-navigation { position: absolute; z-index: 4; right: var(--x); bottom: var(--x); left: var(--x); display: flex; align-items: center; justify-content: space-between; gap: var(--x); height: var(--global-navigation-height); pointer-events: none; }
@@ -292,6 +292,8 @@ html, body { min-height: 100%; }
 body { margin: 0; overflow: hidden; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-english); }
 :is(.homepage, .os-page, .studio-page) { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); --homepage-notifications-width: min(calc(100% - (var(--x) * 4)), var(--layout-content-max)); --overlay-text-size: clamp(10.5px, 1.2vw, 13.5px); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
 .homepage .master-panel-experience { height: var(--ooxme-stable-viewport-height); min-height: var(--ooxme-stable-viewport-height); }
+.homepage .master-panel-track { height: var(--ooxme-stable-viewport-height); transform: none !important; }
+.homepage.homepage-dashboard-authorized .master-panel-track { height: calc(var(--ooxme-stable-viewport-height) * 2); transform: translateY(calc(var(--ooxme-stable-viewport-height) * -1)) !important; }
 @supports (-webkit-touch-callout: none) { html.homepage { min-height: -webkit-fill-available; } body.homepage { min-height: var(--ooxme-stable-viewport-height); } }
 .homepage .intro-panel .master-panel { background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; }
 @media (max-aspect-ratio: 4 / 3) { .homepage .intro-panel .master-panel { background-size: auto 125%; background-position: 60% 28%; } }
@@ -379,6 +381,12 @@ html[dir="rtl"] .portfolio-option-arrow::after { transform: translateY(-50%) rot
 @media (max-aspect-ratio: 4 / 3) {
   .project-panel--al-basri-primary .project-gallery {
     bottom: var(--bottom-control-area-height);
+  }
+  .studio-page:not(.selected-works-page) .project-panel--al-basri-primary .project-gallery.is-portrait {
+    inset-inline: calc(var(--x) * 2);
+  }
+  .studio-page:not(.selected-works-page) .project-panel--al-basri-primary .project-gallery.is-square {
+    inset-inline: var(--x);
   }
 }
 @media (min-aspect-ratio: 4 / 3) { .project-panel--al-basri-primary .project-gallery-viewport { width: min(100%, 30dvh); } }

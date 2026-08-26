@@ -120,8 +120,7 @@
     selectDisplays.forEach(display => {
       const select = display.previousElementSibling;
       const selectedText = select?.selectedOptions?.[0]?.textContent?.trim() || '';
-      if (select?.dataset.bookField === 'duration') display.replaceChildren(document.createTextNode(selectedText));
-      else renderNumericContent(display, selectedText);
+      renderNumericContent(display, selectedText);
       display.classList.toggle('is-placeholder', !select?.value);
       display.classList.toggle('is-selected', Boolean(select?.value));
     });

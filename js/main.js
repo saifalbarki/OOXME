@@ -1,5 +1,5 @@
 const track = document.querySelector('[data-master-track]');
-const HOMEPAGE_NAVIGATION_LOCKED = false;
+const HOMEPAGE_NAVIGATION_LOCKED = true;
 const experience = document.querySelector('.master-panel-experience');
 const root = document.documentElement;
 const setStableViewportHeight = () => root.style.setProperty('--ooxme-stable-viewport-height', `${window.innerHeight}px`);
@@ -62,11 +62,6 @@ const setSearchOpen = (open) => {
   searchCloseTimer = window.setTimeout(() => { searchOverlay.hidden = true; }, searchOverlayCloseDuration);
 };
 document.querySelectorAll('[data-search-toggle]').forEach((button) => button.addEventListener('click', (event) => {
-  if (HOMEPAGE_NAVIGATION_LOCKED) {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    return;
-  }
   event.stopPropagation();
   setSearchOpen(searchOverlay.hidden);
 }));
@@ -87,13 +82,12 @@ const panelIds = ['intro', dashboardPanelId];
 const originalPanels = [...track.querySelectorAll('.master-panel-screen')];
 originalPanels.forEach((panel, index) => { panel.dataset.panelId = panelIds[index]; });
 const panels = [...document.querySelectorAll('.master-panel-screen')];
-track.style.height = `calc(var(--ooxme-stable-viewport-height) * ${panels.length})`;
+track.style.height = `var(--ooxme-stable-viewport-height)`;
 const requestedPanelId = /^\d+$/.test(requestedPanel || '') ? panelIds[Number(requestedPanel)] : requestedPanel;
 const requestedPanelIndex = HOMEPAGE_NAVIGATION_LOCKED && requestedPanelId !== dashboardPanelId
   ? 0
   : panels.findIndex((panel) => panel.dataset.panelId === requestedPanelId);
-let panelIndex = requestedPanelIndex >= 0 ? requestedPanelIndex : 0;
-if (panelIndex) track.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-panelIndex}))`;
+let panelIndex = 0;
 let panelTransitionTimer;
 const revealPanel = (index) => {
   panels.forEach((panel, panelNumber) => panel.classList.toggle('is-active', panelNumber === index));
@@ -108,7 +102,6 @@ const moveTo = (next) => {
   window.clearTimeout(panelTransitionTimer);
   panelTransitionTimer = window.setTimeout(() => revealPanel(panelIndex), 620);
 };
-if (!HOMEPAGE_NAVIGATION_LOCKED && requestedPanelId !== dashboardPanelId) window.OOXMEMasterPanelDrag?.register({ experience, track, panels, getIndex: () => panelIndex, moveTo });
 revealPanel(panelIndex);
 const setupEmployeeDashboardPanels = () => {
   if (requestedPanelId !== dashboardPanelId || !experience || !window.OOXMEMasterPanelDrag) return;
@@ -436,7 +429,26 @@ const setupEmployeeDashboardPanels = () => {
   });
 
 };
-setupEmployeeDashboardPanels();
+const mountAuthorizedHomepageDashboard = async () => {
+  if (requestedPanelId !== dashboardPanelId) return;
+  try {
+    const response = await fetch('/api/accounts/index?route=session', { credentials: 'same-origin' });
+    const session = await response.json().catch(() => ({}));
+    const expectedAccountType = isClientDashboard ? 'client' : 'employee';
+    if (!response.ok || session.accountType !== expectedAccountType) return;
+    const dashboardPanel = document.querySelector('.employee-dashboard-panel');
+    if (!dashboardPanel) return;
+    dashboardPanel.hidden = false;
+    dashboardPanel.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('homepage-dashboard-authorized');
+    track.style.height = `calc(var(--ooxme-stable-viewport-height) * ${panels.length})`;
+    panelIndex = 1;
+    track.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * -1))`;
+    revealPanel(panelIndex);
+    setupEmployeeDashboardPanels();
+  } catch (_) {}
+};
+mountAuthorizedHomepageDashboard();
 const employeeDashboardPanelOne = document.querySelector('.employee-dashboard-panel:not(.employee-dashboard-empty-panel)');
 const employeeDashboardPanelOneSelector = employeeDashboardPanelOne?.querySelector('.employee-dashboard-panel-one-selector');
 const employeeDashboardPanelOneNavigation = employeeDashboardPanelOne?.querySelector('[data-employee-dashboard-contextual]');
@@ -556,8 +568,11 @@ normalizeSharedNotificationLayout(homepageNotifications);
 homepageNotifications?.querySelectorAll('[data-notifications-option]').forEach((button) => button.addEventListener('click', () => {
   const selector = homepageNotifications.querySelector('[data-notifications-selector]');
   const panel = homepageNotifications.querySelector('[data-notifications-panel]');
+  const contact = homepageNotifications.querySelector('.homepage-notifications-contact');
+  const isContact = button.dataset.notificationsOption === 'contact';
   selector.dataset.active = button.dataset.notificationsOption;
   panel.dataset.active = button.dataset.notificationsOption;
+  contact?.setAttribute('aria-hidden', String(!isContact));
   selector.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
 }));
 const employeeDashboardNavigation = document.querySelector('[data-employee-dashboard-navigation]');
@@ -740,9 +755,19 @@ const prepareHomepageOverlayMotion = (overlay) => {
   overlay.classList.add('is-animating');
   homepageOverlayMotionTimers.set(overlay, window.setTimeout(() => overlay.classList.remove('is-animating'), 420));
 };
+const resetHomepageNotificationsState = () => {
+  if (!homepageNotifications) return;
+  const selector = homepageNotifications.querySelector('[data-notifications-selector]');
+  const panel = homepageNotifications.querySelector('[data-notifications-panel]');
+  selector?.setAttribute('data-active', 'notifications');
+  panel?.setAttribute('data-active', 'notifications');
+  selector?.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.notificationsOption === 'notifications')));
+  homepageNotifications.querySelector('.homepage-notifications-contact')?.setAttribute('aria-hidden', 'true');
+};
 const setHomepageNotificationsOpen = (open) => {
   if (!homepageNotifications) return;
   window.clearTimeout(homepageNotificationsCloseTimer);
+  resetHomepageNotificationsState();
   if (open) {
     setHomepageStudioOpen(false);
     setHomepageMenuOpen(false);
