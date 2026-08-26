@@ -585,6 +585,7 @@ let homepageNotificationsCloseTimer;
 let homepageNotificationSelectionTimer;
 let homepageSearchCloseTimer;
 let homepageAccountCloseTimer;
+let homepageAccountInactivityTimer;
 let homepageServicesCloseTimer;
 let homepageLanguageCloseTimer;
 let homepageStudioOptionTimer;
@@ -642,14 +643,24 @@ const resetHomepageServicesOptions = () => {
     button.setAttribute('tabindex', '-1');
   });
 };
+const resetHomepageAccountOptions = () => {
+  homepageMenu?.classList.remove('is-account-options');
+  homepageMenu?.removeAttribute('data-account-active');
+  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
+  homepageMenu?.querySelectorAll('[data-home-account-nav-option], [data-home-account-nav-handle]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'true');
+    button.setAttribute('tabindex', '-1');
+  });
+};
 const setHomepageMenuOpen = (open) => {
   const wasOpen = homepageBottomNavigation?.classList.contains('is-menu-open');
   if (!open) {
     window.clearTimeout(homepageMenuSelectionTimer);
     resetHomepageStudioOptions();
     resetHomepageServicesOptions();
+    resetHomepageAccountOptions();
     setHomepageMenuActive('home');
-  } else if (!wasOpen && !homepageMenu?.classList.contains('is-studio-options') && !homepageMenu?.classList.contains('is-services-options')) {
+  } else if (!wasOpen && !homepageMenu?.classList.contains('is-studio-options') && !homepageMenu?.classList.contains('is-services-options') && !homepageMenu?.classList.contains('is-account-options')) {
     setHomepageMenuActive('home');
   }
   window.clearTimeout(homepageMenuCloseTimer);
@@ -732,6 +743,31 @@ homepageMenu?.querySelectorAll('[data-home-services-option]').forEach((button) =
     window.location.assign(button.dataset.homeServicesOption === 'consultation' ? '/consultation' : '/brand');
   }, 500);
 }));
+const syncHomepageAccountHandleWidth = () => {
+  const lineWidth = document.querySelector('.homepage-bottom-navigation .swipe-control-line')?.getBoundingClientRect().width;
+  if (!lineWidth) return;
+  const handleWidth = `${lineWidth * .2}px`;
+  homepageMenu?.querySelector('[data-home-account-nav-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
+  homepageAccount?.querySelector('[data-home-account-panel-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
+};
+const setHomepageAccountOptionsOpen = (open) => {
+  if (!homepageMenu) return;
+  if (!open) {
+    resetHomepageAccountOptions();
+    return;
+  }
+  setHomepageMenuOpen(true);
+  homepageMenu.dataset.accountActive = 'employee';
+  homepageMenu.setAttribute('aria-label', 'Account options');
+  homepageMenu.querySelectorAll('[data-home-account-nav-option], [data-home-account-nav-handle]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'false');
+    button.setAttribute('tabindex', '0');
+  });
+  homepageMenu.classList.add('is-account-options');
+  syncHomepageAccountHandleWidth();
+  resetHomepageMenuInactivityTimer();
+};
+window.addEventListener('resize', syncHomepageAccountHandleWidth);
 const closeHomepageStudioOutside = (event) => {
   const target = event.target instanceof Element ? event.target : null;
   if (!homepageMenu?.classList.contains('is-studio-options') || target?.closest('.homepage-bottom-navigation')) return;
@@ -836,8 +872,10 @@ const setHomepageSearchOpen = (open) => {
 const setHomepageAccountOpen = (open) => {
   if (!homepageAccount) return;
   window.clearTimeout(homepageAccountCloseTimer);
+  window.clearTimeout(homepageAccountInactivityTimer);
   if (open) {
     setHomepageStudioOpen(false);
+    setHomepageAccountOptionsOpen(false);
     setHomepageMenuOpen(false);
     homepageAccount.hidden = false;
     homepageAccount.setAttribute('aria-hidden', 'false');
@@ -845,6 +883,7 @@ const setHomepageAccountOpen = (open) => {
     window.requestAnimationFrame(() => {
       document.body.classList.add('homepage-account-open');
       homepageAccount.classList.add('is-open');
+      resetHomepageAccountInactivityTimer();
     });
     return;
   }
@@ -853,7 +892,12 @@ const setHomepageAccountOpen = (open) => {
   document.body.classList.remove('homepage-account-open');
   homepageAccount.setAttribute('aria-hidden', 'true');
   homepageAccountCloseTimer = window.setTimeout(() => { homepageAccount.hidden = true; }, 360);
-  setHomepageMenuOpen(true);
+  setHomepageMenuOpen(false);
+};
+const resetHomepageAccountInactivityTimer = () => {
+  window.clearTimeout(homepageAccountInactivityTimer);
+  if (!homepageAccount?.classList.contains('is-open')) return;
+  homepageAccountInactivityTimer = window.setTimeout(() => setHomepageAccountOpen(false), 5000);
 };
 const setHomepageServicesOpen = (open) => {
   if (!homepageServices) return;
@@ -924,7 +968,42 @@ homepageMenuTrigger?.addEventListener('click', (event) => {
 });
 document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => setHomepageMenuOpen(false)));
 document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => queueHomepageMenuSelection('home', () => setHomepageLanguageOpen(true)));
-document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => setHomepageAccountOpen(true)));
+document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => {
+  if (window.matchMedia('(max-aspect-ratio: 4 / 3)').matches) setHomepageAccountOptionsOpen(true);
+  else setHomepageAccountOpen(true);
+}));
+homepageMenu?.querySelectorAll('[data-home-account-nav-option]').forEach((button) => button.addEventListener('click', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  if (!homepageMenu.classList.contains('is-account-options')) return;
+  const accountType = button.dataset.homeAccountNavOption;
+  homepageMenu.dataset.accountActive = accountType;
+  homepageAccount?.querySelector(`[data-home-account-type="${accountType}"]`)?.click();
+  setHomepageAccountOpen(true);
+}));
+homepageMenu?.querySelector('[data-home-account-nav-handle]')?.addEventListener('click', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  if (homepageMenu.classList.contains('is-account-options')) setHomepageAccountOpen(true);
+});
+homepageAccount?.querySelector('[data-home-account-panel-handle]')?.addEventListener('click', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  setHomepageAccountOpen(false);
+});
+let homepageAccountNavHandleStartY;
+const homepageAccountNavHandle = homepageMenu?.querySelector('[data-home-account-nav-handle]');
+homepageAccountNavHandle?.addEventListener('pointerdown', (event) => {
+  homepageAccountNavHandleStartY = event.clientY;
+  homepageAccountNavHandle.setPointerCapture?.(event.pointerId);
+});
+homepageAccountNavHandle?.addEventListener('pointerup', (event) => {
+  if (homepageAccountNavHandleStartY - event.clientY > 24) {
+    event.preventDefault();
+    setHomepageAccountOpen(true);
+  }
+  homepageAccountNavHandleStartY = undefined;
+});
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => setHomepageStudioOpen(true)));
 document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/brands'));
 document.querySelector('[data-home-menu-services]')?.addEventListener('click', () => queueHomepageMenuSelection('services', () => setHomepageServicesContextOpen(true)));
@@ -973,7 +1052,21 @@ homepageSearch?.addEventListener('pointerdown', (event) => {
 });
 homepageAccount?.addEventListener('pointerdown', (event) => {
   if (!event.target.closest('.homepage-account-panel')) setHomepageAccountOpen(false);
+  else resetHomepageAccountInactivityTimer();
 });
+let homepageAccountPanelStartY;
+homepageAccount?.addEventListener('pointerdown', (event) => {
+  if (!event.target.closest('.homepage-account-panel') || event.target.closest('input, button, a, select, textarea, label, [role="button"], [role="tab"]')) return;
+  homepageAccountPanelStartY = event.clientY;
+  homepageAccount.setPointerCapture?.(event.pointerId);
+  resetHomepageAccountInactivityTimer();
+}, true);
+homepageAccount?.addEventListener('pointerup', (event) => {
+  if (homepageAccountPanelStartY !== undefined && event.clientY - homepageAccountPanelStartY > 24) setHomepageAccountOpen(false);
+  homepageAccountPanelStartY = undefined;
+}, true);
+homepageAccount?.addEventListener('pointercancel', () => { homepageAccountPanelStartY = undefined; }, true);
+homepageAccount?.addEventListener('keydown', resetHomepageAccountInactivityTimer);
 homepageServices?.addEventListener('pointerdown', (event) => {
   if (!event.target.closest('.homepage-services-panel')) setHomepageServicesOpen(false);
 });
