@@ -761,6 +761,17 @@ html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-task-details-
     aspect-ratio: auto;
   }
 }
+@media (max-aspect-ratio: 4 / 3) {
+  .studio-page:not(.selected-works-page) .studio-work-gallery.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-viewport {
+    height: calc(var(--story-active-height) + var(--story-deck-rise));
+    aspect-ratio: auto;
+  }
+  .studio-page:not(.selected-works-page) .studio-work-gallery.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-slide {
+    width: 100%;
+    height: var(--story-active-height);
+    aspect-ratio: auto;
+  }
+}
 .studio-client-copy { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; width: auto; gap: var(--x); color: #777; font-size: var(--overlay-text-size); line-height: 1.35; pointer-events: none; text-align: center; }
 .studio-client-copy[hidden] { display: none; }
 .studio-client-copy :is(strong, p) { margin: 0; font: inherit; font-size: inherit; line-height: inherit; }

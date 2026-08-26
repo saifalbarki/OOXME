@@ -400,8 +400,9 @@
     viewport.style.removeProperty('height');
     gallery.style.removeProperty('--story-active-height');
     if (!landscapeQuery.matches) {
-      // Fit the square Panel 1 card group between the Studio card's exact X insets.
-      gallery.style.setProperty('--story-active-height', `${gallery.clientWidth}px`);
+      // Keep Gallery square while preserving Brands' existing 9:16 active card size.
+      const activeHeight = isGalleryPage ? gallery.clientWidth : gallery.clientWidth * 16 / 9;
+      gallery.style.setProperty('--story-active-height', `${activeHeight}px`);
       return;
     }
     const cardStyle = getComputedStyle(card);
