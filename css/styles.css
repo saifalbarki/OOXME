@@ -73,6 +73,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .brand-management-contextual-pill button, .brand-management-contextual-services { position: relative; z-index: 1; display: grid; place-items: center; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 999px; background: transparent; cursor: pointer; }
 .brand-management-contextual-pill img, .brand-management-contextual-services img { width: calc(var(--header-element-size) * 1.2); height: calc(var(--header-element-size) * 1.2); object-fit: contain; }
 .brand-management-contextual-services { flex: 0 0 auto; width: var(--global-navigation-height); height: var(--global-navigation-height); border-radius: 50%; background: #fff; box-shadow: 0 12px 30px rgba(13, 13, 13, .14); }
+.studio-page .studio-panel .master-panel > .brand-management-contextual-navigation { position: absolute; z-index: 4; direction: ltr; flex-direction: row-reverse; }
 .brand-management-main-navigation[hidden] { display: none; }
 .brand-management-main-navigation { position: absolute; z-index: 5; right: 0; bottom: 0; left: 0; }
 .brand-management-main-navigation .homepage-bottom-menu { width: 60%; }
@@ -381,12 +382,6 @@ html[dir="rtl"] .portfolio-option-arrow::after { transform: translateY(-50%) rot
 @media (max-aspect-ratio: 4 / 3) {
   .project-panel--al-basri-primary .project-gallery {
     bottom: var(--bottom-control-area-height);
-  }
-  .studio-page:not(.selected-works-page) .project-panel--al-basri-primary .project-gallery.is-portrait {
-    inset-inline: calc(var(--x) * 2);
-  }
-  .studio-page:not(.selected-works-page) .project-panel--al-basri-primary .project-gallery.is-square {
-    inset-inline: var(--x);
   }
 }
 @media (min-aspect-ratio: 4 / 3) { .project-panel--al-basri-primary .project-gallery-viewport { width: min(100%, 30dvh); } }
@@ -729,6 +724,8 @@ html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-task-details-
 @media (max-aspect-ratio: 4 / 3) {
   /* Match the lower shared control line while preserving the gallery's bottom anchor. */
   .studio-work-gallery { justify-self: center; width: calc(60% + (var(--x) * 2.4)); }
+  .studio-page:not(.selected-works-page) .studio-work-gallery:has(.project-gallery.is-portrait) { width: calc(100% - (var(--x) * 2)); }
+  .studio-page:not(.selected-works-page) .studio-work-gallery:has(.project-gallery.is-square) { width: 100%; }
 }
 .studio-client-copy { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; width: auto; gap: var(--x); color: #777; font-size: var(--overlay-text-size); line-height: 1.35; pointer-events: none; text-align: center; }
 .studio-client-copy[hidden] { display: none; }
