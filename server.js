@@ -31,7 +31,7 @@ const handleAccount = async (request, response, requestPath, query) => {
 };
 const handleOs = async (request, response, requestPath, query) => {
   if (requestPath === '/os' || requestPath === '/os/') {
-    return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', Vary: 'Cookie' }, valid(request) ? dashboard() : login());
+    return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', Vary: 'Cookie' }, dashboard()); // Local preview only; production remains gated by api/os/index.js.
   }
   if (requestPath === '/api/os/login' && request.method === 'POST') {
     if (!configured()) return send(response, 503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"os_unconfigured"}');
