@@ -898,6 +898,7 @@ const setHomepageNotificationsOpen = (open, mode = 'notifications', menuFlow = f
     homepageNotificationsMenuFlow = menuFlow;
     resetHomepageNotificationsState();
     ensureHomepageNotificationsPanelHandle();
+    syncHomepageAccountHandleWidth();
     ensureHomepageLinkedInContact();
     syncHomepageNotificationsArrows();
     const selectedMode = mode === 'contact' ? 'contact' : 'notifications';
