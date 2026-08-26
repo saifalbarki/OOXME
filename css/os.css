@@ -132,3 +132,10 @@ html[dir="rtl"] .os-current-account-row { flex-direction: row-reverse; } html[di
 
 /* Keep OS account states on the shared primary content/control scale. */
 .os-login, .os-current-accounts-content { --overlay-text-size: var(--type-primary-content-size); }
+
+/* Unauthenticated OS uses the same three-control account form geometry. */
+.os-login-content { position: relative; }
+.os-login-page .os-login { position: absolute; inset: auto; bottom: var(--x); left: var(--x); width: calc(100% - (var(--x) * 2)); margin: 0; padding: var(--x); border-radius: max(0px, calc(var(--panel-radius) - var(--x))); background: #FFFFFF; box-shadow: 0 18px 48px rgba(13, 13, 13, .16); }
+.os-login-page .os-login .homepage-account-form .homepage-search-field input { border-radius: var(--radius-control); background: #F1F3F7; font-weight: 400; }
+.os-login-page .os-login .homepage-account-form .homepage-search-field input::placeholder { font-size: .875em; }
+.os-login-page .os-login .homepage-account-login { border-radius: var(--radius-control); font-weight: 400; }
