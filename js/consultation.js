@@ -20,6 +20,7 @@
   const selectDisplays = [...document.querySelectorAll('[data-book-select-display]')];
   const stageNames = ['information', 'schedule', 'review'];
   const navigationStateKey = 'consultation-last-navigation-direction';
+  const brandManagementEntry = new URLSearchParams(window.location.search).get('entry') === 'brand-management';
   let mode = 'work';
   let stageIndex = 0;
   let lastNavigationDirection = pill?.dataset.active === 'work' ? 'work' : 'details';
@@ -35,6 +36,7 @@
   let swipeStartY = null;
   let swipeTracking = false;
   let ignoreNextCalendarClick = false;
+  let lockedTopic = false;
 
   const labels = {
     en: { view: 'Consultation view', home: 'Home', previous: 'Previous', next: 'Next' },
@@ -134,6 +136,16 @@
     });
   };
   const isInformationValid = () => Boolean(getValue('name') && fields.email?.checkValidity() && getValue('phone').length >= 7 && getValue('sector') && getValue('topic'));
+  const applyBrandManagementEntry = () => {
+    const topic = fields.topic;
+    if (!brandManagementEntry || !topic) return;
+    lockedTopic = true;
+    topic.value = 'brand-management';
+    topic.disabled = true;
+    topic.setAttribute('aria-disabled', 'true');
+    topic.setAttribute('aria-readonly', 'true');
+    syncSelectDisplays();
+  };
 
   const setNavigationDirection = direction => {
     lastNavigationDirection = direction === 'work' ? 'work' : 'details';
@@ -204,7 +216,11 @@
     setMode('details');
   });
   Object.values(fields).forEach(field => field?.addEventListener('input', () => { syncFieldDisplays(); updateNavigation(); }));
-  Object.values(fields).forEach(field => field?.addEventListener('change', () => { syncSelectDisplays(); updateNavigation(); }));
+  Object.values(fields).forEach(field => field?.addEventListener('change', () => {
+    if (lockedTopic && field === fields.topic) field.value = 'brand-management';
+    syncSelectDisplays();
+    updateNavigation();
+  }));
   calendarDays?.addEventListener('click', event => {
     if (ignoreNextCalendarClick) {
       ignoreNextCalendarClick = false;
@@ -246,7 +262,8 @@
   });
   try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
   applyLanguage(language);
-  setMode('work');
+  applyBrandManagementEntry();
+  if (brandManagementEntry) setMode('details'); else setMode('work');
   window.addEventListener('storage', event => { if (event.key === 'ooxme-language') applyLanguage(event.newValue); });
   window.addEventListener('ooxme-language-change', event => applyLanguage(event.detail?.language));
 })();

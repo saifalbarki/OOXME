@@ -437,10 +437,6 @@ const productionMetadata = {
     en: ['OOXME | Brand Management & Business Development', 'OOXME provides brand management and business development for ambitious businesses.'],
     ar: ['اوكسوم | إدارة العلامة التجارية وتطوير الأعمال', 'اوكسوم تقدم إدارة العلامة التجارية وتطوير الأعمال للشركات الطموحة.']
   },
-  '/project-gallery.html': { en: ['Portfolio | OOXME', 'Selected OOXME brand-management work.'], ar: ['الأعمال | اوكسوم', 'أعمال مختارة من اوكسوم.'] },
-  '/brands-designed-gallery.html': { en: ['Portfolio | OOXME', 'Selected OOXME brand-design work.'], ar: ['الأعمال | اوكسوم', 'أعمال مختارة من اوكسوم.'] },
-  '/unique-works-gallery.html': { en: ['Portfolio | OOXME', 'Selected unique OOXME work.'], ar: ['الأعمال | اوكسوم', 'أعمال مميزة من اوكسوم.'] },
-  '/booking.html': { en: ['Consultation | OOXME', 'Book a consultation with OOXME.'], ar: ['استشارة | اوكسوم', 'احجز استشارة مع اوكسوم.'] }
 };
 const setMetadataTitle = (path, english, arabic) => {
   if (!productionMetadata[path]) return;
@@ -448,10 +444,6 @@ const setMetadataTitle = (path, english, arabic) => {
   productionMetadata[path].ar[0] = arabic;
 };
 setMetadataTitle('/index.html', 'OOXME', '\u0627\u0648\u0643\u0633\u0648\u0645');
-setMetadataTitle('/project-gallery.html', 'OOXME — Brands We Manage', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0627\u0644\u0639\u0644\u0627\u0645\u0627\u062a \u0627\u0644\u062a\u064a \u0646\u062f\u064a\u0631\u0647\u0627');
-setMetadataTitle('/brands-designed-gallery.html', 'OOXME — Brands We Designed', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0627\u0644\u0639\u0644\u0627\u0645\u0627\u062a \u0627\u0644\u062a\u064a \u0635\u0645\u0645\u0646\u0627\u0647\u0627');
-setMetadataTitle('/unique-works-gallery.html', 'OOXME — Unique Works', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u0623\u0639\u0645\u0627\u0644 \u0645\u0645\u064a\u0632\u0629');
-setMetadataTitle('/booking.html', 'OOXME — Booking', '\u0627\u0648\u0643\u0633\u0648\u0645 — \u062d\u062c\u0632 \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0629');
 const setHeadMeta = (selector, attribute, content) => {
   let element = document.head.querySelector(selector);
   if (!element) {

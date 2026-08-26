@@ -10,11 +10,16 @@
   --color-blue-soft: color-mix(in srgb, var(--color-blue) 16%, var(--color-paper));
   --color-green-soft: color-mix(in srgb, var(--color-green) 16%, var(--color-paper));
   --color-red-soft: color-mix(in srgb, var(--color-red) 16%, var(--color-paper));
-  --color-yellow-soft: color-mix(in srgb, var(--color-yellow) 18%, var(--color-paper));
   --color-brand: var(--color-blue);
   --color-secondary-control: #9aa0aa;
   --color-bottom-control: #b1b6be;
   --color-line: rgba(13, 13, 13, 0.17);
+  /* Proven-safe secondary UI color roles. */
+  --color-border-strong: #3f4248;
+  --color-muted-metadata: #68707b;
+  --color-surface-soft: #d9dde4;
+  --color-shadow-panel: rgba(13, 13, 13, .16);
+  --color-surface-elevated: rgba(255, 255, 255, .94);
   --space: clamp(16px, 4vw, 48px);
   --space-half: calc(var(--space) / 2);
   --panel-radius: clamp(36px, 10vmin, 88px);
@@ -28,8 +33,6 @@
   --x: var(--panel-safe);
   --layout-x: var(--x);
   --spacing-x: var(--x);
-  --spacing-x-half: calc(var(--x) * .5);
-  --spacing-x-triple: calc(var(--x) * 3);
   --layout-major-gap: var(--layout-x);
   --layout-related-gap: calc(var(--layout-x) * .75);
   --layout-compact-gap: calc(var(--layout-x) * .5);
@@ -39,7 +42,25 @@
   --logo-width: calc(var(--header-element-size) * .743);
   --header-control-size: 24px;
   --header-icon-size: var(--header-element-size);
-  --bottom-control-line-thickness: 5px;
+  /* Shared navigation geometry. */
+  --global-navigation-height: calc(var(--homepage-white-card-height) - 8px);
+  --navigation-collapsed-line-height: 5px;
+  --navigation-control-height: 42px;
+  --navigation-control-radius: 22px;
+  --navigation-indicator-inset: var(--navigation-collapsed-line-height);
+  --contextual-arrow-pill-height: var(--global-navigation-height);
+  --contextual-arrow-pill-width: calc(var(--contextual-arrow-pill-height) * 3);
+  --contextual-arrow-pill-radius: min(var(--panel-radius), calc(var(--contextual-arrow-pill-height) / 2));
+  --navigation-open-duration: .34s;
+  --navigation-fade-duration: .18s;
+  --navigation-scale-duration: .24s;
+  --navigation-close-duration: .18s;
+  --navigation-close-stagger-duration: .14s;
+  --navigation-open-delay: .14s;
+  --navigation-indicator-delay: .1s;
+  --current-control-height: var(--navigation-control-height);
+  --current-control-radius: var(--navigation-control-radius);
+  --bottom-control-line-thickness: var(--navigation-collapsed-line-height);
   --bottom-control-area-height: calc((var(--panel-safe) * 2) + var(--bottom-control-line-thickness));
   --pagination-dot-area-size: var(--bottom-control-line-thickness);
   --previous-page-last-card-height: clamp(24px, 3.5vh, 36px);
@@ -54,6 +75,9 @@
   --type-heading-arabic-line-height: 1.3;
   --type-body-line-height: 1.5;
   --type-control-line-height: 1.35;
+  /* Shared primary content/control text scale. */
+  --type-primary-content-size: clamp(10.5px, 1.2vw, 13.5px);
+  --type-navigation-micro-size: 9px;
   --font-english: OOXMEEnglish, Arial, sans-serif;
   --font-arabic: OOXMEArabic, Tahoma, sans-serif;
   --ooxme-language-font-scale: 1;
@@ -63,6 +87,13 @@
 html[dir="rtl"] { --ooxme-language-font-scale: var(--ooxme-arabic-font-scale); }
 .ooxme-language-english { font-family: var(--font-english) !important; direction: ltr; }
 .ooxme-language-arabic { font-family: var(--font-arabic) !important; direction: rtl; }
+
+@media (max-aspect-ratio: 4 / 3) {
+  :root {
+    --navigation-control-height: 38px;
+    --navigation-control-radius: 14.5px;
+  }
+}
 
 @media (min-aspect-ratio: 4 / 3) {
   :root {

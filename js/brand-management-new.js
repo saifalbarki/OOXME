@@ -5,6 +5,7 @@
   const selector = document.querySelector('[data-brand-management-selector]');
   const statePanels = [...document.querySelectorAll('[data-brand-management-panel]')];
   const detailCards = [...document.querySelectorAll('[data-brand-management-detail-card]')];
+  const consultationCta = document.querySelector('[data-brand-management-consultation-cta]');
   let state = 'work';
   const applyLanguage = next => {
     const language = next === 'ar' ? 'ar' : 'en';
@@ -30,6 +31,7 @@
       card.setAttribute('aria-expanded', String(isCurrent));
     });
   }));
+  consultationCta?.addEventListener('click', () => window.location.assign('/consultation?entry=brand-management'));
   pill?.querySelectorAll('[data-brand-management-context]').forEach(button => button.addEventListener('click', event => {
     event.preventDefault();
     event.stopImmediatePropagation();

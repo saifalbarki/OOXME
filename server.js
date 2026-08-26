@@ -2,23 +2,35 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { configured, valid, credentialsValid, sessionCookie, clearCookie } = require('./api/_lib/os-auth');
-const { login, dashboard, accountManagement } = require('./api/_lib/os-page');
+const { login, dashboard } = require('./api/_lib/os-page');
 const { allStatuses } = require('./api/_lib/os-status');
 const accountAdmin = require('./api/_lib/account-admin');
+const accountApi = require('./api/accounts/index');
 
 const root = __dirname;
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2' };
-const send = (response, status, headers, body = '') => { response.writeHead(status, headers); response.end(body); };
+const send = (response, status, headers, body = '') => { response.writeHead(status, headers); response.end(body); return true; };
 const readBody = (request) => new Promise((resolve, reject) => { let raw = ''; request.on('data', chunk => { raw += chunk; if (raw.length > 10_000) request.destroy(); }); request.on('end', () => { try { resolve(JSON.parse(raw || '{}')); } catch (error) { reject(error); } }); request.on('error', reject); });
+const localApiResponse = response => {
+  let statusCode = 200;
+  return {
+    status(code) { statusCode = code; return this; },
+    setHeader(name, value) { response.setHeader(name, value); return this; },
+    json(body) { response.statusCode = statusCode; response.setHeader('Content-Type', 'application/json; charset=utf-8'); response.end(JSON.stringify(body)); return this; },
+    send(body) { response.statusCode = statusCode; response.end(body); return this; }
+  };
+};
+const handleAccount = async (request, response, requestPath, query) => {
+  if (requestPath !== '/api/accounts/index' && requestPath !== '/api/accounts/login') return false;
+  request.query = Object.fromEntries(query.entries());
+  if (requestPath === '/api/accounts/login') request.query.route = 'login';
+  if (request.method !== 'GET') request.body = await readBody(request);
+  await accountApi(request, localApiResponse(response));
+  return true;
+};
 const handleOs = async (request, response, requestPath, query) => {
   if (requestPath === '/os' || requestPath === '/os/') {
-    if (!valid(request)) return send(response, 303, { Location: '/os/login', 'Cache-Control': 'no-store' });
-    return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }, dashboard());
-  }
-  if (requestPath === '/os/login' && request.method === 'GET') return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }, login());
-  if (requestPath === '/os/accounts' && request.method === 'GET') {
-    if (!valid(request)) return send(response, 303, { Location: '/os/login', 'Cache-Control': 'no-store' });
-    return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }, accountManagement());
+    return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }, valid(request) ? dashboard() : login());
   }
   if (requestPath === '/api/os/login' && request.method === 'POST') {
     if (!configured()) return send(response, 503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"os_unconfigured"}');
@@ -26,7 +38,7 @@ const handleOs = async (request, response, requestPath, query) => {
     if (!credentialsValid(body.username, body.password)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"invalid_credentials"}');
     return send(response, 204, { 'Set-Cookie': sessionCookie(), 'Cache-Control': 'no-store' });
   }
-  if (requestPath === '/api/os/logout' && request.method === 'POST') return send(response, 303, { Location: query.get('returnTo') === '/' ? '/' : '/os/login', 'Set-Cookie': clearCookie(), 'Cache-Control': 'no-store' });
+  if (requestPath === '/api/os/logout' && request.method === 'POST') return send(response, 303, { Location: '/os', 'Set-Cookie': clearCookie(), 'Cache-Control': 'no-store' });
   if (requestPath === '/api/os/index' && query.get('route') === 'status' && request.method === 'GET') {
     if (!valid(request)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"unauthorized"}');
     return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify(await allStatuses()));
@@ -51,7 +63,7 @@ const handleOs = async (request, response, requestPath, query) => {
 const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url || '/', 'http://localhost');
   const requestPath = decodeURIComponent(requestUrl.pathname);
-  handleOs(request, response, requestPath, requestUrl.searchParams).then(handled => { if (handled !== false) return;
+  handleAccount(request, response, requestPath, requestUrl.searchParams).then(handled => { if (handled) return true; return handleOs(request, response, requestPath, requestUrl.searchParams); }).then(handled => { if (handled) return;
   const relative = requestPath === '/' ? 'index.html' : requestPath.replace(/^\/+/, '');
   const resolved = path.resolve(root, relative);
   if (!resolved.startsWith(root)) { response.writeHead(403); response.end('Forbidden'); return; }
