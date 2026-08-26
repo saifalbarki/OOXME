@@ -417,6 +417,8 @@ html[dir="rtl"] .project-gallery { direction: ltr; }
 .swipe-control > span:not(.swipe-control-line) { display: none; }
 .swipe-control-line { position: relative; width: 60%; height: var(--bottom-control-line-thickness); overflow: hidden; border-radius: 9999px; background: var(--color-bottom-control); animation: bottom-control-line-bounce 2.4s cubic-bezier(.22, .61, .36, 1) infinite; }
 .homepage-bottom-navigation .master-panel-continue .swipe-control-line { top: calc(var(--x) * .5); background: #FFFFFF; }
+.homepage-bottom-navigation .master-panel-continue .swipe-control-line { overflow: visible; }
+.homepage-bottom-navigation .master-panel-continue .swipe-control-line::before { position: absolute; inset: -6px; border-radius: inherit; background: transparent; content: ''; }
 .swipe-control-progress { position: absolute; inset-block: 0; left: 50%; width: 0; border-radius: inherit; background: var(--color-brand); pointer-events: none; transform: translateX(-50%); transition: width 340ms cubic-bezier(.22, .61, .36, 1); }
 .swipe-control-progress.is-progress-reset { transition: none; }
 @keyframes bottom-control-line-bounce { 0%, 72%, 100% { transform: translateY(0); } 82% { transform: translateY(-5px); } 90% { transform: translateY(1px); } }
