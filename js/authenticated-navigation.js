@@ -1,4 +1,40 @@
 (() => {
+  const osNavigation = document.querySelector('[data-os-vertical-navigation]');
+  if (osNavigation) {
+    const dashboard = document.querySelector('.os-dashboard-experience');
+    const controls = [...document.querySelectorAll('[data-os-vertical-navigation]')];
+    const panels = dashboard ? [...dashboard.querySelectorAll('.os-screen')] : [];
+    if (dashboard && panels.length && !dashboard.dataset.osVerticalNavigationBound) {
+      dashboard.dataset.osVerticalNavigationBound = 'true';
+      let scrollTimer;
+      const currentPanel = () => Math.max(0, Math.min(panels.length - 1, Math.round(dashboard.scrollTop / dashboard.clientHeight)));
+      const updateControls = (target = currentPanel()) => {
+        controls.forEach(control => {
+          control.dataset.activePanel = String(target);
+          control.querySelector('[data-os-panel-direction="previous"]').disabled = target === 0;
+          control.querySelector('[data-os-panel-direction="next"]').disabled = target === panels.length - 1;
+        });
+      };
+      const movePanel = target => {
+        const current = currentPanel();
+        target = Math.max(0, Math.min(panels.length - 1, Number(target)));
+        if (target === current) return;
+        dashboard.scrollTo({ top: target * dashboard.clientHeight, behavior: 'smooth' });
+        dashboard.dispatchEvent(new CustomEvent('os-panel-activated', { detail: { panel: target } }));
+        updateControls(target);
+      };
+      controls.forEach(control => control.addEventListener('click', event => {
+        const button = event.target.closest('[data-os-panel-direction]');
+        if (!button || button.disabled) return;
+        movePanel(currentPanel() + (button.dataset.osPanelDirection === 'next' ? 1 : -1));
+      }));
+      updateControls();
+      dashboard.addEventListener('scroll', () => {
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => updateControls(), 140);
+      }, { passive: true });
+    }
+  }
   document.querySelectorAll('[data-authenticated-navigation]').forEach(navigation => {
     const trigger = navigation.querySelector('[data-auth-nav-trigger]');
     const menu = navigation.querySelector('[data-auth-nav-menu]');
