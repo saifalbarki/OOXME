@@ -724,8 +724,8 @@ html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-task-details-
 @media (max-aspect-ratio: 4 / 3) {
   /* Match the lower shared control line while preserving the gallery's bottom anchor. */
   .studio-work-gallery { justify-self: center; width: calc(60% + (var(--x) * 2.4)); }
-  .studio-page:not(.selected-works-page) .studio-work-gallery:has(.project-gallery.is-portrait) { width: calc(100% - (var(--x) * 2)); }
-  .studio-page:not(.selected-works-page) .studio-work-gallery:has(.project-gallery.is-square) { width: 100%; }
+  .studio-page .studio-content { padding-bottom: calc(var(--global-navigation-height) + (var(--x) * 2)); }
+  .studio-page .studio-work-gallery:has(.project-gallery:is(.is-portrait, .is-square)) { width: calc(100% - (var(--x) * 2)); }
 }
 .studio-client-copy { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; width: auto; gap: var(--x); color: #777; font-size: var(--overlay-text-size); line-height: 1.35; pointer-events: none; text-align: center; }
 .studio-client-copy[hidden] { display: none; }
@@ -799,9 +799,6 @@ html[dir="rtl"] .master-panel-content.has-simplified-text-hierarchy { --removed-
 html[dir="rtl"] .master-panel-content h1 { font-weight: 600; letter-spacing: 0; line-height: var(--type-heading-arabic-line-height); }
 html[dir="rtl"] .master-panel-content p:not(.master-panel-label) { font-weight: 500; letter-spacing: 0; line-height: var(--type-body-line-height); }
 @media (prefers-reduced-motion: reduce) { .master-panel-track { transition-duration: .01ms; } .master-panel-screen.is-active .master-panel-content > *, .swipe-control-line { animation-duration: .01ms; animation-iteration-count: 1; } .swipe-control-progress { transition-duration: .01ms; } .search-overlay { transition-duration: .01ms; } }
-/* Portrait Panel 1 has two matching control surfaces; the action fills its own
-   control surface so no extra white layer is exposed behind the blue button. */
-@media (max-aspect-ratio: 4 / 3) { .selected-works-page .studio-work-gallery { width: 100%; } }
 /* Shared Portfolio project composition: top text grows down; each gallery and
    its dots occupy the bottom grid track. Project-specific gallery types still
    own their image rendering and interaction, not their vertical anchor. */

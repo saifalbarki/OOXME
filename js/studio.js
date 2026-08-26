@@ -3,9 +3,9 @@
   const applyLanguage = (language) => {
     root.lang = language;
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
-    document.querySelector('[data-studio-home]')?.setAttribute('aria-label', language === 'ar' ? 'الرئيسية' : 'Home');
-    document.querySelector('[data-studio-context="work"]')?.setAttribute('aria-label', language === 'ar' ? 'السابق' : 'Previous');
-    document.querySelector('[data-studio-context="details"]')?.setAttribute('aria-label', language === 'ar' ? 'التالي' : 'Next');
+    document.querySelectorAll('[data-studio-home]').forEach((element) => element.setAttribute('aria-label', language === 'ar' ? 'الرئيسية' : 'Home'));
+    document.querySelectorAll('[data-studio-context="work"]').forEach((element) => element.setAttribute('aria-label', language === 'ar' ? 'السابق' : 'Previous'));
+    document.querySelectorAll('[data-studio-context="details"]').forEach((element) => element.setAttribute('aria-label', language === 'ar' ? 'التالي' : 'Next'));
     document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[language]; });
     document.querySelectorAll('[data-en-placeholder][data-ar-placeholder]').forEach((input) => {
       input.placeholder = input.dataset[language + 'Placeholder'];
@@ -21,24 +21,8 @@
   const selector = document.querySelector('[data-studio-selector]');
   if (!selector) return;
   const workGallery = document.querySelector('[data-studio-work-gallery]');
-  const clientCopy = document.querySelector('[data-studio-client-copy]');
   let resetStudioGallery = () => {};
-  const setStudioView = (view, panel = selector.closest('.studio-panel')) => {
-    const panelSelector = panel?.querySelector('[data-studio-selector]');
-    const panelWorkGallery = panel?.querySelector('[data-studio-work-gallery]');
-    const panelClientCopy = panel?.querySelector('[data-studio-client-copy]');
-    if (!panelSelector) return;
-    panelSelector.dataset.active = view;
-    panelSelector.querySelectorAll('[data-studio-option]').forEach((option) => {
-      option.setAttribute('aria-selected', String(option.dataset.studioOption === view));
-    });
-    if (panelWorkGallery) panelWorkGallery.hidden = view !== 'work';
-    if (panelClientCopy) panelClientCopy.hidden = view !== 'client';
-    resetStudioGallery();
-    document.dispatchEvent(new CustomEvent('studio-view-change', { detail: { view, panel } }));
-  };
-
-  selector.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption, button.closest('.studio-panel'))));
+  let setStudioPanelState = () => {};
 
   const navigation = document.querySelector('[data-authenticated-navigation]');
   const navigationTrigger = navigation?.querySelector('[data-auth-nav-trigger]');
@@ -154,7 +138,7 @@
   };
   navigationMenu?.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => {
     const item = button.dataset.authNavItem;
-    if (item === 'gallery') setStudioView('work');
+    if (item === 'gallery') setStudioPanelState(0);
     if (item in overlayByItem) setOverlayOpen(item, true);
   }));
   notifications?.addEventListener('click', (event) => {
@@ -252,23 +236,22 @@
   const studioPanel = document.querySelector('.studio-panel');
   let duplicateStudioPanel;
   let studioTrack;
-  let studioPanels = [];
+  let studioPanels = [studioPanel];
   let studioPanelIndex = 0;
-  let moveToStudioPanel = () => {};
-  const contextualNavigation = document.querySelector('[data-studio-contextual]');
-  const contextualPill = contextualNavigation?.querySelector('[data-studio-contextual-pill]');
-  const contextualBack = contextualNavigation?.querySelector('[data-studio-context="work"]');
-  const contextualForward = contextualNavigation?.querySelector('[data-studio-context="details"]');
   const updateContextualNavigation = () => {
     const atFirstPanel = studioPanelIndex === 0;
     const atLastPanel = studioPanelIndex === studioPanels.length - 1;
-    contextualPill?.setAttribute('data-active', atFirstPanel ? 'work' : 'details');
-    contextualBack?.toggleAttribute('disabled', atFirstPanel);
-    contextualForward?.toggleAttribute('disabled', atLastPanel);
-    contextualBack?.setAttribute('aria-disabled', String(atFirstPanel));
-    contextualForward?.setAttribute('aria-disabled', String(atLastPanel));
-    contextualBack?.setAttribute('aria-pressed', String(atFirstPanel));
-    contextualForward?.setAttribute('aria-pressed', String(atLastPanel));
+    document.querySelectorAll('[data-studio-contextual-pill]').forEach((pill) => pill.setAttribute('data-active', atFirstPanel ? 'work' : 'details'));
+    document.querySelectorAll('[data-studio-context="work"]').forEach((button) => {
+      button.toggleAttribute('disabled', atFirstPanel);
+      button.setAttribute('aria-disabled', String(atFirstPanel));
+      button.setAttribute('aria-pressed', String(atFirstPanel));
+    });
+    document.querySelectorAll('[data-studio-context="details"]').forEach((button) => {
+      button.toggleAttribute('disabled', atLastPanel);
+      button.setAttribute('aria-disabled', String(atLastPanel));
+      button.setAttribute('aria-pressed', String(atLastPanel));
+    });
   };
   const state = { index: 0, manualDirection: 1, dragging: false };
   let galleryRotationTimer;
@@ -446,7 +429,6 @@
     state.dragging = false;
     containGallery();
     render();
-    startGalleryRotation();
   };
   let gesture;
   gallery.addEventListener('pointerdown', (event) => {
@@ -491,17 +473,7 @@
     studioTrack.append(studioPanel, duplicateStudioPanel);
     studioPanels = [studioPanel, duplicateStudioPanel];
     studioTrack.style.height = 'calc(var(--ooxme-stable-viewport-height) * 2)';
-    moveToStudioPanel = (next) => {
-      const target = Math.max(0, Math.min(studioPanels.length - 1, next));
-      if (target === studioPanelIndex) return;
-      studioPanelIndex = target;
-      resetStudioGallery();
-      studioPanels.forEach((panel) => panel.classList.remove('is-active'));
-      studioTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-studioPanelIndex}))`;
-      window.setTimeout(() => studioPanels[studioPanelIndex].classList.add('is-active'), 620);
-      updateContextualNavigation();
-    };
-    window.OOXMEMasterPanelDrag.register({ experience: studioExperience, track: studioTrack, panels: studioPanels, getIndex: () => studioPanelIndex, moveTo: moveToStudioPanel, allowBottomControlNavigation: false });
+    window.OOXMEMasterPanelDrag.register({ experience: studioExperience, track: studioTrack, panels: studioPanels, getIndex: () => studioPanelIndex, moveTo: (next) => setStudioPanelState(next), allowBottomControlNavigation: false });
     const duplicateNavigation = duplicateStudioPanel.querySelector('[data-authenticated-navigation]');
     const duplicateNavigationTrigger = duplicateNavigation?.querySelector('[data-auth-nav-trigger]');
     const duplicateNavigationMenu = duplicateNavigation?.querySelector('[data-auth-nav-menu]');
@@ -522,7 +494,6 @@
     if (navigation) new MutationObserver(syncDuplicateNavigation).observe(navigation, { attributes: true, subtree: true, attributeFilter: ['class', 'aria-expanded', 'aria-pressed', 'data-active'] });
     duplicateNavigationTrigger?.addEventListener('click', () => navigationTrigger?.click());
     duplicateNavigationMenu?.querySelectorAll('[data-auth-nav-item]').forEach((button) => button.addEventListener('click', () => navigationMenu?.querySelector(`[data-auth-nav-item="${button.dataset.authNavItem}"]`)?.click()));
-    duplicateStudioPanel.querySelectorAll('[data-studio-option]').forEach((button) => button.addEventListener('click', () => setStudioView(button.dataset.studioOption, duplicateStudioPanel)));
     const duplicateGallery = duplicateStudioPanel.querySelector('[data-studio-project-gallery]');
     let duplicateGesture;
     duplicateGallery?.addEventListener('pointerdown', (event) => {
@@ -567,18 +538,38 @@
       duplicateDescription.textContent = duplicateDescription.dataset[root.lang === 'ar' ? 'ar' : 'en'];
     }
     syncDuplicateStudioPanel();
+    setStudioPanelState(studioPanelIndex, true);
   };
-  contextualBack?.addEventListener('click', () => {
-    if (contextualBack.disabled) return;
-    moveToStudioPanel(studioPanelIndex - 1);
-  });
-  contextualForward?.addEventListener('click', () => {
-    if (contextualForward.disabled) return;
-    moveToStudioPanel(studioPanelIndex + 1);
+  setStudioPanelState = (next, force = false) => {
+    const target = Math.max(0, Math.min(studioPanels.length - 1, next));
+    if (!force && target === studioPanelIndex) return;
+    studioPanelIndex = target;
+    const view = target === 0 ? 'work' : 'client';
+    document.querySelectorAll('[data-studio-selector]').forEach((panelSelector) => {
+      panelSelector.dataset.active = view;
+      panelSelector.querySelectorAll('[data-studio-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.studioOption === view)));
+    });
+    document.querySelectorAll('[data-studio-work-gallery]').forEach((panelGallery) => { panelGallery.hidden = view !== 'work'; });
+    document.querySelectorAll('[data-studio-client-copy]').forEach((panelCopy) => { panelCopy.hidden = view !== 'client'; });
+    resetStudioGallery();
+    studioPanels.forEach((panel) => panel.classList.remove('is-active'));
+    if (studioTrack) studioTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-studioPanelIndex}))`;
+    window.setTimeout(() => studioPanels[studioPanelIndex]?.classList.add('is-active'), 620);
+    updateContextualNavigation();
+    startGalleryRotation();
+    document.dispatchEvent(new CustomEvent('studio-view-change', { detail: { view, panel: studioPanels[studioPanelIndex], index: studioPanelIndex } }));
+  };
+  document.addEventListener('click', (event) => {
+    const option = event.target.closest('[data-studio-option]');
+    if (option) setStudioPanelState(option.dataset.studioOption === 'client' ? 1 : 0);
+    const control = event.target.closest('[data-studio-context]');
+    if (!control || control.disabled) return;
+    setStudioPanelState(studioPanelIndex + (control.dataset.studioContext === 'work' ? -1 : 1));
   });
   updateContextualNavigation();
   window.requestAnimationFrame(() => { containGallery(); render(); window.setTimeout(createSecondStudioPanel, 1100); });
   resetStudioGallery();
+  startGalleryRotation();
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) stopGalleryRotation();
     else startGalleryRotation();
