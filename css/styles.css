@@ -544,6 +544,7 @@ html[dir="rtl"] .homepage-studio-nav-option-content { direction: rtl; }
 }
 @media (max-aspect-ratio: 4 / 3) { .homepage-account-panel { padding-bottom: var(--x); }.homepage-account-panel-handle { position: absolute; z-index: 2; bottom: calc(100% + (var(--x) * .5)); left: 50%; display: block; width: var(--homepage-account-handle-width, 20%); height: var(--bottom-control-line-thickness); padding: 0; border: 0; border-radius: 9999px; background: #FFFFFF; opacity: 1; transform: translateX(-50%); cursor: pointer; }.homepage-account-login { line-height: 1.1; } }
 @media (max-aspect-ratio: 4 / 3) {
+  .homepage-account .homepage-account-selector { display: none; }
   .homepage-account .homepage-search-panel { border-radius: max(0px, calc(var(--panel-radius) - var(--x))); }
   .homepage-account .homepage-account-selector,
   .homepage-account .homepage-account-form .homepage-search-field input,

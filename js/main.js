@@ -869,7 +869,7 @@ const setHomepageSearchOpen = (open) => {
   homepageSearchCloseTimer = window.setTimeout(() => { homepageSearch.hidden = true; }, 360);
   setHomepageMenuOpen(true);
 };
-const setHomepageAccountOpen = (open) => {
+const setHomepageAccountOpen = (open, returnToAccountOptions = false) => {
   if (!homepageAccount) return;
   window.clearTimeout(homepageAccountCloseTimer);
   window.clearTimeout(homepageAccountInactivityTimer);
@@ -893,11 +893,16 @@ const setHomepageAccountOpen = (open) => {
   homepageAccount.setAttribute('aria-hidden', 'true');
   homepageAccountCloseTimer = window.setTimeout(() => { homepageAccount.hidden = true; }, 360);
   setHomepageMenuOpen(false);
+  if (returnToAccountOptions && window.matchMedia('(max-aspect-ratio: 4 / 3)').matches) setHomepageAccountOptionsOpen(true);
 };
 const resetHomepageAccountInactivityTimer = () => {
   window.clearTimeout(homepageAccountInactivityTimer);
   if (!homepageAccount?.classList.contains('is-open')) return;
   homepageAccountInactivityTimer = window.setTimeout(() => setHomepageAccountOpen(false), 5000);
+};
+const resetHomepageAccountInteractionTimer = () => {
+  if (homepageMenu?.classList.contains('is-account-options')) resetHomepageMenuInactivityTimer();
+  if (homepageAccount?.classList.contains('is-open')) resetHomepageAccountInactivityTimer();
 };
 const setHomepageServicesOpen = (open) => {
   if (!homepageServices) return;
@@ -989,7 +994,7 @@ homepageMenu?.querySelector('[data-home-account-nav-handle]')?.addEventListener(
 homepageAccount?.querySelector('[data-home-account-panel-handle]')?.addEventListener('click', (event) => {
   event.preventDefault();
   event.stopPropagation();
-  setHomepageAccountOpen(false);
+  setHomepageAccountOpen(false, true);
 });
 let homepageAccountNavHandleStartY;
 const homepageAccountNavHandle = homepageMenu?.querySelector('[data-home-account-nav-handle]');
@@ -1129,6 +1134,7 @@ homepageAccount?.querySelectorAll('.homepage-account-selector, .homepage-account
 homepageSearchInput?.addEventListener('input', renderHomepageSearchSuggestions);
 homepageSearchSuggestions?.addEventListener('click', (event) => event.stopPropagation());
 document.addEventListener('pointerdown', (event) => {
+  resetHomepageAccountInteractionTimer();
   if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
   resetHomepageMenuInactivityTimer();
   if (event.target.closest('[data-language-toggle]')) return;
@@ -1137,6 +1143,9 @@ document.addEventListener('pointerdown', (event) => {
   event.preventDefault();
   event.stopPropagation();
 }, true);
+document.addEventListener('pointermove', resetHomepageAccountInteractionTimer, { passive: true });
+document.addEventListener('wheel', resetHomepageAccountInteractionTimer, { passive: true });
+document.addEventListener('keydown', resetHomepageAccountInteractionTimer);
 document.addEventListener('pointermove', resetHomepageMenuInactivityTimer, { passive: true });
 document.addEventListener('keydown', resetHomepageMenuInactivityTimer);
 document.addEventListener('wheel', resetHomepageMenuInactivityTimer, { passive: true });
