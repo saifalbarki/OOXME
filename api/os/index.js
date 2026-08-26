@@ -88,10 +88,12 @@ module.exports = async (request, response) => {
   if (request.method !== 'GET') return response.status(405).send('Method not allowed');
   if (!valid(request)) {
     response.setHeader('Cache-Control', 'no-store');
+    response.setHeader('Vary', 'Cookie');
     response.setHeader('Content-Type', 'text/html; charset=utf-8');
     return response.status(200).send(login());
   }
   response.setHeader('Cache-Control', 'no-store');
+  response.setHeader('Vary', 'Cookie');
   response.setHeader('Content-Type', 'text/html; charset=utf-8');
   return response.status(200).send(dashboard());
 };
