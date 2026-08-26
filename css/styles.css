@@ -740,13 +740,13 @@ html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-task-details-
 }
 @media (max-aspect-ratio: 4 / 3) {
   .selected-works-page .studio-work-gallery.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-viewport {
-    box-sizing: content-box;
-    height: auto;
-    padding-bottom: var(--story-deck-rise);
-    aspect-ratio: 9 / 16;
+    height: calc(var(--story-active-height) + var(--story-deck-rise));
+    aspect-ratio: auto;
   }
   .selected-works-page .studio-work-gallery.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story .project-gallery-slide {
-    inset-block-end: calc(var(--story-deck-rise) * -1);
+    width: auto;
+    height: var(--story-active-height);
+    aspect-ratio: auto;
   }
 }
 .studio-client-copy { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; width: auto; gap: var(--x); color: #777; font-size: var(--overlay-text-size); line-height: 1.35; pointer-events: none; text-align: center; }
