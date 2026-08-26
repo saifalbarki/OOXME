@@ -550,6 +550,10 @@ document.querySelectorAll('[data-employee-dashboard-selector]:not(.employee-dash
 const homepageBottomNavigation = document.querySelector('.homepage-bottom-navigation');
 const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
 const homepageMenu = document.querySelector('[data-home-menu]');
+const ensureHomepageHomeOptions = () => {
+  if (!homepageMenu || homepageMenu.querySelector('[data-home-home-option]')) return;
+  homepageMenu.insertAdjacentHTML('beforeend', '<button class="homepage-home-nav-option" type="button" role="tab" data-home-home-option="en" aria-selected="true" aria-hidden="true" tabindex="-1"><span>English</span></button><button class="homepage-home-nav-option" type="button" role="tab" data-home-home-option="ar" aria-selected="false" aria-hidden="true" tabindex="-1"><span>العربية</span></button>');
+};
 const homepageNotifications = document.querySelector('[data-notifications]');
 const homepageSearch = document.querySelector('[data-home-search]');
 const homepageAccount = document.querySelector('[data-home-account]');
@@ -652,6 +656,15 @@ const resetHomepageAccountOptions = () => {
     button.setAttribute('tabindex', '-1');
   });
 };
+const resetHomepageHomeOptions = () => {
+  homepageMenu?.classList.remove('is-home-options');
+  homepageMenu?.removeAttribute('data-home-active');
+  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
+  homepageMenu?.querySelectorAll('[data-home-home-option]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'true');
+    button.setAttribute('tabindex', '-1');
+  });
+};
 const setHomepageMenuOpen = (open) => {
   const wasOpen = homepageBottomNavigation?.classList.contains('is-menu-open');
   if (!open) {
@@ -659,8 +672,9 @@ const setHomepageMenuOpen = (open) => {
     resetHomepageStudioOptions();
     resetHomepageServicesOptions();
     resetHomepageAccountOptions();
+    resetHomepageHomeOptions();
     setHomepageMenuActive('home');
-  } else if (!wasOpen && !homepageMenu?.classList.contains('is-studio-options') && !homepageMenu?.classList.contains('is-services-options') && !homepageMenu?.classList.contains('is-account-options')) {
+  } else if (!wasOpen && !homepageMenu?.classList.contains('is-studio-options') && !homepageMenu?.classList.contains('is-services-options') && !homepageMenu?.classList.contains('is-account-options') && !homepageMenu?.classList.contains('is-home-options')) {
     setHomepageMenuActive('home');
   }
   window.clearTimeout(homepageMenuCloseTimer);
@@ -757,6 +771,7 @@ const setHomepageAccountOptionsOpen = (open) => {
     return;
   }
   setHomepageMenuOpen(true);
+  resetHomepageHomeOptions();
   homepageMenu.dataset.accountActive = 'employee';
   homepageMenu.setAttribute('aria-label', 'Account options');
   homepageMenu.querySelectorAll('[data-home-account-nav-option], [data-home-account-nav-handle]').forEach((button) => {
@@ -765,6 +780,26 @@ const setHomepageAccountOptionsOpen = (open) => {
   });
   homepageMenu.classList.add('is-account-options');
   syncHomepageAccountHandleWidth();
+  resetHomepageMenuInactivityTimer();
+};
+const setHomepageHomeOptionsOpen = (open) => {
+  if (!homepageMenu) return;
+  ensureHomepageHomeOptions();
+  if (!open) {
+    resetHomepageHomeOptions();
+    return;
+  }
+  setHomepageMenuOpen(true);
+  resetHomepageAccountOptions();
+  const activeLanguage = root.lang === 'ar' ? 'ar' : 'en';
+  homepageMenu.dataset.homeActive = activeLanguage;
+  homepageMenu.setAttribute('aria-label', 'Language options');
+  homepageMenu.querySelectorAll('[data-home-home-option]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'false');
+    button.setAttribute('tabindex', '0');
+    button.setAttribute('aria-selected', String(button.dataset.homeHomeOption === activeLanguage));
+  });
+  homepageMenu.classList.add('is-home-options');
   resetHomepageMenuInactivityTimer();
 };
 window.addEventListener('resize', syncHomepageAccountHandleWidth);
@@ -893,7 +928,7 @@ const setHomepageAccountOpen = (open, returnToAccountOptions = false) => {
   homepageAccount.setAttribute('aria-hidden', 'true');
   homepageAccountCloseTimer = window.setTimeout(() => { homepageAccount.hidden = true; }, 360);
   setHomepageMenuOpen(false);
-  if (returnToAccountOptions && window.matchMedia('(max-aspect-ratio: 4 / 3)').matches) setHomepageAccountOptionsOpen(true);
+  if (returnToAccountOptions) setHomepageAccountOptionsOpen(true);
 };
 const resetHomepageAccountInactivityTimer = () => {
   window.clearTimeout(homepageAccountInactivityTimer);
@@ -955,6 +990,7 @@ const setHomepageLanguageOpen = (open) => {
 document.querySelector('[data-employee-dashboard-menu-services]')?.addEventListener('click', () => setHomepageServicesOpen(true));
 const queueHomepageMenuSelection = (active, action) => {
   setHomepageMenuActive(active);
+  if (active !== 'home') resetHomepageHomeOptions();
   resetHomepageMenuInactivityTimer();
   window.clearTimeout(homepageMenuSelectionTimer);
   homepageMenuSelectionTimer = undefined;
@@ -972,10 +1008,23 @@ homepageMenuTrigger?.addEventListener('click', (event) => {
   setHomepageMenuOpen(!homepageBottomNavigation.classList.contains('is-menu-open'));
 });
 document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => setHomepageMenuOpen(false)));
-document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => queueHomepageMenuSelection('home', () => setHomepageLanguageOpen(true)));
+document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => queueHomepageMenuSelection('home', () => {
+  setHomepageHomeOptionsOpen(true);
+}));
+homepageMenu?.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-home-home-option]');
+  if (!button || !homepageMenu.classList.contains('is-home-options')) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const next = button.dataset.homeHomeOption === 'ar' ? 'ar' : 'en';
+  applyLanguage(next);
+  homepageMenu.dataset.homeActive = next;
+  homepageMenu.querySelectorAll('[data-home-home-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
+  resetHomepageMenuInactivityTimer();
+  setHomepageMenuOpen(false);
+});
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => {
-  if (window.matchMedia('(max-aspect-ratio: 4 / 3)').matches) setHomepageAccountOptionsOpen(true);
-  else setHomepageAccountOpen(true);
+  setHomepageAccountOptionsOpen(true);
 }));
 homepageMenu?.querySelectorAll('[data-home-account-nav-option]').forEach((button) => button.addEventListener('click', (event) => {
   event.preventDefault();
