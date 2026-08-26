@@ -563,6 +563,25 @@ const homepageLanguageSelector = document.querySelector('[data-home-language-sel
 const homepageNotificationDot = document.querySelector('[data-homepage-notification-dot]');
 const homepageSearchInput = document.querySelector('[data-home-search-input]');
 const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
+const ensureHomepageNotificationsOptions = () => {
+  if (!homepageMenu || homepageMenu.querySelector('[data-home-notifications-nav-option]')) return;
+  homepageMenu.insertAdjacentHTML('beforeend', '<button class="homepage-notifications-nav-option" type="button" data-home-notifications-nav-option="notifications" aria-hidden="true" tabindex="-1"><span data-en="Notifications" data-ar="الإشعارات">Notifications</span></button><button class="homepage-notifications-nav-option" type="button" data-home-notifications-nav-option="contact" aria-hidden="true" tabindex="-1"><span data-en="Contact" data-ar="التواصل">Contact</span></button><button class="homepage-notifications-nav-handle" type="button" data-home-notifications-nav-handle aria-label="Open notifications" aria-hidden="true" tabindex="-1"></button>');
+};
+const ensureHomepageNotificationsPanelHandle = () => {
+  const panel = homepageNotifications?.querySelector('[data-notifications-panel]');
+  if (!panel || panel.querySelector('[data-home-notifications-panel-handle]')) return;
+  panel.insertAdjacentHTML('afterbegin', '<button class="homepage-notifications-panel-handle" type="button" data-home-notifications-panel-handle aria-label="Show all items"></button>');
+};
+const ensureHomepageLinkedInContact = () => {
+  const contact = homepageNotifications?.querySelector('.homepage-notifications-contact');
+  if (!contact || contact.querySelector('[data-home-linkedin-contact]')) return;
+  const label = root.lang === 'ar' ? 'لينكدإن' : 'LinkedIn';
+  contact.insertAdjacentHTML('beforeend', `<a class="homepage-contact-card" data-home-linkedin-contact href="https://www.linkedin.com/company/ooxme/" target="_blank" rel="noopener noreferrer"><span class="homepage-notification-summary"><strong data-en="LinkedIn" data-ar="لينكدإن">${label}</strong><img class="homepage-contact-icon" src="assets/icons/linkedin.png" alt="" /></span></a>`);
+};
+const syncHomepageNotificationsArrows = () => {
+  const arrow = root.lang === 'ar' ? 'assets/icons/New/ARROW LEFT 02.svg' : 'assets/icons/New/ARROW RIGHT 02.svg';
+  homepageNotifications?.querySelectorAll('.homepage-contact-icon').forEach((icon) => icon.src = arrow);
+};
 const normalizeSharedNotificationLayout = (container) => container?.querySelectorAll('[data-notification]').forEach((item) => {
   const date = item.querySelector('.homepage-notification-summary time');
   const details = item.querySelector('.homepage-notification-details');
@@ -570,6 +589,7 @@ const normalizeSharedNotificationLayout = (container) => container?.querySelecto
 });
 normalizeSharedNotificationLayout(homepageNotifications);
 homepageNotifications?.querySelectorAll('[data-notifications-option]').forEach((button) => button.addEventListener('click', () => {
+  if (homepageNotifications.dataset.notificationFlow === 'true') return;
   const selector = homepageNotifications.querySelector('[data-notifications-selector]');
   const panel = homepageNotifications.querySelector('[data-notifications-panel]');
   const contact = homepageNotifications.querySelector('.homepage-notifications-contact');
@@ -587,6 +607,7 @@ let homepageMenuSelectionTimer;
 let homepageMenuCloseTimer;
 let homepageNotificationsCloseTimer;
 let homepageNotificationSelectionTimer;
+let homepageNotificationsMenuFlow = false;
 let homepageSearchCloseTimer;
 let homepageAccountCloseTimer;
 let homepageAccountInactivityTimer;
@@ -620,8 +641,12 @@ document.addEventListener('pointerdown', (event) => {
 });
 const resetHomepageMenuInactivityTimer = () => {
   window.clearTimeout(homepageMenuInactivityTimer);
-  if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
-  homepageMenuInactivityTimer = window.setTimeout(() => setHomepageMenuOpen(false), 5000);
+  const notificationsFlowActive = homepageNotifications?.dataset.notificationFlow === 'true';
+  if (!homepageBottomNavigation?.classList.contains('is-menu-open') && !notificationsFlowActive) return;
+  homepageMenuInactivityTimer = window.setTimeout(() => {
+    if (homepageNotifications?.dataset.notificationFlow === 'true') setHomepageNotificationsOpen(false);
+    else setHomepageMenuOpen(false);
+  }, 5000);
 };
 let homepageStudioNavigationLocked = false;
 let homepageServicesNavigationLocked = false;
@@ -665,6 +690,15 @@ const resetHomepageHomeOptions = () => {
     button.setAttribute('tabindex', '-1');
   });
 };
+const resetHomepageNotificationsOptions = () => {
+  homepageMenu?.classList.remove('is-notifications-options');
+  homepageMenu?.removeAttribute('data-notifications-active');
+  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
+  homepageMenu?.querySelectorAll('[data-home-notifications-nav-option], [data-home-notifications-nav-handle]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'true');
+    button.setAttribute('tabindex', '-1');
+  });
+};
 const setHomepageMenuOpen = (open) => {
   const wasOpen = homepageBottomNavigation?.classList.contains('is-menu-open');
   if (!open) {
@@ -673,8 +707,9 @@ const setHomepageMenuOpen = (open) => {
     resetHomepageServicesOptions();
     resetHomepageAccountOptions();
     resetHomepageHomeOptions();
+    resetHomepageNotificationsOptions();
     setHomepageMenuActive('home');
-  } else if (!wasOpen && !homepageMenu?.classList.contains('is-studio-options') && !homepageMenu?.classList.contains('is-services-options') && !homepageMenu?.classList.contains('is-account-options') && !homepageMenu?.classList.contains('is-home-options')) {
+  } else if (!wasOpen && !homepageMenu?.classList.contains('is-studio-options') && !homepageMenu?.classList.contains('is-services-options') && !homepageMenu?.classList.contains('is-account-options') && !homepageMenu?.classList.contains('is-home-options') && !homepageMenu?.classList.contains('is-notifications-options')) {
     setHomepageMenuActive('home');
   }
   window.clearTimeout(homepageMenuCloseTimer);
@@ -762,7 +797,9 @@ const syncHomepageAccountHandleWidth = () => {
   if (!lineWidth) return;
   const handleWidth = `${lineWidth * .2}px`;
   homepageMenu?.querySelector('[data-home-account-nav-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
+  homepageMenu?.querySelector('[data-home-notifications-nav-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
   homepageAccount?.querySelector('[data-home-account-panel-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
+  homepageNotifications?.querySelector('[data-home-notifications-panel-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
 };
 const setHomepageAccountOptionsOpen = (open) => {
   if (!homepageMenu) return;
@@ -802,6 +839,25 @@ const setHomepageHomeOptionsOpen = (open) => {
   homepageMenu.classList.add('is-home-options');
   resetHomepageMenuInactivityTimer();
 };
+const setHomepageNotificationsOptionsOpen = (open) => {
+  if (!homepageMenu) return;
+  ensureHomepageNotificationsOptions();
+  if (!open) {
+    resetHomepageNotificationsOptions();
+    return;
+  }
+  setHomepageMenuOpen(true);
+  resetHomepageHomeOptions();
+  homepageMenu.dataset.notificationsActive = 'notifications';
+  homepageMenu.setAttribute('aria-label', 'Notifications and contact options');
+  homepageMenu.querySelectorAll('[data-home-notifications-nav-option], [data-home-notifications-nav-handle]').forEach((button) => {
+    button.setAttribute('aria-hidden', 'false');
+    button.setAttribute('tabindex', '0');
+  });
+  homepageMenu.classList.add('is-notifications-options');
+  syncHomepageAccountHandleWidth();
+  resetHomepageMenuInactivityTimer();
+};
 window.addEventListener('resize', syncHomepageAccountHandleWidth);
 const closeHomepageStudioOutside = (event) => {
   const target = event.target instanceof Element ? event.target : null;
@@ -835,13 +891,27 @@ const resetHomepageNotificationsState = () => {
   selector?.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.notificationsOption === 'notifications')));
   homepageNotifications.querySelector('.homepage-notifications-contact')?.setAttribute('aria-hidden', 'true');
 };
-const setHomepageNotificationsOpen = (open) => {
+const setHomepageNotificationsOpen = (open, mode = 'notifications', menuFlow = false) => {
   if (!homepageNotifications) return;
   window.clearTimeout(homepageNotificationsCloseTimer);
-  resetHomepageNotificationsState();
   if (open) {
+    homepageNotificationsMenuFlow = menuFlow;
+    resetHomepageNotificationsState();
+    ensureHomepageNotificationsPanelHandle();
+    ensureHomepageLinkedInContact();
+    syncHomepageNotificationsArrows();
+    const selectedMode = mode === 'contact' ? 'contact' : 'notifications';
+    const selector = homepageNotifications.querySelector('[data-notifications-selector]');
+    const panel = homepageNotifications.querySelector('[data-notifications-panel]');
+    selector?.setAttribute('data-active', selectedMode);
+    panel?.setAttribute('data-active', selectedMode);
+    panel?.setAttribute('data-notifications-stage', menuFlow ? 'compact' : 'expanded');
+    homepageNotifications.dataset.notificationFlow = String(menuFlow);
+    selector?.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.notificationsOption === selectedMode)));
+    homepageNotifications.querySelector('.homepage-notifications-contact')?.setAttribute('aria-hidden', String(selectedMode !== 'contact'));
     setHomepageStudioOpen(false);
     setHomepageMenuOpen(false);
+    if (menuFlow) resetHomepageMenuInactivityTimer();
     loadSharedNotifications();
     homepageNotifications.hidden = false;
     homepageNotifications.setAttribute('aria-hidden', 'false');
@@ -851,11 +921,20 @@ const setHomepageNotificationsOpen = (open) => {
     });
     return;
   }
+  const returnToOriginalBar = homepageNotificationsMenuFlow;
+  homepageNotificationsMenuFlow = false;
   homepageNotifications.classList.remove('is-open');
   document.body.classList.remove('homepage-notifications-open');
   homepageNotifications.setAttribute('aria-hidden', 'true');
+  homepageNotifications.removeAttribute('data-notification-flow');
+  homepageNotifications.querySelector('[data-notifications-panel]')?.removeAttribute('data-notifications-stage');
   homepageNotificationsCloseTimer = window.setTimeout(() => { homepageNotifications.hidden = true; }, 360);
-  setHomepageMenuOpen(true);
+  setHomepageMenuOpen(returnToOriginalBar ? false : true);
+};
+const setHomepageNotificationsStage = (stage) => {
+  const panel = homepageNotifications?.querySelector('[data-notifications-panel]');
+  if (!panel || homepageNotifications?.dataset.notificationFlow !== 'true') return;
+  panel.setAttribute('data-notifications-stage', stage === 'expanded' ? 'expanded' : 'compact');
 };
 const homepageSearchEntries = [
   { en: 'Reengineered', ar: 'إعادة هندسة' },
@@ -990,7 +1069,10 @@ const setHomepageLanguageOpen = (open) => {
 document.querySelector('[data-employee-dashboard-menu-services]')?.addEventListener('click', () => setHomepageServicesOpen(true));
 const queueHomepageMenuSelection = (active, action) => {
   setHomepageMenuActive(active);
-  if (active !== 'home') resetHomepageHomeOptions();
+  if (active !== 'home') {
+    resetHomepageHomeOptions();
+    resetHomepageNotificationsOptions();
+  }
   resetHomepageMenuInactivityTimer();
   window.clearTimeout(homepageMenuSelectionTimer);
   homepageMenuSelectionTimer = undefined;
@@ -1022,6 +1104,16 @@ homepageMenu?.addEventListener('click', (event) => {
   homepageMenu.querySelectorAll('[data-home-home-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
   resetHomepageMenuInactivityTimer();
   setHomepageMenuOpen(false);
+});
+homepageMenu?.addEventListener('click', (event) => {
+  const option = event.target.closest('[data-home-notifications-nav-option]');
+  const handle = event.target.closest('[data-home-notifications-nav-handle]');
+  if ((!option && !handle) || !homepageMenu.classList.contains('is-notifications-options')) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const selectedMode = option?.dataset.homeNotificationsNavOption || homepageMenu.dataset.notificationsActive || 'notifications';
+  homepageMenu.dataset.notificationsActive = selectedMode;
+  setHomepageNotificationsOpen(true, selectedMode, true);
 });
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => {
   setHomepageAccountOptionsOpen(true);
@@ -1062,20 +1154,32 @@ document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', ()
 document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/brands'));
 document.querySelector('[data-home-menu-services]')?.addEventListener('click', () => queueHomepageMenuSelection('services', () => setHomepageServicesContextOpen(true)));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
-  setHomepageNotificationsOpen(true);
+  setHomepageNotificationsOptionsOpen(true);
 }));
 homepageNotifications?.addEventListener('click', (event) => {
-  if (!event.target.closest('.homepage-notifications-panel')) setHomepageNotificationsOpen(false);
+  const panel = event.target.closest('.homepage-notifications-panel');
+  if (!panel || !event.target.closest('button, a, [role="tab"]')) setHomepageNotificationsOpen(false);
+});
+homepageNotifications?.addEventListener('click', (event) => {
+  const handle = event.target.closest('[data-home-notifications-panel-handle]');
+  if (!handle) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  setHomepageNotificationsStage('expanded');
 });
 const renderSharedNotifications = (notifications) => {
   const list = homepageNotifications?.querySelector('.homepage-notifications-list');
   if (!list || !Array.isArray(notifications)) return;
-  list.replaceChildren(...notifications.map(notification => {
-    const item = document.createElement('button'); item.type = 'button'; item.className = 'homepage-notification'; item.dataset.notification = ''; item.setAttribute('aria-expanded', 'false');
-    const summary = document.createElement('span'); summary.className = 'homepage-notification-summary'; const summaryCopy = document.createElement('span'); const title = document.createElement('strong'); title.textContent = notification.title; const date = document.createElement('time'); date.dateTime = notification.publish_date; date.textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(notification.publish_date)); summaryCopy.append(title); const unread = document.createElement('span'); unread.className = 'homepage-notification-unread'; unread.setAttribute('aria-hidden', 'true'); summary.append(summaryCopy, unread);
-    const details = document.createElement('span'); details.className = 'homepage-notification-details'; const copy = document.createElement('span'); copy.className = 'homepage-notification-copy'; copy.textContent = notification.body; details.append(copy, date); item.append(summary, details); return item;
-  }));
-  if (homepageNotificationDot) homepageNotificationDot.hidden = notifications.length === 0;
+  const sortedNotifications = [...notifications].sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date));
+  const renderedItems = sortedNotifications.length
+    ? sortedNotifications.map(notification => {
+      const item = document.createElement('button'); item.type = 'button'; item.className = 'homepage-notification'; item.dataset.notification = ''; item.setAttribute('aria-expanded', 'false');
+      const summary = document.createElement('span'); summary.className = 'homepage-notification-summary'; const summaryCopy = document.createElement('span'); const title = document.createElement('strong'); title.textContent = notification.title; const date = document.createElement('time'); date.dateTime = notification.publish_date; date.textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(notification.publish_date)); summaryCopy.append(title); const affordance = document.createElement('span'); affordance.className = 'homepage-notification-affordance'; const unread = document.createElement('span'); unread.className = 'homepage-notification-unread'; unread.setAttribute('aria-hidden', 'true'); const arrow = document.createElement('img'); arrow.className = 'homepage-notification-arrow'; arrow.src = root.lang === 'ar' ? 'assets/icons/New/ARROW LEFT 02.svg' : 'assets/icons/New/ARROW RIGHT 02.svg'; arrow.alt = ''; affordance.append(unread, arrow); summary.append(summaryCopy, affordance);
+      const details = document.createElement('span'); details.className = 'homepage-notification-details'; const copy = document.createElement('span'); copy.className = 'homepage-notification-copy'; copy.textContent = notification.body; details.append(copy, date); item.append(summary, details); return item;
+    })
+    : [Object.assign(document.createElement('p'), { className: 'homepage-notifications-empty', textContent: 'لا توجد إشعارات' })];
+  list.replaceChildren(...renderedItems, Object.assign(document.createElement('p'), { className: 'homepage-notifications-no-older', textContent: 'No older notifications' }));
+  if (homepageNotificationDot) homepageNotificationDot.hidden = sortedNotifications.length === 0;
 };
 const loadSharedNotifications = async () => {
   try {
@@ -1089,6 +1193,15 @@ const loadSharedNotifications = async () => {
 loadSharedNotifications();
 homepageNotifications?.addEventListener('click', (event) => {
   const notification = event.target.closest('[data-notification]');
+  const contact = event.target.closest('.homepage-contact-card');
+  if (!notification && !contact) return;
+  const isCompactFlow = homepageNotifications.dataset.notificationFlow === 'true' && homepageNotifications.querySelector('[data-notifications-panel]')?.dataset.notificationsStage !== 'expanded';
+  if (isCompactFlow) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    setHomepageNotificationsStage('expanded');
+    return;
+  }
   if (!notification) return;
   const expanded = !notification.classList.contains('is-expanded');
   homepageNotifications.querySelectorAll('[data-notification].is-expanded').forEach((openNotification) => {
