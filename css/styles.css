@@ -531,6 +531,12 @@ html[dir="rtl"] .homepage-studio-nav-option-content { direction: rtl; }
   html[dir="rtl"] .homepage-account-form .homepage-search-field input[data-ooxme-ios-zoom-safe] { --homepage-account-input-scale: .590625; }
 }
 @media (max-aspect-ratio: 4 / 3) { .homepage-account-panel { padding-bottom: var(--x); }.homepage-account-login { line-height: 1.1; } }
+@media (max-aspect-ratio: 4 / 3) {
+  .homepage-account .homepage-search-panel { border-radius: var(--panel-radius); }
+  .homepage-account .homepage-account-selector,
+  .homepage-account .homepage-account-form .homepage-search-field input,
+  .homepage-account .homepage-account-login { border-radius: var(--radius-control); }
+}
 .employee-dashboard-panel .master-panel { --homepage-account-control-height: var(--navigation-control-height); --homepage-account-control-radius: var(--radius-control); isolation: isolate; background: transparent; }.employee-dashboard-panel .master-panel::before { position: absolute; z-index: 0; inset: -12px; background: url('../assets/Backgrounds/Tall-background.webp') center / cover no-repeat; content: ''; filter: blur(5px); transform: scale(1.04); }.employee-dashboard-panel .master-panel > * { position: relative; z-index: 1; }@media (min-aspect-ratio: 4 / 3) { .employee-dashboard-panel .master-panel::before { background-image: url('../assets/Backgrounds/Landscape-background.jpg'); } }
 .employee-dashboard-panel .master-panel-control { opacity: 0; pointer-events: none; }
 .employee-dashboard-panel .master-panel-logo img { filter: brightness(0) invert(1); }

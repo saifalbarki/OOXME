@@ -140,11 +140,8 @@
   navigationMenu?.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => {
     const item = button.dataset.authNavItem;
     if (item === 'gallery') {
-      if (isGalleryPage) setStudioPanelState(0);
-      else {
-        setActiveStudioPanel(0);
-        setStudioPanelState(0, false, 0);
-      }
+      setActiveStudioPanel(0);
+      setStudioPanelState(0, false, 0);
     }
     if (item in overlayByItem) setOverlayOpen(item, true);
   }));
@@ -249,19 +246,19 @@
   const updateContextualNavigation = () => {
     document.querySelectorAll('[data-studio-contextual-pill]').forEach((pill) => {
       const panelIndex = studioPanels.indexOf(pill.closest('.studio-panel'));
-      const stateIndex = isGalleryPage ? studioPanelIndex : (studioPanelViews[panelIndex] === 'client' ? 1 : 0);
+      const stateIndex = studioPanelViews[panelIndex] === 'client' ? 1 : 0;
       pill.setAttribute('data-active', stateIndex === 0 ? 'work' : 'details');
     });
     document.querySelectorAll('[data-studio-context="work"]').forEach((button) => {
       const panelIndex = studioPanels.indexOf(button.closest('.studio-panel'));
-      const atFirstState = isGalleryPage ? studioPanelIndex === 0 : studioPanelViews[panelIndex] !== 'client';
+      const atFirstState = studioPanelViews[panelIndex] !== 'client';
       button.toggleAttribute('disabled', atFirstState);
       button.setAttribute('aria-disabled', String(atFirstState));
       button.setAttribute('aria-pressed', String(atFirstState));
     });
     document.querySelectorAll('[data-studio-context="details"]').forEach((button) => {
       const panelIndex = studioPanels.indexOf(button.closest('.studio-panel'));
-      const atLastState = isGalleryPage ? studioPanelIndex === studioPanels.length - 1 : studioPanelViews[panelIndex] === 'client';
+      const atLastState = studioPanelViews[panelIndex] === 'client';
       button.toggleAttribute('disabled', atLastState);
       button.setAttribute('aria-disabled', String(atLastState));
       button.setAttribute('aria-pressed', String(atLastState));
@@ -487,7 +484,7 @@
     studioTrack.append(studioPanel, duplicateStudioPanel);
     studioPanels = [studioPanel, duplicateStudioPanel];
     studioTrack.style.height = 'calc(var(--ooxme-stable-viewport-height) * 2)';
-    window.OOXMEMasterPanelDrag.register({ experience: studioExperience, track: studioTrack, panels: studioPanels, getIndex: () => studioPanelIndex, moveTo: (next) => isGalleryPage ? setStudioPanelState(next) : setActiveStudioPanel(next), allowBottomControlNavigation: false });
+    window.OOXMEMasterPanelDrag.register({ experience: studioExperience, track: studioTrack, panels: studioPanels, getIndex: () => studioPanelIndex, moveTo: (next) => setActiveStudioPanel(next), allowBottomControlNavigation: false });
     const duplicateNavigation = duplicateStudioPanel.querySelector('[data-authenticated-navigation]');
     const duplicateNavigationTrigger = duplicateNavigation?.querySelector('[data-auth-nav-trigger]');
     const duplicateNavigationMenu = duplicateNavigation?.querySelector('[data-auth-nav-menu]');
@@ -552,8 +549,7 @@
       duplicateDescription.textContent = duplicateDescription.dataset[root.lang === 'ar' ? 'ar' : 'en'];
     }
     syncDuplicateStudioPanel();
-    if (isGalleryPage) setStudioPanelState(studioPanelIndex, true);
-    else setActiveStudioPanel(studioPanelIndex, true);
+    setActiveStudioPanel(studioPanelIndex, true);
   };
   setActiveStudioPanel = (next, force = false) => {
     const target = Math.max(0, Math.min(studioPanels.length - 1, next));
@@ -567,44 +563,24 @@
     startGalleryRotation();
   };
   setStudioPanelState = (next, force = false, panelIndex = studioPanelIndex) => {
-    if (!isGalleryPage) {
-      const target = Math.max(0, Math.min(1, next));
-      const view = target === 0 ? 'work' : 'client';
-      const panel = studioPanels[panelIndex];
-      if (!panel || (!force && studioPanelViews[panelIndex] === view)) return;
-      studioPanelViews[panelIndex] = view;
-      const panelSelector = panel.querySelector('[data-studio-selector]');
-      const panelWorkGallery = panel.querySelector('[data-studio-work-gallery]');
-      const panelClientCopy = panel.querySelector('[data-studio-client-copy]');
-      panelSelector.dataset.active = view;
-      panelSelector.querySelectorAll('[data-studio-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.studioOption === view)));
-      panelWorkGallery.hidden = view !== 'work';
-      panelClientCopy.hidden = view !== 'client';
-      if (panelIndex === studioPanelIndex) {
-        resetStudioGallery();
-        startGalleryRotation();
-      }
-      updateContextualNavigation();
-      document.dispatchEvent(new CustomEvent('studio-view-change', { detail: { view, panel, index: panelIndex } }));
-      return;
-    }
-    const target = Math.max(0, Math.min(studioPanels.length - 1, next));
-    if (!force && target === studioPanelIndex) return;
-    studioPanelIndex = target;
+    const target = Math.max(0, Math.min(1, next));
     const view = target === 0 ? 'work' : 'client';
-    document.querySelectorAll('[data-studio-selector]').forEach((panelSelector) => {
-      panelSelector.dataset.active = view;
-      panelSelector.querySelectorAll('[data-studio-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.studioOption === view)));
-    });
-    document.querySelectorAll('[data-studio-work-gallery]').forEach((panelGallery) => { panelGallery.hidden = view !== 'work'; });
-    document.querySelectorAll('[data-studio-client-copy]').forEach((panelCopy) => { panelCopy.hidden = view !== 'client'; });
-    resetStudioGallery();
-    studioPanels.forEach((panel) => panel.classList.remove('is-active'));
-    if (studioTrack) studioTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-studioPanelIndex}))`;
-    window.setTimeout(() => studioPanels[studioPanelIndex]?.classList.add('is-active'), 620);
+    const panel = studioPanels[panelIndex];
+    if (!panel || (!force && studioPanelViews[panelIndex] === view)) return;
+    studioPanelViews[panelIndex] = view;
+    const panelSelector = panel.querySelector('[data-studio-selector]');
+    const panelWorkGallery = panel.querySelector('[data-studio-work-gallery]');
+    const panelClientCopy = panel.querySelector('[data-studio-client-copy]');
+    panelSelector.dataset.active = view;
+    panelSelector.querySelectorAll('[data-studio-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.studioOption === view)));
+    panelWorkGallery.hidden = view !== 'work';
+    panelClientCopy.hidden = view !== 'client';
+    if (panelIndex === studioPanelIndex) {
+      resetStudioGallery();
+      startGalleryRotation();
+    }
     updateContextualNavigation();
-    startGalleryRotation();
-    document.dispatchEvent(new CustomEvent('studio-view-change', { detail: { view, panel: studioPanels[studioPanelIndex], index: studioPanelIndex } }));
+    document.dispatchEvent(new CustomEvent('studio-view-change', { detail: { view, panel, index: panelIndex } }));
   };
   document.addEventListener('click', (event) => {
     const option = event.target.closest('[data-studio-option]');
@@ -617,7 +593,7 @@
     if (!control || control.disabled) return;
     const direction = control.dataset.studioContext === 'work' ? -1 : 1;
     const panelIndex = studioPanels.indexOf(control.closest('.studio-panel'));
-    setStudioPanelState(isGalleryPage ? studioPanelIndex + direction : (studioPanelViews[panelIndex] === 'client' ? 1 : 0) + direction, false, panelIndex);
+    setStudioPanelState((studioPanelViews[panelIndex] === 'client' ? 1 : 0) + direction, false, panelIndex);
   });
   updateContextualNavigation();
   window.requestAnimationFrame(() => { containGallery(); render(); window.setTimeout(createSecondStudioPanel, 1100); });
