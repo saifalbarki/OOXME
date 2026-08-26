@@ -19,6 +19,7 @@
   if (!selector) return;
   const workGallery = document.querySelector('[data-studio-work-gallery]');
   const clientCopy = document.querySelector('[data-studio-client-copy]');
+  let resetStudioGallery = () => {};
   const setStudioView = (view, panel = selector.closest('.studio-panel')) => {
     const panelSelector = panel?.querySelector('[data-studio-selector]');
     const panelWorkGallery = panel?.querySelector('[data-studio-work-gallery]');
@@ -30,6 +31,7 @@
     });
     if (panelWorkGallery) panelWorkGallery.hidden = view !== 'work';
     if (panelClientCopy) panelClientCopy.hidden = view !== 'client';
+    resetStudioGallery();
     document.dispatchEvent(new CustomEvent('studio-view-change', { detail: { view, panel } }));
   };
 
@@ -185,7 +187,7 @@
     panel.dataset.active = button.dataset.homeServicesOption;
     selector.querySelectorAll('[data-home-services-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
   }));
-  services?.querySelectorAll('[data-brand-management-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/brand-management-new'); }));
+  services?.querySelectorAll('[data-brand-management-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/brand'); }));
   services?.querySelectorAll('[data-consultation-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/consultation'); }));
   account?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
     const accountSelector = account.querySelector('[data-home-account-selector]');
@@ -226,10 +228,19 @@
 
   if (!workGallery) return;
 
-  // Panel 1 uses the supplied Fatimah project sequence in numeric filename order.
-  const images = ['01', '02', '03', '04'].map((name) => `assets/projects/fatimah/${name}.png`);
-  // Panel 2 uses the supplied Arjwan project sequence in numeric filename order.
-  const panelTwoImages = ['01', '02', '03', '04'].map((name) => `assets/projects/arjwan/optimized/${name}.webp`);
+  const isGalleryPage = document.body.classList.contains('selected-works-page');
+  // Preserve the last correct project set for each authoritative page.
+  const images = (isGalleryPage ? ['01', '02', '03', '04'].map((name) => `assets/projects/fatimah/${name}.png`) : ['01', '02', '03', '04'].map((name) => `assets/projects/hijab/${name}.jpg`));
+  const panelTwoImages = (isGalleryPage ? ['01', '02', '03', '04'].map((name) => `assets/projects/arjwan/optimized/${name}.webp`) : [
+    '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13',
+    'photo_9_2026-08-02_22-22-30', 'photo_10_2026-08-02_22-22-30', 'photo_11_2026-08-02_22-22-30',
+    'photo_12_2026-08-02_22-22-30', 'photo_13_2026-08-02_22-22-30', 'photo_14_2026-08-02_22-22-30',
+    'photo_15_2026-08-02_22-22-30', 'photo_16_2026-08-02_22-22-30', 'photo_17_2026-08-02_22-22-30',
+    'photo_18_2026-08-02_22-22-30', 'photo_19_2026-08-02_22-22-30', 'photo_20_2026-08-02_22-22-30',
+    'photo_21_2026-08-02_22-22-30', 'photo_22_2026-08-02_22-22-30', 'photo_23_2026-08-02_22-22-30',
+    'photo_24_2026-08-02_22-22-30', 'photo_30_2026-08-02_22-22-30', 'photo_31_2026-08-02_22-22-30',
+    'photo_32_2026-08-02_22-22-30'
+  ].map((name) => `assets/projects/mall albasri/design/optimized/${name}.webp`));
   const gallery = workGallery.querySelector('[data-studio-project-gallery]');
   const viewport = gallery.querySelector('.project-gallery-viewport');
   const rail = gallery.querySelector('.project-gallery-track');
@@ -240,21 +251,8 @@
   let studioTrack;
   let studioPanels = [];
   let studioPanelIndex = 0;
-  const rating = workGallery.querySelector('[data-studio-rating]');
-  const ratingTrigger = rating?.querySelector('[data-rating-open]');
-  const ratingForm = rating?.querySelector('[data-rating-form]');
-  const ratingSubmit = rating?.querySelector('[data-rating-submit]');
-  const ratingOptions = rating ? [...rating.querySelectorAll('[data-rating-value]')] : [];
   const state = { index: 0, manualDirection: 1, dragging: false };
-  let ratingPaused = false;
-  let ratingSubmitted = false;
-  let selectedRating = 0;
-  let pausedDeckAnimations = [];
-  let ratingTransitionTimers = [];
-  const startRatingLoop = () => {
-    if (!ratingSubmitted) rating?.classList.add('is-loop-ready');
-  };
-  window.requestAnimationFrame(() => window.setTimeout(startRatingLoop, 1000));
+  let galleryRotationTimer;
   const landscapeQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
   const circularDistance = (index, center, count) => {
     let distance = index - center;
@@ -284,12 +282,7 @@
     const slide = slides[normalizedIndex];
     if (!slide || slide.hasAttribute('src')) return;
     slide.fetchPriority = priority;
-    slide.addEventListener('load', () => {
-      if (!ratingPaused) {
-        containGallery();
-        render();
-      }
-    }, { once: true });
+    slide.addEventListener('load', () => { containGallery(); render(); }, { once: true });
     slide.src = slide.dataset.src;
   };
   const primeSlides = (center, direction, count) => {
@@ -401,88 +394,33 @@
     viewport.style.height = `${height}px`;
   };
   const move = (direction) => {
-    if (ratingPaused) return;
     state.manualDirection = direction;
     state.index = (state.index + direction + images.length) % images.length;
     render();
   };
-  const pauseWorkDeck = () => {
-    if (ratingPaused) return;
-    ratingPaused = true;
-    gallery.classList.add('is-rating-paused');
-    rating?.classList.add('is-rating-paused');
-    slides.forEach((slide) => { slide.style.willChange = 'auto'; });
-    pausedDeckAnimations = gallery.getAnimations?.({ subtree: true }).filter((animation) => animation.playState === 'running') || [];
-    pausedDeckAnimations.forEach((animation) => animation.pause());
+  const stopGalleryRotation = () => {
+    window.clearInterval(galleryRotationTimer);
+    galleryRotationTimer = undefined;
   };
-  const resumeWorkDeck = () => {
-    if (!ratingPaused) return;
-    ratingPaused = false;
-    gallery.classList.remove('is-rating-paused');
-    rating?.classList.remove('is-rating-paused');
+  const activeWorkGallery = () => studioPanels[studioPanelIndex]?.querySelector('[data-studio-work-gallery]') || workGallery;
+  const startGalleryRotation = () => {
+    stopGalleryRotation();
+    if (activeWorkGallery().hidden || document.hidden) return;
+    galleryRotationTimer = window.setInterval(() => {
+      if (!activeWorkGallery().hidden && !document.hidden) move(1);
+    }, 4000);
+  };
+  resetStudioGallery = () => {
+    stopGalleryRotation();
+    state.index = 0;
+    state.manualDirection = 1;
+    state.dragging = false;
+    containGallery();
     render();
-    pausedDeckAnimations.forEach((animation) => {
-      try { animation.play(); } catch (_) {}
-    });
-    pausedDeckAnimations = [];
+    startGalleryRotation();
   };
-  const clearRatingTimers = () => {
-    ratingTransitionTimers.forEach((timer) => window.clearTimeout(timer));
-    ratingTransitionTimers = [];
-  };
-  const setRatingOpenState = (open) => document.body.classList.toggle('studio-rating-open', open);
-  const closeRating = () => {
-    if (!rating || !rating.classList.contains('is-open') || ratingSubmitted) return;
-    clearRatingTimers();
-    rating.classList.remove('is-open', 'is-confirming', 'is-heart');
-    setRatingOpenState(false);
-    resumeWorkDeck();
-    window.setTimeout(() => ratingTrigger?.focus(), 240);
-  };
-  const openRating = () => {
-    if (!rating || ratingSubmitted) return;
-    pauseWorkDeck();
-    rating.classList.add('is-open');
-    setRatingOpenState(true);
-  };
-  ratingTrigger?.addEventListener('click', (event) => { event.stopPropagation(); openRating(); });
-  ratingOptions.forEach((option) => option.addEventListener('click', () => {
-    if (ratingSubmitted) return;
-    selectedRating = Number(option.dataset.ratingValue);
-    ratingOptions.forEach((star) => {
-      const value = Number(star.dataset.ratingValue);
-      star.classList.toggle('is-selected', value <= selectedRating);
-      star.setAttribute('aria-checked', String(value === selectedRating));
-    });
-    if (ratingSubmit) ratingSubmit.disabled = false;
-  }));
-  const submitRating = () => {
-    if (!selectedRating || ratingSubmitted || !rating) return;
-    ratingSubmitted = true;
-    ratingSubmit.disabled = true;
-    rating.classList.add('is-confirming');
-    ratingTransitionTimers.push(window.setTimeout(() => rating.classList.add('is-heart'), 820));
-    ratingTransitionTimers.push(window.setTimeout(() => {
-      rating.classList.remove('is-open', 'is-confirming', 'is-heart');
-      rating.classList.add('is-submitted');
-      ratingTrigger.disabled = true;
-      ratingTrigger.setAttribute('aria-label', root.lang === 'ar' ? 'تم إرسال التقييم' : 'Rating submitted');
-      setRatingOpenState(false);
-      resumeWorkDeck();
-    }, 1720));
-  };
-  ratingSubmit?.addEventListener('click', submitRating);
-  ratingForm?.addEventListener('submit', (event) => { event.preventDefault(); submitRating(); });
-  document.addEventListener('click', (event) => {
-    if (rating?.classList.contains('is-open') && !event.target.closest('.studio-rating-card')) closeRating();
-  }, true);
-  document.addEventListener('studio-view-change', (event) => {
-    if (event.detail.view !== 'work' && event.detail.panel === studioPanel) closeRating();
-  });
   let gesture;
   gallery.addEventListener('pointerdown', (event) => {
-    if (event.target.closest('[data-studio-rating]')) return;
-    if (ratingPaused) { event.preventDefault(); return; }
     gesture = { x: event.clientX, lastX: event.clientX, lastTime: performance.now(), pointerId: event.pointerId };
     state.dragging = true;
     gallery.setPointerCapture?.(event.pointerId);
@@ -512,8 +450,8 @@
   };
   gallery.addEventListener('pointerup', finishGesture);
   gallery.addEventListener('pointercancel', () => { state.dragging = false; gesture = null; render(); });
-  window.addEventListener('resize', () => { if (!ratingPaused) { containGallery(); render(); } });
-  landscapeQuery.addEventListener('change', () => { if (!ratingPaused) { containGallery(); render(); } });
+  window.addEventListener('resize', () => { containGallery(); render(); });
+  landscapeQuery.addEventListener('change', () => { containGallery(); render(); });
   const createSecondStudioPanel = () => {
     if (duplicateStudioPanel || !studioExperience || !studioPanel || !window.OOXMEMasterPanelDrag) return;
     duplicateStudioPanel = studioPanel.cloneNode(true);
@@ -528,6 +466,7 @@
       const target = Math.max(0, Math.min(studioPanels.length - 1, next));
       if (target === studioPanelIndex) return;
       studioPanelIndex = target;
+      resetStudioGallery();
       studioPanels.forEach((panel) => panel.classList.remove('is-active'));
       studioTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-studioPanelIndex}))`;
       window.setTimeout(() => studioPanels[studioPanelIndex].classList.add('is-active'), 620);
@@ -557,8 +496,6 @@
     const duplicateGallery = duplicateStudioPanel.querySelector('[data-studio-project-gallery]');
     let duplicateGesture;
     duplicateGallery?.addEventListener('pointerdown', (event) => {
-      if (event.target.closest('[data-studio-rating]')) return;
-      if (ratingPaused) { event.preventDefault(); return; }
       duplicateGesture = { x: event.clientX, lastX: event.clientX, lastTime: performance.now(), pointerId: event.pointerId };
       state.dragging = true;
       duplicateGallery.setPointerCapture?.(event.pointerId);
@@ -592,15 +529,20 @@
     const duplicateClientCopy = duplicateStudioPanel.querySelector('[data-studio-client-copy]');
     const [duplicateName, duplicateSince, duplicateDescription] = duplicateClientCopy?.querySelectorAll(':scope > :is(strong, p)') || [];
     if (duplicateName && duplicateSince && duplicateDescription) {
-      Object.assign(duplicateName.dataset, { en: 'Al-Arjwan Company', ar: 'شركة الارجوان' });
+      Object.assign(duplicateName.dataset, { en: 'Albasri Mall', ar: 'البصري مول' });
       duplicateName.textContent = duplicateName.dataset[root.lang === 'ar' ? 'ar' : 'en'];
-      Object.assign(duplicateSince.dataset, { en: 'May 2026', ar: 'مايو 2026' });
+      Object.assign(duplicateSince.dataset, { en: 'Since 10 January 2026', ar: 'منذ 10 يناير 2026' });
       duplicateSince.textContent = duplicateSince.dataset[root.lang === 'ar' ? 'ar' : 'en'];
-      Object.assign(duplicateDescription.dataset, { en: 'Al-Arjwan Company visual identity work, shown across the project’s selected compositions.', ar: 'مشاهد هوية شركة الارجوان تعرض التكوينات المختارة الخاصة بالمشروع.' });
+      Object.assign(duplicateDescription.dataset, { en: 'We provide Basra Mall with a monthly brand management package covering social media management, content creation, photography, and design. We also developed and refined the visual identity to create a more consistent and professional brand presence. This work contributed to gradual sales growth, stronger audience engagement, and an increase in followers and interested customers.', ar: 'نقدم للبصري مول باقة شهرية متكاملة لإدارة العلامة التجارية، تشمل إدارة حسابات التواصل الاجتماعي، صناعة المحتوى، التصوير، والتصميم. كما عملنا على تطوير وتحسين الهوية البصرية لبناء حضور أكثر اتساقاً واحترافية للعلامة. وأسهم هذا العمل في تحقيق نمو تدريجي في المبيعات، وزيادة التفاعل، وارتفاع أعداد المتابعين والعملاء المهتمين.' });
       duplicateDescription.textContent = duplicateDescription.dataset[root.lang === 'ar' ? 'ar' : 'en'];
     }
     syncDuplicateStudioPanel();
   };
   window.requestAnimationFrame(() => { containGallery(); render(); window.setTimeout(createSecondStudioPanel, 1100); });
-  window.setInterval(() => { if (!workGallery.hidden && !ratingPaused) move(state.manualDirection); }, 2000);
+  resetStudioGallery();
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopGalleryRotation();
+    else startGalleryRotation();
+  });
+  window.addEventListener('pagehide', stopGalleryRotation);
 })();

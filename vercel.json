@@ -6,6 +6,9 @@
   "cleanUrls": true,
   "functions": { "api/**/*.js": { "maxDuration": 30 } },
   "rewrites": [
+    { "source": "/brands", "destination": "/brands.html" },
+    { "source": "/gallery", "destination": "/gallery.html" },
+    { "source": "/brand", "destination": "/brand.html" },
     { "source": "/os", "destination": "/api/os/index?route=dashboard" },
     { "source": "/os/", "destination": "/api/os/index?route=dashboard" },
     { "source": "/api/os/login", "destination": "/api/os/index?route=login" },

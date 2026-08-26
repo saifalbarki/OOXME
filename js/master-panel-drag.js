@@ -433,7 +433,7 @@ window.OOXMEMasterPanelDrag = {
 };
 
 const productionMetadata = {
-  '/index.html': {
+  '/': {
     en: ['OOXME | Brand Management & Business Development', 'OOXME provides brand management and business development for ambitious businesses.'],
     ar: ['اوكسوم | إدارة العلامة التجارية وتطوير الأعمال', 'اوكسوم تقدم إدارة العلامة التجارية وتطوير الأعمال للشركات الطموحة.']
   },
@@ -443,7 +443,7 @@ const setMetadataTitle = (path, english, arabic) => {
   productionMetadata[path].en[0] = english;
   productionMetadata[path].ar[0] = arabic;
 };
-setMetadataTitle('/index.html', 'OOXME', '\u0627\u0648\u0643\u0633\u0648\u0645');
+setMetadataTitle('/', 'OOXME', '\u0627\u0648\u0643\u0633\u0648\u0645');
 const setHeadMeta = (selector, attribute, content) => {
   let element = document.head.querySelector(selector);
   if (!element) {
@@ -462,11 +462,11 @@ const ensureHeadLink = (rel, href, type = '') => {
   document.head.append(link);
 };
 const applyProductionMetadata = () => {
-  const copy = productionMetadata[window.location.pathname] || (window.location.pathname === '/' ? productionMetadata['/index.html'] : null);
+  const copy = productionMetadata[window.location.pathname] || null;
   if (!copy) return;
   const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
   const [title, description] = copy[language];
-  const canonicalPath = window.location.pathname === '/index.html' ? '/' : window.location.pathname;
+  const canonicalPath = window.location.pathname;
   document.title = title;
   setHeadMeta('meta[name="description"]', { name: 'description' }, description);
   setHeadMeta('meta[property="og:title"]', { property: 'og:title' }, title);

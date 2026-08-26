@@ -372,7 +372,12 @@ const setupEmployeeDashboardPanels = () => {
       detailsDisclosureItems.forEach((section) => setDetailsDisclosure(section, false));
       renderTaskDetails();
     }
-    navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === arrowState)));
+    navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => {
+      const isBack = button.dataset.employeeDashboardContext === 'work';
+      button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === arrowState));
+      button.disabled = panelTwoState === 'progress' ? isBack : !isBack;
+      button.setAttribute('aria-disabled', String(button.disabled));
+    });
   };
   selectorProxy.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.addEventListener('click', () => setPanelTwoState(option.dataset.employeeDashboardStateOption)));
   navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
@@ -382,7 +387,7 @@ const setupEmployeeDashboardPanels = () => {
       setPanelTwoActionCard(null);
       return;
     }
-    setPanelTwoState(panelTwoState === 'details' ? 'progress' : 'details');
+    setPanelTwoState(button.dataset.employeeDashboardContext === 'details' ? 'details' : 'progress');
   }));
   if (addUpdateCard) {
     const [startTaskButton, addUpdateButton, uploadFilesButton] = detailsView.querySelectorAll('.employee-dashboard-task-details-actions button');
@@ -409,6 +414,7 @@ const setupEmployeeDashboardPanels = () => {
 
   const employeePanels = [employeePanel, emptyPanel];
   let employeePanelIndex = 0;
+  let employeePanelTransitionTimer;
   const revealEmployeePanel = (index) => employeePanels.forEach((panel, panelNumber) => panel.classList.toggle('is-active', panelNumber === index));
   const moveToEmployeePanel = (next) => {
     const target = Math.max(0, Math.min(employeePanels.length - 1, next));
@@ -416,7 +422,8 @@ const setupEmployeeDashboardPanels = () => {
     employeePanelIndex = target;
     employeePanels.forEach((panel) => panel.classList.remove('is-active'));
     employeeTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-employeePanelIndex}))`;
-    window.setTimeout(() => revealEmployeePanel(employeePanelIndex), 620);
+    window.clearTimeout(employeePanelTransitionTimer);
+    employeePanelTransitionTimer = window.setTimeout(() => revealEmployeePanel(employeePanelIndex), 620);
   };
   revealEmployeePanel(employeePanelIndex);
   window.OOXMEMasterPanelDrag.register({
@@ -435,13 +442,27 @@ const employeeDashboardPanelOneSelector = employeeDashboardPanelOne?.querySelect
 const employeeDashboardPanelOneNavigation = employeeDashboardPanelOne?.querySelector('[data-employee-dashboard-contextual]');
 if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDashboardPanelOneNavigation) {
   let employeeDashboardPanelOneState = 'current';
+  let employeeDashboardPanelOneSizingFrame;
+  const resetEmployeeDashboardPanelOneSizing = () => {
+    const infoCard = employeeDashboardPanelOne.querySelector('.employee-dashboard-info-card');
+    const avatar = employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar');
+    window.cancelAnimationFrame(employeeDashboardPanelOneSizingFrame);
+    infoCard?.style.removeProperty('--employee-dashboard-edit-extension');
+    infoCard?.style.removeProperty('height');
+    avatar?.style.removeProperty('--employee-dashboard-avatar-restore-offset');
+    avatar?.style.removeProperty('--employee-dashboard-avatar-portrait-offset');
+    avatar?.style.removeProperty('transform');
+    employeeDashboardPanelOne.removeAttribute('data-employee-dashboard-panel-one-landscape-columns');
+  };
   const sizeEmployeeDashboardPanelOneEditCard = (preservedAvatarTop = null) => {
     const infoCard = employeeDashboardPanelOne.querySelector('.employee-dashboard-info-card');
     const avatar = employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar');
     if (!infoCard || !avatar || employeeDashboardPanelOneState !== 'edit') {
       infoCard?.style.removeProperty('--employee-dashboard-edit-extension');
+      infoCard?.style.removeProperty('height');
       avatar?.style.removeProperty('--employee-dashboard-avatar-restore-offset');
       avatar?.style.removeProperty('--employee-dashboard-avatar-portrait-offset');
+      avatar?.style.removeProperty('transform');
       employeeDashboardPanelOne.removeAttribute('data-employee-dashboard-panel-one-landscape-columns');
       return;
     }
@@ -467,18 +488,28 @@ if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDa
     avatar.style.setProperty('--employee-dashboard-avatar-portrait-offset', `${targetAvatarTop - currentAvatarTop}px`);
   };
   const setEmployeeDashboardPanelOneState = (next) => {
+    const targetState = next === 'edit' ? 'edit' : 'current';
     const preservedAvatarTop = next === 'edit' && employeeDashboardPanelOneState !== 'edit'
       ? employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar')?.getBoundingClientRect().top ?? null
       : null;
-    employeeDashboardPanelOneState = next === 'edit' ? 'edit' : 'current';
+    window.cancelAnimationFrame(employeeDashboardPanelOneSizingFrame);
+    if (targetState === 'current') resetEmployeeDashboardPanelOneSizing();
+    employeeDashboardPanelOneState = targetState;
     const bottomState = employeeDashboardPanelOneState === 'edit' ? 'details' : 'work';
     employeeDashboardPanelOne.dataset.employeeDashboardPanelOneState = employeeDashboardPanelOneState;
     employeeDashboardPanelOneSelector.dataset.active = employeeDashboardPanelOneState;
     employeeDashboardPanelOneSelector.querySelectorAll('[data-employee-dashboard-panel-one-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.employeeDashboardPanelOneOption === employeeDashboardPanelOneState)));
     const pill = employeeDashboardPanelOneNavigation.querySelector('[data-employee-dashboard-context-pill]');
     pill?.setAttribute('data-active', bottomState);
-    employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === bottomState)));
-    requestAnimationFrame(() => sizeEmployeeDashboardPanelOneEditCard(preservedAvatarTop));
+    employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => {
+      const isBack = button.dataset.employeeDashboardContext === 'work';
+      button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === bottomState));
+      button.disabled = employeeDashboardPanelOneState === 'current' ? isBack : !isBack;
+      button.setAttribute('aria-disabled', String(button.disabled));
+    });
+    employeeDashboardPanelOneSizingFrame = window.requestAnimationFrame(() => {
+      if (employeeDashboardPanelOneState === targetState) sizeEmployeeDashboardPanelOneEditCard(preservedAvatarTop);
+    });
   };
   employeeDashboardPanelOneSelector.querySelectorAll('[data-employee-dashboard-panel-one-option]').forEach((option) => option.addEventListener('click', () => setEmployeeDashboardPanelOneState(option.dataset.employeeDashboardPanelOneOption)));
   employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
@@ -647,11 +678,11 @@ homepageMenu?.querySelectorAll('[data-home-studio-option]').forEach((button) => 
   homepageMenu.dataset.studioActive = button.dataset.homeStudioOption;
   homepageStudioOptionTimer = window.setTimeout(() => {
     if (button.dataset.homeStudioOption === 'clients') {
-      window.location.assign('/studio');
+      window.location.assign('/brands');
       return;
     }
     if (button.dataset.homeStudioOption === 'selected-works') {
-      window.location.assign('/selected-works');
+      window.location.assign('/gallery');
       return;
     }
     homepageMenu.removeAttribute('data-studio-active');
@@ -683,7 +714,7 @@ homepageMenu?.querySelectorAll('[data-home-services-option]').forEach((button) =
   window.clearTimeout(homepageMenuInactivityTimer);
   homepageMenu.dataset.servicesActive = button.dataset.homeServicesOption;
   homepageServicesOptionTimer = window.setTimeout(() => {
-    window.location.assign(button.dataset.homeServicesOption === 'consultation' ? '/consultation' : '/brand-management-new');
+    window.location.assign(button.dataset.homeServicesOption === 'consultation' ? '/consultation' : '/brand');
   }, 500);
 }));
 const closeHomepageStudioOutside = (event) => {
@@ -870,7 +901,7 @@ document.querySelectorAll('[data-language-toggle]').forEach((button) => button.a
 document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => queueHomepageMenuSelection('home', () => setHomepageLanguageOpen(true)));
 document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => setHomepageAccountOpen(true)));
 document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => setHomepageStudioOpen(true)));
-document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/studio'));
+document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/brands'));
 document.querySelector('[data-home-menu-services]')?.addEventListener('click', () => queueHomepageMenuSelection('services', () => setHomepageServicesContextOpen(true)));
 document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
   setHomepageNotificationsOpen(true);
@@ -938,7 +969,7 @@ homepageServices?.querySelectorAll('[data-home-services-option]').forEach((butto
   panel.dataset.active = button.dataset.homeServicesOption;
   selector.querySelectorAll('[data-home-services-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
 }));
-document.querySelectorAll('[data-brand-management-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/brand-management-new'); }));
+document.querySelectorAll('[data-brand-management-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/brand'); }));
 document.querySelectorAll('[data-consultation-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/consultation'); }));
 homepageAccount?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
   const selector = homepageAccount.querySelector('[data-home-account-selector]');

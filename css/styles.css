@@ -1,7 +1,7 @@
 @import url('./tokens.css');
 
 * { box-sizing: border-box; }
-:root { --ooxme-stable-viewport-height: 100vh; --rating-glass-background: rgba(255, 255, 255, .24); --rating-glass-border: 1px solid rgba(255, 255, 255, .54); --rating-glass-shadow: 0 8px 22px rgba(13, 13, 13, .12); --rating-glass-blur: blur(10px); }
+:root { --ooxme-stable-viewport-height: 100vh; }
 @supports (height: 100svh) { :root { --ooxme-stable-viewport-height: 100svh; } }
 :where(a, button, input, select, textarea, [role="button"]) { -webkit-tap-highlight-color: transparent; }
 :where(a, button, input, select, textarea, [role="button"]):focus { outline: none; }
@@ -217,6 +217,7 @@ html[dir="rtl"] .brand-management-new-overview-subtitle-shine { animation-name: 
 .consultation-page .consultation-input-field:has([data-book-field="discount"]) :is(input, textarea) { background: var(--color-blue); }
 .consultation-page .consultation-input-field:has([data-book-field="discount"]) .consultation-field-display { color: #000; }
 .consultation-page .consultation-book-fields :is(input, select, textarea) { display: block; width: 100%; min-height: var(--consultation-book-input-height); height: var(--consultation-book-input-height); padding: 0 var(--x); border: 0; border-radius: var(--current-control-radius); outline: 0; background: #fff; color: var(--color-ink); font: inherit; font-size: var(--overlay-text-size); line-height: 1.35; text-align: center; }
+.consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields > :not(:has([data-book-field="discount"])) :is(input, select, textarea) { background: var(--color-panel); }
 .consultation-page .consultation-book-fields textarea { height: calc((var(--consultation-book-input-height) * 2) + var(--x)); padding-block: calc(var(--x) * .5); resize: vertical; text-align: start; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields :is(input, select, textarea) { font-size: var(--overlay-text-size) !important; text-align: center; }
 .consultation-page .consultation-book-stage[data-book-stage="information"] .consultation-book-fields :is(input, textarea)::placeholder,
@@ -242,6 +243,7 @@ html[dir="rtl"] .consultation-page .consultation-book-stage[data-book-stage="inf
 .consultation-page .consultation-calendar { display: grid; grid-template-rows: auto auto minmax(0, 1fr); height: calc(var(--consultation-book-input-height) * 4); min-height: calc(var(--consultation-book-input-height) * 4); column-gap: var(--x); row-gap: 0; padding: var(--x); border-radius: var(--radius-control); background: #f1f3f7; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-calendar { flex: 1 1 auto; height: auto; min-height: 0; margin-top: 0; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-book-schedule-fields { flex: 0 0 auto; }
+.consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-book-schedule-fields > .consultation-select-field select { background: var(--color-panel); }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] .consultation-select-display { white-space: nowrap; }
 .consultation-page .consultation-book-stage[data-book-stage="schedule"] select[data-book-field="duration"] + .consultation-select-display { display: flex; flex-direction: row; align-items: center; justify-content: center; width: 100%; min-width: 0; max-width: none; box-sizing: border-box; white-space: nowrap; word-break: keep-all; overflow-wrap: normal; overflow: hidden; text-overflow: clip; line-height: 1.35; text-align: center; }
 .consultation-page .consultation-calendar-month { color: var(--color-secondary-control); font-size: var(--overlay-text-size); font-weight: 400; text-align: center; }
@@ -716,48 +718,6 @@ html[dir="rtl"] .employee-dashboard-empty-card .employee-dashboard-task-details-
 .studio-work-gallery { position: relative; align-self: end; width: 100%; min-height: 0; }
 .studio-work-gallery[hidden] { display: none; }
 .studio-work-gallery.project-panel--al-basri-primary .project-gallery.is-al-basri-mall-story { --gallery-deck-image-radius: var(--radius-control); position: static; inset: auto; bottom: auto; translate: none; width: 100%; }
-.studio-rating { --studio-rating-size: clamp(32px, 5dvh, 42px); --studio-rating-star-size: calc(var(--studio-rating-size) * .42); --studio-rating-pulse-cycle: 2.8s; position: absolute; z-index: 120; top: var(--x); left: 50%; width: 0; height: 0; direction: ltr; }
-.studio-rating-trigger { position: absolute; display: grid; place-items: center; width: var(--studio-rating-size); height: var(--studio-rating-size); padding: 0; border: var(--rating-glass-border); border-radius: 50%; background: var(--rating-glass-background); box-shadow: var(--rating-glass-shadow); backdrop-filter: var(--rating-glass-blur); -webkit-backdrop-filter: var(--rating-glass-blur); cursor: pointer; transform: translateX(-50%); transition: opacity .24s ease, transform .3s cubic-bezier(.22, .61, .36, 1), background-color .24s ease; }
-.studio-rating-loop { display: grid; width: 100%; height: 100%; place-items: center; }
-.studio-rating-loop img { width: var(--studio-rating-star-size); height: var(--studio-rating-star-size); object-fit: contain; }
-@keyframes studio-rating-star-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
-.studio-rating.is-loop-ready:not(.is-open):not(.is-submitted) .studio-rating-loop img { animation: studio-rating-star-pulse var(--studio-rating-pulse-cycle) cubic-bezier(.22, .61, .36, 1) infinite; }
-.studio-rating-card { position: absolute; left: 50%; display: grid; width: min(320px, calc(100vw - (var(--x) * 4))); padding: calc(var(--x) * .55); gap: calc(var(--x) * .55); border: 1px solid rgba(255, 255, 255, .68); border-radius: var(--radius-box); background: rgba(255, 255, 255, .82); box-shadow: 0 18px 48px rgba(13, 13, 13, .16); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); opacity: 0; pointer-events: none; transform: translateX(-50%) scale(.86); transform-origin: center top; transition: opacity .24s ease, transform .34s cubic-bezier(.22, .61, .36, 1); }
-.studio-rating.is-open .studio-rating-trigger { animation: none; opacity: 0; pointer-events: none; transform: translateX(-50%); }
-.studio-rating.is-open .studio-rating-card { opacity: 1; pointer-events: auto; transform: translateX(-50%) scale(1); }
-.studio-rating-form-content { display: grid; gap: calc(var(--x) * .55); justify-items: center; }
-.studio-rating-stars { display: flex; align-items: center; justify-content: center; gap: calc(var(--x) * .38); }
-.studio-rating-stars button { display: grid; place-items: center; width: var(--studio-rating-size); height: var(--studio-rating-size); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; opacity: .26; transition: opacity .2s ease, background-color .2s ease; }
-.studio-rating-stars button:is(.is-selected, :hover, :focus-visible) { background: rgba(255, 255, 255, .66); opacity: 1; }
-.studio-rating-stars img { width: var(--studio-rating-star-size); height: var(--studio-rating-star-size); object-fit: contain; }
-.studio-rating-card p { margin: 0; color: var(--color-ink); font-size: var(--overlay-text-size); font-weight: 500; line-height: 1.35; text-align: center; }
-.studio-rating-comment { width: 100%; }
-.studio-rating-comment textarea { --ooxme-writable-entry-height: calc(var(--studio-rating-size) * 1.45); display: block; box-sizing: border-box; width: 100%; min-height: var(--ooxme-writable-entry-height); padding-inline: calc(var(--x) * .4); border: 0; border-radius: var(--radius-control); outline: 0; resize: none; background: rgba(255, 255, 255, .66); }
-.studio-rating-submit { min-height: var(--studio-rating-size); padding-inline: calc(var(--x) * .8); border: 0; border-radius: var(--radius-control); background: var(--color-ink); color: var(--color-paper); font: inherit; font-size: var(--overlay-text-size); font-weight: 600; cursor: pointer; transition: opacity .2s ease, transform .24s cubic-bezier(.22, .61, .36, 1); }
-.studio-rating-submit:disabled { cursor: default; opacity: .34; }
-.studio-rating-submit:not(:disabled):active { transform: scale(.96); }
-.studio-rating-confirmation { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--x); opacity: 0; pointer-events: none; transform: scale(.9); transition: opacity .22s ease, transform .28s cubic-bezier(.22, .61, .36, 1); }
-.studio-rating-morph { position: absolute; left: 50%; display: grid; place-items: center; width: var(--studio-rating-size); height: var(--studio-rating-size); border: 1px solid rgba(255, 255, 255, .54); border-radius: 50%; background: rgba(255, 255, 255, .24); box-shadow: 0 8px 22px rgba(13, 13, 13, .12); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); opacity: 0; transform: translateX(-50%) scale(.72); transition: opacity .2s ease, transform .34s cubic-bezier(.22, .61, .36, 1); }
-.studio-rating-morph img { position: absolute; width: var(--studio-rating-star-size); height: var(--studio-rating-star-size); object-fit: contain; opacity: 0; transform: scale(.72); transition: opacity .24s ease, transform .34s cubic-bezier(.22, .61, .36, 1); }
-.studio-rating.is-confirming .studio-rating-form-content { opacity: 0; pointer-events: none; }
-.studio-rating.is-confirming .studio-rating-confirmation { opacity: 1; transform: scale(1); }
-.studio-rating.is-heart .studio-rating-card { opacity: 0; pointer-events: none; transform: translateX(-50%) scale(.84); }
-.studio-rating.is-heart .studio-rating-morph { opacity: 1; transform: translateX(-50%) scale(1); }
-.studio-rating.is-heart .studio-rating-heart { opacity: 1; transform: scale(1); }
-.studio-rating.is-heart .studio-rating-final-star { opacity: 1; transform: none; transition-delay: .34s; }
-.studio-rating.is-heart .studio-rating-heart { opacity: 0; transform: scale(.76); transition-delay: .34s; }
-.studio-rating.is-submitted .studio-rating-trigger { animation: none; cursor: default; }
-.studio-rating.is-rating-paused + .project-gallery .project-gallery-slide { animation-play-state: paused; }
-.studio-page.studio-rating-open .studio-card { background: transparent; box-shadow: none; }
-.studio-page.studio-rating-open :is(.studio-selector, .studio-work-gallery > .project-gallery, .studio-client-copy, .homepage-bottom-navigation, .homepage-notifications, .homepage-search, .homepage-account, .homepage-services) { visibility: hidden; opacity: 0; pointer-events: none; }
-/* The rating flow owns this temporary blank panel state; retain its glass card only. */
-.studio-page.studio-rating-open .studio-rating-card { visibility: visible; pointer-events: auto; }
-html[dir="rtl"] .studio-rating-card { direction: rtl; font-family: var(--font-arabic); }
-@media (min-aspect-ratio: 4 / 3) {
-  /* The rating begins at the work deck, so it remains reachable on short landscapes. */
-  .studio-rating { top: 0; }
-  .studio-rating-card { top: 0; bottom: auto; transform-origin: center top; }
-}
 @media (max-aspect-ratio: 4 / 3) {
   /* Match the lower shared control line while preserving the gallery's bottom anchor. */
   .studio-work-gallery { justify-self: center; width: calc(60% + (var(--x) * 2.4)); }

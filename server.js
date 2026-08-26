@@ -8,6 +8,7 @@ const accountAdmin = require('./api/_lib/account-admin');
 const accountApi = require('./api/accounts/index');
 
 const root = __dirname;
+const pageRoutes = { '/': 'index.html', '/brands': 'studio.html', '/gallery': 'selected-works.html', '/brand': 'brand-management-new.html', '/consultation': 'consultation.html' };
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2' };
 const send = (response, status, headers, body = '') => { response.writeHead(status, headers); response.end(body); return true; };
 const readBody = (request) => new Promise((resolve, reject) => { let raw = ''; request.on('data', chunk => { raw += chunk; if (raw.length > 10_000) request.destroy(); }); request.on('end', () => { try { resolve(JSON.parse(raw || '{}')); } catch (error) { reject(error); } }); request.on('error', reject); });
@@ -64,7 +65,10 @@ const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url || '/', 'http://localhost');
   const requestPath = decodeURIComponent(requestUrl.pathname);
   handleAccount(request, response, requestPath, requestUrl.searchParams).then(handled => { if (handled) return true; return handleOs(request, response, requestPath, requestUrl.searchParams); }).then(handled => { if (handled) return;
-  const relative = requestPath === '/' ? 'index.html' : requestPath.replace(/^\/+/, '');
+  if (path.extname(requestPath).toLowerCase() === '.html' || (!path.extname(requestPath) && !Object.hasOwn(pageRoutes, requestPath))) {
+    return send(response, 404, { 'Content-Type': 'text/plain; charset=utf-8' }, 'Not found');
+  }
+  const relative = pageRoutes[requestPath] || requestPath.replace(/^\/+/, '');
   const resolved = path.resolve(root, relative);
   if (!resolved.startsWith(root)) { response.writeHead(403); response.end('Forbidden'); return; }
   const cleanRoute = !path.extname(relative) ? path.resolve(root, `${relative}.html`) : resolved;
