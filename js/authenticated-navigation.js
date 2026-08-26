@@ -7,26 +7,39 @@
     if (dashboard && panels.length && !dashboard.dataset.osVerticalNavigationBound) {
       dashboard.dataset.osVerticalNavigationBound = 'true';
       let scrollTimer;
+      let activeDirection = 'next';
       const currentPanel = () => Math.max(0, Math.min(panels.length - 1, Math.round(dashboard.scrollTop / dashboard.clientHeight)));
-      const updateControls = (target = currentPanel()) => {
+      const updateControls = (target = currentPanel(), direction = activeDirection) => {
+        activeDirection = target === 0 ? 'next' : target === panels.length - 1 ? 'previous' : direction;
         controls.forEach(control => {
           control.dataset.activePanel = String(target);
+          control.dataset.activeDirection = activeDirection;
           control.querySelector('[data-os-panel-direction="previous"]').disabled = target === 0;
           control.querySelector('[data-os-panel-direction="next"]').disabled = target === panels.length - 1;
         });
       };
-      const movePanel = target => {
+      const movePanel = (target, direction = activeDirection) => {
         const current = currentPanel();
         target = Math.max(0, Math.min(panels.length - 1, Number(target)));
         if (target === current) return;
         dashboard.scrollTo({ top: target * dashboard.clientHeight, behavior: 'smooth' });
         dashboard.dispatchEvent(new CustomEvent('os-panel-activated', { detail: { panel: target } }));
-        updateControls(target);
+        updateControls(target, direction);
       };
       controls.forEach(control => control.addEventListener('click', event => {
         const button = event.target.closest('[data-os-panel-direction]');
         if (!button || button.disabled) return;
-        movePanel(currentPanel() + (button.dataset.osPanelDirection === 'next' ? 1 : -1));
+        const direction = button.dataset.osPanelDirection;
+        movePanel(currentPanel() + (direction === 'next' ? 1 : -1), direction);
+      }));
+      document.querySelectorAll('[data-os-home]').forEach(home => home.addEventListener('click', event => {
+        event.preventDefault();
+        if (currentPanel() !== 0) { movePanel(0, 'previous'); return; }
+        const logout = document.createElement('form');
+        logout.method = 'post';
+        logout.action = '/api/os/logout';
+        document.body.append(logout);
+        logout.submit();
       }));
       updateControls();
       dashboard.addEventListener('scroll', () => {
