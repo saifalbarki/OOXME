@@ -3,10 +3,8 @@ const withTimeout = async (url, options = {}) => {
   const timer = setTimeout(() => controller.abort(), 8_000);
   try { return await fetch(url, { ...options, signal: controller.signal }); } finally { clearTimeout(timer); }
 };
-const { gmailApi, calendarApi, driveApi } = require('./google');
+const { googleAccessToken, calendarApi, driveApi } = require('./google');
 const { query } = require('./db');
-const short = (value, limit) => String(value || '').replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, limit);
-const messageHeaders = message => Object.fromEntries((message.payload?.headers || []).map(({ name, value }) => [String(name).toLowerCase(), value]));
 const limited = detail => ({ state: 'limited', label: 'Not configured', detail });
 const googleConfigured = () => Boolean(process.env.GOOGLE_OAUTH_CLIENT_ID && process.env.GOOGLE_OAUTH_CLIENT_SECRET && process.env.GOOGLE_OAUTH_REFRESH_TOKEN);
 
@@ -53,24 +51,16 @@ const github = async () => {
 };
 
 const gmail = async () => {
-  if (!googleConfigured()) return limited('Google OAuth credentials required');
+  if (!googleConfigured() || !process.env.GMAIL_SENDER_EMAIL) return limited('Google OAuth credentials and Gmail sender required');
   try {
-    await gmailApi('/users/me/profile');
-    const [unread, recent] = await Promise.all([
-      gmailApi(`/users/me/messages?${new URLSearchParams({ q: 'is:unread {is:important newer_than:14d}', maxResults: '100' })}`),
-      gmailApi(`/users/me/messages?${new URLSearchParams({ q: '{is:important newer_than:14d}', maxResults: '3' })}`)
-    ]);
-    const messages = await Promise.all((recent.messages || []).map(({ id }) => gmailApi(`/users/me/messages/${encodeURIComponent(id)}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`)));
-    return {
-      state: 'ready', label: 'Connected', detail: `Unread: ${Number(unread.resultSizeEstimate || 0)}`,
-      unread: Number(unread.resultSizeEstimate || 0),
-      messages: messages.map(message => {
-        const headers = messageHeaders(message);
-        return { sender: short(headers.from, 80) || 'Unknown sender', subject: short(headers.subject, 100) || '(No subject)', date: short(headers.date, 48) || 'Date unavailable', preview: short(message.snippet, 160) || 'No preview available' };
-      })
-    };
+    const accessToken = await googleAccessToken();
+    const response = await withTimeout(`https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(accessToken)}`);
+    if (!response.ok) return { state: 'error', label: `OAuth HTTP ${response.status}`, detail: 'Gmail OAuth verification failed' };
+    const scopes = String((await response.json()).scope || '').split(' ').filter(Boolean);
+    if (!scopes.includes('https://www.googleapis.com/auth/gmail.send')) return { state: 'error', label: 'Send scope missing', detail: 'Gmail send authorization is not granted' };
+    return { state: 'ready', label: 'Connected', detail: 'Gmail send authorization confirmed' };
   } catch {
-    return { state: 'error', label: 'Unavailable', detail: 'Gmail status check failed' };
+    return { state: 'error', label: 'Unavailable', detail: 'Gmail OAuth verification failed' };
   }
 };
 
