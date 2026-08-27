@@ -3,8 +3,11 @@
   document.documentElement.dataset.ooxmeKeyboardFocusBound = 'true';
 
   const editableSelector = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea, select';
+  const osEditableSelector = `${editableSelector}, [contenteditable]:not([contenteditable="false"])`;
   const viewport = window.visualViewport;
   const isTouchDevice = () => navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+  const isOsPage = document.body.classList.contains('os-page') && /^\/os\/?$/.test(location.pathname);
+  const activeSelector = isOsPage ? osEditableSelector : editableSelector;
   let activeControl = null;
   let activeTarget = null;
   let activeOffset = 0;
@@ -13,8 +16,8 @@
 
   const clearTarget = target => {
     if (!target) return;
-    target.classList.remove('ooxme-keyboard-offset-target');
-    target.style.removeProperty('--ooxme-keyboard-offset');
+    target.classList.remove(isOsPage ? 'os-keyboard-offset-target' : 'ooxme-keyboard-offset-target');
+    target.style.removeProperty(isOsPage ? '--os-keyboard-offset' : '--ooxme-keyboard-offset');
   };
 
   const reset = () => {
@@ -24,15 +27,22 @@
     activeOffset = 0;
   };
 
-  const targetFor = control => control.closest('form, [role="dialog"], .homepage-account-panel, .employee-dashboard-panel, .master-panel') || control.parentElement;
+  const targetFor = control => isOsPage
+    ? control.closest('.os-screen')?.querySelector(':scope > .os-panel')
+    : control.closest('form, [role="dialog"], .homepage-account-panel, .employee-dashboard-panel, .master-panel') || control.parentElement;
   const viewportHeight = () => viewport?.height || window.innerHeight;
   const viewportTop = () => viewport?.offsetTop || 0;
+  const renderedOffset = target => {
+    const transform = getComputedStyle(target).transform;
+    if (!transform || transform === 'none') return 0;
+    try { return new DOMMatrixReadOnly(transform).m42; } catch (_) { return 0; }
+  };
 
   const reposition = () => {
     if (!isTouchDevice()) return;
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => {
-      if (!activeControl?.isConnected || !activeControl.matches(editableSelector)) {
+      if (!activeControl?.isConnected || !activeControl.matches(activeSelector)) {
         reset();
         return;
       }
@@ -60,16 +70,17 @@
 
       const keyboardTop = viewportTop() + visibleHeight;
       const controlRect = activeControl.getBoundingClientRect();
-      const unshiftedBottom = controlRect.bottom - activeOffset;
+      const unshiftedBottom = controlRect.bottom - renderedOffset(activeTarget);
       const nextOffset = Math.min(0, keyboardTop - 12 - unshiftedBottom);
       activeOffset = nextOffset;
-      activeTarget.style.setProperty('--ooxme-keyboard-offset', `${nextOffset}px`);
-      activeTarget.classList.add('ooxme-keyboard-offset-target');
+      activeTarget.style.setProperty(isOsPage ? '--os-keyboard-offset' : '--ooxme-keyboard-offset', `${nextOffset}px`);
+      activeTarget.classList.add(isOsPage ? 'os-keyboard-offset-target' : 'ooxme-keyboard-offset-target');
     });
   };
 
   document.addEventListener('focusin', event => {
-    const control = event.target.closest?.(editableSelector);
+    const control = event.target.closest?.(activeSelector);
+    if (isOsPage && !control?.closest('.os-screen')) return;
     if (!control) return;
     activeControl = control;
     baselineHeight = Math.max(baselineHeight, window.innerHeight, viewportHeight());
@@ -78,7 +89,7 @@
 
   document.addEventListener('focusout', () => {
     requestAnimationFrame(() => {
-      const nextControl = document.activeElement?.closest?.(editableSelector);
+      const nextControl = document.activeElement?.closest?.(activeSelector);
       if (nextControl) {
         activeControl = nextControl;
         reposition();
