@@ -80,7 +80,18 @@ const openai = async () => {
   try { const response = await withTimeout('https://api.openai.com/v1/models', { headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) return { state: 'error', label: `API HTTP ${response.status}`, detail: 'OpenAI status unavailable' }; const body = await response.json(); return { state: 'ready', label: 'Connected', detail: `Models available: ${(body.data || []).length}` }; } catch { return { state: 'error', label: 'Unavailable', detail: 'OpenAI status check failed' }; }
 };
 const graph = async (path) => { const token = process.env.META_GRAPH_ACCESS_TOKEN; if (!token) throw new Error('unconfigured'); const response = await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION || 'v22.0'}/${path}`, { headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error(String(response.status)); return response.json(); };
-const facebook = async () => { try { const id = process.env.FACEBOOK_PAGE_ID; if (!id) return { state:'unavailable',label:'Not configured',detail:'Page ID required' }; const page = await graph(`${encodeURIComponent(id)}?fields=name,fan_count`); return { state:'ready',label:'Connected',detail:`Followers: ${Number(page.fan_count || 0)}` }; } catch { return {state:'error',label:'Unavailable',detail:'Facebook status check failed'}; } };
+const facebook = async () => {
+  try {
+    const id = process.env.FACEBOOK_PAGE_ID;
+    const token = process.env.FACEBOOK_ACCESS_TOKEN;
+    if (!id || !token) return { state: 'unavailable', label: 'Not configured', detail: 'Facebook Page ID and access token required' };
+    const response = await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION || 'v22.0'}/${encodeURIComponent(id)}?fields=id,name,fan_count`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!response.ok) return { state: 'error', label: `API HTTP ${response.status}`, detail: 'Facebook Page access failed' };
+    const page = await response.json();
+    if (String(page.id) !== String(id)) return { state: 'error', label: 'Page mismatch', detail: 'Meta returned a different Facebook Page' };
+    return { state: 'ready', label: 'Connected', detail: `Page access confirmed · Followers: ${Number(page.fan_count || 0)}` };
+  } catch { return { state: 'error', label: 'Unavailable', detail: 'Facebook status check failed' }; }
+};
 const instagram = async () => { try { const id = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID; if (!id) return { state:'unavailable',label:'Not configured',detail:'Business account ID required' }; const account = await graph(`${encodeURIComponent(id)}?fields=username,followers_count,media_count`); return { state:'ready',label:'Connected',detail:`Followers: ${Number(account.followers_count || 0)} · Media: ${Number(account.media_count || 0)}` }; } catch { return {state:'error',label:'Unavailable',detail:'Instagram status check failed'}; } };
 const whatsapp = async () => {
   try {
