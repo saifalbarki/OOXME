@@ -82,7 +82,19 @@ const openai = async () => {
 const graph = async (path) => { const token = process.env.META_GRAPH_ACCESS_TOKEN; if (!token) throw new Error('unconfigured'); const response = await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION || 'v22.0'}/${path}`, { headers: { Authorization: `Bearer ${token}` } }); if (!response.ok) throw new Error(String(response.status)); return response.json(); };
 const facebook = async () => { try { const id = process.env.FACEBOOK_PAGE_ID; if (!id) return { state:'unavailable',label:'Not configured',detail:'Page ID required' }; const page = await graph(`${encodeURIComponent(id)}?fields=name,fan_count`); return { state:'ready',label:'Connected',detail:`Followers: ${Number(page.fan_count || 0)}` }; } catch { return {state:'error',label:'Unavailable',detail:'Facebook status check failed'}; } };
 const instagram = async () => { try { const id = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID; if (!id) return { state:'unavailable',label:'Not configured',detail:'Business account ID required' }; const account = await graph(`${encodeURIComponent(id)}?fields=username,followers_count,media_count`); return { state:'ready',label:'Connected',detail:`Followers: ${Number(account.followers_count || 0)} · Media: ${Number(account.media_count || 0)}` }; } catch { return {state:'error',label:'Unavailable',detail:'Instagram status check failed'}; } };
-const whatsapp = async () => { try { const id=process.env.WHATSAPP_PHONE_NUMBER_ID, token=process.env.WHATSAPP_ACCESS_TOKEN; if(!id||!token)return {state:'unavailable',label:'Not configured',detail:'Server-side WhatsApp access required'}; const response=await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION||'v22.0'}/${encodeURIComponent(id)}?fields=verified_name,quality_rating,code_verification_status`,{headers:{Authorization:`Bearer ${token}`}}); if(!response.ok)throw new Error(); const body=await response.json(); return {state:'ready',label:'Connected',detail:`Quality: ${body.quality_rating||'Unavailable'}`}; } catch{return {state:'error',label:'Unavailable',detail:'WhatsApp status check failed'};} };
+const whatsapp = async () => {
+  try {
+    const id = process.env.WHATSAPP_PHONE_NUMBER_ID;
+    const token = process.env.WHATSAPP_ACCESS_TOKEN;
+    const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
+    const appSecret = process.env.WHATSAPP_APP_SECRET;
+    if (!id || !token || !verifyToken || !appSecret) return { state: 'unavailable', label: 'Not configured', detail: 'WhatsApp API and secure webhook configuration required' };
+    const response = await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION || 'v22.0'}/${encodeURIComponent(id)}?fields=verified_name,quality_rating,code_verification_status,display_phone_number`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!response.ok) return { state: 'error', label: `API HTTP ${response.status}`, detail: 'WhatsApp phone-number access failed' };
+    const body = await response.json();
+    return { state: 'ready', label: 'Connected', detail: `Meta phone access confirmed · Webhook signature verification active · Quality: ${body.quality_rating || 'Unavailable'}` };
+  } catch { return { state: 'error', label: 'Unavailable', detail: 'WhatsApp status check failed' }; }
+};
 const ycloud = async () => { const token=process.env.YCLOUD_API_KEY; if(!token)return {state:'unavailable',label:'Not configured',detail:'Server-side YCloud key required'}; try { const response=await withTimeout('https://api.ycloud.com/v2/balance',{headers:{'X-API-Key':token}}); return response.ok ? {state:'ready',label:'Connected',detail:'Authenticated API access confirmed'} : {state:'error',label:`API HTTP ${response.status}`,detail:'YCloud authentication failed'}; } catch{return {state:'error',label:'Unavailable',detail:'YCloud status check failed'};} };
 
 const checks = { website, github, vercel, neon, gpt: openai, calendar, gmail, drive, ycloud, whatsapp, facebook, instagram };
