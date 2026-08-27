@@ -92,7 +92,24 @@ const facebook = async () => {
     return { state: 'ready', label: 'Connected', detail: `Page access confirmed · Followers: ${Number(page.fan_count || 0)}` };
   } catch { return { state: 'error', label: 'Unavailable', detail: 'Facebook status check failed' }; }
 };
-const instagram = async () => { try { const id = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID; if (!id) return { state:'unavailable',label:'Not configured',detail:'Business account ID required' }; const account = await graph(`${encodeURIComponent(id)}?fields=username,followers_count,media_count`); return { state:'ready',label:'Connected',detail:`Followers: ${Number(account.followers_count || 0)} · Media: ${Number(account.media_count || 0)}` }; } catch { return {state:'error',label:'Unavailable',detail:'Instagram status check failed'}; } };
+const instagram = async () => {
+  try {
+    const id = process.env.INSTAGRAM_ACCOUNT_ID;
+    const token = process.env.FACEBOOK_ACCESS_TOKEN;
+    if (!id || !token) return { state: 'unavailable', label: 'Not configured', detail: 'Instagram Account ID and Facebook access token required' };
+    const headers = { Authorization: `Bearer ${token}` };
+    const accountResponse = await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION || 'v22.0'}/${encodeURIComponent(id)}?fields=id,username,followers_count,media_count`, { headers });
+    if (!accountResponse.ok) return { state: 'error', label: `API HTTP ${accountResponse.status}`, detail: 'Instagram account access failed' };
+    const account = await accountResponse.json();
+    if (String(account.id) !== String(id)) return { state: 'error', label: 'Account mismatch', detail: 'Meta returned a different Instagram account' };
+    const pagesResponse = await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION || 'v22.0'}/me/accounts?fields=id,name,instagram_business_account&limit=100`, { headers });
+    if (!pagesResponse.ok) return { state: 'error', label: `API HTTP ${pagesResponse.status}`, detail: 'Linked Facebook Page access failed' };
+    const pages = (await pagesResponse.json()).data || [];
+    const linkedPage = pages.find(page => String(page.instagram_business_account?.id) === String(id));
+    if (!linkedPage) return { state: 'error', label: 'Page link unavailable', detail: 'No accessible Facebook Page is linked to this Instagram account' };
+    return { state: 'ready', label: 'Connected', detail: `Instagram access confirmed · Linked Facebook Page confirmed · Followers: ${Number(account.followers_count || 0)} · Media: ${Number(account.media_count || 0)}` };
+  } catch { return { state: 'error', label: 'Unavailable', detail: 'Instagram status check failed' }; }
+};
 const whatsapp = async () => {
   try {
     const id = process.env.WHATSAPP_PHONE_NUMBER_ID;
