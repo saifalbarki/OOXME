@@ -11,13 +11,14 @@ const validEmail = (value) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value);
 const validPhone = (value) => value === null || /^\+[1-9]\d{7,14}$/.test(value);
 
 const detailQuery = `SELECT users.id, users.display_code, users.username, users.account_type, users.status, users.version, users.archived_at, users.created_at, users.updated_at, users.last_login_at,
+  employee_profiles.id AS employee_profile_id, client_profiles.id AS client_profile_id,
   employee_profiles.display_name AS employee_display_name, employee_profiles.job_title, employee_profiles.email AS employee_email, employee_profiles.phone_e164 AS employee_phone_e164,
   client_profiles.display_name AS client_display_name, client_profiles.company_name, client_profiles.email AS client_email, client_profiles.phone_e164 AS client_phone_e164
   FROM users
   LEFT JOIN employee_profiles ON employee_profiles.user_id = users.id
   LEFT JOIN client_profiles ON client_profiles.user_id = users.id`;
 
-const list = async () => (await query(`${detailQuery} ORDER BY users.created_at DESC`)).rows;
+const list = async () => (await query(`${detailQuery} WHERE users.status <> 'archived' ORDER BY users.created_at DESC`)).rows;
 const details = async (id) => (await query(`${detailQuery} WHERE users.id = $1 LIMIT 1`, [id])).rows[0] || null;
 const summary = async () => (await query(`SELECT
   count(*) FILTER (WHERE account_type = 'employee' AND status = 'active')::int AS active_employees,
@@ -75,7 +76,7 @@ const setStatus = async ({ id, status }) => {
 };
 
 const remove = async ({ id }) => {
-  const result = await query('DELETE FROM users WHERE id = $1', [id]);
+  const result = await query("UPDATE users SET status = 'archived', archived_at = now(), archive_reason = 'Archived from OOXME OS', version = version + 1, updated_at = now() WHERE id = $1 AND status <> 'archived' RETURNING id", [id]);
   if (!result.rowCount) { const error = new Error('account_not_found'); error.code = 'account_not_found'; throw error; }
 };
 

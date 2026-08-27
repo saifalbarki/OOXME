@@ -1,6 +1,7 @@
 const { readJson } = require('../_lib/http');
 const { authenticate, createSession, sessionCookie, sessionFromRequest } = require('../_lib/account-auth');
 const { forAudience, forPublic } = require('../_lib/notification-admin');
+const accountAdmin = require('../_lib/account-admin');
 
 const login = async (request, response) => {
   if (request.method !== 'POST') return response.status(405).json({ error: 'method_not_allowed' });
@@ -19,6 +20,16 @@ const currentSession = async (request, response) => {
   if (!user) return response.status(401).json({ error: 'unauthorized' });
   response.setHeader('Cache-Control', 'no-store');
   return response.status(200).json({ username: user.username, accountType: user.accountType });
+};
+
+const profile = async (request, response) => {
+  if (request.method !== 'GET') return response.status(405).json({ error: 'method_not_allowed' });
+  const user = await sessionFromRequest(request);
+  if (!user) return response.status(401).json({ error: 'unauthorized' });
+  const account = await accountAdmin.details(user.id);
+  if (!account || account.status !== 'active') return response.status(401).json({ error: 'unauthorized' });
+  response.setHeader('Cache-Control', 'no-store');
+  return response.status(200).json(account);
 };
 
 const notifications = async (request, response) => {
@@ -40,6 +51,7 @@ module.exports = async (request, response) => {
     const route = request.query?.route || '';
     if (route === 'login') return await login(request, response);
     if (route === 'session') return await currentSession(request, response);
+    if (route === 'profile') return await profile(request, response);
     if (route === 'notifications') return await notifications(request, response);
     if (route === 'public-notifications') return await publicNotifications(request, response);
     return response.status(404).json({ error: 'not_found' });

@@ -10,7 +10,7 @@ const date = input => {
 };
 const row = input => ({ ...input, publish_date: new Date(input.publish_date).toISOString(), valid_until: input.valid_until ? new Date(input.valid_until).toISOString() : null });
 
-const list = async () => (await query('SELECT id, title, body, publish_date, valid_until, audience, status, version, created_at, updated_at FROM notifications ORDER BY publish_date DESC, created_at DESC')).rows.map(row);
+const list = async () => (await query("SELECT id, title, body, publish_date, valid_until, audience, status, version, created_at, updated_at FROM notifications WHERE status <> 'archived' ORDER BY publish_date DESC, created_at DESC")).rows.map(row);
 const forAudience = async (accountType) => (await query(
   `SELECT id, title, body, publish_date, audience
      FROM notifications
@@ -59,7 +59,7 @@ const update = async ({ id, expectedVersion, title, body, publishDate, validUnti
 };
 
 const remove = async (id) => {
-  const result = await query('DELETE FROM notifications WHERE id = $1 RETURNING id', [id]);
+  const result = await query("UPDATE notifications SET status = 'archived', archived_at = now(), archive_reason = 'Archived from OOXME OS', version = version + 1, updated_at = now() WHERE id = $1 AND status <> 'archived' RETURNING id", [id]);
   if (!result.rowCount) { const error = new Error('notification_not_found'); error.code = 'notification_not_found'; throw error; }
 };
 

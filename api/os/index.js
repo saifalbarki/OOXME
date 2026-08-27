@@ -5,6 +5,7 @@ const { allStatuses } = require('../_lib/os-status');
 const accountAdmin = require('../_lib/account-admin');
 const promoAdmin = require('../_lib/promo-admin');
 const notificationAdmin = require('../_lib/notification-admin');
+const taskAdmin = require('../_lib/task-admin');
 
 module.exports = async (request, response) => {
   const route = request.query?.route || 'dashboard';
@@ -68,6 +69,21 @@ module.exports = async (request, response) => {
     } catch (error) {
       if (error.code === '23505') return response.status(409).json({ error: 'promo_code_unavailable' });
       return response.status(error.code === 'promotion_not_found' ? 404 : 400).json({ error: error.code || 'promotion_action_failed' });
+    }
+  }
+  if (route === 'tasks') {
+    if (!valid(request)) return response.status(401).json({ error: 'unauthorized' });
+    response.setHeader('Cache-Control', 'no-store');
+    try {
+      if (request.method === 'GET') return response.status(200).json(await taskAdmin.list());
+      if (request.method !== 'POST') return response.status(405).json({ error: 'method_not_allowed' });
+      const body = await readJson(request);
+      const actions = { create: taskAdmin.create, update: taskAdmin.update, delete: taskAdmin.archive };
+      if (!actions[body.action]) return response.status(400).json({ error: 'invalid_task_action' });
+      const id = await actions[body.action](body.id ? body.id : body);
+      return response.status(200).json({ ok: true, ...(id ? { id } : {}) });
+    } catch (error) {
+      return response.status(error.code === 'task_not_found' ? 404 : 400).json({ error: error.code || 'task_action_failed' });
     }
   }
   if (route === 'notifications') {

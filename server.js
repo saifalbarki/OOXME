@@ -6,6 +6,7 @@ const { login, dashboard } = require('./api/_lib/os-page');
 const { allStatuses } = require('./api/_lib/os-status');
 const accountAdmin = require('./api/_lib/account-admin');
 const accountApi = require('./api/accounts/index');
+const osApi = require('./api/os/index');
 
 const root = __dirname;
 const pageRoutes = { '/': 'index.html', '/brands': 'studio.html', '/gallery': 'selected-works.html', '/brand': 'brand-management-new.html', '/consultation': 'consultation.html' };
@@ -22,15 +23,18 @@ const localApiResponse = response => {
   };
 };
 const handleAccount = async (request, response, requestPath, query) => {
-  if (requestPath !== '/api/accounts/index' && requestPath !== '/api/accounts/login') return false;
+  if (!['/api/accounts/index', '/api/accounts/login', '/api/accounts/session', '/api/accounts/profile'].includes(requestPath)) return false;
   request.query = Object.fromEntries(query.entries());
   if (requestPath === '/api/accounts/login') request.query.route = 'login';
+  if (requestPath === '/api/accounts/session') request.query.route = 'session';
+  if (requestPath === '/api/accounts/profile') request.query.route = 'profile';
   if (request.method !== 'GET') request.body = await readBody(request);
   await accountApi(request, localApiResponse(response));
   return true;
 };
 const handleOs = async (request, response, requestPath, query) => {
   if (requestPath === '/os' || requestPath === '/os/') {
+    if (!valid(request)) return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', Vary: 'Cookie' }, login());
     return send(response, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', Vary: 'Cookie' }, dashboard()); // Local preview only; production remains gated by api/os/index.js.
   }
   if (requestPath === '/api/os/login' && request.method === 'POST') {
@@ -44,20 +48,13 @@ const handleOs = async (request, response, requestPath, query) => {
     if (!valid(request)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"unauthorized"}');
     return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify(await allStatuses()));
   }
-  if (requestPath === '/api/os/accounts') {
+  const osRoutes = { '/api/os/accounts': 'accounts', '/api/os/tasks': 'tasks', '/api/os/promotions': 'promotions', '/api/os/notifications': 'notifications' };
+  if (osRoutes[requestPath]) {
+    request.query = { route: osRoutes[requestPath] };
+    if (request.method !== 'GET') request.body = await readBody(request);
     if (!valid(request)) return send(response, 401, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"unauthorized"}');
-    try {
-      if (request.method === 'GET') return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify(await accountAdmin.list()));
-      if (request.method !== 'POST') return send(response, 405, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"method_not_allowed"}');
-      const body = await readBody(request);
-      const actions = { create: accountAdmin.create, update: accountAdmin.update, reset_password: accountAdmin.resetPassword, set_status: accountAdmin.setStatus, delete: accountAdmin.remove };
-      if (!actions[body.action]) return send(response, 400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"invalid_account_action"}');
-      const id = await actions[body.action](body);
-      return send(response, 200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify({ ok: true, ...(id ? { id } : {}) }));
-    } catch (error) {
-      const status = error.code === '23505' ? 409 : error.code === 'account_not_found' ? 404 : 400;
-      return send(response, status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, JSON.stringify({ error: error.code || 'account_action_failed' }));
-    }
+    await osApi(request, localApiResponse(response));
+    return true;
   }
   return false;
 };

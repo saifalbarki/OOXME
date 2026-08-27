@@ -103,9 +103,9 @@ RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  IF TG_TABLE_NAME = 'users' AND OLD.display_code IS NOT NULL AND NEW.display_code IS DISTINCT FROM OLD.display_code THEN RAISE EXCEPTION 'display_code is immutable' USING ERRCODE = '22023'; END IF;
-  IF TG_TABLE_NAME = 'tasks' AND OLD.task_code IS NOT NULL AND NEW.task_code IS DISTINCT FROM OLD.task_code THEN RAISE EXCEPTION 'task_code is immutable' USING ERRCODE = '22023'; END IF;
-  IF TG_TABLE_NAME = 'promotions' AND OLD.discount_display_code IS NOT NULL AND NEW.discount_display_code IS DISTINCT FROM OLD.discount_display_code THEN RAISE EXCEPTION 'discount_display_code is immutable' USING ERRCODE = '22023'; END IF;
+  IF TG_TABLE_NAME = 'users' AND to_jsonb(OLD)->>'display_code' IS NOT NULL AND to_jsonb(NEW)->>'display_code' IS DISTINCT FROM to_jsonb(OLD)->>'display_code' THEN RAISE EXCEPTION 'display_code is immutable' USING ERRCODE = '22023'; END IF;
+  IF TG_TABLE_NAME = 'tasks' AND to_jsonb(OLD)->>'task_code' IS NOT NULL AND to_jsonb(NEW)->>'task_code' IS DISTINCT FROM to_jsonb(OLD)->>'task_code' THEN RAISE EXCEPTION 'task_code is immutable' USING ERRCODE = '22023'; END IF;
+  IF TG_TABLE_NAME = 'promotions' AND to_jsonb(OLD)->>'discount_display_code' IS NOT NULL AND to_jsonb(NEW)->>'discount_display_code' IS DISTINCT FROM to_jsonb(OLD)->>'discount_display_code' THEN RAISE EXCEPTION 'discount_display_code is immutable' USING ERRCODE = '22023'; END IF;
   RETURN NEW;
 END;
 $$;

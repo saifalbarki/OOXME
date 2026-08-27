@@ -14,7 +14,11 @@
     { "source": "/api/os/login", "destination": "/api/os/index?route=login" },
     { "source": "/api/os/logout", "destination": "/api/os/index?route=logout" },
     { "source": "/api/os/accounts", "destination": "/api/os/index?route=accounts" },
+    { "source": "/api/os/tasks", "destination": "/api/os/index?route=tasks" },
+    { "source": "/api/os/promotions", "destination": "/api/os/index?route=promotions" },
+    { "source": "/api/os/notifications", "destination": "/api/os/index?route=notifications" },
     { "source": "/api/accounts/login", "destination": "/api/accounts/index?route=login" },
     { "source": "/api/accounts/session", "destination": "/api/accounts/index?route=session" }
+    ,{ "source": "/api/accounts/profile", "destination": "/api/accounts/index?route=profile" }
   ]
 }

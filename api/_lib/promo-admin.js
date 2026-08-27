@@ -13,7 +13,7 @@ const values = ({ code, discount, duration, allowedUses, name, description }) =>
   return { code: normalizedCode, discount: discountValue, duration: durationValue, allowedUses: usageLimit, name: String(name || '').trim() || null, description: String(description || '').trim() || null };
 };
 
-const list = async () => (await query(`SELECT id, discount_display_code, name, description, code_normalized, status, version, discount_type, discount_value, duration_restrictions, total_usage_limit FROM promotions WHERE promotion_type = 'public_promo' ORDER BY created_at DESC`)).rows;
+const list = async () => (await query(`SELECT id, discount_display_code, name, description, code_normalized, status, version, discount_type, discount_value, duration_restrictions, total_usage_limit FROM promotions WHERE promotion_type = 'public_promo' AND status <> 'archived' ORDER BY created_at DESC`)).rows;
 
 const create = async (input) => {
   const promotion = values(input);
@@ -38,14 +38,8 @@ const update = async ({ id, expectedVersion, ...input }) => {
 const remove = async (id) => withTransaction(async (client) => {
   const promotion = await client.query('SELECT id FROM promotions WHERE id = $1 FOR UPDATE', [id]);
   if (!promotion.rowCount) { const error = new Error('promotion_not_found'); error.code = 'promotion_not_found'; throw error; }
-  const references = await client.query(`SELECT (SELECT count(*) FROM bookings WHERE promotion_id = $1)::int AS bookings, (SELECT count(*) FROM promotion_redemptions WHERE promotion_id = $1)::int AS redemptions, (SELECT count(*) FROM offer_tokens WHERE promotion_id = $1)::int AS offers`, [id]);
-  const counts = references.rows[0];
-  if (counts.bookings || counts.redemptions || counts.offers) {
-    await client.query("UPDATE promotions SET status = 'archived', archived_at = now(), version = version + 1, updated_at = now() WHERE id = $1", [id]);
-    return { outcome: 'archived' };
-  }
-  await client.query('DELETE FROM promotions WHERE id = $1', [id]);
-  return { outcome: 'deleted' };
+  await client.query("UPDATE promotions SET status = 'archived', archived_at = now(), archive_reason = 'Archived from OOXME OS', version = version + 1, updated_at = now() WHERE id = $1", [id]);
+  return { outcome: 'archived' };
 });
 
 module.exports = { create, list, remove, update };
