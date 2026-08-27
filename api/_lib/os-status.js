@@ -19,12 +19,17 @@ const website = async () => {
 };
 
 const vercel = async () => {
-  const token = process.env.OOXME_OS_VERCEL_TOKEN;
-  const projectId = process.env.VERCEL_PROJECT_ID || process.env.OOXME_OS_VERCEL_PROJECT_ID;
-  if (!token || !projectId) return { state: 'unavailable', label: 'Not configured', detail: 'Server-side Vercel access required' };
+  const token = process.env.VERCEL_TOKEN;
+  if (!token) return { state: 'unavailable', label: 'Not configured', detail: 'Server-side Vercel token required' };
   try {
-    const response = await withTimeout(`https://api.vercel.com/v6/deployments?projectId=${encodeURIComponent(projectId)}&target=production&limit=1`, { headers: { Authorization: `Bearer ${token}` } });
-    if (!response.ok) return { state: 'error', label: `API HTTP ${response.status}`, detail: 'Deployment status unavailable' };
+    const headers = { Authorization: `Bearer ${token}` };
+    const projectsResponse = await withTimeout('https://api.vercel.com/v9/projects?limit=100', { headers });
+    if (!projectsResponse.ok) return { state: 'error', label: `API HTTP ${projectsResponse.status}`, detail: 'Vercel authentication failed' };
+    const projects = (await projectsResponse.json()).projects || [];
+    const project = projects.find(item => String(item.name || '').toLowerCase().includes('ooxme') || (item.link?.org === 'saifalbarki' && item.link?.repo === 'OOXME'));
+    if (!project) return { state: 'error', label: 'Project unavailable', detail: 'OOXME project is not accessible to this token' };
+    const response = await withTimeout(`https://api.vercel.com/v6/deployments?projectId=${encodeURIComponent(project.id)}&target=production&limit=1`, { headers });
+    if (!response.ok) return { state: 'error', label: `API HTTP ${response.status}`, detail: 'OOXME deployment context unavailable' };
     const deployment = (await response.json()).deployments?.[0];
     if (!deployment) return { state: 'unavailable', label: 'No deployment', detail: 'No Production deployment found' };
     return { state: String(deployment.readyState || 'UNKNOWN').toLowerCase(), label: String(deployment.readyState || 'Unknown'), detail: deployment.createdAt ? new Date(deployment.createdAt).toISOString() : 'Time unavailable', url: deployment.url ? `https://${deployment.url}` : undefined };
@@ -32,15 +37,15 @@ const vercel = async () => {
 };
 
 const github = async () => {
-  const token = process.env.OOXME_OS_GITHUB_TOKEN;
-  const owner = process.env.OOXME_OS_GITHUB_OWNER || 'saifalbarki';
-  const repository = process.env.OOXME_OS_GITHUB_REPOSITORY || 'OOXME-WEBSITE';
+  const token = process.env.GITHUB_TOKEN;
+  const owner = 'saifalbarki';
+  const repository = 'OOXME';
   if (!token) return { state: 'unavailable', label: 'Not configured', detail: 'Server-side GitHub access required' };
   const base = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}`;
   const headers = { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2022-11-28' };
   try {
-    const [repositoryResponse, commitsResponse, activityResponse, pullsResponse, issuesResponse] = await Promise.all([withTimeout(base, { headers }), withTimeout(`${base}/commits?per_page=1`, { headers }), withTimeout(`${base}/activity?per_page=3`, { headers }), withTimeout(`${base}/pulls?state=open&per_page=100`, { headers }), withTimeout(`https://api.github.com/search/issues?q=${encodeURIComponent(`repo:${owner}/${repository} is:issue is:open`)}`, { headers })]);
-    if (!repositoryResponse.ok || !commitsResponse.ok) return { state: 'error', label: `API HTTP ${repositoryResponse.ok ? commitsResponse.status : repositoryResponse.status}`, detail: 'Repository status unavailable' };
+    const [userResponse, repositoryResponse, commitsResponse, activityResponse, pullsResponse, issuesResponse] = await Promise.all([withTimeout('https://api.github.com/user', { headers }), withTimeout(base, { headers }), withTimeout(`${base}/commits?per_page=1`, { headers }), withTimeout(`${base}/activity?per_page=3`, { headers }), withTimeout(`${base}/pulls?state=open&per_page=100`, { headers }), withTimeout(`https://api.github.com/search/issues?q=${encodeURIComponent(`repo:${owner}/${repository} is:issue is:open`)}`, { headers })]);
+    if (!userResponse.ok || !repositoryResponse.ok || !commitsResponse.ok) return { state: 'error', label: `API HTTP ${!userResponse.ok ? userResponse.status : (repositoryResponse.ok ? commitsResponse.status : repositoryResponse.status)}`, detail: 'GitHub token or OOXME repository access failed' };
     const repo = await repositoryResponse.json(), commit = (await commitsResponse.json())[0], activity = activityResponse.ok ? await activityResponse.json() : [], pulls = pullsResponse.ok ? await pullsResponse.json() : [], issues = issuesResponse.ok ? await issuesResponse.json() : { total_count: null };
     const date = commit?.commit?.author?.date ? new Date(commit.commit.author.date).toISOString() : 'Date unavailable', author = commit?.commit?.author?.name || commit?.author?.login || 'Unknown author';
     return { state: repo.archived || repo.disabled ? 'error' : 'ready', label: repo.archived ? 'Archived' : repo.disabled ? 'Disabled' : 'Active', detail: `${repo.default_branch} · ${author} · ${date}`, branch: repo.default_branch, latestCommit: commit?.sha?.slice(0, 7) || 'Unavailable', author, date, activity: activity.map(event => event.type).filter(Boolean).join(', ') || 'No recent activity', pullRequests: pulls.length, issues: Number.isInteger(issues.total_count) ? issues.total_count : 'Unavailable' };
@@ -88,7 +93,7 @@ const graph = async (path) => { const token = process.env.META_GRAPH_ACCESS_TOKE
 const facebook = async () => { try { const id = process.env.FACEBOOK_PAGE_ID; if (!id) return { state:'unavailable',label:'Not configured',detail:'Page ID required' }; const page = await graph(`${encodeURIComponent(id)}?fields=name,fan_count`); return { state:'ready',label:'Connected',detail:`Followers: ${Number(page.fan_count || 0)}` }; } catch { return {state:'error',label:'Unavailable',detail:'Facebook status check failed'}; } };
 const instagram = async () => { try { const id = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID; if (!id) return { state:'unavailable',label:'Not configured',detail:'Business account ID required' }; const account = await graph(`${encodeURIComponent(id)}?fields=username,followers_count,media_count`); return { state:'ready',label:'Connected',detail:`Followers: ${Number(account.followers_count || 0)} · Media: ${Number(account.media_count || 0)}` }; } catch { return {state:'error',label:'Unavailable',detail:'Instagram status check failed'}; } };
 const whatsapp = async () => { try { const id=process.env.WHATSAPP_PHONE_NUMBER_ID, token=process.env.WHATSAPP_ACCESS_TOKEN; if(!id||!token)return {state:'unavailable',label:'Not configured',detail:'Server-side WhatsApp access required'}; const response=await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION||'v22.0'}/${encodeURIComponent(id)}?fields=verified_name,quality_rating,code_verification_status`,{headers:{Authorization:`Bearer ${token}`}}); if(!response.ok)throw new Error(); const body=await response.json(); return {state:'ready',label:'Connected',detail:`Quality: ${body.quality_rating||'Unavailable'}`}; } catch{return {state:'error',label:'Unavailable',detail:'WhatsApp status check failed'};} };
-const ycloud = async () => { const token=process.env.YCLOUD_API_KEY; if(!token)return {state:'unavailable',label:'Not configured',detail:'Server-side YCloud key required'}; try { const response=await withTimeout('https://api.ycloud.com/v2/whatsapp/phoneNumbers?limit=1&includeTotal=true',{headers:{'X-API-Key':token}}); if(!response.ok)throw new Error(); const body=await response.json(); return {state:'ready',label:'Connected',detail:`Registered senders: ${Number(body.total || body.totalCount || (body.data||[]).length || 0)}`}; } catch{return {state:'error',label:'Unavailable',detail:'YCloud status check failed'};} };
+const ycloud = async () => { const token=process.env.YCLOUD_API_KEY; if(!token)return {state:'unavailable',label:'Not configured',detail:'Server-side YCloud key required'}; try { const response=await withTimeout('https://api.ycloud.com/v2/balance',{headers:{'X-API-Key':token}}); return response.ok ? {state:'ready',label:'Connected',detail:'Authenticated API access confirmed'} : {state:'error',label:`API HTTP ${response.status}`,detail:'YCloud authentication failed'}; } catch{return {state:'error',label:'Unavailable',detail:'YCloud status check failed'};} };
 
 const checks = { website, github, vercel, neon, gpt: openai, calendar, gmail, drive, ycloud, whatsapp, facebook, instagram };
 const checked = async (name, check) => {
