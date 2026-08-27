@@ -3,6 +3,9 @@
   if (!dashboard || dashboard.dataset.osLiveDataBound) return;
   dashboard.dataset.osLiveDataBound = 'true';
   const state = { accounts: [], tasks: [], promotions: [], notifications: [] };
+  let lastSnapshot = '';
+  let pollTimer = null;
+  let loading = false;
   const api = async (path, options) => {
     const response = await fetch(path, { credentials: 'same-origin', ...options, headers: { 'Content-Type': 'application/json', ...(options?.headers || {}) } });
     if (!response.ok) throw new Error(`api_${response.status}`);
@@ -47,11 +50,17 @@
     fill(select, items, label); return select;
   };
   const load = async () => {
+    if (loading) return;
+    loading = true;
     const [accounts, tasks, promotions, notifications] = await Promise.all([
       api('/api/os/accounts'), api('/api/os/tasks'), api('/api/os/promotions'), api('/api/os/notifications')
     ]);
+    const snapshot = JSON.stringify({ accounts, tasks, promotions, notifications });
+    if (snapshot === lastSnapshot) { loading = false; return; }
+    lastSnapshot = snapshot;
     state.accounts = accounts; state.tasks = tasks; state.promotions = promotions; state.notifications = notifications;
     render();
+    loading = false;
   };
   const render = () => {
     const employee = first(activeAccounts('employee'));
@@ -154,5 +163,9 @@
   bindPanel('four', { kind: 'task', mutate: taskMutation });
   bindPanel('five', { kind: 'promotion', mutate: promotionMutation });
   bindPanel('six', { kind: 'notification', mutate: notificationMutation });
-  load().catch(() => {});
+  const refresh = () => load().catch(() => { loading = false; });
+  const stopPolling = () => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
+  const startPolling = () => { stopPolling(); if (!document.hidden) { refresh(); pollTimer = setInterval(refresh, 15_000); } };
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stopPolling(); else startPolling(); });
+  startPolling();
 })();
