@@ -18,6 +18,18 @@ textarea.ooxme-writable-field--centered-entry { height: var(--ooxme-writable-ent
   :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea)::placeholder { color: var(--color-secondary-control); font-size: inherit; font-weight: 400; opacity: 1; }
 }
 
+@media (pointer: coarse) {
+  :is(input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea, select) {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+}
+
+.ooxme-keyboard-offset-target { transform: translate3d(0, var(--ooxme-keyboard-offset, 0px), 0); transition: transform 180ms cubic-bezier(.22, .61, .36, 1); will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .ooxme-keyboard-offset-target { transition: none; } }
+
 /* Brand Management New uses the Studio shell with a temporary two-state card. */
 .brand-management-new-page { --homepage-navigation-width: min(calc(100% - (var(--x) * 2)), var(--layout-content-max)); --homepage-notifications-width: min(calc(100% - (var(--x) * 4)), var(--layout-content-max)); --overlay-text-size: var(--type-primary-content-size); width: 100%; min-height: var(--ooxme-stable-viewport-height); background: var(--color-paper); }
 .brand-management-new-page .brand-management-new-master-panel { grid-template-rows: minmax(0, 1fr) auto; isolation: isolate; background: transparent; }

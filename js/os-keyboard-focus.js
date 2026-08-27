@@ -1,10 +1,10 @@
 (() => {
-  const dashboard = document.querySelector('.os-dashboard-experience');
-  if (!dashboard || dashboard.dataset.osKeyboardFocusBound) return;
-  dashboard.dataset.osKeyboardFocusBound = 'true';
+  if (document.documentElement.dataset.ooxmeKeyboardFocusBound) return;
+  document.documentElement.dataset.ooxmeKeyboardFocusBound = 'true';
 
   const editableSelector = 'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]), textarea, select';
   const viewport = window.visualViewport;
+  const isTouchDevice = () => navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
   let activeControl = null;
   let activeTarget = null;
   let activeOffset = 0;
@@ -13,8 +13,8 @@
 
   const clearTarget = target => {
     if (!target) return;
-    target.classList.remove('os-keyboard-offset-target');
-    target.style.removeProperty('--os-keyboard-offset');
+    target.classList.remove('ooxme-keyboard-offset-target');
+    target.style.removeProperty('--ooxme-keyboard-offset');
   };
 
   const reset = () => {
@@ -24,11 +24,12 @@
     activeOffset = 0;
   };
 
-  const targetFor = control => control.closest('[role="dialog"], form, .os-panel');
+  const targetFor = control => control.closest('form, [role="dialog"], .homepage-account-panel, .employee-dashboard-panel, .master-panel') || control.parentElement;
   const viewportHeight = () => viewport?.height || window.innerHeight;
   const viewportTop = () => viewport?.offsetTop || 0;
 
   const reposition = () => {
+    if (!isTouchDevice()) return;
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => {
       if (!activeControl?.isConnected || !activeControl.matches(editableSelector)) {
@@ -57,18 +58,17 @@
       }
       activeTarget = nextTarget;
 
-      const x = Number.parseFloat(getComputedStyle(dashboard).getPropertyValue('--x')) || 12;
       const keyboardTop = viewportTop() + visibleHeight;
       const controlRect = activeControl.getBoundingClientRect();
       const unshiftedBottom = controlRect.bottom - activeOffset;
-      const nextOffset = Math.min(0, keyboardTop - x - unshiftedBottom);
+      const nextOffset = Math.min(0, keyboardTop - 12 - unshiftedBottom);
       activeOffset = nextOffset;
-      activeTarget.style.setProperty('--os-keyboard-offset', `${nextOffset}px`);
-      activeTarget.classList.add('os-keyboard-offset-target');
+      activeTarget.style.setProperty('--ooxme-keyboard-offset', `${nextOffset}px`);
+      activeTarget.classList.add('ooxme-keyboard-offset-target');
     });
   };
 
-  dashboard.addEventListener('focusin', event => {
+  document.addEventListener('focusin', event => {
     const control = event.target.closest?.(editableSelector);
     if (!control) return;
     activeControl = control;
@@ -76,16 +76,16 @@
     reposition();
   });
 
-  dashboard.addEventListener('focusout', () => {
+  document.addEventListener('focusout', () => {
     requestAnimationFrame(() => {
       const nextControl = document.activeElement?.closest?.(editableSelector);
-      if (nextControl && dashboard.contains(nextControl)) {
+      if (nextControl) {
         activeControl = nextControl;
         reposition();
         return;
       }
       activeControl = null;
-      baselineHeight = Math.max(window.innerHeight, viewportHeight());
+      baselineHeight = Math.max(baselineHeight, window.innerHeight, viewportHeight());
       reset();
     });
   });
