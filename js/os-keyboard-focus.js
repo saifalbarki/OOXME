@@ -13,6 +13,8 @@
   let activeOffset = 0;
   let baselineHeight = Math.max(window.innerHeight, viewport?.height || 0);
   let frame = 0;
+  let scrollAnchor = null;
+  let releaseTimer = 0;
 
   const clearTarget = target => {
     if (!target) return;
@@ -25,6 +27,69 @@
     clearTarget(activeTarget);
     activeTarget = null;
     activeOffset = 0;
+  };
+
+  const scrollContainersFor = control => {
+    const containers = [];
+    let parent = control?.parentElement;
+    while (parent && parent !== document.body) {
+      if (parent.scrollHeight > parent.clientHeight || parent.scrollWidth > parent.clientWidth) containers.push(parent);
+      parent = parent.parentElement;
+    }
+    return containers;
+  };
+
+  const captureScrollAnchor = control => {
+    if (!isOsPage) return;
+    clearTimeout(releaseTimer);
+    if (scrollAnchor) return;
+    scrollAnchor = {
+      x: window.scrollX,
+      y: window.scrollY,
+      containers: scrollContainersFor(control).map(element => ({ element, left: element.scrollLeft, top: element.scrollTop }))
+    };
+  };
+
+  const restoreScrollAnchor = () => {
+    if (!scrollAnchor) return;
+    if (window.scrollX !== scrollAnchor.x || window.scrollY !== scrollAnchor.y) window.scrollTo(scrollAnchor.x, scrollAnchor.y);
+    scrollAnchor.containers.forEach(item => {
+      if (!item.element.isConnected) return;
+      if (item.element.scrollLeft !== item.left) item.element.scrollLeft = item.left;
+      if (item.element.scrollTop !== item.top) item.element.scrollTop = item.top;
+    });
+  };
+
+  const stabilizeScroll = () => {
+    if (!isOsPage || !scrollAnchor) return;
+    [0, 50, 150, 300, 500].forEach(delay => window.setTimeout(restoreScrollAnchor, delay));
+  };
+
+  const releaseScrollAnchor = () => {
+    if (!isOsPage || !scrollAnchor) return;
+    stabilizeScroll();
+    clearTimeout(releaseTimer);
+    releaseTimer = window.setTimeout(() => {
+      restoreScrollAnchor();
+      scrollAnchor = null;
+    }, 650);
+  };
+
+  const releaseIfKeyboardStaysClosed = () => {
+    if (!isOsPage) return;
+    clearTimeout(releaseTimer);
+    releaseTimer = window.setTimeout(() => {
+      if (baselineHeight - viewportHeight() >= 80) return;
+      restoreScrollAnchor();
+      scrollAnchor = null;
+    }, 700);
+  };
+
+  const prepareControl = control => {
+    if (!isOsPage || !control) return;
+    control.classList.add('os-ios-focus-size-guard');
+    const size = Number.parseFloat(getComputedStyle(control).fontSize) || 0;
+    control.dataset.osFocusedFontSize = String(size);
   };
 
   const targetFor = control => isOsPage
@@ -40,14 +105,10 @@
 
   const reposition = () => {
     if (!isTouchDevice()) return;
+    restoreScrollAnchor();
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => {
       if (!activeControl?.isConnected || !activeControl.matches(activeSelector)) {
-        reset();
-        return;
-      }
-
-      if (viewport && Math.abs(viewport.scale - 1) > .01) {
         reset();
         return;
       }
@@ -82,10 +143,26 @@
     const control = event.target.closest?.(activeSelector);
     if (isOsPage && !control?.closest('.os-screen')) return;
     if (!control) return;
+    captureScrollAnchor(control);
+    prepareControl(control);
     activeControl = control;
     baselineHeight = Math.max(baselineHeight, window.innerHeight, viewportHeight());
+    stabilizeScroll();
+    releaseIfKeyboardStaysClosed();
     reposition();
   });
+
+  if (isOsPage) {
+    const prepareFromPointer = event => {
+      const control = event.target.closest?.(activeSelector);
+      if (!control?.closest('.os-screen')) return;
+      captureScrollAnchor(control);
+      prepareControl(control);
+    };
+    document.addEventListener('pointerdown', prepareFromPointer, true);
+    document.addEventListener('touchstart', prepareFromPointer, { capture: true, passive: true });
+    document.addEventListener('scroll', restoreScrollAnchor, true);
+  }
 
   document.addEventListener('focusout', () => {
     requestAnimationFrame(() => {
@@ -98,6 +175,7 @@
       activeControl = null;
       baselineHeight = Math.max(baselineHeight, window.innerHeight, viewportHeight());
       reset();
+      releaseScrollAnchor();
     });
   });
 
