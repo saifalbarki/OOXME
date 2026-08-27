@@ -104,18 +104,18 @@ const instagram = async () => {
       const error = payload.error || {};
       const code = Number.isFinite(Number(error.code)) ? Number(error.code) : 'unknown';
       const message = String(error.message || fallback).replace(/(?:access[_ -]?token|authorization|bearer)\s*[:=]?\s*[^\s,;]+/gi, '[redacted]');
-      return `Meta ${code}: ${message}`;
+      return { state: 'error', label: 'Instagram access failed', detail: 'Instagram access failed', diagnostic: `Meta ${code}: ${message}` };
     };
     const accountResponse = await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION || 'v22.0'}/${encodeURIComponent(id)}?fields=id,username,followers_count,media_count`, { headers });
-    if (!accountResponse.ok) return { state: 'error', label: `API HTTP ${accountResponse.status}`, detail: await graphError(accountResponse, 'Instagram account access failed') };
+    if (!accountResponse.ok) return await graphError(accountResponse, 'Instagram account access failed');
     const account = await accountResponse.json();
-    if (String(account.id) !== String(id)) return { state: 'error', label: 'Account mismatch', detail: 'Meta returned a different Instagram account' };
+    if (String(account.id) !== String(id)) return { state: 'error', label: 'Instagram access failed', detail: 'Instagram access failed', diagnostic: 'Instagram account ID mismatch' };
     const pageResponse = await withTimeout(`https://graph.facebook.com/${process.env.WHATSAPP_GRAPH_API_VERSION || 'v22.0'}/${encodeURIComponent(pageId)}?fields=id,name,instagram_business_account`, { headers });
-    if (!pageResponse.ok) return { state: 'error', label: `API HTTP ${pageResponse.status}`, detail: await graphError(pageResponse, 'Facebook Page linkage check failed') };
+    if (!pageResponse.ok) return await graphError(pageResponse, 'Facebook Page linkage check failed');
     const page = await pageResponse.json();
-    if (String(page.id) !== String(pageId)) return { state: 'error', label: 'Page mismatch', detail: 'Meta returned a different Facebook Page' };
-    if (String(page.instagram_business_account?.id) !== String(id)) return { state: 'error', label: 'Account mismatch', detail: 'Facebook Page is linked to a different Instagram account' };
-    return { state: 'ready', label: 'Connected', detail: `Instagram access confirmed · Linked Facebook Page confirmed · Followers: ${Number(account.followers_count || 0)} · Media: ${Number(account.media_count || 0)}` };
+    if (String(page.id) !== String(pageId)) return { state: 'error', label: 'Instagram access failed', detail: 'Instagram access failed', diagnostic: 'Facebook Page ID mismatch' };
+    if (String(page.instagram_business_account?.id) !== String(id)) return { state: 'error', label: 'Instagram access failed', detail: 'Instagram access failed', diagnostic: 'Facebook Page is linked to a different Instagram account' };
+    return { state: 'ready', label: 'Connected', detail: 'Instagram account and Facebook Page linked' };
   } catch { return { state: 'error', label: 'Unavailable', detail: 'Instagram status check failed' }; }
 };
 const whatsapp = async () => {
