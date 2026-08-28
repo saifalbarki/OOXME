@@ -30,7 +30,7 @@
 
 @font-face {
   font-family: OOXMEScript;
-  src: url('../assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf') format('truetype');
+  src: url('../assets/fonts/SF-Arabic-Rounded.ttf') format('truetype');
   font-weight: 100 900;
   font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF;
@@ -426,7 +426,7 @@ html.s-route.is-day-mode .s-page__composer {
   margin: 0;
   padding: 8px;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   border: 1px solid rgba(255, 255, 255, .34);
   border-radius: 28px;
   background: var(--s-composer-surface);
@@ -453,8 +453,8 @@ html.s-route.is-day-mode .s-page__composer {
   position: relative;
   display: flex;
   width: 100%;
-  height: 30px;
-  min-height: 30px;
+  height: 36px;
+  min-height: 36px;
   margin: 0;
   padding: 0 8px;
   align-items: center;
