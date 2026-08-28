@@ -216,9 +216,10 @@ html.s-route.is-day-mode .s-page__group-description {
   position: fixed;
   z-index: 15;
   top: var(--s-x);
-  right: var(--s-x);
+  left: 50%;
+  width: min(calc(100% - (var(--s-x) * 4)), 660px);
+  max-width: 100%;
   bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px) + 48px + var(--s-chat-gap));
-  left: var(--s-x);
   display: flex;
   min-height: 0;
   flex-direction: column;
@@ -226,6 +227,7 @@ html.s-route.is-day-mode .s-page__group-description {
   gap: var(--s-chat-gap);
   overflow: hidden;
   pointer-events: none;
+  transform: translateX(-50%);
 }
 
 .s-page__conversation-bubble {
@@ -237,12 +239,20 @@ html.s-route.is-day-mode .s-page__group-description {
   border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 22px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, .14), 0 1px 3px rgba(0, 0, 0, .08);
-  font: 500 16px/1.32 OOXMEScript, Arial, sans-serif;
+  font: 500 12px/1.32 OOXMEScript, Arial, sans-serif;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-  animation: s-page-conversation-enter 240ms cubic-bezier(.22, .61, .36, 1) both;
+  will-change: transform;
   -webkit-backdrop-filter: blur(18px) saturate(115%);
   backdrop-filter: blur(18px) saturate(115%);
+}
+
+.s-page__conversation-bubble.is-entering {
+  animation: s-page-conversation-enter 240ms cubic-bezier(.22, .61, .36, 1) both;
+}
+
+.s-page__conversation-bubble.is-shifting {
+  transition: transform 240ms cubic-bezier(.22, .61, .36, 1);
 }
 
 .s-page__conversation-bubble--user {
@@ -258,10 +268,19 @@ html.s-route.is-day-mode .s-page__conversation-bubble--user {
 
 .s-page__conversation-bubble--ooxme {
   align-self: flex-start;
-  border-color: rgba(0, 0, 0, .07);
-  border-bottom-left-radius: 8px;
-  background: #F2F2F2;
-  color: #000000;
+  border-color: rgba(255, 255, 255, .34);
+  border-radius: 28px 28px 28px 8px;
+  background: rgba(255, 255, 255, .68);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .05);
+  color: #0b0b0b;
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+
+html.s-route.is-day-mode .s-page__conversation-bubble--ooxme {
+  border-color: #E6E6E6;
+  background: rgba(255, 255, 255, .86);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .04);
 }
 
 .s-page__conversation-final {
@@ -629,7 +648,8 @@ html.s-route.is-day-mode .s-page__composer-menu {
 @media (prefers-reduced-motion: reduce) {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
   .s-page__typing-character { opacity: 1; animation: none !important; }
-  .s-page__conversation-bubble { animation: none; }
+  .s-page__conversation-bubble.is-entering { animation: none; }
+  .s-page__conversation-bubble.is-shifting { transition: none; }
   .s-page__conversation-final { transition: none; }
   .s-page__submit-icon { transition: none; }
   .s-page__composer,

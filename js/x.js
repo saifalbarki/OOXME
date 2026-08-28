@@ -15,9 +15,11 @@
 
   if (!page || !composer || !composerMenu || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || groups.length !== 3) return;
 
-  const maximumVisibleMessages = 6;
+  const maximumConversationMessages = 20;
   const replyDelayMs = 1000;
   const finalRevealDelayMs = 1600;
+  const finalMessageDurationMs = 5000;
+  const finalFadeOutDurationMs = 320;
   const englishReplies = [
     'Sorry, we don’t reply to messages for free.',
     'Hmm... it seems you didn’t read the previous message.',
@@ -68,6 +70,10 @@
   let lastKeyboardOverlap = 0;
   let replyIndex = 0;
   let conversationState = 'active';
+  let finalVisibleTimer = 0;
+  let finalResetTimer = 0;
+  const initialInputPlaceholder = input.placeholder;
+  const composerControls = Array.from(composer.querySelectorAll('button, input'));
 
   const isComposerMenuInteraction = (target) => (
     addButton.contains(target) || composerMenu.contains(target)
@@ -347,39 +353,90 @@
     submitButton.classList.toggle('is-send-ready', isReadyToSend);
   };
 
+  const setComposerInteractivity = (enabled) => {
+    composerControls.forEach((control) => { control.disabled = !enabled; });
+  };
+
   const trimConversation = () => {
-    while (conversation.children.length > maximumVisibleMessages) conversation.firstElementChild?.remove();
+    while (conversation.children.length > maximumConversationMessages) conversation.firstElementChild?.remove();
+  };
+
+  const animateConversationShift = (previousPositions) => {
+    if (reducedMotion.matches) return;
+    const shiftedBubbles = [];
+    previousPositions.forEach((previousTop, bubble) => {
+      if (!bubble.isConnected || bubble.classList.contains('is-entering')) return;
+      const offset = previousTop - bubble.getBoundingClientRect().top;
+      if (Math.abs(offset) < 1) return;
+      bubble.classList.add('is-shifting');
+      bubble.style.transform = `translateY(${offset}px)`;
+      shiftedBubbles.push(bubble);
+    });
+    if (!shiftedBubbles.length) return;
+    void conversation.offsetHeight;
     window.requestAnimationFrame(() => {
-      while (conversation.scrollHeight > conversation.clientHeight && conversation.children.length > 2) {
-        conversation.firstElementChild?.remove();
-      }
+      shiftedBubbles.forEach((bubble) => { bubble.style.transform = ''; });
+      window.setTimeout(() => shiftedBubbles.forEach((bubble) => bubble.classList.remove('is-shifting')), 260);
     });
   };
 
   const addConversationBubble = (message, speaker, language) => {
+    const previousPositions = new Map(Array.from(conversation.children, (bubble) => [bubble, bubble.getBoundingClientRect().top]));
     const bubble = document.createElement('p');
-    bubble.className = `s-page__conversation-bubble s-page__conversation-bubble--${speaker}`;
+    bubble.className = `s-page__conversation-bubble s-page__conversation-bubble--${speaker} is-entering`;
     bubble.lang = language;
     bubble.dir = language === 'ar' ? 'rtl' : 'ltr';
     bubble.textContent = message;
+    bubble.addEventListener('animationend', () => bubble.classList.remove('is-entering'), { once: true });
     conversation.appendChild(bubble);
     trimConversation();
+    animateConversationShift(previousPositions);
+  };
+
+  const resetConversationDemo = () => {
+    window.clearTimeout(finalVisibleTimer);
+    finalVisibleTimer = 0;
+    conversationFinal.classList.remove('is-visible');
+    conversationFinal.setAttribute('aria-hidden', 'true');
+    conversation.replaceChildren();
+    replyIndex = 0;
+    conversationState = 'resetting';
+    input.blur();
+    input.value = '';
+    input.placeholder = initialInputPlaceholder;
+    submitButton.classList.remove('is-send-ready');
+    resetAddButton();
+    initializeGroupOne();
+    window.clearTimeout(finalResetTimer);
+    finalResetTimer = window.setTimeout(() => {
+      conversationFinalCopy.textContent = '';
+      conversationFinalCopy.removeAttribute('lang');
+      conversationFinalCopy.removeAttribute('dir');
+      setComposerInteractivity(true);
+      conversationState = 'active';
+      updateSubmitArrow();
+    }, reducedMotion.matches ? 0 : finalFadeOutDurationMs);
   };
 
   const revealConversationFinal = (language) => {
+    window.clearTimeout(finalVisibleTimer);
+    window.clearTimeout(finalResetTimer);
     conversationState = 'finished';
+    resetAddButton();
+    setComposerInteractivity(false);
     conversationFinalCopy.lang = language;
     conversationFinalCopy.dir = language === 'ar' ? 'rtl' : 'ltr';
     conversationFinalCopy.textContent = finalMessages[language];
     conversationFinal.setAttribute('aria-hidden', 'false');
     conversationFinal.classList.add('is-visible');
     input.value = '';
-    input.placeholder = language === 'ar' ? 'انتهت التجربة' : 'Demo complete';
-    input.disabled = true;
-    submitButton.disabled = true;
     input.blur();
     updateSubmitArrow();
     suppressSettleForChatInteraction();
+    finalVisibleTimer = window.setTimeout(
+      resetConversationDemo,
+      finalMessageDurationMs + (reducedMotion.matches ? 0 : finalFadeOutDurationMs)
+    );
   };
 
   input.addEventListener('focus', () => {
@@ -489,9 +546,14 @@
   updateAnchorGap();
   const initializeGroupOne = () => {
     const run = ++initializationRun;
+    document.documentElement.classList.add('s-x-initializing');
     initializationReady = false;
     window.clearTimeout(snapTimer);
+    if (revealFrame) window.cancelAnimationFrame(revealFrame);
+    revealFrame = 0;
     interactionState = 'idle';
+    isTouching = false;
+    suppressSettleUntil = 0;
     resetAddButton();
     composer.classList.remove('is-pulsing');
     activeGroupIndex = -1;
@@ -499,6 +561,7 @@
     lastKeyboardOverlap = 0;
     initialGroupOnePending = true;
     lastScrollY = 0;
+    lastScrollDirection = 1;
     window.scrollTo({ top: 0, behavior: 'auto' });
     groupElements.forEach((elements, index) => {
       stopGroupTyping(index, true);
