@@ -29,11 +29,11 @@ body.s-page {
 .s-page__background {
   position: fixed;
   z-index: 0;
-  inset: calc(-1 * var(--s-background-overscan, 96px)) 0;
+  inset: 0;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
-  background: #040404;
+  background: transparent;
   isolation: isolate;
 }
 
