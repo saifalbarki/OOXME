@@ -48,6 +48,33 @@ html.s-route.is-day-mode body.s-page {
   color: #000000;
 }
 
+html.s-x-initializing .s-page__composer,
+html.s-x-initializing .s-page__composer :is(button, input) {
+  transition: none !important;
+}
+
+html.s-x-initializing .s-page__composer {
+  transform: translate3d(-50%, 0, 0) !important;
+  animation: none !important;
+}
+
+html.s-x-initializing .s-page__add,
+html.s-x-initializing .s-page__add:active {
+  background: transparent !important;
+  transform: none !important;
+}
+
+html.s-x-initializing .s-page__add > span {
+  transform: rotate(0deg) !important;
+  transition: none !important;
+}
+
+html.s-x-initializing .s-page__submit,
+html.s-x-initializing .s-page__submit:active {
+  background: #080808 !important;
+  transform: none !important;
+}
+
 .s-page *,
 .s-page *::before,
 .s-page *::after {
@@ -76,7 +103,7 @@ html.s-route.is-day-mode body.s-page {
 .s-page__group-title,
 .s-page__group-description {
   margin: 0;
-  text-wrap: balance;
+  text-wrap: wrap;
 }
 
 .s-page__group-title {
@@ -164,7 +191,7 @@ html.s-route.is-day-mode .s-page__group-description {
   position: fixed;
   z-index: 20;
   left: 50%;
-  bottom: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
+  bottom: calc((var(--s-x) * .75) + var(--s-keyboard-offset, 0px));
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
@@ -266,6 +293,7 @@ html.s-route.is-day-mode .s-page__composer {
 
 .s-page__add.is-active {
   background: #D9D9D9;
+  transition: background-color .18s ease;
 }
 
 .s-page__add.is-rotated > span {
@@ -372,7 +400,7 @@ html.s-route.is-day-mode .s-page__composer {
   .s-page__content { padding-top: calc(var(--s-x) * 2); }
 
   .s-page__composer {
-    bottom: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
+    bottom: calc((var(--s-x) * .75) + var(--s-keyboard-offset, 0px));
     grid-template-columns: 44px minmax(0, 1fr) 44px;
     width: min(calc(100% - (var(--s-x) * 4)), 660px);
     max-width: 100%;

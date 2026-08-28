@@ -17,12 +17,18 @@
   let isTouching = false;
   let activeGroupIndex = -1;
   let lastScrollY = window.scrollY;
+  let lastScrollDirection = 1;
   let revealFrame = 0;
   const typingFrames = groups.map(() => 0);
   let initialGroupOnePending = true;
-  const typingCharactersPerSecond = 28;
+  const titleTypingCharactersPerSecond = 28;
+  const preferredDescriptionCharacterIntervalMs = 45;
+  const maximumDescriptionTypingDurationMs = 3000;
+  let keyboardLockedGroup = -1;
   let addFlashTimer = 0;
   let addRotated = false;
+  let initializationReady = false;
+  let initializationRun = 0;
 
   const resetAddButton = () => {
     window.clearTimeout(addFlashTimer);
@@ -31,6 +37,7 @@
   };
 
   const pulseComposer = () => {
+    if (!initializationReady) return;
     composer.classList.remove('is-pulsing');
     void composer.offsetWidth;
     composer.classList.add('is-pulsing');
@@ -45,6 +52,7 @@
   });
 
   addButton.addEventListener('click', (event) => {
+    if (!initializationReady) return;
     event.stopPropagation();
     addRotated = !addRotated;
     addButton.classList.toggle('is-rotated', addRotated);
@@ -62,11 +70,11 @@
     page.style.setProperty('--s-anchor-gap', `${(x * 2).toFixed(2)}px`);
   };
 
-  const snapToNearestGroup = () => {
+  const snapToDirectionalGroup = () => {
     const anchorGap = parseFloat(getComputedStyle(page).getPropertyValue('--s-anchor-gap')) || 0;
-    const target = groups
-      .map((group) => Math.max(0, group.offsetTop - anchorGap))
-      .reduce((nearest, candidate) => Math.abs(candidate - window.scrollY) < Math.abs(nearest - window.scrollY) ? candidate : nearest);
+    const currentIndex = activeGroupIndex >= 0 ? activeGroupIndex : 0;
+    const targetIndex = Math.min(groups.length - 1, Math.max(0, currentIndex + (lastScrollDirection >= 0 ? 1 : -1)));
+    const target = Math.max(0, groups[targetIndex].offsetTop - anchorGap);
     if (Math.abs(target - window.scrollY) < 1) return false;
     window.scrollTo({ top: target, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
     return true;
@@ -82,19 +90,24 @@
 
   const scheduleSettle = () => {
     window.clearTimeout(snapTimer);
-    if (isTouching) return;
+    if (!initializationReady || isTouching || keyboardLockedGroup >= 0) return;
     interactionState = 'momentum';
     snapTimer = window.setTimeout(() => {
-      if (isTouching) return;
+      if (isTouching || keyboardLockedGroup >= 0) return;
       interactionState = 'settling';
-      if (!snapToNearestGroup() || reducedMotion.matches) interactionState = 'idle';
-    }, 1000);
+      if (!snapToDirectionalGroup() || reducedMotion.matches) interactionState = 'idle';
+    }, 600);
   };
 
   const updateKeyboardOffset = () => {
     if (!window.visualViewport) return;
     const layoutHeight = Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight || 0));
     const keyboardOverlap = Math.max(0, layoutHeight - window.visualViewport.height - window.visualViewport.offsetTop);
+    if (keyboardOverlap > 0 && keyboardLockedGroup < 0) keyboardLockedGroup = Math.max(0, activeGroupIndex);
+    if (keyboardOverlap === 0 && keyboardLockedGroup >= 0) {
+      keyboardLockedGroup = -1;
+      scheduleRevealGroups();
+    }
     page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
   };
 
@@ -126,6 +139,22 @@
     }
   };
 
+  const getDescriptionCharacterInterval = (characterCount) => (
+    Math.min(preferredDescriptionCharacterIntervalMs, maximumDescriptionTypingDurationMs / Math.max(1, characterCount - 1))
+  );
+
+  const getTypingRate = (element, characterCount) => {
+    if (!element.classList.contains('s-page__group-description')) return titleTypingCharactersPerSecond;
+    return 1000 / getDescriptionCharacterInterval(characterCount);
+  };
+
+  const getTypingDurationMs = (element, characterCount) => {
+    if (!element.classList.contains('s-page__group-description')) {
+      return (characterCount / titleTypingCharactersPerSecond) * 1000;
+    }
+    return getDescriptionCharacterInterval(characterCount) * Math.max(0, characterCount - 1);
+  };
+
   const startGroupTyping = (index) => {
     stopGroupTyping(index, true);
     if (reducedMotion.matches) {
@@ -134,9 +163,11 @@
     }
     const startedAt = performance.now();
     const typeNextCharacters = (now) => {
-      const visibleCount = Math.floor(((now - startedAt) / 1000) * typingCharactersPerSecond) + 1;
       let complete = true;
-      typingCharacters[index].forEach((characters) => {
+      typingCharacters[index].forEach((characters, elementIndex) => {
+        const element = groupElements[index][elementIndex];
+        const typingRate = getTypingRate(element, characters.length);
+        const visibleCount = Math.floor(((now - startedAt) / 1000) * typingRate) + 1;
         const nextCount = Math.min(visibleCount, characters.length);
         for (let characterIndex = 0; characterIndex < nextCount; characterIndex += 1) {
           characters[characterIndex].classList.add('is-revealed');
@@ -151,7 +182,7 @@
   groupElements.flat().forEach((element) => {
     const characters = Math.max(1, Array.from(element.textContent.trim()).length);
     element.style.setProperty('--s-typing-steps', String(characters));
-    element.style.setProperty('--s-typing-duration', `${(characters / typingCharactersPerSecond).toFixed(2)}s`);
+    element.style.setProperty('--s-typing-duration', `${(getTypingDurationMs(element, characters) / 1000).toFixed(2)}s`);
   });
 
   const setGroupState = (index, state) => {
@@ -162,14 +193,17 @@
       if (state === 'fading') element.classList.add('is-fading');
     });
     if (state === 'typing') startGroupTyping(index);
-    if (state === 'fading') stopGroupTyping(index, true);
+    if (state === 'fading') stopGroupTyping(index, false);
   };
 
   const updateRevealGroups = () => {
     revealFrame = 0;
+    if (!initializationReady) return;
     const scrollY = window.scrollY;
     const scrollDirection = scrollY - lastScrollY;
+    if (scrollDirection) lastScrollDirection = scrollDirection > 0 ? 1 : -1;
     lastScrollY = scrollY;
+    if (keyboardLockedGroup >= 0) return;
     const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
     const triggerLine = composer.getBoundingClientRect().top - x;
     const visibleGroups = groups.map((group, index) => ({ index, rect: group.getBoundingClientRect() }))
@@ -191,6 +225,7 @@
   };
 
   const scheduleRevealGroups = () => {
+    if (!initializationReady) return;
     if (!revealFrame) revealFrame = window.requestAnimationFrame(updateRevealGroups);
   };
 
@@ -213,7 +248,7 @@
   }
 
   window.addEventListener('scroll', () => {
-    if (interactionState !== 'settling') scheduleSettle();
+    if (initializationReady && interactionState !== 'settling') scheduleSettle();
   }, { passive: true });
   window.addEventListener('scroll', () => {
     if (window.scrollY !== lastScrollY) scheduleRevealGroups();
@@ -232,7 +267,7 @@
 
   const endTouch = () => {
     isTouching = false;
-    scheduleSettle();
+    if (initializationReady) scheduleSettle();
   };
 
   window.addEventListener('pointerdown', beginTouch, { passive: true, capture: true });
@@ -249,6 +284,37 @@
   window.addEventListener('resize', updateAnchorGap, { passive: true });
   window.addEventListener('orientationchange', updateAnchorGap, { passive: true });
   updateAnchorGap();
-  updateRevealGroups();
-  updateKeyboardOffset();
+  const initializeGroupOne = () => {
+    const run = ++initializationRun;
+    initializationReady = false;
+    window.clearTimeout(snapTimer);
+    interactionState = 'idle';
+    resetAddButton();
+    composer.classList.remove('is-pulsing');
+    activeGroupIndex = -1;
+    keyboardLockedGroup = -1;
+    initialGroupOnePending = true;
+    lastScrollY = 0;
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    groupElements.forEach((elements, index) => {
+      stopGroupTyping(index, true);
+      elements.forEach((element) => element.classList.remove('is-visible', 'is-typing', 'is-fading'));
+    });
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (run !== initializationRun) return;
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      updateAnchorGap();
+      updateKeyboardOffset();
+      activeGroupIndex = 0;
+      initialGroupOnePending = false;
+      setGroupState(0, 'typing');
+      lastScrollY = window.scrollY;
+      initializationReady = true;
+      document.documentElement.classList.remove('s-x-initializing');
+    }));
+  };
+  window.addEventListener('pageshow', () => {
+    if (!initializationReady) initializeGroupOne();
+  }, { once: true });
+  initializeGroupOne();
 })();
