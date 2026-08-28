@@ -533,6 +533,13 @@ html.s-route.is-day-mode .s-page__composer-menu {
   stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: transform 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page__submit.is-send-ready .s-page__submit-icon {
+  transform: rotate(0deg);
 }
 
 .s-page__icon-button:focus-visible,
@@ -624,6 +631,7 @@ html.s-route.is-day-mode .s-page__composer-menu {
   .s-page__typing-character { opacity: 1; animation: none !important; }
   .s-page__conversation-bubble { animation: none; }
   .s-page__conversation-final { transition: none; }
+  .s-page__submit-icon { transition: none; }
   .s-page__composer,
   .s-page__icon-button,
   .s-page__submit,

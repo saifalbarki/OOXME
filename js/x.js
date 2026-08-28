@@ -342,6 +342,11 @@
     /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(message) ? 'ar' : 'en'
   );
 
+  const updateSubmitArrow = () => {
+    const isReadyToSend = document.activeElement === input || Boolean(input.value.trim());
+    submitButton.classList.toggle('is-send-ready', isReadyToSend);
+  };
+
   const trimConversation = () => {
     while (conversation.children.length > maximumVisibleMessages) conversation.firstElementChild?.remove();
     window.requestAnimationFrame(() => {
@@ -373,32 +378,44 @@
     input.disabled = true;
     submitButton.disabled = true;
     input.blur();
+    updateSubmitArrow();
     suppressSettleForChatInteraction();
   };
 
   input.addEventListener('focus', () => {
+    updateSubmitArrow();
     keyboardLockedGroup = Math.max(0, activeGroupIndex);
     suppressSettleForChatInteraction();
   });
 
   input.addEventListener('blur', () => {
+    updateSubmitArrow();
     if (lastKeyboardOverlap > 0) return;
     keyboardLockedGroup = -1;
     suppressSettleForChatInteraction();
     lastScrollY = window.scrollY;
   });
 
+  input.addEventListener('input', updateSubmitArrow);
+  updateSubmitArrow();
+
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
     suppressSettleForChatInteraction();
     const message = input.value.trim();
-    if (!message || conversationState !== 'active') return;
+    if (!message) {
+      input.focus({ preventScroll: true });
+      updateSubmitArrow();
+      return;
+    }
+    if (conversationState !== 'active') return;
 
     const language = detectMessageLanguage(message);
     const currentReplyIndex = replyIndex;
     const replies = language === 'ar' ? arabicReplies : englishReplies;
     addConversationBubble(message, 'user', language);
     input.value = '';
+    updateSubmitArrow();
     replyIndex += 1;
     if (replyIndex >= englishReplies.length) conversationState = 'awaiting-final';
 
