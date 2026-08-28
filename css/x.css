@@ -13,7 +13,7 @@
 }
 
 html.s-route {
-  --s-x: max(36px, calc((100vw - 660px) / 2));
+  --s-x: max(18px, calc((100vw - 660px) / 4));
   min-height: 100%;
   overflow-x: hidden;
   background: #000000;
@@ -121,6 +121,29 @@ body.s-page {
   transition: opacity .22s ease, filter .28s ease;
 }
 
+.s-page__group--typewriter [data-s-reveal] {
+  opacity: 1;
+  filter: none;
+  clip-path: none;
+}
+
+.s-page__group--typewriter [data-s-reveal].is-typing {
+  animation: none;
+}
+
+.s-page__typing-character {
+  opacity: 0;
+}
+
+.s-page__group--typewriter [data-s-reveal].is-typing .s-page__typing-character {
+  animation: s-page-typewriter-character .0357s steps(1, end) forwards;
+  animation-delay: var(--s-character-delay, 0s);
+}
+
+@keyframes s-page-typewriter-character {
+  to { opacity: 1; }
+}
+
 @keyframes s-page-typewriter {
   from {
     opacity: 0;
@@ -143,7 +166,7 @@ body.s-page {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
-  width: min(calc(100% - (var(--s-x) * 2)), 660px);
+  width: min(calc(100% - (var(--s-x) * 4)), 660px);
   max-width: 100%;
   height: 48px;
   min-height: 48px;
@@ -321,7 +344,7 @@ body.s-page {
   .s-page__composer {
     bottom: calc(var(--s-x) + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
     grid-template-columns: 44px minmax(0, 1fr) 44px;
-    width: min(calc(100% - (var(--s-x) * 2)), 660px);
+    width: min(calc(100% - (var(--s-x) * 4)), 660px);
     max-width: 100%;
     height: 48px;
     min-height: 48px;
@@ -336,6 +359,7 @@ body.s-page {
 
 @media (prefers-reduced-motion: reduce) {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
+  .s-page__typing-character { opacity: 1; animation: none !important; }
   .s-page__composer,
   .s-page__icon-button,
   .s-page__submit,

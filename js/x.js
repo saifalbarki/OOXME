@@ -20,7 +20,7 @@
   const typingCharactersPerSecond = 28;
 
   const updateAnchorGap = () => {
-    const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 36;
+    const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
     page.style.setProperty('--s-anchor-gap', `${(x * 2).toFixed(2)}px`);
   };
 
@@ -61,6 +61,24 @@
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
+  const typewriterGroup = groups[0];
+  const typewriterElements = Array.from(typewriterGroup.querySelectorAll('[data-s-reveal]'));
+  typewriterElements.forEach((element) => {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
+    textNodes.forEach((textNode) => {
+      const fragment = document.createDocumentFragment();
+      Array.from(textNode.nodeValue).forEach((character) => {
+        const span = document.createElement('span');
+        span.className = 's-page__typing-character';
+        span.textContent = character;
+        fragment.appendChild(span);
+      });
+      textNode.parentNode.replaceChild(fragment, textNode);
+    });
+  });
+
   groupElements.flat().forEach((element) => {
     const characters = Math.max(1, Array.from(element.textContent.trim()).length);
     element.style.setProperty('--s-typing-steps', String(characters));
@@ -70,9 +88,14 @@
   const setGroupState = (index, state) => {
     groupElements[index].forEach((element) => {
       element.classList.remove('is-typing', 'is-visible', 'is-fading');
+      if (index === 0 && state === 'typing') {
+        element.querySelectorAll('.s-page__typing-character').forEach((character, characterIndex) => {
+          character.style.setProperty('--s-character-delay', `${(characterIndex / typingCharactersPerSecond).toFixed(4)}s`);
+        });
+      }
       if (state === 'typing') element.classList.add(reducedMotion.matches ? 'is-visible' : 'is-typing');
       if (state === 'visible') element.classList.add('is-visible');
-      if (state === 'fading') element.classList.add('is-fading');
+      if (state === 'fading' && index !== 0) element.classList.add('is-fading');
     });
   };
 
@@ -81,7 +104,7 @@
     const scrollY = window.scrollY;
     const scrollDirection = scrollY - lastScrollY;
     lastScrollY = scrollY;
-    const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 36;
+    const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
     const triggerLine = composer.getBoundingClientRect().top - x;
     const visibleGroups = groups.map((group, index) => ({ index, rect: group.getBoundingClientRect() }))
       .filter(({ rect }) => rect.bottom > 0 && rect.top < (window.innerHeight || document.documentElement.clientHeight));
