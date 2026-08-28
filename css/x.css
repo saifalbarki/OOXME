@@ -1,6 +1,6 @@
 html.s-route {
   min-height: 100%;
-  background: #000;
+  background: #000000;
   scrollbar-color: rgba(255, 255, 255, .28) transparent;
 }
 
@@ -14,7 +14,7 @@ html.s-route body.s-page {
 body.s-page {
   position: relative;
   overflow-x: clip;
-  background: #000;
+  background: #000000;
   color: var(--color-paper);
   font-family: var(--font-english);
   -webkit-font-smoothing: antialiased;
@@ -25,29 +25,6 @@ body.s-page {
 .s-page *::before,
 .s-page *::after {
   box-sizing: border-box;
-}
-
-.s-page__visual {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  width: 100%;
-  min-height: 100%;
-  pointer-events: none;
-}
-
-.s-page__visual-image {
-  position: fixed;
-  top: 0;
-  left: 50%;
-  width: auto;
-  max-width: none;
-  height: var(--s-background-height, max(220vh, 142.4vw));
-  transform: translate3d(-50%, var(--s-background-y, 0px), 0);
-  transform-origin: 50% 0;
-  will-change: transform;
-  pointer-events: none;
-  user-select: none;
 }
 
 .s-page__content {
@@ -339,7 +316,6 @@ body.s-page {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .s-page__visual-image { will-change: auto; }
   [data-s-reveal] { opacity: 1; transform: none; transition: none; }
   .s-page__composer,
   .s-page__icon-button,
