@@ -6,13 +6,46 @@
   const composerMenu = document.querySelector('[data-s-composer-menu]');
   const addButton = document.querySelector('.s-page__add');
   const input = document.querySelector('.s-page__composer-input');
-  const status = document.querySelector('[data-s-composer-status]');
+  const submitButton = composer?.querySelector('.s-page__submit');
+  const conversation = document.querySelector('[data-s-conversation]');
+  const conversationFinal = document.querySelector('[data-s-conversation-final]');
+  const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
   const groups = Array.from(document.querySelectorAll('.s-page__group'));
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (!page || !composer || !composerMenu || !addButton || !input || !status || groups.length !== 3) return;
+  if (!page || !composer || !composerMenu || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || groups.length !== 3) return;
 
-  let statusTimer = 0;
+  const maximumVisibleMessages = 6;
+  const replyDelayMs = 1000;
+  const finalRevealDelayMs = 1600;
+  const englishReplies = [
+    'Sorry, we don’t reply to messages for free.',
+    'Hmm... it seems you didn’t read the previous message.',
+    'Yes. Still the same answer.',
+    'Are you seriously trying again?',
+    'We have a better idea. Call us.',
+    'Let’s make this easier — tap the + button.',
+    '看来你还是没明白我们的意思。',
+    'Please stop. You’re becoming very committed to this.',
+    'One more message and we may have to alert the branding department.',
+    'Your account has been dramatically, completely, and absolutely... suspended.'
+  ];
+  const arabicReplies = [
+    'عذرًا، نحن لا نردّ على الرسائل مجانًا.',
+    'همم... يبدو أنك لم تقرأ الرسالة السابقة.',
+    'نعم. ما زالت الإجابة نفسها.',
+    'أحقًا تحاول مرة أخرى؟',
+    'لدينا فكرة أفضل. اتصل بنا.',
+    'لنجعل الأمر أسهل — اضغط زر +.',
+    'يبدو أنك ما زلت لا تفهم ما نقصده.',
+    'من فضلك توقّف. التزامك بالأمر بدأ يصبح لافتًا.',
+    'رسالة أخرى وقد نضطر — مازحين طبعًا — إلى تنبيه قسم العلامة التجارية.',
+    'تم تعليق حسابك بصورة درامية، وكاملة، ومطلقة... مزحة فقط.'
+  ];
+  const finalMessages = {
+    en: 'Alright, we’re joking.\nThe OOXME conversation experience is still under development. Until it’s ready, reach us through our official channels and we’ll take it from there.',
+    ar: 'حسنًا، نحن نمزح.\nتجربة المحادثة لدى OOXME ما تزال قيد التطوير. وحتى تصبح جاهزة، تواصل معنا عبر قنواتنا الرسمية، وسنتولى الأمر من هناك.'
+  };
   let snapTimer = 0;
   let interactionState = 'idle';
   let isTouching = false;
@@ -32,9 +65,16 @@
   let initializationReady = false;
   let initializationRun = 0;
   let suppressSettleUntil = 0;
+  let lastKeyboardOverlap = 0;
+  let replyIndex = 0;
+  let conversationState = 'active';
 
   const isComposerMenuInteraction = (target) => (
     addButton.contains(target) || composerMenu.contains(target)
+  );
+
+  const isChatInteraction = (target) => (
+    composer.contains(target) || conversation.contains(target) || conversationFinal.contains(target)
   );
 
   const pauseSettleForMenu = () => {
@@ -47,6 +87,13 @@
 
   const suppressSettleForMenuInteraction = () => {
     suppressSettleUntil = performance.now() + 250;
+  };
+
+  const suppressSettleForChatInteraction = () => {
+    suppressSettleUntil = Math.max(suppressSettleUntil, performance.now() + 500);
+    window.clearTimeout(snapTimer);
+    if (interactionState === 'settling') window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+    interactionState = 'idle';
   };
 
   const setComposerMenuOpen = (isOpen) => {
@@ -84,7 +131,7 @@
     if (event.animationName === 's-page-composer-menu-pulse') composerMenu.classList.remove('is-pulsing');
   });
 
-  [addButton, input, composer.querySelector('.s-page__submit')].forEach((control) => {
+  [addButton, input, submitButton].forEach((control) => {
     control?.addEventListener('pointerdown', pulseComposer, { passive: true });
   });
 
@@ -148,10 +195,10 @@
 
   const scheduleSettle = () => {
     window.clearTimeout(snapTimer);
-    if (!initializationReady || isTouching || keyboardLockedGroup >= 0 || composerMenu.classList.contains('is-open')) return;
+    if (!initializationReady || isTouching || keyboardLockedGroup >= 0 || composerMenu.classList.contains('is-open') || performance.now() < suppressSettleUntil) return;
     interactionState = 'momentum';
     snapTimer = window.setTimeout(() => {
-      if (isTouching || keyboardLockedGroup >= 0 || composerMenu.classList.contains('is-open')) return;
+      if (isTouching || keyboardLockedGroup >= 0 || composerMenu.classList.contains('is-open') || performance.now() < suppressSettleUntil) return;
       interactionState = 'settling';
       if (!snapToDirectionalGroup() || reducedMotion.matches) interactionState = 'idle';
     }, 600);
@@ -162,11 +209,13 @@
     const layoutHeight = Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight || 0));
     const keyboardOverlap = Math.max(0, layoutHeight - window.visualViewport.height - window.visualViewport.offsetTop);
     if (keyboardOverlap > 0 && keyboardLockedGroup < 0) keyboardLockedGroup = Math.max(0, activeGroupIndex);
-    if (keyboardOverlap === 0 && keyboardLockedGroup >= 0) {
+    if (keyboardOverlap === 0 && lastKeyboardOverlap > 0) {
       keyboardLockedGroup = -1;
-      scheduleRevealGroups();
+      suppressSettleForChatInteraction();
+      lastScrollY = window.scrollY;
     }
     page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
+    lastKeyboardOverlap = keyboardOverlap;
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
@@ -289,15 +338,76 @@
 
   groupElements.flat().forEach((element) => element.classList.remove('is-visible'));
 
+  const detectMessageLanguage = (message) => (
+    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(message) ? 'ar' : 'en'
+  );
+
+  const trimConversation = () => {
+    while (conversation.children.length > maximumVisibleMessages) conversation.firstElementChild?.remove();
+    window.requestAnimationFrame(() => {
+      while (conversation.scrollHeight > conversation.clientHeight && conversation.children.length > 2) {
+        conversation.firstElementChild?.remove();
+      }
+    });
+  };
+
+  const addConversationBubble = (message, speaker, language) => {
+    const bubble = document.createElement('p');
+    bubble.className = `s-page__conversation-bubble s-page__conversation-bubble--${speaker}`;
+    bubble.lang = language;
+    bubble.dir = language === 'ar' ? 'rtl' : 'ltr';
+    bubble.textContent = message;
+    conversation.appendChild(bubble);
+    trimConversation();
+  };
+
+  const revealConversationFinal = (language) => {
+    conversationState = 'finished';
+    conversationFinalCopy.lang = language;
+    conversationFinalCopy.dir = language === 'ar' ? 'rtl' : 'ltr';
+    conversationFinalCopy.textContent = finalMessages[language];
+    conversationFinal.setAttribute('aria-hidden', 'false');
+    conversationFinal.classList.add('is-visible');
+    input.value = '';
+    input.placeholder = language === 'ar' ? 'انتهت التجربة' : 'Demo complete';
+    input.disabled = true;
+    submitButton.disabled = true;
+    input.blur();
+    suppressSettleForChatInteraction();
+  };
+
+  input.addEventListener('focus', () => {
+    keyboardLockedGroup = Math.max(0, activeGroupIndex);
+    suppressSettleForChatInteraction();
+  });
+
+  input.addEventListener('blur', () => {
+    if (lastKeyboardOverlap > 0) return;
+    keyboardLockedGroup = -1;
+    suppressSettleForChatInteraction();
+    lastScrollY = window.scrollY;
+  });
+
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (!input.value.trim()) {
-      return;
-    }
-    window.clearTimeout(statusTimer);
-    status.textContent = 'Ready for the next step.';
-    status.classList.add('is-visible');
-    statusTimer = window.setTimeout(() => status.classList.remove('is-visible'), 2200);
+    suppressSettleForChatInteraction();
+    const message = input.value.trim();
+    if (!message || conversationState !== 'active') return;
+
+    const language = detectMessageLanguage(message);
+    const currentReplyIndex = replyIndex;
+    const replies = language === 'ar' ? arabicReplies : englishReplies;
+    addConversationBubble(message, 'user', language);
+    input.value = '';
+    replyIndex += 1;
+    if (replyIndex >= englishReplies.length) conversationState = 'awaiting-final';
+
+    window.setTimeout(() => {
+      addConversationBubble(replies[currentReplyIndex], 'ooxme', language);
+      if (currentReplyIndex === englishReplies.length - 1) {
+        window.setTimeout(() => revealConversationFinal(language), finalRevealDelayMs);
+      }
+    }, replyDelayMs);
   });
 
   if (window.visualViewport) {
@@ -324,13 +434,17 @@
       pauseSettleForMenu();
       return;
     }
+    if (isChatInteraction(event.target)) {
+      suppressSettleForChatInteraction();
+      return;
+    }
     isTouching = true;
     cancelSettle();
   };
 
   const endTouch = (event) => {
     isTouching = false;
-    if (isComposerMenuInteraction(event.target) || performance.now() < suppressSettleUntil) {
+    if (isComposerMenuInteraction(event.target) || isChatInteraction(event.target) || performance.now() < suppressSettleUntil) {
       interactionState = 'idle';
       return;
     }
@@ -365,6 +479,7 @@
     composer.classList.remove('is-pulsing');
     activeGroupIndex = -1;
     keyboardLockedGroup = -1;
+    lastKeyboardOverlap = 0;
     initialGroupOnePending = true;
     lastScrollY = 0;
     window.scrollTo({ top: 0, behavior: 'auto' });

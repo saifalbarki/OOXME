@@ -30,6 +30,12 @@
       </section>
     </main>
 
+    <section class="s-page__conversation" data-s-conversation aria-live="polite" aria-label="Conversation"></section>
+
+    <section class="s-page__conversation-final" data-s-conversation-final aria-hidden="true">
+      <p class="s-page__conversation-final-copy" data-s-conversation-final-copy></p>
+    </section>
+
     <form class="s-page__composer" data-s-composer novalidate>
       <div class="s-page__composer-menu" data-s-composer-menu aria-hidden="true">
         <button class="s-page__composer-menu-item" type="button"><span class="s-page__composer-menu-label">The Brand management</span></button>
@@ -43,14 +49,13 @@
       </button>
       <label class="s-page__input-label">
         <span class="s-page__visually-hidden">Ask OOXME</span>
-        <input class="s-page__composer-input" type="text" name="question" placeholder="Type..." autocomplete="off" enterkeyhint="send" />
+        <input class="s-page__composer-input" type="text" name="question" placeholder="Type..." autocomplete="off" enterkeyhint="send" maxlength="120" />
       </label>
       <button class="s-page__submit" type="submit" aria-label="Submit question">
         <svg class="s-page__submit-icon" viewBox="3.9 3.9 16.2 16.2" aria-hidden="true" focusable="false">
           <path d="M12 19V5M6 11l6-6 6 6" />
         </svg>
       </button>
-      <p class="s-page__composer-status" data-s-composer-status aria-live="polite"></p>
     </form>
   </body>
 </html>
