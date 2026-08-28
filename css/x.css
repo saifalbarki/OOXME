@@ -75,14 +75,14 @@ body.s-page {
   max-width: none;
   box-sizing: border-box;
   font-size: 16px;
-  font-weight: 520;
+  font-weight: 700;
   letter-spacing: -.065em;
   line-height: 1.2;
 }
 
 .s-page__group-title--statement {
   max-width: none;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: -.055em;
   line-height: 1.2;
 }
@@ -92,7 +92,7 @@ body.s-page {
   max-width: none;
   box-sizing: border-box;
   font-size: 16px;
-  font-weight: 450;
+  font-weight: 400;
   line-height: 1.2;
   color: #A6A6A6;
   margin-top: var(--s-x);

@@ -18,7 +18,6 @@
   let lastScrollY = window.scrollY;
   let revealFrame = 0;
   const typingFrames = groups.map(() => 0);
-  let initialGroupOneTimer = 0;
   let initialGroupOnePending = true;
   const typingCharactersPerSecond = 28;
 
@@ -147,11 +146,8 @@
     if (activeGroupIndex >= 0) setGroupState(activeGroupIndex, 'fading');
     activeGroupIndex = target;
     if (target === 0 && initialGroupOnePending) {
-      window.clearTimeout(initialGroupOneTimer);
-      initialGroupOneTimer = window.setTimeout(() => {
-        initialGroupOnePending = false;
-        if (activeGroupIndex === 0) setGroupState(0, 'typing');
-      }, 500);
+      initialGroupOnePending = false;
+      setGroupState(0, 'typing');
     } else {
       initialGroupOnePending = false;
       setGroupState(target, 'typing');
