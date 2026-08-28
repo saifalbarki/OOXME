@@ -39,6 +39,15 @@ body.s-page {
   text-rendering: optimizeLegibility;
 }
 
+html.s-route.is-day-mode,
+html.s-route.is-day-mode body.s-page {
+  background: #FFFFFF;
+}
+
+html.s-route.is-day-mode body.s-page {
+  color: #000000;
+}
+
 .s-page *,
 .s-page *::before,
 .s-page *::after {
@@ -96,6 +105,10 @@ body.s-page {
   line-height: 1.2;
   color: #A6A6A6;
   margin-top: var(--s-x);
+}
+
+html.s-route.is-day-mode .s-page__group-description {
+  color: #666666;
 }
 
 [data-s-reveal] {
@@ -179,6 +192,12 @@ body.s-page {
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
+}
+
+html.s-route.is-day-mode .s-page__composer {
+  --s-composer-surface: rgba(255, 255, 255, .86);
+  border-color: rgba(0, 0, 0, .16);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .04);
 }
 
 .s-page__composer-input {

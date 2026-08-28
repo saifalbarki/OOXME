@@ -3,12 +3,13 @@
 
   const page = document.querySelector('.s-page');
   const composer = document.querySelector('[data-s-composer]');
+  const addButton = document.querySelector('.s-page__add');
   const input = document.querySelector('.s-page__composer-input');
   const status = document.querySelector('[data-s-composer-status]');
   const groups = Array.from(document.querySelectorAll('.s-page__group'));
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (!page || !composer || !input || !status || groups.length !== 3) return;
+  if (!page || !composer || !addButton || !input || !status || groups.length !== 3) return;
 
   let statusTimer = 0;
   let snapTimer = 0;
@@ -20,6 +21,25 @@
   const typingFrames = groups.map(() => 0);
   let initialGroupOnePending = true;
   const typingCharactersPerSecond = 28;
+  const themeStorageKey = 'ooxme-x-theme';
+
+  const applyTheme = (theme) => {
+    const isDay = theme === 'day';
+    document.documentElement.classList.toggle('is-day-mode', isDay);
+    addButton.setAttribute('aria-pressed', String(isDay));
+  };
+
+  let currentTheme = 'dark';
+  try {
+    currentTheme = window.sessionStorage.getItem(themeStorageKey) === 'day' ? 'day' : 'dark';
+  } catch {}
+  applyTheme(currentTheme);
+
+  addButton.addEventListener('click', () => {
+    currentTheme = currentTheme === 'dark' ? 'day' : 'dark';
+    applyTheme(currentTheme);
+    try { window.sessionStorage.setItem(themeStorageKey, currentTheme); } catch {}
+  });
 
   const updateAnchorGap = () => {
     const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
