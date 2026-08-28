@@ -104,7 +104,7 @@ html.s-x-initializing .s-page__submit:active {
   position: fixed;
   z-index: 30;
   top: var(--s-x);
-  right: var(--s-x);
+  inset-inline-end: var(--s-x);
   display: flex;
   gap: calc(var(--s-x) * .5);
   align-items: center;
@@ -177,6 +177,7 @@ html.s-route.is-day-mode .s-page__utility-dot.is-active {
 .s-page__group-title,
 .s-page__group-description {
   margin: 0;
+  text-align: start;
   text-wrap: wrap;
 }
 
@@ -226,6 +227,10 @@ html.s-route.is-day-mode .s-page__group-description {
   opacity: 1;
   filter: blur(0);
   clip-path: inset(0 0 0 0);
+}
+
+html[dir="rtl"] [data-s-reveal] {
+  clip-path: inset(0 0 0 100%);
 }
 
 [data-s-reveal].is-fading {
@@ -291,6 +296,11 @@ html.s-route.is-day-mode .s-page__group-description {
   opacity: 0;
 }
 
+.s-page.is-chat-active .s-page__conversation {
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+
 .s-page__conversation-bubble {
   flex: 0 0 auto;
   width: fit-content;
@@ -328,8 +338,8 @@ html.s-route.is-day-mode .s-page__group-description {
 }
 
 .s-page__conversation-bubble--user {
-  align-self: flex-end;
-  border-bottom-right-radius: 8px;
+  align-self: end;
+  border-end-end-radius: 8px;
   background: #1C1C1E;
   color: #FFFFFF;
 }
@@ -339,9 +349,10 @@ html.s-route.is-day-mode .s-page__conversation-bubble--user {
 }
 
 .s-page__conversation-bubble--ooxme {
-  align-self: flex-start;
+  align-self: start;
   border-color: rgba(255, 255, 255, .34);
-  border-radius: 28px 28px 28px 8px;
+  border-radius: 28px;
+  border-end-start-radius: 8px;
   background: rgba(255, 255, 255, .68);
   box-shadow: 0 6px 20px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .05);
   color: #0b0b0b;
@@ -412,6 +423,7 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
+  direction: ltr;
   align-items: center;
   width: min(calc(100% - (var(--s-x) * 4)), 660px);
   max-width: 100%;
@@ -499,6 +511,10 @@ html.s-route.is-day-mode .s-page__composer {
   backdrop-filter: blur(18px) saturate(115%);
 }
 
+html[dir="rtl"] .s-page__composer-menu {
+  direction: rtl;
+}
+
 .s-page__composer-menu.is-open {
   opacity: 1;
   pointer-events: auto;
@@ -521,7 +537,7 @@ html.s-route.is-day-mode .s-page__composer {
   color: inherit;
   font: 400 16px/1.2 OOXMEScript, Arial, sans-serif;
   letter-spacing: normal;
-  text-align: left;
+  text-align: start;
   appearance: none;
   cursor: pointer;
   z-index: 0;

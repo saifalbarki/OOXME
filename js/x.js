@@ -20,9 +20,9 @@
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
   const finalRevealDelayMs = 1600;
-  const finalMessageDurationMs = 5000;
+  const finalMessageDurationMs = 10000;
   const finalFadeOutDurationMs = 320;
-  const chatInactivityDelayMs = 5000;
+  const chatInactivityDelayMs = 3000;
   const englishReplies = [
     'Sorry, we don’t reply to messages for free.',
     'Hmm... it seems you didn’t read the previous message.',
@@ -408,6 +408,8 @@
     setConversationVisibility(false);
   };
 
+  conversation.addEventListener('pointerdown', () => markChatActive(), { passive: true });
+
   const setComposerInteractivity = (enabled) => {
     composerControls.forEach((control) => { control.disabled = !enabled; });
   };
@@ -507,7 +509,7 @@
     updateSubmitArrow();
     finalVisibleTimer = window.setTimeout(
       resetConversationDemo,
-      finalMessageDurationMs + (reducedMotion.matches ? 0 : finalFadeOutDurationMs)
+      finalMessageDurationMs
     );
   };
 
