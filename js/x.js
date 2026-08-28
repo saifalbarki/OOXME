@@ -17,7 +17,9 @@
   let activeGroupIndex = -1;
   let lastScrollY = window.scrollY;
   let revealFrame = 0;
-  let groupOneTypingFrame = 0;
+  const typingFrames = groups.map(() => 0);
+  let initialGroupOneTimer = 0;
+  let initialGroupOnePending = true;
   const typingCharactersPerSecond = 28;
 
   const updateAnchorGap = () => {
@@ -62,9 +64,7 @@
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
-  const typewriterGroup = groups[0];
-  const typewriterElements = Array.from(typewriterGroup.querySelectorAll('[data-s-reveal]'));
-  typewriterElements.forEach((element) => {
+  groupElements.flat().forEach((element) => {
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
     const textNodes = [];
     while (walker.nextNode()) textNodes.push(walker.currentNode);
@@ -79,38 +79,38 @@
       textNode.parentNode.replaceChild(fragment, textNode);
     });
   });
-  const typewriterCharacters = typewriterElements.map((element) =>
+  const typingCharacters = groupElements.map((elements) => elements.map((element) =>
     Array.from(element.querySelectorAll('.s-page__typing-character'))
-  );
+  ));
 
-  const stopGroupOneTyping = (hideCharacters = false) => {
-    if (groupOneTypingFrame) window.cancelAnimationFrame(groupOneTypingFrame);
-    groupOneTypingFrame = 0;
+  const stopGroupTyping = (index, hideCharacters = false) => {
+    if (typingFrames[index]) window.cancelAnimationFrame(typingFrames[index]);
+    typingFrames[index] = 0;
     if (hideCharacters) {
-      typewriterCharacters.flat().forEach((character) => character.classList.remove('is-revealed'));
+      typingCharacters[index].flat().forEach((character) => character.classList.remove('is-revealed'));
     }
   };
 
-  const startGroupOneTyping = () => {
-    stopGroupOneTyping(true);
+  const startGroupTyping = (index) => {
+    stopGroupTyping(index, true);
     if (reducedMotion.matches) {
-      typewriterCharacters.flat().forEach((character) => character.classList.add('is-revealed'));
+      typingCharacters[index].flat().forEach((character) => character.classList.add('is-revealed'));
       return;
     }
     const startedAt = performance.now();
     const typeNextCharacters = (now) => {
       const visibleCount = Math.floor(((now - startedAt) / 1000) * typingCharactersPerSecond) + 1;
       let complete = true;
-      typewriterCharacters.forEach((characters) => {
+      typingCharacters[index].forEach((characters) => {
         const nextCount = Math.min(visibleCount, characters.length);
-        for (let index = 0; index < nextCount; index += 1) {
-          characters[index].classList.add('is-revealed');
+        for (let characterIndex = 0; characterIndex < nextCount; characterIndex += 1) {
+          characters[characterIndex].classList.add('is-revealed');
         }
         if (nextCount < characters.length) complete = false;
       });
-      groupOneTypingFrame = complete ? 0 : window.requestAnimationFrame(typeNextCharacters);
+      typingFrames[index] = complete ? 0 : window.requestAnimationFrame(typeNextCharacters);
     };
-    groupOneTypingFrame = window.requestAnimationFrame(typeNextCharacters);
+    typingFrames[index] = window.requestAnimationFrame(typeNextCharacters);
   };
 
   groupElements.flat().forEach((element) => {
@@ -124,10 +124,10 @@
       element.classList.remove('is-typing', 'is-visible', 'is-fading');
       if (state === 'typing') element.classList.add(reducedMotion.matches ? 'is-visible' : 'is-typing');
       if (state === 'visible') element.classList.add('is-visible');
-      if (state === 'fading' && index !== 0) element.classList.add('is-fading');
+      if (state === 'fading') element.classList.add('is-fading');
     });
-    if (index === 0 && state === 'typing') startGroupOneTyping();
-    if (index === 0 && state === 'fading') stopGroupOneTyping(true);
+    if (state === 'typing') startGroupTyping(index);
+    if (state === 'fading') stopGroupTyping(index, true);
   };
 
   const updateRevealGroups = () => {
@@ -141,15 +141,21 @@
       .filter(({ rect }) => rect.bottom > 0 && rect.top < (window.innerHeight || document.documentElement.clientHeight));
     if (!visibleGroups.length) return;
     const crossed = visibleGroups.filter(({ rect }) => rect.top <= triggerLine && rect.bottom > triggerLine);
-    const target = (crossed.length
-      ? (scrollDirection < 0 ? crossed[0] : crossed[crossed.length - 1])
-      : visibleGroups.reduce((nearest, candidate) =>
-      Math.abs(candidate.rect.top - triggerLine) < Math.abs(nearest.rect.top - triggerLine) ? candidate : nearest
-    )).index;
+    if (!crossed.length) return;
+    const target = (scrollDirection < 0 ? crossed[0] : crossed[crossed.length - 1]).index;
     if (target === activeGroupIndex) return;
     if (activeGroupIndex >= 0) setGroupState(activeGroupIndex, 'fading');
     activeGroupIndex = target;
-    setGroupState(target, 'typing');
+    if (target === 0 && initialGroupOnePending) {
+      window.clearTimeout(initialGroupOneTimer);
+      initialGroupOneTimer = window.setTimeout(() => {
+        initialGroupOnePending = false;
+        if (activeGroupIndex === 0) setGroupState(0, 'typing');
+      }, 500);
+    } else {
+      initialGroupOnePending = false;
+      setGroupState(target, 'typing');
+    }
   };
 
   const scheduleRevealGroups = () => {

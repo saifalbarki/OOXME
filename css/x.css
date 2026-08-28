@@ -105,7 +105,7 @@ body.s-page {
 }
 
 [data-s-reveal].is-typing {
-  animation: s-page-typewriter var(--s-typing-duration, 1s) steps(var(--s-typing-steps, 24), end) both;
+  animation: none;
 }
 
 [data-s-reveal].is-visible {
@@ -121,14 +121,21 @@ body.s-page {
   transition: opacity .22s ease, filter .28s ease;
 }
 
-.s-page__group--typewriter [data-s-reveal] {
+.s-page__group [data-s-reveal] {
   opacity: 1;
   filter: none;
   clip-path: none;
 }
 
-.s-page__group--typewriter [data-s-reveal].is-typing {
+.s-page__group [data-s-reveal].is-typing {
   animation: none;
+}
+
+.s-page__group [data-s-reveal].is-fading {
+  opacity: 0;
+  filter: blur(8px);
+  clip-path: inset(0 0 0 0);
+  transition: opacity .22s ease, filter .28s ease;
 }
 
 .s-page__typing-character {
@@ -137,19 +144,6 @@ body.s-page {
 
 .s-page__typing-character.is-revealed {
   opacity: 1;
-}
-
-@keyframes s-page-typewriter {
-  from {
-    opacity: 0;
-    filter: blur(8px);
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    opacity: 1;
-    filter: blur(0);
-    clip-path: inset(0 0 0 0);
-  }
 }
 
 .s-page__composer {
