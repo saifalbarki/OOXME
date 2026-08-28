@@ -257,9 +257,9 @@ html.s-route.is-day-mode .s-page__composer {
 .s-page__composer-menu {
   position: absolute;
   bottom: calc(100% + 8px);
-  left: 24px;
+  left: 16.5px;
   display: flex;
-  width: calc(100% - 48px);
+  width: 220px;
   margin: 0;
   padding: 16px;
   flex-direction: column;
