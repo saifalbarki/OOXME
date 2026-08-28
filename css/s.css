@@ -157,7 +157,7 @@ body.s-page {
   height: 50px;
   min-height: 50px;
   margin: 0;
-  padding: 2px 5px;
+  padding: 2px;
   border: 1px solid rgba(255, 255, 255, .34);
   border-radius: 28px;
   background: var(--s-composer-surface);
@@ -165,6 +165,7 @@ body.s-page {
   color: #0b0b0b;
   transform: translate3d(-50%, 0, 0);
   transition: none;
+  -webkit-tap-highlight-color: transparent;
   -webkit-backdrop-filter: blur(18px) saturate(115%);
   backdrop-filter: blur(18px) saturate(115%);
 }
@@ -183,9 +184,10 @@ body.s-page {
   outline: 0;
   background: transparent;
   color: #0b0b0b;
-  font: 500 16px/1.2 var(--font-english);
+  font: 450 16px/1.2 var(--font-english);
   caret-color: #0b0b0b;
   appearance: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .s-page__composer-input::placeholder {
@@ -231,40 +233,36 @@ body.s-page {
   transform: rotate(90deg);
 }
 
-.s-page__submit > span {
-  position: relative;
-  width: 17px;
-  height: 17px;
-  transform: none;
-}
-
-.s-page__submit > span::before {
-  content: "";
-  position: absolute;
-  top: 1px;
-  left: 7px;
-  width: 1.8px;
-  height: 16px;
-  border-radius: 2px;
-  background: currentColor;
-}
-
-.s-page__submit > span::after {
-  content: "";
-  position: absolute;
-  top: 1px;
-  left: 4px;
-  width: 9px;
-  height: 9px;
-  border-top: 1.8px solid currentColor;
-  border-left: 1.8px solid currentColor;
-  transform: rotate(45deg);
+.s-page__submit-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .s-page__icon-button:focus-visible,
 .s-page__submit:focus-visible {
   outline: 2px solid #0b0b0b;
   outline-offset: 2px;
+}
+
+.s-page__composer :is(button, input):active {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.s-page__composer .s-page__icon-button:active {
+  background: transparent;
+  transform: none;
+}
+
+.s-page__composer .s-page__submit:active {
+  background: #080808;
+  transform: none;
 }
 
 .s-page__composer-status {
@@ -331,7 +329,7 @@ body.s-page {
     width: min(calc(100% - 72px), 660px);
     height: 50px;
     min-height: 50px;
-    padding: 2px 5px;
+    padding: 2px;
   }
 
   .s-page__submit {
