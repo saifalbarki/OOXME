@@ -29,7 +29,7 @@ body.s-page {
 .s-page__background {
   position: fixed;
   z-index: 0;
-  inset: 0;
+  inset: calc(-1 * var(--s-background-overscan, 96px)) 0;
   width: 100%;
   overflow: hidden;
   pointer-events: none;
@@ -48,12 +48,6 @@ body.s-page {
   transform-origin: 50% 0;
   will-change: transform;
   user-select: none;
-}
-
-.s-page__background-shade {
-  position: absolute;
-  inset: 0;
-  background: transparent;
 }
 
 .s-page__content {
