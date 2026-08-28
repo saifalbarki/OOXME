@@ -32,21 +32,19 @@
     const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     const height = viewportHeight();
     const verticalOverscan = Math.max(96, Math.round(height * .12));
-    const maskedHeight = height + (verticalOverscan * 2);
     const widthScale = viewportWidth / naturalWidth;
     const desiredTravel = clamp(height * (viewportWidth < 700 ? 1.05 : .78), 520, 1800);
-    const minimumHeightScale = (maskedHeight + desiredTravel) / naturalHeight;
+    const minimumHeightScale = (height + desiredTravel + (verticalOverscan * 2)) / naturalHeight;
     const scale = Math.max(widthScale, minimumHeightScale);
     const renderedHeight = naturalHeight * scale;
     const availableTravel = Math.max(0, renderedHeight - height);
     const initialInset = Math.min(availableTravel * .14, height * .22);
     const endReserve = Math.min(availableTravel * .025, 32);
-    const initialY = verticalOverscan - initialInset;
-    const finalY = verticalOverscan + height - renderedHeight + endReserve;
+    const initialY = -initialInset;
+    const finalY = height - renderedHeight + endReserve;
     const documentHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
 
     page.style.setProperty('--s-background-height', `${renderedHeight.toFixed(2)}px`);
-    page.style.setProperty('--s-background-overscan', `${verticalOverscan}px`);
     geometry = {
       initialY,
       travel: finalY - initialY,

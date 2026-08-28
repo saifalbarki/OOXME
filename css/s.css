@@ -26,19 +26,9 @@ body.s-page {
   box-sizing: border-box;
 }
 
-.s-page__background {
+.s-page__background-image {
   position: fixed;
   z-index: 0;
-  inset: 0;
-  width: 100%;
-  overflow: visible;
-  pointer-events: none;
-  background: transparent;
-  isolation: isolate;
-}
-
-.s-page__background-image {
-  position: absolute;
   top: 0;
   left: 50%;
   width: auto;
@@ -47,6 +37,7 @@ body.s-page {
   transform: translate3d(-50%, var(--s-background-y, 0px), 0);
   transform-origin: 50% 0;
   will-change: transform;
+  pointer-events: none;
   user-select: none;
 }
 
