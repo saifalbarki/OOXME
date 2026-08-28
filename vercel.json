@@ -9,7 +9,7 @@
     { "source": "/brands", "destination": "/brands.html" },
     { "source": "/gallery", "destination": "/gallery.html" },
     { "source": "/brand", "destination": "/brand.html" },
-    { "source": "/s", "destination": "/s.html" },
+    { "source": "/x", "destination": "/x.html" },
     { "source": "/os", "destination": "/api/os/index?route=dashboard" },
     { "source": "/os/", "destination": "/api/os/index?route=dashboard" },
     { "source": "/api/os/login", "destination": "/api/os/index?route=login" },

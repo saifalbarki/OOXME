@@ -9,7 +9,7 @@ const accountApi = require('./api/accounts/index');
 const osApi = require('./api/os/index');
 
 const root = __dirname;
-const pageRoutes = { '/': 'index.html', '/brands': 'studio.html', '/gallery': 'selected-works.html', '/brand': 'brand-management-new.html', '/consultation': 'consultation.html', '/s': 's.html' };
+const pageRoutes = { '/': 'index.html', '/brands': 'studio.html', '/gallery': 'selected-works.html', '/brand': 'brand-management-new.html', '/consultation': 'consultation.html', '/x': 'x.html' };
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2' };
 const send = (response, status, headers, body = '') => { response.writeHead(status, headers); response.end(body); return true; };
 const readBody = (request) => new Promise((resolve, reject) => { let raw = ''; request.on('data', chunk => { raw += chunk; if (raw.length > 10_000) request.destroy(); }); request.on('end', () => { try { resolve(JSON.parse(raw || '{}')); } catch (error) { reject(error); } }); request.on('error', reject); });
@@ -75,7 +75,7 @@ const server = http.createServer((request, response) => {
   fs.readFile(target, (error, content) => {
     if (error) { response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); response.end('Not found'); return; }
     const isHtml = path.extname(target).toLowerCase() === '.html';
-    const isStandalonePreview = path.basename(target).toLowerCase() === 's.html';
+    const isStandalonePreview = path.basename(target).toLowerCase() === 'x.html';
     const sharedTypography = '<script src="js/arabic-typography.js" defer></script>';
     const sharedNumericTypography = '<script src="js/numeric-typography.js" defer></script>';
     const pageWithTypography = isHtml && !isStandalonePreview && !content.includes(sharedTypography) ? content.toString('utf8').replace('</head>', sharedTypography + '</head>') : content;

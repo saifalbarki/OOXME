@@ -14,15 +14,25 @@
   const naturalWidth = Number(background.getAttribute('width')) || 3884;
   const naturalHeight = Number(background.getAttribute('height')) || 5532;
   let geometry = { initialY: 0, travel: 0, scrollable: 0 };
+  let targetProgress = 0;
+  let currentProgress = 0;
+  let measuredViewportHeight = 0;
   let frame = 0;
   let statusTimer = 0;
 
   const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
-  const viewportHeight = () => Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+  const viewportHeight = () => Math.max(1, Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight));
+
+  const updateTargetProgress = () => {
+    targetProgress = geometry.scrollable > 0
+      ? clamp(window.scrollY / geometry.scrollable, 0, 1)
+      : 0;
+  };
 
   const measure = () => {
     const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     const height = viewportHeight();
+    measuredViewportHeight = height;
     const widthScale = viewportWidth / naturalWidth;
     const minimumTravelScale = (height * (viewportWidth < 700 ? 2.16 : 1.72)) / naturalHeight;
     const scale = Math.max(widthScale, minimumTravelScale);
@@ -41,21 +51,25 @@
       travel: finalY - initialY,
       scrollable: Math.max(0, documentHeight - height)
     };
-    render();
+    updateTargetProgress();
+    if (!frame) frame = window.requestAnimationFrame(render);
   };
 
   const render = () => {
     frame = 0;
-    const progress = geometry.scrollable > 0
-      ? clamp(window.scrollY / geometry.scrollable, 0, 1)
-      : 0;
-    const y = reducedMotion.matches
-      ? geometry.initialY
-      : geometry.initialY + (progress * geometry.travel);
+    const smoothing = .1;
+    currentProgress = reducedMotion.matches
+      ? targetProgress
+      : currentProgress + ((targetProgress - currentProgress) * smoothing);
+    const y = geometry.initialY + (currentProgress * geometry.travel);
     page.style.setProperty('--s-background-y', `${y.toFixed(2)}px`);
+    if (!reducedMotion.matches && Math.abs(targetProgress - currentProgress) > .0005) {
+      frame = window.requestAnimationFrame(render);
+    }
   };
 
   const requestRender = () => {
+    updateTargetProgress();
     if (!frame) frame = window.requestAnimationFrame(render);
   };
 
@@ -105,11 +119,17 @@
   }
 
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', updateKeyboardOffset, { passive: true });
+    window.visualViewport.addEventListener('resize', () => {
+      updateKeyboardOffset();
+      if (Math.abs(viewportHeight() - measuredViewportHeight) > 24) measure();
+    }, { passive: true });
     window.visualViewport.addEventListener('scroll', updateKeyboardOffset, { passive: true });
   }
 
-  reducedMotion.addEventListener?.('change', render);
+  reducedMotion.addEventListener?.('change', () => {
+    updateTargetProgress();
+    if (!frame) frame = window.requestAnimationFrame(render);
+  });
   measure();
   updateKeyboardOffset();
 })();
