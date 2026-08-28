@@ -17,6 +17,7 @@
   let activeGroupIndex = -1;
   let lastScrollY = window.scrollY;
   let revealFrame = 0;
+  let groupOneTypingFrame = 0;
   const typingCharactersPerSecond = 28;
 
   const updateAnchorGap = () => {
@@ -78,6 +79,39 @@
       textNode.parentNode.replaceChild(fragment, textNode);
     });
   });
+  const typewriterCharacters = typewriterElements.map((element) =>
+    Array.from(element.querySelectorAll('.s-page__typing-character'))
+  );
+
+  const stopGroupOneTyping = (hideCharacters = false) => {
+    if (groupOneTypingFrame) window.cancelAnimationFrame(groupOneTypingFrame);
+    groupOneTypingFrame = 0;
+    if (hideCharacters) {
+      typewriterCharacters.flat().forEach((character) => character.classList.remove('is-revealed'));
+    }
+  };
+
+  const startGroupOneTyping = () => {
+    stopGroupOneTyping(true);
+    if (reducedMotion.matches) {
+      typewriterCharacters.flat().forEach((character) => character.classList.add('is-revealed'));
+      return;
+    }
+    const startedAt = performance.now();
+    const typeNextCharacters = (now) => {
+      const visibleCount = Math.floor(((now - startedAt) / 1000) * typingCharactersPerSecond) + 1;
+      let complete = true;
+      typewriterCharacters.forEach((characters) => {
+        const nextCount = Math.min(visibleCount, characters.length);
+        for (let index = 0; index < nextCount; index += 1) {
+          characters[index].classList.add('is-revealed');
+        }
+        if (nextCount < characters.length) complete = false;
+      });
+      groupOneTypingFrame = complete ? 0 : window.requestAnimationFrame(typeNextCharacters);
+    };
+    groupOneTypingFrame = window.requestAnimationFrame(typeNextCharacters);
+  };
 
   groupElements.flat().forEach((element) => {
     const characters = Math.max(1, Array.from(element.textContent.trim()).length);
@@ -88,15 +122,12 @@
   const setGroupState = (index, state) => {
     groupElements[index].forEach((element) => {
       element.classList.remove('is-typing', 'is-visible', 'is-fading');
-      if (index === 0 && state === 'typing') {
-        element.querySelectorAll('.s-page__typing-character').forEach((character, characterIndex) => {
-          character.style.setProperty('--s-character-delay', `${(characterIndex / typingCharactersPerSecond).toFixed(4)}s`);
-        });
-      }
       if (state === 'typing') element.classList.add(reducedMotion.matches ? 'is-visible' : 'is-typing');
       if (state === 'visible') element.classList.add('is-visible');
       if (state === 'fading' && index !== 0) element.classList.add('is-fading');
     });
+    if (index === 0 && state === 'typing') startGroupOneTyping();
+    if (index === 0 && state === 'fading') stopGroupOneTyping(true);
   };
 
   const updateRevealGroups = () => {
