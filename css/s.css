@@ -41,9 +41,9 @@ body.s-page {
   position: absolute;
   top: 0;
   left: 50%;
-  width: var(--s-background-width, 100vw);
+  width: auto;
   max-width: none;
-  height: auto;
+  height: var(--s-background-height, max(220vh, 142.4vw));
   transform: translate3d(-50%, var(--s-background-y, 0px), 0);
   transform-origin: 50% 0;
   will-change: transform;
