@@ -131,8 +131,8 @@ body.s-page {
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
   width: min(calc(100% - 72px), 660px);
-  height: 50px;
-  min-height: 50px;
+  height: 48px;
+  min-height: 48px;
   margin: 0;
   padding: 2px;
   border: 1px solid rgba(255, 255, 255, .34);
@@ -154,14 +154,14 @@ body.s-page {
 .s-page__composer-input {
   width: 100%;
   min-width: 0;
-  height: 42px;
+  height: 40px;
   padding: 0 6px;
   border: 0;
   border-radius: 0;
   outline: 0;
   background: transparent;
   color: #0b0b0b;
-  font: 450 16px/1.2 var(--font-english);
+  font: 450 15px/1.2 var(--font-english);
   caret-color: #0b0b0b;
   appearance: none;
   -webkit-tap-highlight-color: transparent;
@@ -176,8 +176,8 @@ body.s-page {
 .s-page__submit {
   position: relative;
   display: grid;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   padding: 0;
   place-items: center;
   border: 0;
@@ -190,8 +190,8 @@ body.s-page {
 }
 
 .s-page__submit {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   background: #080808;
   color: #fff;
 }
@@ -199,7 +199,7 @@ body.s-page {
 .s-page__add > span,
 .s-page__add > span::after {
   width: 17px;
-  height: 1.6px;
+  height: 2.2px;
   border-radius: 2px;
   background: currentColor;
 }
@@ -217,7 +217,7 @@ body.s-page {
   overflow: visible;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.8;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -304,14 +304,14 @@ body.s-page {
     bottom: calc(10px + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
     grid-template-columns: 44px minmax(0, 1fr) 44px;
     width: min(calc(100% - 72px), 660px);
-    height: 50px;
-    min-height: 50px;
+    height: 48px;
+    min-height: 48px;
     padding: 2px;
   }
 
   .s-page__submit {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
   }
 }
 
