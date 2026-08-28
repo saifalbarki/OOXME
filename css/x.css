@@ -253,6 +253,64 @@ html.s-route.is-day-mode .s-page__composer {
   opacity: 1;
 }
 
+.s-page__composer-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 16px;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid rgba(255, 255, 255, .34);
+  border-radius: 28px;
+  background: var(--s-composer-surface);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .05);
+  color: #A6A6A6;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  visibility: hidden;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+
+.s-page__composer-menu.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.s-page__composer-menu-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: 400 16px/1.2 OOXMESFPro, Arial, sans-serif;
+  letter-spacing: normal;
+  text-align: left;
+  appearance: none;
+  cursor: pointer;
+}
+
+.s-page__composer-menu-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+html.s-route.is-day-mode .s-page__composer-menu {
+  border-color: #E6E6E6;
+  color: #666666;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .04);
+}
+
 .s-page__icon-button,
 .s-page__submit {
   position: relative;
@@ -421,7 +479,8 @@ html.s-route.is-day-mode .s-page__composer {
   .s-page__composer,
   .s-page__icon-button,
   .s-page__submit,
-  .s-page__composer-status { transition: none; }
+  .s-page__composer-status,
+  .s-page__composer-menu { transition: none; }
   .s-page__add > span { transition: none; }
   .s-page__composer.is-pulsing { animation: none; }
 }

@@ -3,13 +3,14 @@
 
   const page = document.querySelector('.s-page');
   const composer = document.querySelector('[data-s-composer]');
+  const composerMenu = document.querySelector('[data-s-composer-menu]');
   const addButton = document.querySelector('.s-page__add');
   const input = document.querySelector('.s-page__composer-input');
   const status = document.querySelector('[data-s-composer-status]');
   const groups = Array.from(document.querySelectorAll('.s-page__group'));
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (!page || !composer || !addButton || !input || !status || groups.length !== 3) return;
+  if (!page || !composer || !composerMenu || !addButton || !input || !status || groups.length !== 3) return;
 
   let statusTimer = 0;
   let snapTimer = 0;
@@ -30,10 +31,16 @@
   let initializationReady = false;
   let initializationRun = 0;
 
+  const setComposerMenuOpen = (isOpen) => {
+    composerMenu.classList.toggle('is-open', isOpen);
+    composerMenu.setAttribute('aria-hidden', String(!isOpen));
+  };
+
   const resetAddButton = () => {
     window.clearTimeout(addFlashTimer);
     addRotated = false;
     addButton.classList.remove('is-rotated', 'is-active');
+    setComposerMenuOpen(false);
   };
 
   const pulseComposer = () => {
@@ -56,13 +63,14 @@
     event.stopPropagation();
     addRotated = !addRotated;
     addButton.classList.toggle('is-rotated', addRotated);
+    setComposerMenuOpen(addRotated);
     window.clearTimeout(addFlashTimer);
     addButton.classList.add('is-active');
     addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
   });
 
   document.addEventListener('pointerdown', (event) => {
-    if (!addButton.contains(event.target)) resetAddButton();
+    if (!addButton.contains(event.target) && !composerMenu.contains(event.target)) resetAddButton();
   }, { passive: true });
   window.addEventListener('scroll', resetAddButton, { passive: true });
   const updateAnchorGap = () => {
@@ -277,6 +285,7 @@
   window.addEventListener('touchend', endTouch, { passive: true, capture: true });
   window.addEventListener('touchcancel', endTouch, { passive: true, capture: true });
   window.addEventListener('wheel', () => {
+    resetAddButton();
     if (interactionState === 'settling') cancelSettle();
     scheduleSettle();
   }, { passive: true });
