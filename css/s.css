@@ -154,24 +154,19 @@ body.s-page {
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
   width: min(calc(100% - 72px), 660px);
-  min-height: 54px;
+  height: 50px;
+  min-height: 50px;
   margin: 0;
-  padding: 4px 5px;
+  padding: 2px 5px;
   border: 1px solid rgba(255, 255, 255, .34);
   border-radius: 28px;
   background: var(--s-composer-surface);
   box-shadow: 0 6px 20px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .05);
   color: #0b0b0b;
   transform: translate3d(-50%, 0, 0);
-  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease, bottom .18s ease;
+  transition: none;
   -webkit-backdrop-filter: blur(18px) saturate(115%);
   backdrop-filter: blur(18px) saturate(115%);
-}
-
-.s-page__composer:focus-within {
-  --s-composer-surface: rgba(255, 255, 255, .78);
-  border-color: rgba(255, 255, 255, .7);
-  box-shadow: 0 9px 28px rgba(0, 0, 0, .14), 0 0 0 2px rgba(255, 255, 255, .14);
 }
 
 .s-page__input-label {
@@ -181,7 +176,7 @@ body.s-page {
 .s-page__composer-input {
   width: 100%;
   min-width: 0;
-  height: 44px;
+  height: 42px;
   padding: 0 6px;
   border: 0;
   border-radius: 0;
@@ -334,8 +329,9 @@ body.s-page {
     bottom: calc(10px + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
     grid-template-columns: 44px minmax(0, 1fr) 44px;
     width: min(calc(100% - 72px), 660px);
-    min-height: 54px;
-    padding: 4px 5px;
+    height: 50px;
+    min-height: 50px;
+    padding: 2px 5px;
   }
 
   .s-page__submit {
