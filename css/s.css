@@ -159,14 +159,14 @@ body.s-page {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
-  width: min(calc(100% - 48px), 660px);
+  width: min(calc(100% - 72px), 660px);
   min-height: 54px;
   margin: 0;
   padding: 4px 5px;
-  border: 1px solid rgba(255, 255, 255, .46);
-  border-radius: 34px;
+  border: 1px solid rgba(255, 255, 255, .34);
+  border-radius: 28px;
   background: var(--s-composer-surface);
-  box-shadow: 0 7px 24px rgba(0, 0, 0, .12), 0 1px 4px rgba(0, 0, 0, .06);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .05);
   color: #0b0b0b;
   transform: translate3d(-50%, 0, 0);
   transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease, bottom .18s ease;
@@ -339,7 +339,7 @@ body.s-page {
   .s-page__composer {
     bottom: calc(10px + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
     grid-template-columns: 44px minmax(0, 1fr) 44px;
-    width: calc(100% - 48px);
+    width: min(calc(100% - 72px), 660px);
     min-height: 54px;
     padding: 4px 5px;
   }
