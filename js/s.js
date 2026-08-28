@@ -13,6 +13,9 @@
 
   const naturalWidth = Number(background.getAttribute('width')) || 3884;
   const naturalHeight = Number(background.getAttribute('height')) || 5532;
+  // The lower half of the source is near-black; keep parallax within the
+  // visually useful region while retaining the source aspect ratio.
+  const usableImageBottom = naturalHeight * .5;
   let geometry = { initialY: 0, travel: 0, scrollable: 0 };
   let targetProgress = 0;
   let currentProgress = 0;
@@ -34,14 +37,15 @@
     const verticalOverscan = Math.max(96, Math.round(height * .12));
     const widthScale = viewportWidth / naturalWidth;
     const desiredTravel = clamp(height * (viewportWidth < 700 ? 1.05 : .78), 520, 1800);
-    const minimumHeightScale = (height + desiredTravel + (verticalOverscan * 2)) / naturalHeight;
+    const minimumHeightScale = (height + desiredTravel + (verticalOverscan * 2)) / usableImageBottom;
     const scale = Math.max(widthScale, minimumHeightScale);
     const renderedHeight = naturalHeight * scale;
-    const availableTravel = Math.max(0, renderedHeight - height);
+    const renderedUsableBottom = usableImageBottom * scale;
+    const availableTravel = Math.max(0, renderedUsableBottom - height);
     const initialInset = Math.min(availableTravel * .14, height * .22);
     const endReserve = Math.min(availableTravel * .025, 32);
     const initialY = -initialInset;
-    const finalY = height - renderedHeight + endReserve;
+    const finalY = height - renderedUsableBottom + endReserve;
     const documentHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
 
     page.style.setProperty('--s-background-height', `${renderedHeight.toFixed(2)}px`);
