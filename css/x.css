@@ -286,6 +286,7 @@ html.s-route.is-day-mode .s-page__composer {
 }
 
 .s-page__composer-menu-item {
+  position: relative;
   display: block;
   width: 100%;
   margin: 0;
@@ -298,12 +299,27 @@ html.s-route.is-day-mode .s-page__composer {
   text-align: left;
   appearance: none;
   cursor: pointer;
-  border-radius: 10px;
-  transition: background-color .18s ease;
+  z-index: 0;
 }
 
 .s-page__composer-menu-item.is-active {
+  background: transparent;
+}
+
+.s-page__composer-menu-item::before {
+  position: absolute;
+  z-index: -1;
+  inset: 4px;
+  border-radius: 10px;
   background: #D9D9D9;
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+
+.s-page__composer-menu-item.is-active::before {
+  opacity: 1;
 }
 
 .s-page__composer-menu-item:focus-visible {
