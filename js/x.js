@@ -27,13 +27,32 @@
   const maximumDescriptionTypingDurationMs = 3000;
   let keyboardLockedGroup = -1;
   let addFlashTimer = 0;
+  const menuItemFlashTimers = new WeakMap();
   let addRotated = false;
   let initializationReady = false;
   let initializationRun = 0;
+  let suppressSettleUntil = 0;
+
+  const isComposerMenuInteraction = (target) => (
+    addButton.contains(target) || composerMenu.contains(target)
+  );
+
+  const pauseSettleForMenu = () => {
+    window.clearTimeout(snapTimer);
+    if (interactionState === 'settling') {
+      window.scrollTo({ top: window.scrollY, behavior: 'auto' });
+    }
+    interactionState = 'idle';
+  };
+
+  const suppressSettleForMenuInteraction = () => {
+    suppressSettleUntil = performance.now() + 250;
+  };
 
   const setComposerMenuOpen = (isOpen) => {
     composerMenu.classList.toggle('is-open', isOpen);
     composerMenu.setAttribute('aria-hidden', String(!isOpen));
+    if (isOpen) pauseSettleForMenu();
   };
 
   const resetAddButton = () => {
@@ -54,8 +73,33 @@
     if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing');
   });
 
+  const pulseComposerMenu = () => {
+    if (!initializationReady) return;
+    composerMenu.classList.remove('is-pulsing');
+    void composerMenu.offsetWidth;
+    composerMenu.classList.add('is-pulsing');
+  };
+
+  composerMenu.addEventListener('animationend', (event) => {
+    if (event.animationName === 's-page-composer-menu-pulse') composerMenu.classList.remove('is-pulsing');
+  });
+
   [addButton, input, composer.querySelector('.s-page__submit')].forEach((control) => {
     control?.addEventListener('pointerdown', pulseComposer, { passive: true });
+  });
+
+  [addButton, composerMenu].forEach((control) => {
+    control.addEventListener('pointerdown', (event) => event.stopPropagation());
+    control.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
+  });
+  composerMenu.addEventListener('click', (event) => event.stopPropagation());
+  composerMenu.querySelectorAll('.s-page__composer-menu-item').forEach((item) => {
+    item.addEventListener('pointerdown', () => {
+      pulseComposerMenu();
+      window.clearTimeout(menuItemFlashTimers.get(item));
+      item.classList.add('is-active');
+      menuItemFlashTimers.set(item, window.setTimeout(() => item.classList.remove('is-active'), 120));
+    }, { passive: true });
   });
 
   addButton.addEventListener('click', (event) => {
@@ -70,9 +114,15 @@
   });
 
   document.addEventListener('pointerdown', (event) => {
-    if (!addButton.contains(event.target) && !composerMenu.contains(event.target)) resetAddButton();
+    if (isComposerMenuInteraction(event.target)) return;
+    if (composerMenu.classList.contains('is-open')) {
+      suppressSettleForMenuInteraction();
+      resetAddButton();
+    }
   }, { passive: true });
-  window.addEventListener('scroll', resetAddButton, { passive: true });
+  window.addEventListener('scroll', () => {
+    if (!composerMenu.classList.contains('is-open')) resetAddButton();
+  }, { passive: true });
   const updateAnchorGap = () => {
     const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
     page.style.setProperty('--s-anchor-gap', `${(x * 2).toFixed(2)}px`);
@@ -98,10 +148,10 @@
 
   const scheduleSettle = () => {
     window.clearTimeout(snapTimer);
-    if (!initializationReady || isTouching || keyboardLockedGroup >= 0) return;
+    if (!initializationReady || isTouching || keyboardLockedGroup >= 0 || composerMenu.classList.contains('is-open')) return;
     interactionState = 'momentum';
     snapTimer = window.setTimeout(() => {
-      if (isTouching || keyboardLockedGroup >= 0) return;
+      if (isTouching || keyboardLockedGroup >= 0 || composerMenu.classList.contains('is-open')) return;
       interactionState = 'settling';
       if (!snapToDirectionalGroup() || reducedMotion.matches) interactionState = 'idle';
     }, 600);
@@ -268,13 +318,22 @@
     }, { passive: true });
   }
 
-  const beginTouch = () => {
+  const beginTouch = (event) => {
+    if (isComposerMenuInteraction(event.target)) {
+      suppressSettleForMenuInteraction();
+      pauseSettleForMenu();
+      return;
+    }
     isTouching = true;
     cancelSettle();
   };
 
-  const endTouch = () => {
+  const endTouch = (event) => {
     isTouching = false;
+    if (isComposerMenuInteraction(event.target) || performance.now() < suppressSettleUntil) {
+      interactionState = 'idle';
+      return;
+    }
     if (initializationReady) scheduleSettle();
   };
 
@@ -285,6 +344,10 @@
   window.addEventListener('touchend', endTouch, { passive: true, capture: true });
   window.addEventListener('touchcancel', endTouch, { passive: true, capture: true });
   window.addEventListener('wheel', () => {
+    if (composerMenu.classList.contains('is-open')) {
+      pauseSettleForMenu();
+      return;
+    }
     resetAddButton();
     if (interactionState === 'settling') cancelSettle();
     scheduleSettle();
