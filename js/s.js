@@ -2,7 +2,7 @@
   'use strict';
 
   const page = document.querySelector('.s-page');
-  const background = document.querySelector('.s-page__background-image');
+  const background = document.querySelector('.s-page__visual-image');
   const content = document.querySelector('.s-page__content');
   const composer = document.querySelector('[data-s-composer]');
   const input = document.querySelector('.s-page__composer-input');

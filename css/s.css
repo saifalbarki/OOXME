@@ -1,6 +1,6 @@
 html.s-route {
   min-height: 100%;
-  background: #040404;
+  background: #000;
   scrollbar-color: rgba(255, 255, 255, .28) transparent;
 }
 
@@ -12,8 +12,9 @@ html.s-route body.s-page {
 }
 
 body.s-page {
+  position: relative;
   overflow-x: clip;
-  background: #040404;
+  background: #000;
   color: var(--color-paper);
   font-family: var(--font-english);
   -webkit-font-smoothing: antialiased;
@@ -26,9 +27,17 @@ body.s-page {
   box-sizing: border-box;
 }
 
-.s-page__background-image {
-  position: fixed;
+.s-page__visual {
+  position: absolute;
   z-index: 0;
+  inset: 0;
+  width: 100%;
+  min-height: 100%;
+  pointer-events: none;
+}
+
+.s-page__visual-image {
+  position: fixed;
   top: 0;
   left: 50%;
   width: auto;
@@ -330,7 +339,7 @@ body.s-page {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .s-page__background-image { will-change: auto; }
+  .s-page__visual-image { will-change: auto; }
   [data-s-reveal] { opacity: 1; transform: none; transition: none; }
   .s-page__composer,
   .s-page__icon-button,
