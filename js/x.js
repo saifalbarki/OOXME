@@ -21,26 +21,42 @@
   const typingFrames = groups.map(() => 0);
   let initialGroupOnePending = true;
   const typingCharactersPerSecond = 28;
-  const themeStorageKey = 'ooxme-x-theme';
+  let addFlashTimer = 0;
+  let addRotated = false;
 
-  const applyTheme = (theme) => {
-    const isDay = theme === 'day';
-    document.documentElement.classList.toggle('is-day-mode', isDay);
-    addButton.setAttribute('aria-pressed', String(isDay));
+  const resetAddButton = () => {
+    window.clearTimeout(addFlashTimer);
+    addRotated = false;
+    addButton.classList.remove('is-rotated', 'is-active');
   };
 
-  let currentTheme = 'dark';
-  try {
-    currentTheme = window.sessionStorage.getItem(themeStorageKey) === 'day' ? 'day' : 'dark';
-  } catch {}
-  applyTheme(currentTheme);
+  const pulseComposer = () => {
+    composer.classList.remove('is-pulsing');
+    void composer.offsetWidth;
+    composer.classList.add('is-pulsing');
+  };
 
-  addButton.addEventListener('click', () => {
-    currentTheme = currentTheme === 'dark' ? 'day' : 'dark';
-    applyTheme(currentTheme);
-    try { window.sessionStorage.setItem(themeStorageKey, currentTheme); } catch {}
+  composer.addEventListener('animationend', (event) => {
+    if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing');
   });
 
+  [addButton, input, composer.querySelector('.s-page__submit')].forEach((control) => {
+    control?.addEventListener('pointerdown', pulseComposer, { passive: true });
+  });
+
+  addButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    addRotated = !addRotated;
+    addButton.classList.toggle('is-rotated', addRotated);
+    window.clearTimeout(addFlashTimer);
+    addButton.classList.add('is-active');
+    addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
+  });
+
+  document.addEventListener('pointerdown', (event) => {
+    if (!addButton.contains(event.target)) resetAddButton();
+  }, { passive: true });
+  window.addEventListener('scroll', resetAddButton, { passive: true });
   const updateAnchorGap = () => {
     const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
     page.style.setProperty('--s-anchor-gap', `${(x * 2).toFixed(2)}px`);
@@ -183,7 +199,6 @@
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!input.value.trim()) {
-      input.focus();
       return;
     }
     window.clearTimeout(statusTimer);

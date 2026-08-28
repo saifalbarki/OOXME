@@ -83,16 +83,16 @@ html.s-route.is-day-mode body.s-page {
   width: calc(100vw - (var(--s-x) * 2));
   max-width: none;
   box-sizing: border-box;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: -.065em;
+  letter-spacing: normal;
   line-height: 1.2;
 }
 
 .s-page__group-title--statement {
   max-width: none;
   font-weight: 700;
-  letter-spacing: -.055em;
+  letter-spacing: normal;
   line-height: 1.2;
 }
 
@@ -129,9 +129,9 @@ html.s-route.is-day-mode .s-page__group-description {
 
 [data-s-reveal].is-fading {
   opacity: 0;
-  filter: blur(8px);
+  filter: none;
   clip-path: inset(0 0 0 0);
-  transition: opacity .22s ease, filter .28s ease;
+  transition: opacity .32s ease;
 }
 
 .s-page__group [data-s-reveal] {
@@ -146,9 +146,9 @@ html.s-route.is-day-mode .s-page__group-description {
 
 .s-page__group [data-s-reveal].is-fading {
   opacity: 0;
-  filter: blur(8px);
+  filter: none;
   clip-path: inset(0 0 0 0);
-  transition: opacity .22s ease, filter .28s ease;
+  transition: opacity .32s ease;
 }
 
 .s-page__typing-character {
@@ -164,7 +164,7 @@ html.s-route.is-day-mode .s-page__group-description {
   position: fixed;
   z-index: 20;
   left: 50%;
-  bottom: calc(var(--s-x) + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
+  bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
@@ -196,7 +196,7 @@ html.s-route.is-day-mode .s-page__group-description {
 
 html.s-route.is-day-mode .s-page__composer {
   --s-composer-surface: rgba(255, 255, 255, .86);
-  border-color: rgba(0, 0, 0, .16);
+  border-color: #E6E6E6;
   box-shadow: 0 6px 20px rgba(0, 0, 0, .08), 0 1px 3px rgba(0, 0, 0, .04);
 }
 
@@ -259,6 +259,19 @@ html.s-route.is-day-mode .s-page__composer {
   background: currentColor;
 }
 
+.s-page__add > span {
+  transform: rotate(0deg);
+  transition: transform .24s cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page__add.is-active {
+  background: #D9D9D9;
+}
+
+.s-page__add.is-rotated > span {
+  transform: rotate(45deg);
+}
+
 .s-page__add > span::after {
   content: "";
   display: block;
@@ -268,7 +281,7 @@ html.s-route.is-day-mode .s-page__composer {
 .s-page__submit-icon {
   display: block;
   width: 18px;
-  height: 18px;
+  height: 17px;
   overflow: visible;
   fill: none;
   stroke: currentColor;
@@ -319,6 +332,15 @@ html.s-route.is-day-mode .s-page__composer {
   transform: translateY(0);
 }
 
+.s-page__composer.is-pulsing {
+  animation: s-page-composer-pulse .18s ease-out;
+}
+
+@keyframes s-page-composer-pulse {
+  0%, 100% { transform: translate3d(-50%, 0, 0) scale(1); }
+  45% { transform: translate3d(-50%, 0, 0) scale(1.015); }
+}
+
 .s-page__visually-hidden {
   position: absolute;
   width: 1px;
@@ -350,7 +372,7 @@ html.s-route.is-day-mode .s-page__composer {
   .s-page__content { padding-top: calc(var(--s-x) * 2); }
 
   .s-page__composer {
-    bottom: calc(var(--s-x) + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
+    bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
     grid-template-columns: 44px minmax(0, 1fr) 44px;
     width: min(calc(100% - (var(--s-x) * 4)), 660px);
     max-width: 100%;
@@ -372,4 +394,6 @@ html.s-route.is-day-mode .s-page__composer {
   .s-page__icon-button,
   .s-page__submit,
   .s-page__composer-status { transition: none; }
+  .s-page__add > span { transition: none; }
+  .s-page__composer.is-pulsing { animation: none; }
 }
