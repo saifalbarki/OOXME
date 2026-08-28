@@ -100,6 +100,53 @@ html.s-x-initializing .s-page__submit:active {
   transform: none !important;
 }
 
+.s-page__utilities {
+  position: fixed;
+  z-index: 30;
+  top: var(--s-x);
+  right: var(--s-x);
+  display: flex;
+  gap: calc(var(--s-x) * .5);
+  align-items: center;
+}
+
+.s-page__utility-dot {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  border: 2.2px solid rgba(255, 255, 255, .74);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.s-page__utility-dot.is-active {
+  border-color: #FFFFFF;
+  background: #FFFFFF;
+}
+
+html.s-route.is-day-mode .s-page__utility-dot {
+  border-color: rgba(17, 17, 17, .72);
+}
+
+html.s-route.is-day-mode .s-page__utility-dot.is-active {
+  border-color: #111111;
+  background: #111111;
+}
+
+.s-page__utility-dot:active {
+  transform: scale(.9);
+}
+
+.s-page__utility-dot:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
 .s-page *,
 .s-page *::before,
 .s-page *::after {
@@ -689,6 +736,7 @@ html.s-route.is-day-mode .s-page__composer-menu {
   .s-page__submit,
   .s-page__composer-menu { transition: none; }
   .s-page__add > span { transition: none; }
+  .s-page__utility-dot { transition: none; }
   .s-page__composer.is-pulsing { animation: none; }
   .s-page__composer-menu.is-pulsing { animation: none; }
 }

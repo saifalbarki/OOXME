@@ -10,10 +10,12 @@
   const conversation = document.querySelector('[data-s-conversation]');
   const conversationFinal = document.querySelector('[data-s-conversation-final]');
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
+  const languageToggle = document.querySelector('[data-s-language-toggle]');
+  const themeToggle = document.querySelector('[data-s-theme-toggle]');
   const groups = Array.from(document.querySelectorAll('.s-page__group'));
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (!page || !composer || !composerMenu || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || groups.length !== 3) return;
+  if (!page || !composer || !composerMenu || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || !languageToggle || !themeToggle || groups.length !== 3) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -73,6 +75,39 @@
   let chatInactivityTimer = 0;
   const initialInputPlaceholder = input.placeholder;
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
+
+  const applyLanguage = (next, { persist = true, emit = true } = {}) => {
+    const language = next === 'ar' ? 'ar' : 'en';
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    languageToggle.classList.toggle('is-active', language === 'en');
+    languageToggle.setAttribute('aria-pressed', String(language === 'en'));
+    languageToggle.setAttribute('aria-label', language === 'en' ? 'Switch to Arabic' : 'Switch to English');
+    if (persist) {
+      try { localStorage.setItem('ooxme-language', language); } catch (_) {}
+    }
+    if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
+  };
+
+  const applyTheme = (next) => {
+    const isDayMode = next === 'day';
+    document.documentElement.classList.toggle('is-day-mode', isDayMode);
+    themeToggle.classList.toggle('is-active', !isDayMode);
+    themeToggle.setAttribute('aria-pressed', String(!isDayMode));
+    themeToggle.setAttribute('aria-label', isDayMode ? 'Switch to Dark Mode' : 'Switch to Day Mode');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDayMode ? '#FFFFFF' : '#000000');
+  };
+
+  let initialLanguage = 'en';
+  try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
+  applyLanguage(initialLanguage, { persist: false, emit: false });
+  applyTheme('dark');
+
+  languageToggle.addEventListener('click', () => applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar'));
+  themeToggle.addEventListener('click', () => applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day'));
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'ooxme-language') applyLanguage(event.newValue, { persist: false, emit: false });
+  });
 
   const isComposerMenuInteraction = (target) => (
     addButton.contains(target) || composerMenu.contains(target)
