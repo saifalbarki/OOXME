@@ -1,5 +1,20 @@
+@font-face {
+  font-family: OOXMESFPro;
+  src: url('../assets/fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
+  font-weight: 100 599;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: OOXMESFPro;
+  src: url('../assets/fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
+  font-weight: 600 900;
+  font-display: swap;
+}
+
 html.s-route {
   min-height: 100%;
+  overflow-x: hidden;
   background: #000000;
   scrollbar-color: rgba(255, 255, 255, .28) transparent;
 }
@@ -13,10 +28,12 @@ html.s-route body.s-page {
 
 body.s-page {
   position: relative;
-  overflow-x: clip;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
   background: #000000;
   color: var(--color-paper);
-  font-family: var(--font-english);
+  font-family: OOXMESFPro, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -79,7 +96,7 @@ body.s-page {
 
 .s-page h1 {
   max-width: 11ch;
-  font-size: clamp(3.25rem, 2rem + 6.1vw, 9.5rem);
+  font-size: clamp(.72rem, .68rem + .18vw, .88rem);
   font-weight: 520;
   letter-spacing: -.065em;
   line-height: .92;
@@ -88,7 +105,7 @@ body.s-page {
 .s-page__lead,
 .s-page__support {
   max-width: 34rem;
-  font-size: clamp(1rem, .88rem + .48vw, 1.4rem);
+  font-size: clamp(.72rem, .68rem + .18vw, .88rem);
   font-weight: 450;
   line-height: 1.55;
   color: rgba(255, 255, 255, .76);
@@ -100,7 +117,7 @@ body.s-page {
 
 .s-page__statement {
   max-width: 14ch;
-  font-size: clamp(2.5rem, 1.8rem + 3.7vw, 6.7rem);
+  font-size: clamp(.72rem, .68rem + .18vw, .88rem);
   font-weight: 500;
   letter-spacing: -.055em;
   line-height: .98;
@@ -131,6 +148,7 @@ body.s-page {
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
   width: min(calc(100% - 72px), 660px);
+  max-width: 100%;
   height: 48px;
   min-height: 48px;
   margin: 0;
@@ -148,12 +166,18 @@ body.s-page {
 }
 
 .s-page__input-label {
+  display: block;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .s-page__composer-input {
+  display: block;
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   height: 40px;
   padding: 0 6px;
   border: 0;
@@ -161,7 +185,9 @@ body.s-page {
   outline: 0;
   background: transparent;
   color: #0b0b0b;
-  font: 450 15px/1.2 var(--font-english);
+  font: 450 clamp(.72rem, .68rem + .18vw, .88rem)/1.2 OOXMESFPro, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   caret-color: #0b0b0b;
   appearance: none;
   -webkit-tap-highlight-color: transparent;
@@ -180,6 +206,7 @@ body.s-page {
   height: 42px;
   padding: 0;
   place-items: center;
+  justify-self: center;
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -251,7 +278,7 @@ body.s-page {
   border-radius: 13px;
   background: rgba(8, 8, 8, .76);
   color: #fff;
-  font-size: 12px;
+  font-size: clamp(.72rem, .68rem + .18vw, .88rem);
   line-height: 1.25;
   opacity: 0;
   pointer-events: none;
@@ -304,6 +331,7 @@ body.s-page {
     bottom: calc(10px + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
     grid-template-columns: 44px minmax(0, 1fr) 44px;
     width: min(calc(100% - 72px), 660px);
+    max-width: 100%;
     height: 48px;
     min-height: 48px;
     padding: 2px;
