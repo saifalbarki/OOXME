@@ -203,6 +203,11 @@ html.s-route.is-day-mode .s-page__group-description {
   transition: opacity .32s ease;
 }
 
+.s-page.is-chat-active .s-page__group [data-s-reveal] {
+  opacity: 0;
+  transition: opacity .24s ease;
+}
+
 .s-page__typing-character {
   opacity: 0;
 }
@@ -246,7 +251,7 @@ html.s-route.is-day-mode .s-page__group-description {
   border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 22px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, .14), 0 1px 3px rgba(0, 0, 0, .08);
-  font: 500 12px/1.32 OOXMEScript, Arial, sans-serif;
+  font: 500 16px/1.32 OOXMEScript, Arial, sans-serif;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
   will-change: transform;

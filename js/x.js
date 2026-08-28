@@ -62,6 +62,7 @@
   const preferredDescriptionCharacterIntervalMs = 45;
   const maximumDescriptionTypingDurationMs = 3000;
   let keyboardLockedGroup = -1;
+  let keyboardLockedScrollY = 0;
   let addFlashTimer = 0;
   const menuItemFlashTimers = new WeakMap();
   let addRotated = false;
@@ -213,15 +214,35 @@
     }, 600);
   };
 
+  const lockActiveGroupForKeyboard = () => {
+    if (keyboardLockedGroup >= 0) return;
+    keyboardLockedGroup = Math.max(0, activeGroupIndex);
+    keyboardLockedScrollY = window.scrollY;
+    suppressSettleForChatInteraction();
+  };
+
+  const maintainKeyboardGroupPosition = () => {
+    if (keyboardLockedGroup < 0 || Math.abs(window.scrollY - keyboardLockedScrollY) < 1) return;
+    window.scrollTo({ top: keyboardLockedScrollY, behavior: 'auto' });
+  };
+
+  const releaseKeyboardGroupLock = () => {
+    keyboardLockedGroup = -1;
+    keyboardLockedScrollY = 0;
+    suppressSettleForChatInteraction();
+    lastScrollY = window.scrollY;
+  };
+
   const updateKeyboardOffset = () => {
     if (!window.visualViewport) return;
     const layoutHeight = Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight || 0));
     const keyboardOverlap = Math.max(0, layoutHeight - window.visualViewport.height - window.visualViewport.offsetTop);
-    if (keyboardOverlap > 0 && keyboardLockedGroup < 0) keyboardLockedGroup = Math.max(0, activeGroupIndex);
+    if (keyboardOverlap > 0) {
+      lockActiveGroupForKeyboard();
+      maintainKeyboardGroupPosition();
+    }
     if (keyboardOverlap === 0 && lastKeyboardOverlap > 0) {
-      keyboardLockedGroup = -1;
-      suppressSettleForChatInteraction();
-      lastScrollY = window.scrollY;
+      releaseKeyboardGroupLock();
     }
     page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
     lastKeyboardOverlap = keyboardOverlap;
@@ -364,6 +385,13 @@
   const setConversationVisibility = (isVisible) => {
     conversation.classList.toggle('is-chat-hidden', !isVisible);
     conversation.setAttribute('aria-hidden', String(!isVisible));
+    syncPageTextForChat();
+  };
+
+  const syncPageTextForChat = () => {
+    const hasVisibleBubbles = !conversation.classList.contains('is-chat-hidden')
+      && Boolean(conversation.querySelector('.s-page__conversation-bubble:not(.is-exiting)'));
+    page.classList.toggle('is-chat-active', hasVisibleBubbles);
   };
 
   const scheduleChatInactivity = () => {
@@ -437,6 +465,7 @@
     bubble.textContent = message;
     bubble.addEventListener('animationend', () => bubble.classList.remove('is-entering'), { once: true });
     conversation.appendChild(bubble);
+    syncPageTextForChat();
     animateConversationShift(previousPositions);
   };
 
@@ -448,6 +477,7 @@
     conversationFinal.classList.remove('is-visible');
     conversationFinal.setAttribute('aria-hidden', 'true');
     conversation.replaceChildren();
+    syncPageTextForChat();
     replyIndex = 0;
     conversationState = 'resetting';
     input.blur();
@@ -492,16 +522,13 @@
   input.addEventListener('focus', () => {
     markChatActive();
     updateSubmitArrow();
-    keyboardLockedGroup = Math.max(0, activeGroupIndex);
-    suppressSettleForChatInteraction();
+    lockActiveGroupForKeyboard();
   });
 
   input.addEventListener('blur', () => {
     updateSubmitArrow();
     if (lastKeyboardOverlap > 0) return;
-    keyboardLockedGroup = -1;
-    suppressSettleForChatInteraction();
-    lastScrollY = window.scrollY;
+    releaseKeyboardGroupLock();
   });
 
   input.addEventListener('input', () => {
@@ -545,6 +572,10 @@
   }
 
   window.addEventListener('scroll', () => {
+    if (keyboardLockedGroup >= 0) {
+      maintainKeyboardGroupPosition();
+      return;
+    }
     if (initializationReady && interactionState !== 'settling') scheduleSettle();
   }, { passive: true });
   window.addEventListener('scroll', () => {
@@ -614,6 +645,7 @@
     composer.classList.remove('is-pulsing');
     activeGroupIndex = -1;
     keyboardLockedGroup = -1;
+    keyboardLockedScrollY = 0;
     lastKeyboardOverlap = 0;
     initialGroupOnePending = true;
     lastScrollY = 0;
