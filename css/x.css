@@ -164,7 +164,7 @@ html.s-route.is-day-mode .s-page__group-description {
   position: fixed;
   z-index: 20;
   left: 50%;
-  bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
+  bottom: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
@@ -372,7 +372,7 @@ html.s-route.is-day-mode .s-page__composer {
   .s-page__content { padding-top: calc(var(--s-x) * 2); }
 
   .s-page__composer {
-    bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
+    bottom: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
     grid-template-columns: 44px minmax(0, 1fr) 44px;
     width: min(calc(100% - (var(--s-x) * 4)), 660px);
     max-width: 100%;
