@@ -16,12 +16,11 @@
   let geometry = { initialY: 0, travel: 0, scrollable: 0 };
   let targetProgress = 0;
   let currentProgress = 0;
-  let measuredViewportHeight = 0;
   let frame = 0;
   let statusTimer = 0;
 
   const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
-  const viewportHeight = () => Math.max(1, Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight));
+  const viewportHeight = () => Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight || 0));
 
   const updateTargetProgress = () => {
     targetProgress = geometry.scrollable > 0
@@ -32,10 +31,10 @@
   const measure = () => {
     const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     const height = viewportHeight();
-    measuredViewportHeight = height;
     const widthScale = viewportWidth / naturalWidth;
-    const minimumTravelScale = (height * (viewportWidth < 700 ? 2.16 : 1.72)) / naturalHeight;
-    const scale = Math.max(widthScale, minimumTravelScale);
+    const desiredTravel = clamp(height * (viewportWidth < 700 ? 1.05 : .78), 520, 1800);
+    const minimumHeightScale = (height + desiredTravel) / naturalHeight;
+    const scale = Math.max(widthScale, minimumHeightScale);
     const renderedWidth = naturalWidth * scale;
     const renderedHeight = naturalHeight * scale;
     const availableTravel = Math.max(0, renderedHeight - height);
@@ -119,10 +118,7 @@
   }
 
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      updateKeyboardOffset();
-      if (Math.abs(viewportHeight() - measuredViewportHeight) > 24) measure();
-    }, { passive: true });
+    window.visualViewport.addEventListener('resize', updateKeyboardOffset, { passive: true });
     window.visualViewport.addEventListener('scroll', updateKeyboardOffset, { passive: true });
   }
 
