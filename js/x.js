@@ -49,13 +49,10 @@
     en: 'Alright, we’re joking.\nThe ooxme conversation experience is still under development. Until it’s ready, reach us through our official channels and we’ll take it from there.',
     ar: 'حسنــًا، نحن نمزح.\nتجربة المحادثة لدى اوكسوم ما تزال قيد التطوير. وحتى تصبح جاهزة، تواصل معنا عبر قنواتنا الرسمية، وسنتولى الامر من هناك.'
   };
-  let snapTimer = 0;
-  let interactionState = 'idle';
-  let isTouching = false;
   let activeGroupIndex = -1;
   let lastScrollY = window.scrollY;
-  let lastScrollDirection = 1;
   let revealFrame = 0;
+  let groupPushFrame = 0;
   const typingFrames = groups.map(() => 0);
   let initialGroupOnePending = true;
   const titleTypingCharactersPerSecond = 28;
@@ -68,7 +65,6 @@
   let addRotated = false;
   let initializationReady = false;
   let initializationRun = 0;
-  let suppressSettleUntil = 0;
   let lastKeyboardOverlap = 0;
   let replyIndex = 0;
   let conversationState = 'active';
@@ -82,33 +78,9 @@
     addButton.contains(target) || composerMenu.contains(target)
   );
 
-  const isChatInteraction = (target) => (
-    composer.contains(target) || conversation.contains(target) || conversationFinal.contains(target)
-  );
-
-  const pauseSettleForMenu = () => {
-    window.clearTimeout(snapTimer);
-    if (interactionState === 'settling') {
-      window.scrollTo({ top: window.scrollY, behavior: 'auto' });
-    }
-    interactionState = 'idle';
-  };
-
-  const suppressSettleForMenuInteraction = () => {
-    suppressSettleUntil = performance.now() + 250;
-  };
-
-  const suppressSettleForChatInteraction = () => {
-    suppressSettleUntil = Math.max(suppressSettleUntil, performance.now() + 500);
-    window.clearTimeout(snapTimer);
-    if (interactionState === 'settling') window.scrollTo({ top: window.scrollY, behavior: 'auto' });
-    interactionState = 'idle';
-  };
-
   const setComposerMenuOpen = (isOpen) => {
     composerMenu.classList.toggle('is-open', isOpen);
     composerMenu.setAttribute('aria-hidden', String(!isOpen));
-    if (isOpen) pauseSettleForMenu();
   };
 
   const resetAddButton = () => {
@@ -173,52 +145,39 @@
   document.addEventListener('pointerdown', (event) => {
     if (isComposerMenuInteraction(event.target)) return;
     if (composerMenu.classList.contains('is-open')) {
-      suppressSettleForMenuInteraction();
       resetAddButton();
     }
   }, { passive: true });
   window.addEventListener('scroll', () => {
     if (!composerMenu.classList.contains('is-open')) resetAddButton();
   }, { passive: true });
-  const updateAnchorGap = () => {
-    const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
-    page.style.setProperty('--s-anchor-gap', `${(x * 2).toFixed(2)}px`);
+  const updateGroupPushPositions = () => {
+    groupPushFrame = 0;
+    if (!initializationReady || keyboardLockedGroup >= 0) return;
+    const handoffSpacing = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
+    const anchorPosition = groups[0].offsetTop;
+    const groupPositions = groups.map((group) => group.offsetTop);
+    const scrollPosition = window.scrollY;
+
+    groups.forEach((group, index) => {
+      const pinStart = index === 0 ? 0 : groupPositions[index] - anchorPosition;
+      const pinEnd = index === groups.length - 1
+        ? Number.POSITIVE_INFINITY
+        : groupPositions[index + 1] - anchorPosition - handoffSpacing;
+      const pinnedDistance = Math.max(0, Math.min(scrollPosition - pinStart, pinEnd - pinStart));
+      group.style.transform = `translate3d(0, ${pinnedDistance.toFixed(2)}px, 0)`;
+    });
   };
 
-  const snapToDirectionalGroup = () => {
-    const anchorGap = parseFloat(getComputedStyle(page).getPropertyValue('--s-anchor-gap')) || 0;
-    const currentIndex = activeGroupIndex >= 0 ? activeGroupIndex : 0;
-    const targetIndex = Math.min(groups.length - 1, Math.max(0, currentIndex + (lastScrollDirection >= 0 ? 1 : -1)));
-    const target = Math.max(0, groups[targetIndex].offsetTop - anchorGap);
-    if (Math.abs(target - window.scrollY) < 1) return false;
-    window.scrollTo({ top: target, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-    return true;
-  };
-
-  const cancelSettle = () => {
-    window.clearTimeout(snapTimer);
-    if (interactionState === 'settling') {
-      window.scrollTo({ top: window.scrollY, behavior: 'auto' });
-    }
-    interactionState = 'touching';
-  };
-
-  const scheduleSettle = () => {
-    window.clearTimeout(snapTimer);
-    if (!initializationReady || isTouching || keyboardLockedGroup >= 0 || composerMenu.classList.contains('is-open') || performance.now() < suppressSettleUntil) return;
-    interactionState = 'momentum';
-    snapTimer = window.setTimeout(() => {
-      if (isTouching || keyboardLockedGroup >= 0 || composerMenu.classList.contains('is-open') || performance.now() < suppressSettleUntil) return;
-      interactionState = 'settling';
-      if (!snapToDirectionalGroup() || reducedMotion.matches) interactionState = 'idle';
-    }, 600);
+  const scheduleGroupPushPositions = () => {
+    if (!initializationReady || keyboardLockedGroup >= 0 || groupPushFrame) return;
+    groupPushFrame = window.requestAnimationFrame(updateGroupPushPositions);
   };
 
   const lockActiveGroupForKeyboard = () => {
     if (keyboardLockedGroup >= 0) return;
     keyboardLockedGroup = Math.max(0, activeGroupIndex);
     keyboardLockedScrollY = window.scrollY;
-    suppressSettleForChatInteraction();
   };
 
   const maintainKeyboardGroupPosition = () => {
@@ -229,8 +188,8 @@
   const releaseKeyboardGroupLock = () => {
     keyboardLockedGroup = -1;
     keyboardLockedScrollY = 0;
-    suppressSettleForChatInteraction();
     lastScrollY = window.scrollY;
+    scheduleGroupPushPositions();
   };
 
   const updateKeyboardOffset = () => {
@@ -338,7 +297,6 @@
     if (!initializationReady) return;
     const scrollY = window.scrollY;
     const scrollDirection = scrollY - lastScrollY;
-    if (scrollDirection) lastScrollDirection = scrollDirection > 0 ? 1 : -1;
     lastScrollY = scrollY;
     if (keyboardLockedGroup >= 0) return;
     const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
@@ -512,7 +470,6 @@
     input.value = '';
     input.blur();
     updateSubmitArrow();
-    suppressSettleForChatInteraction();
     finalVisibleTimer = window.setTimeout(
       resetConversationDemo,
       finalMessageDurationMs + (reducedMotion.matches ? 0 : finalFadeOutDurationMs)
@@ -540,7 +497,6 @@
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
     markChatActive();
-    suppressSettleForChatInteraction();
     const message = input.value.trim();
     if (!message) {
       input.focus({ preventScroll: true });
@@ -576,71 +532,21 @@
       maintainKeyboardGroupPosition();
       return;
     }
-    if (initializationReady && interactionState !== 'settling') scheduleSettle();
+    scheduleGroupPushPositions();
   }, { passive: true });
   window.addEventListener('scroll', () => {
     if (window.scrollY !== lastScrollY) scheduleRevealGroups();
   }, { passive: true });
-  if ('onscrollend' in window) {
-    window.addEventListener('scrollend', () => {
-      if (interactionState === 'settling') interactionState = 'idle';
-      else scheduleSettle();
-    }, { passive: true });
-  }
-
-  const beginTouch = (event) => {
-    if (isComposerMenuInteraction(event.target)) {
-      suppressSettleForMenuInteraction();
-      pauseSettleForMenu();
-      return;
-    }
-    if (isChatInteraction(event.target)) {
-      markChatActive();
-      suppressSettleForChatInteraction();
-      return;
-    }
-    isTouching = true;
-    cancelSettle();
-  };
-
-  const endTouch = (event) => {
-    isTouching = false;
-    if (isComposerMenuInteraction(event.target) || isChatInteraction(event.target) || performance.now() < suppressSettleUntil) {
-      interactionState = 'idle';
-      return;
-    }
-    if (initializationReady) scheduleSettle();
-  };
-
-  window.addEventListener('pointerdown', beginTouch, { passive: true, capture: true });
-  window.addEventListener('pointerup', endTouch, { passive: true, capture: true });
-  window.addEventListener('pointercancel', endTouch, { passive: true, capture: true });
-  window.addEventListener('touchstart', beginTouch, { passive: true, capture: true });
-  window.addEventListener('touchend', endTouch, { passive: true, capture: true });
-  window.addEventListener('touchcancel', endTouch, { passive: true, capture: true });
-  window.addEventListener('wheel', () => {
-    if (composerMenu.classList.contains('is-open')) {
-      pauseSettleForMenu();
-      return;
-    }
-    resetAddButton();
-    if (interactionState === 'settling') cancelSettle();
-    scheduleSettle();
-  }, { passive: true });
-
-  window.addEventListener('resize', updateAnchorGap, { passive: true });
-  window.addEventListener('orientationchange', updateAnchorGap, { passive: true });
-  updateAnchorGap();
+  window.addEventListener('resize', scheduleGroupPushPositions, { passive: true });
+  window.addEventListener('orientationchange', scheduleGroupPushPositions, { passive: true });
   const initializeGroupOne = () => {
     const run = ++initializationRun;
     document.documentElement.classList.add('s-x-initializing');
     initializationReady = false;
-    window.clearTimeout(snapTimer);
     if (revealFrame) window.cancelAnimationFrame(revealFrame);
+    if (groupPushFrame) window.cancelAnimationFrame(groupPushFrame);
     revealFrame = 0;
-    interactionState = 'idle';
-    isTouching = false;
-    suppressSettleUntil = 0;
+    groupPushFrame = 0;
     resetAddButton();
     composer.classList.remove('is-pulsing');
     activeGroupIndex = -1;
@@ -649,7 +555,6 @@
     lastKeyboardOverlap = 0;
     initialGroupOnePending = true;
     lastScrollY = 0;
-    lastScrollDirection = 1;
     window.scrollTo({ top: 0, behavior: 'auto' });
     groupElements.forEach((elements, index) => {
       stopGroupTyping(index, true);
@@ -658,13 +563,13 @@
     requestAnimationFrame(() => requestAnimationFrame(() => {
       if (run !== initializationRun) return;
       window.scrollTo({ top: 0, behavior: 'auto' });
-      updateAnchorGap();
       updateKeyboardOffset();
       activeGroupIndex = 0;
       initialGroupOnePending = false;
       setGroupState(0, 'typing');
       lastScrollY = window.scrollY;
       initializationReady = true;
+      updateGroupPushPositions();
       document.documentElement.classList.remove('s-x-initializing');
     }));
   };

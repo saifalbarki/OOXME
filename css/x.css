@@ -118,11 +118,13 @@ html.s-x-initializing .s-page__submit:active {
 }
 
 .s-page__group {
+  position: relative;
   display: flex;
   min-height: 100vh;
   flex-direction: column;
   justify-content: flex-start;
   padding: 0;
+  will-change: transform;
 }
 
 .s-page__group-title,
@@ -257,6 +259,10 @@ html.s-route.is-day-mode .s-page__group-description {
   will-change: transform;
   -webkit-backdrop-filter: blur(18px) saturate(115%);
   backdrop-filter: blur(18px) saturate(115%);
+}
+
+.s-page__conversation-bubble[lang="ar"] {
+  font-size: 15.5px;
 }
 
 .s-page__conversation-bubble.is-entering {
