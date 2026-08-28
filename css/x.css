@@ -226,8 +226,15 @@ html.s-route.is-day-mode .s-page__group-description {
   justify-content: flex-end;
   gap: var(--s-chat-gap);
   overflow: hidden;
+  opacity: 1;
   pointer-events: none;
   transform: translateX(-50%);
+  transition: opacity 320ms ease;
+  will-change: opacity;
+}
+
+.s-page__conversation.is-chat-hidden {
+  opacity: 0;
 }
 
 .s-page__conversation-bubble {
@@ -253,6 +260,13 @@ html.s-route.is-day-mode .s-page__group-description {
 
 .s-page__conversation-bubble.is-shifting {
   transition: transform 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page__conversation-bubble.is-exiting {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  animation: s-page-conversation-exit 240ms cubic-bezier(.22, .61, .36, 1) both;
 }
 
 .s-page__conversation-bubble--user {
@@ -325,6 +339,11 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
 @keyframes s-page-conversation-enter {
   from { opacity: 0; transform: translateY(12px) scale(.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes s-page-conversation-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-12px); }
 }
 
 .s-page__composer {
@@ -650,6 +669,8 @@ html.s-route.is-day-mode .s-page__composer-menu {
   .s-page__typing-character { opacity: 1; animation: none !important; }
   .s-page__conversation-bubble.is-entering { animation: none; }
   .s-page__conversation-bubble.is-shifting { transition: none; }
+  .s-page__conversation-bubble.is-exiting { animation: none; }
+  .s-page__conversation { transition: none; }
   .s-page__conversation-final { transition: none; }
   .s-page__submit-icon { transition: none; }
   .s-page__composer,

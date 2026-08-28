@@ -15,38 +15,39 @@
 
   if (!page || !composer || !composerMenu || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || groups.length !== 3) return;
 
-  const maximumConversationMessages = 20;
+  const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
   const finalRevealDelayMs = 1600;
   const finalMessageDurationMs = 5000;
   const finalFadeOutDurationMs = 320;
+  const chatInactivityDelayMs = 5000;
   const englishReplies = [
     'Sorry, we don’t reply to messages for free.',
     'Hmm... it seems you didn’t read the previous message.',
     'Yes. Still the same answer.',
     'Are you seriously trying again?',
     'We have a better idea. Call us.',
-    'Let’s make this easier — tap the + button.',
+    'Let’s make this easier - tap the + button.',
     '看来你还是没明白我们的意思。',
     'Please stop. You’re becoming very committed to this.',
     'One more message and we may have to alert the branding department.',
     'Your account has been dramatically, completely, and absolutely... suspended.'
   ];
   const arabicReplies = [
-    'عذرًا، نحن لا نردّ على الرسائل مجانًا.',
-    'همم... يبدو أنك لم تقرأ الرسالة السابقة.',
-    'نعم. ما زالت الإجابة نفسها.',
-    'أحقًا تحاول مرة أخرى؟',
-    'لدينا فكرة أفضل. اتصل بنا.',
-    'لنجعل الأمر أسهل — اضغط زر +.',
-    'يبدو أنك ما زلت لا تفهم ما نقصده.',
-    'من فضلك توقّف. التزامك بالأمر بدأ يصبح لافتًا.',
-    'رسالة أخرى وقد نضطر — مازحين طبعًا — إلى تنبيه قسم العلامة التجارية.',
+    'عذرــًا، نحن لا نرد على الرسائل مجانــًا.',
+    'همم... يبدو انك لم تقرأ الرسالة السابقة.',
+    'نعم. ما زالت الاجابة نفسها.',
+    'احقــًا تحاول مرة اخرى؟',
+    'لدينا فكرة افضل. اتصل بنا.',
+    'لنجعل الامر اسهل - اضغط زر +.',
+    'يبدو انك ما زلت لا تفهم ما نقصده.',
+    'من فضلك توقف. التزامك بالامر بدأ يصبح لافتــًا.',
+    'رسالة اخرى وقد نضطر - مازحين طبعــًا - الى تنبيه قسم العلامة التجارية.',
     'تم تعليق حسابك بصورة درامية، وكاملة، ومطلقة... مزحة فقط.'
   ];
   const finalMessages = {
-    en: 'Alright, we’re joking.\nThe OOXME conversation experience is still under development. Until it’s ready, reach us through our official channels and we’ll take it from there.',
-    ar: 'حسنًا، نحن نمزح.\nتجربة المحادثة لدى OOXME ما تزال قيد التطوير. وحتى تصبح جاهزة، تواصل معنا عبر قنواتنا الرسمية، وسنتولى الأمر من هناك.'
+    en: 'Alright, we’re joking.\nThe ooxme conversation experience is still under development. Until it’s ready, reach us through our official channels and we’ll take it from there.',
+    ar: 'حسنــًا، نحن نمزح.\nتجربة المحادثة لدى اوكسوم ما تزال قيد التطوير. وحتى تصبح جاهزة، تواصل معنا عبر قنواتنا الرسمية، وسنتولى الامر من هناك.'
   };
   let snapTimer = 0;
   let interactionState = 'idle';
@@ -72,6 +73,7 @@
   let conversationState = 'active';
   let finalVisibleTimer = 0;
   let finalResetTimer = 0;
+  let chatInactivityTimer = 0;
   const initialInputPlaceholder = input.placeholder;
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
 
@@ -161,6 +163,7 @@
     addRotated = !addRotated;
     addButton.classList.toggle('is-rotated', addRotated);
     setComposerMenuOpen(addRotated);
+    if (addRotated) pauseConversationForMenu();
     window.clearTimeout(addFlashTimer);
     addButton.classList.add('is-active');
     addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
@@ -353,19 +356,59 @@
     submitButton.classList.toggle('is-send-ready', isReadyToSend);
   };
 
+  const clearChatInactivityTimer = () => {
+    window.clearTimeout(chatInactivityTimer);
+    chatInactivityTimer = 0;
+  };
+
+  const setConversationVisibility = (isVisible) => {
+    conversation.classList.toggle('is-chat-hidden', !isVisible);
+    conversation.setAttribute('aria-hidden', String(!isVisible));
+  };
+
+  const scheduleChatInactivity = () => {
+    clearChatInactivityTimer();
+    if (conversationState === 'finished' || conversationState === 'resetting' || composerMenu.classList.contains('is-open')) return;
+    chatInactivityTimer = window.setTimeout(() => {
+      chatInactivityTimer = 0;
+      setConversationVisibility(false);
+    }, chatInactivityDelayMs);
+  };
+
+  const markChatActive = () => {
+    clearChatInactivityTimer();
+    if (conversationState === 'finished' || conversationState === 'resetting' || composerMenu.classList.contains('is-open')) return;
+    setConversationVisibility(true);
+    scheduleChatInactivity();
+  };
+
+  const pauseConversationForMenu = () => {
+    clearChatInactivityTimer();
+    setConversationVisibility(false);
+  };
+
   const setComposerInteractivity = (enabled) => {
     composerControls.forEach((control) => { control.disabled = !enabled; });
   };
 
-  const trimConversation = () => {
-    while (conversation.children.length > maximumConversationMessages) conversation.firstElementChild?.remove();
+  const exitOldestConversationBubble = () => {
+    const visibleBubbles = Array.from(conversation.children).filter((bubble) => !bubble.classList.contains('is-exiting'));
+    if (visibleBubbles.length < maximumVisibleConversationMessages) return;
+    const oldestBubble = visibleBubbles[0];
+    const conversationRect = conversation.getBoundingClientRect();
+    const bubbleRect = oldestBubble.getBoundingClientRect();
+    oldestBubble.style.top = `${bubbleRect.top - conversationRect.top}px`;
+    oldestBubble.style.left = `${bubbleRect.left - conversationRect.left}px`;
+    oldestBubble.style.width = `${bubbleRect.width}px`;
+    oldestBubble.classList.add('is-exiting');
+    window.setTimeout(() => oldestBubble.remove(), reducedMotion.matches ? 0 : 240);
   };
 
   const animateConversationShift = (previousPositions) => {
     if (reducedMotion.matches) return;
     const shiftedBubbles = [];
     previousPositions.forEach((previousTop, bubble) => {
-      if (!bubble.isConnected || bubble.classList.contains('is-entering')) return;
+      if (!bubble.isConnected || bubble.classList.contains('is-entering') || bubble.classList.contains('is-exiting')) return;
       const offset = previousTop - bubble.getBoundingClientRect().top;
       if (Math.abs(offset) < 1) return;
       bubble.classList.add('is-shifting');
@@ -381,7 +424,12 @@
   };
 
   const addConversationBubble = (message, speaker, language) => {
-    const previousPositions = new Map(Array.from(conversation.children, (bubble) => [bubble, bubble.getBoundingClientRect().top]));
+    const previousPositions = new Map(
+      Array.from(conversation.children)
+        .filter((existingBubble) => !existingBubble.classList.contains('is-exiting'))
+        .map((existingBubble) => [existingBubble, existingBubble.getBoundingClientRect().top])
+    );
+    exitOldestConversationBubble();
     const bubble = document.createElement('p');
     bubble.className = `s-page__conversation-bubble s-page__conversation-bubble--${speaker} is-entering`;
     bubble.lang = language;
@@ -389,13 +437,14 @@
     bubble.textContent = message;
     bubble.addEventListener('animationend', () => bubble.classList.remove('is-entering'), { once: true });
     conversation.appendChild(bubble);
-    trimConversation();
     animateConversationShift(previousPositions);
   };
 
   const resetConversationDemo = () => {
     window.clearTimeout(finalVisibleTimer);
     finalVisibleTimer = 0;
+    clearChatInactivityTimer();
+    setConversationVisibility(true);
     conversationFinal.classList.remove('is-visible');
     conversationFinal.setAttribute('aria-hidden', 'true');
     conversation.replaceChildren();
@@ -421,6 +470,7 @@
   const revealConversationFinal = (language) => {
     window.clearTimeout(finalVisibleTimer);
     window.clearTimeout(finalResetTimer);
+    clearChatInactivityTimer();
     conversationState = 'finished';
     resetAddButton();
     setComposerInteractivity(false);
@@ -440,6 +490,7 @@
   };
 
   input.addEventListener('focus', () => {
+    markChatActive();
     updateSubmitArrow();
     keyboardLockedGroup = Math.max(0, activeGroupIndex);
     suppressSettleForChatInteraction();
@@ -453,11 +504,15 @@
     lastScrollY = window.scrollY;
   });
 
-  input.addEventListener('input', updateSubmitArrow);
+  input.addEventListener('input', () => {
+    markChatActive();
+    updateSubmitArrow();
+  });
   updateSubmitArrow();
 
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
+    markChatActive();
     suppressSettleForChatInteraction();
     const message = input.value.trim();
     if (!message) {
@@ -509,6 +564,7 @@
       return;
     }
     if (isChatInteraction(event.target)) {
+      markChatActive();
       suppressSettleForChatInteraction();
       return;
     }
