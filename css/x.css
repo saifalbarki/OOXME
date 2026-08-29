@@ -324,7 +324,9 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
   --s-square-logo-size: 6%;
   --s-square-logo-grid-step: 18%;
   --s-square-logo-grid-double-step: calc(var(--s-square-logo-grid-step) + var(--s-square-logo-grid-step));
-  --s-square-logo-reveal-complete: 1700ms;
+  --s-square-logo-motion-duration: 880ms;
+  --s-square-logo-last-delay: 820ms;
+  --s-square-logo-reveal-complete: calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration));
   position: relative;
   isolation: isolate;
   display: block;
@@ -392,7 +394,7 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   transform-origin: center;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: top 880ms cubic-bezier(.22, .61, .36, 1), left 880ms cubic-bezier(.22, .61, .36, 1), opacity 620ms ease, filter 760ms cubic-bezier(.22, .61, .36, 1), transform 880ms cubic-bezier(.22, .61, .36, 1);
+  transition: top var(--s-square-logo-motion-duration) cubic-bezier(.22, .61, .36, 1), left var(--s-square-logo-motion-duration) cubic-bezier(.22, .61, .36, 1), opacity 620ms ease, filter 760ms cubic-bezier(.22, .61, .36, 1), transform var(--s-square-logo-motion-duration) cubic-bezier(.22, .61, .36, 1);
 }
 
 .s-page__square-logo img {
@@ -409,7 +411,7 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
 
 .s-page__square-logo--center-row img {
   width: auto;
-  height: 100%;
+  height: var(--s-logo-row-height, 100%);
   max-width: none;
 }
 

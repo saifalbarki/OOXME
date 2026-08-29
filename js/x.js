@@ -358,6 +358,12 @@
   addButton.addEventListener('click', (event) => {
     if (!initializationReady) return;
     event.stopPropagation();
+    if (conversationVisible) {
+      window.clearTimeout(addFlashTimer);
+      addButton.classList.add('is-active');
+      addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
+      return;
+    }
     if (activeTemporaryUi === 'menu') {
       activateTemporaryUi('none');
     } else {
@@ -810,7 +816,6 @@
   };
   setupLogoParticleField();
 
-  window.addEventListener('scroll', noteFlowScroll, { passive: true });
   window.addEventListener('resize', scheduleFlowSync, { passive: true });
   window.visualViewport?.addEventListener('resize', scheduleFlowSync, { passive: true });
 
@@ -867,6 +872,21 @@
 
     if ((next === 'menu' || next === 'utilities') && document.activeElement === input) input.blur();
   };
+
+  const closeConversationWithoutReset = () => {
+    if (!conversationVisible) return;
+    setConversationVisibility(false);
+    if (activeTemporaryUi === 'chat') activeTemporaryUi = 'none';
+  };
+
+  document.addEventListener('click', (event) => {
+    if (isTemporaryUiInteraction(event.target)) return;
+    closeConversationWithoutReset();
+  }, { passive: true });
+  window.addEventListener('scroll', () => {
+    noteFlowScroll();
+    closeConversationWithoutReset();
+  }, { passive: true });
 
   conversation.addEventListener('pointerdown', () => {
     if (conversationState !== 'finished' && conversationState !== 'resetting') activateTemporaryUi('chat');
@@ -976,6 +996,7 @@
     event.stopPropagation();
     const message = input.value.trim();
     if (!message) {
+      if (conversationVisible) return;
       activateTemporaryUi(activeTemporaryUi === 'utilities' ? 'none' : 'utilities');
       return;
     }
@@ -1038,7 +1059,7 @@
     document.documentElement.classList.remove('s-x-initializing');
   };
 
-  const inactivityResetDelayMs = 15000;
+  const inactivityResetDelayMs = 30000;
   let inactivityResetTimer = 0;
 
   const resetPageToInitialState = () => {
