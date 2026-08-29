@@ -11,7 +11,8 @@
   const addButton = document.querySelector('.s-page__add');
   const input = document.querySelector('.s-page__composer-input');
   const submitButton = composer?.querySelector('.s-page__submit');
-  const logoReveal = document.querySelector('[data-s-logo-reveal]');
+  const logoParticleField = document.querySelector('[data-s-logo-particles]');
+  const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
   const conversation = document.querySelector('[data-s-conversation]');
   const conversationFinal = document.querySelector('[data-s-conversation-final]');
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
@@ -23,7 +24,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoReveal || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -320,17 +321,10 @@
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
-  let hasRunLogoReveal = false;
-  const runLogoRevealOnce = () => {
-    if (hasRunLogoReveal) return;
-    hasRunLogoReveal = true;
-    logoReveal.classList.add('is-revealing');
-  };
   const revealObserver = 'IntersectionObserver' in window
     ? new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         entry.target.classList.toggle('is-visible', entry.isIntersecting);
-        if (entry.target === groups[0] && entry.isIntersecting) runLogoRevealOnce();
       });
     }, { threshold: 0.15 })
     : null;
@@ -381,9 +375,178 @@
     if (revealObserver) revealObserver.observe(group);
     else {
       group.classList.add('is-visible');
-      if (group === groups[0]) runLogoRevealOnce();
     }
   });
+
+  const setupLogoParticleField = () => {
+    const context = logoParticleCanvas.getContext('2d', { alpha: true });
+    if (!context) return;
+
+    const maskCanvas = document.createElement('canvas');
+    const particleCanvas = document.createElement('canvas');
+    const maskContext = maskCanvas.getContext('2d', { alpha: true });
+    const particleContext = particleCanvas.getContext('2d', { alpha: true });
+    if (!maskContext || !particleContext) return;
+
+    const logoMaskImage = new Image();
+    const pointer = { x: 0, y: 0, strength: 0 };
+    let particles = [];
+    let width = 0;
+    let height = 0;
+    let renderedFrame = 0;
+    let isInViewport = false;
+    let isReady = false;
+    let particleBuildStartedAt = null;
+
+    const random = (minimum, maximum) => minimum + Math.random() * (maximum - minimum);
+    const stopRendering = () => {
+      if (!renderedFrame) return;
+      window.cancelAnimationFrame(renderedFrame);
+      renderedFrame = 0;
+    };
+
+    const activatePointer = (event) => {
+      const rect = logoParticleCanvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      pointer.x = ((event.clientX - rect.left) / rect.width) * width;
+      pointer.y = ((event.clientY - rect.top) / rect.height) * height;
+      pointer.strength = 1;
+      startRendering();
+    };
+
+    const render = (timestamp) => {
+      renderedFrame = 0;
+      if (!isReady || !isInViewport || document.hidden) return;
+
+      const time = timestamp * .001;
+      const particleColor = document.documentElement.classList.contains('is-day-mode') ? '0, 0, 0' : '255, 255, 255';
+      particleBuildStartedAt ??= timestamp;
+      const fieldBuildProgress = Math.min(1, (timestamp - particleBuildStartedAt) / 2600);
+      pointer.strength *= .92;
+
+      particleContext.clearRect(0, 0, width, height);
+      particles.forEach((particle) => {
+        const distance = Math.hypot(particle.x - pointer.x, particle.y - pointer.y);
+        const influence = pointer.strength > .004
+          ? Math.max(0, 1 - distance / (44 * particle.pixelRatio)) * pointer.strength
+          : 0;
+        const twinkle = .5 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .2);
+        const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
+        const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
+        const alpha = Math.min(.9, particle.alpha * twinkle + influence * .48) * buildEase;
+        const radius = particle.radius * (1 + influence * .32);
+        const localMotion = influence * particle.pixelRatio * 1.1;
+        const x = particle.x + Math.sin((time * particle.drift) + particle.phase) * (particle.pixelRatio * .22 + localMotion);
+        const y = particle.y + Math.cos((time * particle.drift * .8) + particle.phase) * (particle.pixelRatio * .16 + localMotion);
+
+        particleContext.beginPath();
+        particleContext.fillStyle = `rgba(${particleColor}, ${alpha.toFixed(3)})`;
+        particleContext.arc(x, y, radius, 0, Math.PI * 2);
+        particleContext.fill();
+      });
+
+      context.clearRect(0, 0, width, height);
+      context.globalCompositeOperation = 'source-over';
+      context.drawImage(particleCanvas, 0, 0);
+      context.globalCompositeOperation = 'destination-in';
+      context.drawImage(maskCanvas, 0, 0);
+      context.globalCompositeOperation = 'source-over';
+
+      if (!reducedMotion.matches) startRendering();
+    };
+
+    const startRendering = () => {
+      if (!isReady || !isInViewport || document.hidden || renderedFrame) return;
+      renderedFrame = window.requestAnimationFrame(render);
+    };
+
+    const resizeCanvas = () => {
+      if (!logoMaskImage.naturalWidth) return;
+      const rect = logoParticleCanvas.getBoundingClientRect();
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      const nextWidth = Math.max(1, Math.round(rect.width * pixelRatio));
+      const nextHeight = Math.max(1, Math.round(rect.height * pixelRatio));
+      if (nextWidth === width && nextHeight === height && particles.length) return;
+
+      width = nextWidth;
+      height = nextHeight;
+      [logoParticleCanvas, maskCanvas, particleCanvas].forEach((canvas) => {
+        canvas.width = width;
+        canvas.height = height;
+      });
+      maskContext.clearRect(0, 0, width, height);
+      maskContext.drawImage(logoMaskImage, 0, 0, width, height);
+      const maskPixels = maskContext.getImageData(0, 0, width, height).data;
+      const particleCount = Math.min(440, Math.max(320, Math.round((rect.width * rect.height) / 175)));
+      const alphaAt = (x, y) => {
+        if (x < 0 || x >= width || y < 0 || y >= height) return 0;
+        return maskPixels[((Math.floor(y) * width + Math.floor(x)) * 4) + 3];
+      };
+      const edgeWeightAt = (x, y) => {
+        const edgeSearchRange = Math.max(6, Math.round(13 * pixelRatio));
+        const directions = [[1, 0], [-1, 0], [0, 1], [0, -1], [.707, .707], [-.707, .707], [.707, -.707], [-.707, -.707]];
+        let nearestEdge = edgeSearchRange;
+        directions.forEach(([dx, dy]) => {
+          for (let distance = 1; distance <= edgeSearchRange; distance += 1) {
+            if (alphaAt(x + (dx * distance), y + (dy * distance)) < 160) {
+              nearestEdge = Math.min(nearestEdge, distance);
+              break;
+            }
+          }
+        });
+        return 1 - (nearestEdge / edgeSearchRange);
+      };
+      particles = [];
+      particleBuildStartedAt = null;
+      let attempts = 0;
+      while (particles.length < particleCount && attempts < particleCount * 420) {
+        attempts += 1;
+        const x = Math.floor(Math.random() * width);
+        const y = Math.floor(Math.random() * height);
+        if (maskPixels[((y * width + x) * 4) + 3] < 160) continue;
+        const edgeWeight = edgeWeightAt(x, y);
+        if (Math.random() > (.18 + (edgeWeight * .82))) continue;
+        particles.push({
+          x,
+          y,
+          pixelRatio,
+          radius: random(.65, 1.38) * pixelRatio,
+          alpha: random(.28, .56) + (edgeWeight * .12),
+          phase: random(0, Math.PI * 2),
+          speed: random(.7, 1.45),
+          drift: random(.22, .6),
+          buildDelay: random(0, .7)
+        });
+      }
+      isReady = true;
+      startRendering();
+    };
+
+    logoParticleCanvas.addEventListener('pointermove', activatePointer, { passive: true });
+    logoParticleCanvas.addEventListener('pointerdown', (event) => {
+      event.stopPropagation();
+      activatePointer(event);
+    }, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopRendering();
+      else startRendering();
+    });
+    new MutationObserver(startRendering).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    if ('ResizeObserver' in window) new ResizeObserver(resizeCanvas).observe(logoParticleField);
+    else window.addEventListener('resize', resizeCanvas, { passive: true });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        isInViewport = entries.some((entry) => entry.isIntersecting);
+        if (isInViewport) startRendering();
+        else stopRendering();
+      }, { threshold: .01 }).observe(logoParticleField);
+    } else {
+      isInViewport = true;
+    }
+    logoMaskImage.addEventListener('load', resizeCanvas, { once: true });
+    logoMaskImage.src = 'assets/logo/OX-001-LOGO-black.png';
+  };
+  setupLogoParticleField();
 
   sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();
