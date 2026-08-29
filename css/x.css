@@ -324,6 +324,7 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
   --s-square-logo-size: 6%;
   --s-square-logo-grid-step: 18%;
   --s-square-logo-grid-double-step: calc(var(--s-square-logo-grid-step) + var(--s-square-logo-grid-step));
+  --s-square-logo-reveal-complete: 1700ms;
   position: relative;
   isolation: isolate;
   display: block;
@@ -344,7 +345,7 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
 
 .s-page__square-logo-guides {
   position: absolute;
-  z-index: 0;
+  z-index: 3;
   inset: 0;
   display: block;
   width: 100%;
@@ -367,7 +368,7 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
 .s-page__square-logo-stage.is-visible .s-page__square-logo-guides line {
   opacity: .13;
   stroke-dashoffset: 0;
-  transition-delay: 340ms;
+  transition-delay: calc(var(--s-square-logo-reveal-complete) + 20ms);
 }
 
 .s-page__square-logo {
@@ -404,6 +405,18 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   filter: brightness(0) invert(1);
   transform: scale(1);
   transform-origin: center;
+}
+
+.s-page__square-logo--center-row img {
+  width: auto;
+  height: 100%;
+  max-width: none;
+}
+
+.s-page__square-logo--center-column img {
+  width: 100%;
+  height: auto;
+  max-height: none;
 }
 
 html.s-route.is-day-mode .s-page__square-logo img {
