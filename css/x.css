@@ -167,12 +167,22 @@ html.s-x-initializing .s-page__submit:active {
   touch-action: manipulation;
 }
 
+.s-page__image-frame {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: calc(var(--s-x) * 2) 0 0;
+  border-radius: var(--s-composer-radius);
+  overflow: hidden;
+}
+
 .s-page__image-group {
   display: block;
   width: 100%;
   max-width: 100%;
   height: auto;
-  margin: var(--s-x) 0 0;
+  margin: 0;
+  border: 1px solid var(--s-glass-stroke);
   border-radius: var(--s-composer-radius);
   opacity: 0;
   filter: blur(14px);
@@ -185,6 +195,85 @@ html.s-x-initializing .s-page__submit:active {
   filter: blur(0);
   visibility: visible;
   transition-delay: 1.7s, 1.7s, 1.7s;
+}
+
+.s-page__image-copy {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--s-x) * 2);
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(8px);
+  transition: opacity .6s cubic-bezier(.22, .61, .36, 1), filter .6s cubic-bezier(.22, .61, .36, 1), transform .6s cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page__image-copy-language {
+  display: flex;
+  width: min(78%, 360px);
+  flex-direction: column;
+  gap: calc(var(--s-x) * .55);
+  text-align: left;
+}
+
+.s-page__image-copy-language--ar {
+  display: none;
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] .s-page__image-copy-language--en {
+  display: none;
+}
+
+html[dir="rtl"] .s-page__image-copy-language--ar {
+  display: flex;
+}
+
+.s-page__image-copy p {
+  margin: 0;
+}
+
+.s-page__image-copy-main {
+  color: #ffffff;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(30px, 7vw, 54px);
+  font-weight: 500;
+  letter-spacing: -.035em;
+  line-height: .98;
+}
+
+.s-page__image-copy-supporting,
+.s-page__image-copy-version {
+  color: rgba(255, 255, 255, .9);
+  font-family: OOXMEEnglish, Arial, sans-serif;
+  font-size: clamp(11px, 1.8vw, 14px);
+  font-weight: 500;
+  letter-spacing: -.015em;
+  line-height: 1.25;
+}
+
+.s-page__image-copy-version {
+  margin-top: calc(var(--s-x) * .75) !important;
+  font-size: clamp(10px, 1.6vw, 12px);
+  font-weight: 600;
+  letter-spacing: .08em;
+}
+
+.s-page__image-copy-language--ar .s-page__image-copy-main,
+.s-page__image-copy-language--ar .s-page__image-copy-supporting,
+.s-page__image-copy-language--ar .s-page__image-copy-version {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+.s-page__group.is-image-copy-visible .s-page__image-copy {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
 }
 
 .s-page__section--future {

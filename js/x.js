@@ -13,6 +13,8 @@
   const submitButton = composer?.querySelector('.s-page__submit');
   const logoParticleField = document.querySelector('[data-s-logo-particles]');
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
+  const imageFrame = document.querySelector('[data-s-image-frame]');
+  const imageCopy = document.querySelector('[data-s-image-copy]');
   const conversation = document.querySelector('[data-s-conversation]');
   const conversationFinal = document.querySelector('[data-s-conversation-final]');
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
@@ -24,7 +26,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -320,6 +322,14 @@
     conversation.style.paddingRight = `${Math.max(0, conversationRect.right - inputFieldRect.right)}px`;
   };
 
+  const syncImageCopyVisibility = () => {
+    const imageRect = imageFrame.getBoundingClientRect();
+    const composerRect = composer.getBoundingClientRect();
+    const isVisible = imageRect.top <= composerRect.top;
+    imageFrame.closest('[data-s-group]')?.classList.toggle('is-image-copy-visible', isVisible);
+    imageCopy.setAttribute('aria-hidden', String(!isVisible));
+  };
+
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
   const revealObserver = 'IntersectionObserver' in window
     ? new IntersectionObserver((entries) => {
@@ -371,6 +381,7 @@
     setRevealLineDelays();
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
+  syncImageCopyVisibility();
   groups.forEach((group) => {
     if (revealObserver) revealObserver.observe(group);
     else {
@@ -579,6 +590,18 @@
     logoMaskImage.src = 'assets/logo/OX-001-LOGO-black.png';
   };
   setupLogoParticleField();
+
+  let imageCopyFrame = 0;
+  const requestImageCopyVisibilitySync = () => {
+    if (imageCopyFrame) return;
+    imageCopyFrame = window.requestAnimationFrame(() => {
+      imageCopyFrame = 0;
+      syncImageCopyVisibility();
+    });
+  };
+  window.addEventListener('scroll', requestImageCopyVisibilitySync, { passive: true });
+  window.addEventListener('resize', requestImageCopyVisibilitySync, { passive: true });
+  window.visualViewport?.addEventListener('resize', requestImageCopyVisibilitySync, { passive: true });
 
   sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();
