@@ -284,6 +284,10 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
   letter-spacing: normal;
 }
 
+.s-page__image-copy-language--ar .s-page__image-copy-main {
+  font-style: normal;
+}
+
 .s-page__group.is-image-copy-visible .s-page__image-copy {
   opacity: 1;
   filter: blur(0);
