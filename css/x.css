@@ -246,32 +246,23 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
   color: #ffffff;
   font-family: "Playfair Display", Georgia, serif;
   font-size: clamp(30px, 7vw, 54px);
-  font-weight: 500;
+  font-weight: 600;
   font-style: italic;
   letter-spacing: -.035em;
   line-height: .98;
 }
 
-.s-page__image-copy-supporting,
-.s-page__image-copy-version {
+.s-page__image-copy-supporting {
   color: rgba(255, 255, 255, .9);
   font-family: OOXMEEnglish, Arial, sans-serif;
-  font-size: clamp(11px, 1.8vw, 14px);
-  font-weight: 500;
-  letter-spacing: -.015em;
-  line-height: 1.25;
-}
-
-.s-page__image-copy-version {
-  margin-top: calc(var(--s-x) * .25) !important;
-  font-size: clamp(10px, 1.6vw, 12px);
-  font-weight: 600;
-  letter-spacing: .08em;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1.2;
 }
 
 .s-page__image-copy-language--ar .s-page__image-copy-main,
-.s-page__image-copy-language--ar .s-page__image-copy-supporting,
-.s-page__image-copy-language--ar .s-page__image-copy-version {
+.s-page__image-copy-language--ar .s-page__image-copy-supporting {
   font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
   letter-spacing: normal;
 }
@@ -331,13 +322,13 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
 }
 
 .s-page__marquee-track {
-  animation: s-page-marquee-forward 36s linear infinite;
+  animation: s-page-marquee-forward 30s linear infinite;
   will-change: transform;
 }
 
 .s-page__marquee--albasri .s-page__marquee-track {
   animation-name: s-page-marquee-reverse;
-  animation-duration: 42s;
+  animation-duration: 36s;
 }
 
 .s-page__marquee-set {
@@ -347,7 +338,7 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
 
 .s-page__marquee img {
   display: block;
-  height: clamp(168px, 27vw, 246px);
+  height: clamp(210px, 34vw, 300px);
   width: auto;
   max-width: none;
   flex: 0 0 auto;
