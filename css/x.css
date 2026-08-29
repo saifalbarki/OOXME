@@ -321,6 +321,7 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
 }
 
 .s-page__square-logo-stage {
+  --s-square-logo-size: 12%;
   position: relative;
   isolation: isolate;
   display: block;
@@ -344,26 +345,26 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   z-index: 0;
   inset: 0;
   display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   pointer-events: none;
 }
 
-.s-page__square-logo-guides i {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  display: block;
-  width: 0;
-  height: 1px;
-  background: currentColor;
+.s-page__square-logo-guides line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: .75;
+  vector-effect: non-scaling-stroke;
   opacity: 0;
-  transform: rotate(var(--s-guide-angle));
-  transform-origin: left center;
-  transition: width 720ms cubic-bezier(.22, .61, .36, 1), opacity 520ms ease;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 720ms cubic-bezier(.22, .61, .36, 1), opacity 520ms ease;
 }
 
-.s-page__square-logo-stage.is-visible .s-page__square-logo-guides i {
-  width: var(--s-guide-length);
+.s-page__square-logo-stage.is-visible .s-page__square-logo-guides line {
   opacity: .13;
+  stroke-dashoffset: 0;
   transition-delay: 340ms;
 }
 
@@ -374,7 +375,7 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   left: 50%;
   display: grid;
   place-items: center;
-  width: var(--s-logo-size, 14%);
+  width: var(--s-square-logo-size);
   aspect-ratio: 1;
   margin: 0;
   padding: 0;
@@ -409,7 +410,6 @@ html.s-route.is-day-mode .s-page__square-logo img {
 
 .s-page__square-logo--center {
   z-index: 2;
-  width: 14%;
   filter: blur(8px);
   transform: translate(-50%, -50%) scale(.84);
   transition: opacity 560ms ease, filter 680ms cubic-bezier(.22, .61, .36, 1), transform 680ms cubic-bezier(.22, .61, .36, 1);
@@ -1332,7 +1332,7 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
 @media (prefers-reduced-motion: reduce) {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
   .s-page__flow-media { transition: none; }
-  .s-page__square-logo-guides i { transition: none; }
+  .s-page__square-logo-guides line { transition: none; }
   .s-page__square-logo { transition: none; }
   .s-page__square-logo.is-pulsing img { animation: none; }
   .s-page__marquee-track { animation: none; }
