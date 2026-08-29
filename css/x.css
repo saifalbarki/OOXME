@@ -473,6 +473,9 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
 
 .s-page__composer {
   --s-composer-surface: rgba(255, 255, 255, .16);
+  --s-composer-stroke: rgba(255, 255, 255, .17);
+  --s-composer-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  --s-composer-backdrop: blur(20px) saturate(125%);
   position: fixed;
   z-index: 20;
   left: max(calc(var(--s-x) * 2), calc((100% - 660px) / 2));
@@ -487,16 +490,28 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   min-height: 48px;
   margin: 0;
   padding: 2px;
-  border: 1px solid rgba(255, 255, 255, .17);
+  border: 1px solid transparent;
   border-radius: 28px;
-  background: var(--s-composer-surface);
-  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  background: transparent;
+  box-shadow: none;
   color: #0b0b0b;
   transform: none;
   transition: none;
   -webkit-tap-highlight-color: transparent;
-  -webkit-backdrop-filter: blur(20px) saturate(125%);
-  backdrop-filter: blur(20px) saturate(125%);
+}
+
+.s-page__composer::before {
+  position: absolute;
+  z-index: -1;
+  inset: -1px;
+  border: 1px solid var(--s-composer-stroke);
+  border-radius: inherit;
+  background: var(--s-composer-surface);
+  box-shadow: var(--s-composer-shadow);
+  content: "";
+  pointer-events: none;
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
 }
 
 .s-page__input-label {
@@ -509,8 +524,8 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
 
 html.s-route.is-day-mode .s-page__composer {
   --s-composer-surface: rgba(255, 255, 255, .42);
-  border-color: rgba(0, 0, 0, .065);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012);
+  --s-composer-stroke: rgba(0, 0, 0, .065);
+  --s-composer-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012);
 }
 
 .s-page__composer-input {
@@ -562,18 +577,18 @@ html[lang="ar"] .s-page__composer-input:placeholder-shown {
   padding: var(--s-menu-inset);
   flex-direction: column;
   gap: 6px;
-  border: 1px solid rgba(255, 255, 255, .17);
+  border: 1px solid var(--s-composer-stroke);
   border-radius: var(--s-menu-radius);
   background: var(--s-composer-surface);
-  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  box-shadow: var(--s-composer-shadow);
   color: #000000;
   opacity: 0;
   pointer-events: none;
   transform: translateY(6px);
   visibility: hidden;
   transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
-  -webkit-backdrop-filter: blur(20px) saturate(125%);
-  backdrop-filter: blur(20px) saturate(125%);
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
 }
 
 html[dir="rtl"] .s-page__composer-menu {
@@ -634,9 +649,7 @@ html[dir="rtl"] .s-page__composer-menu {
 }
 
 html.s-route.is-day-mode .s-page__composer-menu {
-  border-color: rgba(0, 0, 0, .065);
   color: #000000;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012);
 }
 
 html.s-route.is-day-mode .s-page__composer-menu-item::before {
@@ -753,12 +766,12 @@ html.s-route.is-day-mode .s-page__add.is-active {
   margin: 0;
   padding: 0;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, .17);
+  border: 1px solid var(--s-composer-stroke);
   border-radius: 50%;
   background: var(--s-composer-surface);
-  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
-  -webkit-backdrop-filter: blur(20px) saturate(125%);
-  backdrop-filter: blur(20px) saturate(125%);
+  box-shadow: var(--s-composer-shadow);
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
   cursor: pointer;
   appearance: none;
   -webkit-tap-highlight-color: transparent;
@@ -806,11 +819,6 @@ html.s-route.is-day-mode .s-page__add.is-active {
 .s-page__send-utility.is-active .s-page__send-utility-inner {
   border-color: #111111;
   background: #111111;
-}
-
-html.s-route.is-day-mode .s-page__send-utility {
-  border-color: rgba(0, 0, 0, .065);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012);
 }
 
 html.s-route.is-day-mode .s-page__send-utility-inner {
