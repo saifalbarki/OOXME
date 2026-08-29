@@ -489,6 +489,8 @@
       configureCanvasContexts();
       maskContext.clearRect(0, 0, width, height);
       maskContext.drawImage(logoMaskImage, 0, 0, width, height);
+      // The trademark is separate from the OOXME mark; exclude it before sampling and clipping.
+      maskContext.clearRect(Math.floor(width * .855), 0, Math.ceil(width * .145), Math.ceil(height * .072));
       const maskPixels = maskContext.getImageData(0, 0, width, height).data;
       const isPhoneViewport = window.matchMedia('(max-width: 600px)').matches;
       const particleCount = isPhoneViewport
