@@ -15,6 +15,7 @@
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
   const imageFrame = document.querySelector('[data-s-image-frame]');
   const imageCopy = document.querySelector('[data-s-image-copy]');
+  const imageRevealGroup = imageFrame?.closest('[data-s-group]');
   const conversation = document.querySelector('[data-s-conversation]');
   const conversationFinal = document.querySelector('[data-s-conversation-final]');
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
@@ -26,13 +27,16 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !imageRevealGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
   const finalRevealDelayMs = 1600;
   const finalMessageDurationMs = 10000;
   const finalFadeOutDurationMs = 320;
+  const imageRevealDelayMs = 1700;
+  const imageRevealDurationMs = 1000;
+  const imageCopyRevealDelayMs = 2000;
   const englishReplies = [
     'Sorry, we don’t reply to messages for free.',
     'Hmm... it seems you didn’t read the previous message.',
@@ -109,7 +113,7 @@
   let addFlashTimer = 0;
   const menuItemFlashTimers = new Map();
   const sendUtilityPulseFrames = new Map();
-  const marqueePulseFrames = new Map();
+  const marqueeItemPulseFrames = new Map();
   const pendingReplyTimers = new Set();
   let addRotated = false;
   let initializationReady = false;
@@ -120,6 +124,8 @@
   let finalVisibleTimer = 0;
   let finalResetTimer = 0;
   let pendingFinalRevealTimer = 0;
+  let imageCopyReadyTimer = 0;
+  let localizedGeometryFrame = 0;
   let conversationVisible = true;
   let activeTemporaryUi = 'none';
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
@@ -254,22 +260,37 @@
     sendUtilityPulseFrames.set(control, frame);
   };
 
-  const pulseMarquee = (marquee) => {
-    const pendingFrame = marqueePulseFrames.get(marquee);
+  const pulseMarqueeItem = (image) => {
+    const pendingFrame = marqueeItemPulseFrames.get(image);
     if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
-    marquee.classList.remove('is-pulsing');
+    image.classList.remove('is-pulsing');
     const frame = window.requestAnimationFrame(() => {
-      marqueePulseFrames.delete(marquee);
-      marquee.classList.add('is-pulsing');
+      marqueeItemPulseFrames.delete(image);
+      image.classList.add('is-pulsing');
     });
-    marqueePulseFrames.set(marquee, frame);
+    marqueeItemPulseFrames.set(image, frame);
   };
 
   document.querySelectorAll('.s-page__marquee').forEach((marquee) => {
-    marquee.addEventListener('pointerdown', () => pulseMarquee(marquee), { passive: true });
+    marquee.addEventListener('pointerdown', (event) => {
+      const image = event.target.closest('.s-page__marquee img');
+      if (image && marquee.contains(image)) pulseMarqueeItem(image);
+    }, { passive: true });
     marquee.addEventListener('animationend', (event) => {
-      if (event.animationName === 's-page-marquee-pulse') marquee.classList.remove('is-pulsing');
+      if (event.animationName === 's-page-marquee-item-pulse' && event.target.matches('.s-page__marquee img')) {
+        event.target.classList.remove('is-pulsing');
+      }
     });
+
+    const images = Array.from(marquee.querySelectorAll('img'));
+    const settleImage = (image) => {
+      if (image.complete) return image.decode?.().catch(() => {}) || Promise.resolve();
+      return new Promise((resolve) => {
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      });
+    };
+    Promise.all(images.map(settleImage)).then(() => marquee.classList.add('is-marquee-ready'));
   });
 
   [sendThemeUtility, sendLanguageUtility].forEach((control) => {
@@ -346,9 +367,28 @@
   const syncImageCopyVisibility = () => {
     const imageRect = imageFrame.getBoundingClientRect();
     const composerRect = composer.getBoundingClientRect();
-    const isVisible = imageRect.top <= composerRect.top;
-    imageFrame.closest('[data-s-group]')?.classList.toggle('is-image-copy-visible', isVisible);
-    imageCopy.setAttribute('aria-hidden', String(!isVisible));
+    const crossedComposerThreshold = imageRect.top <= composerRect.top;
+    imageRevealGroup.classList.toggle('is-image-copy-visible', crossedComposerThreshold);
+    const copyIsRevealed = crossedComposerThreshold
+      && imageRevealGroup.classList.contains('is-visible')
+      && imageRevealGroup.classList.contains('is-image-copy-ready');
+    imageCopy.setAttribute('aria-hidden', String(!copyIsRevealed));
+  };
+
+  const syncImageCopyReadiness = (groupIsVisible) => {
+    window.clearTimeout(imageCopyReadyTimer);
+    imageCopyReadyTimer = 0;
+    imageRevealGroup.classList.remove('is-image-copy-ready');
+    if (!groupIsVisible) {
+      syncImageCopyVisibility();
+      return;
+    }
+    imageCopyReadyTimer = window.setTimeout(() => {
+      imageCopyReadyTimer = 0;
+      if (!imageRevealGroup.classList.contains('is-visible')) return;
+      imageRevealGroup.classList.add('is-image-copy-ready');
+      syncImageCopyVisibility();
+    }, imageRevealDelayMs + imageRevealDurationMs + imageCopyRevealDelayMs);
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
@@ -356,6 +396,7 @@
     ? new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         entry.target.classList.toggle('is-visible', entry.isIntersecting);
+        if (entry.target === imageRevealGroup) syncImageCopyReadiness(entry.isIntersecting);
       });
     }, { threshold: 0.15 })
     : null;
@@ -379,6 +420,57 @@
     });
   };
 
+  const measureLocalizedTextHeight = (element, value, language) => {
+    const width = element.getBoundingClientRect().width;
+    if (!width) return 0;
+    const probe = element.cloneNode(false);
+    probe.removeAttribute('id');
+    probe.removeAttribute('data-s-reveal');
+    probe.lang = language;
+    probe.dir = language === 'ar' ? 'rtl' : 'ltr';
+    probe.style.position = 'fixed';
+    probe.style.inset = '0 auto auto -10000px';
+    probe.style.width = `${width}px`;
+    probe.style.maxWidth = 'none';
+    probe.style.height = 'auto';
+    probe.style.minHeight = '0';
+    probe.style.margin = '0';
+    probe.style.opacity = '1';
+    probe.style.filter = 'none';
+    probe.style.clipPath = 'none';
+    probe.style.visibility = 'hidden';
+    probe.style.pointerEvents = 'none';
+    probe.style.transition = 'none';
+    probe.style.fontFamily = language === 'ar'
+      ? 'OOXMETosh, OOXMEScript, Arial, sans-serif'
+      : 'OOXMEScript, OOXMEEnglish, Arial, sans-serif';
+    setLocalizedText(probe, value);
+    document.body.appendChild(probe);
+    const height = probe.getBoundingClientRect().height;
+    probe.remove();
+    return height;
+  };
+
+  const stabilizeLocalizedGeometry = () => {
+    localizedGeometryFrame = 0;
+    groupElements.forEach((elements, groupIndex) => {
+      if (!pageCopy.en.groups[groupIndex] || !pageCopy.ar.groups[groupIndex]) return;
+      elements.forEach((element, elementIndex) => {
+        element.style.height = '';
+        const height = Math.max(
+          measureLocalizedTextHeight(element, pageCopy.en.groups[groupIndex][elementIndex], 'en'),
+          measureLocalizedTextHeight(element, pageCopy.ar.groups[groupIndex][elementIndex], 'ar')
+        );
+        if (height) element.style.height = `${Math.ceil(height)}px`;
+      });
+    });
+  };
+
+  const scheduleLocalizedGeometry = () => {
+    if (localizedGeometryFrame) window.cancelAnimationFrame(localizedGeometryFrame);
+    localizedGeometryFrame = window.requestAnimationFrame(stabilizeLocalizedGeometry);
+  };
+
   applyPageCopy = (language) => {
     const copy = pageCopy[language];
     groupElements.forEach((elements, groupIndex) => {
@@ -400,13 +492,16 @@
       conversationFinalCopy.textContent = finalMessages[language];
     }
     setRevealLineDelays();
+    scheduleLocalizedGeometry();
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
+  document.fonts?.ready.then(scheduleLocalizedGeometry);
   syncImageCopyVisibility();
   groups.forEach((group) => {
     if (revealObserver) revealObserver.observe(group);
     else {
       group.classList.add('is-visible');
+      if (group === imageRevealGroup) syncImageCopyReadiness(true);
     }
   });
 
@@ -822,10 +917,12 @@
   window.addEventListener('resize', () => {
     syncConversationInputBounds();
     scheduleKeyboardOffset();
+    scheduleLocalizedGeometry();
   }, { passive: true });
   window.addEventListener('orientationchange', () => {
     syncConversationInputBounds();
     scheduleKeyboardOffset();
+    scheduleLocalizedGeometry();
   }, { passive: true });
   const initializeGroupOne = () => {
     initializationRun += 1;
@@ -854,21 +951,23 @@
     window.clearTimeout(finalVisibleTimer);
     window.clearTimeout(finalResetTimer);
     window.clearTimeout(pendingFinalRevealTimer);
+    window.clearTimeout(imageCopyReadyTimer);
     inactivityResetTimer = 0;
     finalVisibleTimer = 0;
     finalResetTimer = 0;
     pendingFinalRevealTimer = 0;
+    imageCopyReadyTimer = 0;
     pendingReplyTimers.forEach((timer) => window.clearTimeout(timer));
     pendingReplyTimers.clear();
     sendUtilityPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     sendUtilityPulseFrames.clear();
-    marqueePulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
-    marqueePulseFrames.clear();
+    marqueeItemPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    marqueeItemPulseFrames.clear();
     menuItemFlashTimers.forEach((timer) => window.clearTimeout(timer));
     menuItemFlashTimers.clear();
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
     composerMenu.querySelectorAll('.is-active').forEach((element) => element.classList.remove('is-active'));
-    groups.forEach((group) => group.classList.remove('is-visible', 'is-image-copy-visible'));
+    groups.forEach((group) => group.classList.remove('is-visible', 'is-image-copy-visible', 'is-image-copy-ready'));
     imageCopy.setAttribute('aria-hidden', 'true');
     conversation.replaceChildren();
     conversationFinal.classList.remove('is-visible');
