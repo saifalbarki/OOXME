@@ -15,6 +15,7 @@
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
   const groups = Array.from(document.querySelectorAll('.s-page__group'));
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
   if (!page || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || groups.length !== 3) return;
 
@@ -134,6 +135,7 @@
   const inputLabel = composer.querySelector('.s-page__visually-hidden');
   const menuLabels = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-label'));
   let applyPageCopy = null;
+  let manualThemeOverride = false;
 
   const updateThemeToggleLabel = () => {
     const copy = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
@@ -158,7 +160,8 @@
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
   };
 
-  const applyTheme = (next) => {
+  const applyTheme = (next, { manual = false } = {}) => {
+    if (manual) manualThemeOverride = true;
     const isDayMode = next === 'day';
     document.documentElement.classList.toggle('is-day-mode', isDayMode);
     sendThemeUtility.classList.toggle('is-active', !isDayMode);
@@ -167,10 +170,16 @@
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDayMode ? '#FFFFFF' : '#000000');
   };
 
+  const applySystemTheme = () => {
+    if (manualThemeOverride) return;
+    applyTheme(systemThemePreference.matches ? 'dark' : 'day');
+  };
+
   let initialLanguage = 'en';
   try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
   applyLanguage(initialLanguage, { persist: false, emit: false });
-  applyTheme('dark');
+  applySystemTheme();
+  systemThemePreference.addEventListener?.('change', applySystemTheme);
 
   const isTemporaryUiInteraction = (target) => (
     composer.contains(target) || conversation.contains(target)
@@ -438,6 +447,12 @@
       const units = Math.max(1, element.querySelectorAll('.s-page__typing-character, .s-page__typing-word').length);
       element.style.setProperty('--s-typing-steps', String(units));
       element.style.setProperty('--s-typing-duration', `${(getTypingDurationMs(element, units) / 1000).toFixed(2)}s`);
+      if (useWordReveal) {
+        const duration = getArabicWordRevealDurationMs(element, units);
+        element.querySelectorAll('.s-page__typing-word').forEach((word) => {
+          word.style.setProperty('--s-arabic-word-reveal-duration', `${duration}ms`);
+        });
+      }
     });
   };
 
@@ -459,10 +474,15 @@
     Math.min(preferredArabicDescriptionWordIntervalMs, maximumDescriptionTypingDurationMs / Math.max(1, wordCount - 1))
   );
 
+  const getArabicWordRevealDurationMs = (element, wordCount) => (
+    element.classList.contains('s-page__group-description')
+      ? getArabicDescriptionWordInterval(wordCount)
+      : 1000 / titleTypingWordsPerSecond
+  );
+
   const getTypingRate = (element, characterCount) => {
     if (document.documentElement.lang === 'ar') {
-      if (!element.classList.contains('s-page__group-description')) return titleTypingWordsPerSecond;
-      return 1000 / getArabicDescriptionWordInterval(characterCount);
+      return 1000 / getArabicWordRevealDurationMs(element, characterCount);
     }
     if (!element.classList.contains('s-page__group-description')) return titleTypingCharactersPerSecond;
     return 1000 / getDescriptionCharacterInterval(characterCount);
@@ -470,10 +490,7 @@
 
   const getTypingDurationMs = (element, characterCount) => {
     if (document.documentElement.lang === 'ar') {
-      if (!element.classList.contains('s-page__group-description')) {
-        return (characterCount / titleTypingWordsPerSecond) * 1000;
-      }
-      return getArabicDescriptionWordInterval(characterCount) * Math.max(0, characterCount - 1);
+      return getArabicWordRevealDurationMs(element, characterCount) * Math.max(0, characterCount - 1);
     }
     if (!element.classList.contains('s-page__group-description')) {
       return (characterCount / titleTypingCharactersPerSecond) * 1000;
@@ -563,7 +580,7 @@
 
   sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();
-    applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day');
+    applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day', { manual: true });
   });
   sendLanguageUtility.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -707,7 +724,8 @@
     replyIndex = 0;
     conversationState = 'resetting';
     applyLanguage('en', { emit: false });
-    applyTheme('dark');
+    manualThemeOverride = false;
+    applySystemTheme();
     input.blur();
     input.value = '';
     input.placeholder = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'].inputPlaceholder;

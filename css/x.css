@@ -233,13 +233,24 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
 }
 
 .s-page__typing-word {
+  display: inline-block;
   opacity: 0;
+  clip-path: inset(0 0 0 100%);
   letter-spacing: normal;
 }
 
 .s-page__typing-character.is-revealed,
 .s-page__typing-word.is-revealed {
   opacity: 1;
+}
+
+.s-page__typing-word.is-revealed {
+  animation: s-page-arabic-word-reveal var(--s-arabic-word-reveal-duration, 150ms) linear both;
+}
+
+@keyframes s-page-arabic-word-reveal {
+  from { clip-path: inset(0 0 0 100%); }
+  to { clip-path: inset(0 0 0 0); }
 }
 
 .s-page__conversation {
@@ -840,7 +851,7 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 @media (prefers-reduced-motion: reduce) {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
   .s-page__typing-character,
-  .s-page__typing-word { opacity: 1; animation: none !important; }
+  .s-page__typing-word { opacity: 1; clip-path: none; animation: none !important; }
   .s-page__conversation-bubble.is-entering { animation: none; }
   .s-page__conversation-bubble.is-shifting { transition: none; }
   .s-page__conversation-bubble.is-exiting { animation: none; }
