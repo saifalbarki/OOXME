@@ -326,7 +326,6 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
   --s-square-logo-grid-double-step: calc(var(--s-square-logo-grid-step) + var(--s-square-logo-grid-step));
   --s-square-logo-motion-duration: 880ms;
   --s-square-logo-last-delay: 820ms;
-  --s-square-logo-reveal-complete: calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration));
   position: relative;
   isolation: isolate;
   display: block;
@@ -352,7 +351,6 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   display: block;
   width: 100%;
   height: 100%;
-  overflow: visible;
   pointer-events: none;
 }
 
@@ -370,7 +368,7 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
 .s-page__square-logo-stage.is-visible .s-page__square-logo-guides line {
   opacity: .13;
   stroke-dashoffset: 0;
-  transition-delay: calc(var(--s-square-logo-reveal-complete) + 20ms);
+  transition-delay: calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration) + 20ms);
 }
 
 .s-page__square-logo {
