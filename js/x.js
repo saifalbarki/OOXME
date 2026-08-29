@@ -431,13 +431,13 @@
       const particleColor = document.documentElement.classList.contains('is-day-mode') ? '0, 0, 0' : '255, 255, 255';
       particleBuildStartedAt ??= timestamp;
       const fieldBuildProgress = Math.min(1, (timestamp - particleBuildStartedAt) / 2600);
-      pointer.strength *= .92;
+      pointer.strength *= .945;
 
       particleContext.clearRect(0, 0, width, height);
       particles.forEach((particle) => {
         const distance = Math.hypot(particle.x - pointer.x, particle.y - pointer.y);
         const influence = pointer.strength > .004
-          ? Math.max(0, 1 - distance / (44 * particle.pixelRatio)) * pointer.strength
+          ? Math.max(0, 1 - distance / (76 * particle.pixelRatio)) * pointer.strength
           : 0;
         const twinkle = .82 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .09);
         const visibilityWave = (Math.sin((time * particle.visibilitySpeed) + particle.visibilityPhase) + 1) * .5;
@@ -445,9 +445,9 @@
         const visibility = minimumVisibility + ((1 - minimumVisibility) * Math.pow(visibilityWave, 1.3));
         const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
         const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
-        const alpha = Math.min(1, (twinkle * visibility) + (influence * .48)) * buildEase;
-        const radius = Math.max(.5, Math.round((particle.radius * (1 + influence * .32)) * 2) / 2);
-        const localMotion = influence * particle.pixelRatio * 1.1;
+        const alpha = Math.min(1, (twinkle * visibility) + (influence * .72)) * buildEase;
+        const radius = Math.max(.5, Math.round((particle.radius * (1 + influence * .58)) * 2) / 2);
+        const localMotion = influence * particle.pixelRatio * 2.2;
         const x = Math.round(particle.x + (Math.sin((time * particle.drift) + particle.phase) * localMotion));
         const y = Math.round(particle.y + (Math.cos((time * particle.drift * .8) + particle.phase) * localMotion));
 
@@ -524,10 +524,11 @@
         const y = Math.floor(Math.random() * height);
         if (maskPixels[((y * width + x) * 4) + 3] < 160) continue;
         const edgeWeight = edgeWeightAt(x, y);
+        const edgeDensity = Math.pow(edgeWeight, .7);
         const isEdgeReinforcement = particles.length >= particleCount;
         if (isEdgeReinforcement) {
-          if (edgeWeight < .42 || Math.random() > (.4 + (edgeWeight * .6))) continue;
-        } else if (Math.random() > (.18 + (edgeWeight * .82))) continue;
+          if (Math.random() > (.1 + (edgeDensity * .9))) continue;
+        } else if (Math.random() > (.12 + (edgeDensity * .88))) continue;
         particles.push({
           x,
           y,
