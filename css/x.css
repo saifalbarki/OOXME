@@ -382,6 +382,7 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   place-items: center;
   width: var(--s-square-logo-size);
   aspect-ratio: 1;
+  overflow: hidden;
   margin: 0;
   padding: 0;
   border: 0;
@@ -401,24 +402,14 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   display: block;
   width: 100%;
   height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
   filter: brightness(0) invert(1);
   transform: scale(1);
   transform-origin: center;
-}
-
-.s-page__square-logo--center-row img {
-  width: auto;
-  height: var(--s-logo-row-height, 100%);
-  max-width: none;
-}
-
-.s-page__square-logo--center-column img {
-  width: 100%;
-  height: auto;
-  max-height: none;
 }
 
 html.s-route.is-day-mode .s-page__square-logo img {
@@ -1172,6 +1163,10 @@ html.s-route.is-day-mode .s-page__add.is-active {
   transition-delay: .06s;
 }
 
+.s-page__send-utility:nth-child(3) {
+  transition-delay: .12s;
+}
+
 .s-page__send-utilities.is-open .s-page__send-utility {
   opacity: 1;
   transform: none;
@@ -1179,6 +1174,10 @@ html.s-route.is-day-mode .s-page__add.is-active {
 }
 
 .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
+  transition-delay: .06s;
+}
+
+.s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
   transition-delay: 0s;
 }
 
@@ -1198,6 +1197,11 @@ html.s-route.is-day-mode .s-page__add.is-active {
 .s-page__send-utility.is-active .s-page__send-utility-inner {
   border-color: #111111;
   background: #111111;
+}
+
+.s-page__send-utility--status .s-page__send-utility-inner {
+  border-color: #E23B3B;
+  background: #E23B3B;
 }
 
 html.s-route.is-day-mode .s-page__send-utility-inner {
@@ -1231,6 +1235,12 @@ html.s-route:not(.is-day-mode) .s-page__send-utility-inner {
 html.s-route:not(.is-day-mode) .s-page__send-utility.is-active .s-page__send-utility-inner {
   border-color: #FFFFFF;
   background: #FFFFFF;
+}
+
+html.s-route.is-day-mode .s-page__send-utility--status .s-page__send-utility-inner,
+html.s-route:not(.is-day-mode) .s-page__send-utility--status .s-page__send-utility-inner {
+  border-color: #E23B3B;
+  background: #E23B3B;
 }
 
 .s-page__icon-button:focus-visible,

@@ -6,6 +6,7 @@
   const composer = document.querySelector('[data-s-composer]');
   const composerMenu = document.querySelector('[data-s-composer-menu]');
   const sendUtilities = document.querySelector('[data-s-send-utilities]');
+  const sendStatusUtility = document.querySelector('[data-s-utility="status"]');
   const sendThemeUtility = document.querySelector('[data-s-utility="theme"]');
   const sendLanguageUtility = document.querySelector('[data-s-utility="language"]');
   const addButton = document.querySelector('.s-page__add');
@@ -32,7 +33,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 4) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 4) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -222,7 +223,7 @@
   };
 
   const setSendUtilityAvailability = (isAvailable) => {
-    [sendThemeUtility, sendLanguageUtility].forEach((control) => {
+    [sendStatusUtility, sendThemeUtility, sendLanguageUtility].forEach((control) => {
       control.disabled = !isAvailable;
     });
   };
@@ -328,7 +329,7 @@
     event.target.closest('.s-page__square-logo')?.classList.remove('is-pulsing');
   });
 
-  [sendThemeUtility, sendLanguageUtility].forEach((control) => {
+  [sendStatusUtility, sendThemeUtility, sendLanguageUtility].forEach((control) => {
     control.addEventListener('pointerdown', () => pulseSendUtility(control), { passive: true });
     control.addEventListener('animationend', (event) => {
       if (event.animationName === 's-page-composer-menu-pulse') control.classList.remove('is-pulsing');
@@ -615,6 +616,7 @@
   scheduleFlowSync();
 
   const setupLogoParticleField = () => {
+    const particleRenderScale = 3;
     const context = logoParticleCanvas.getContext('2d', { alpha: true });
     if (!context) return;
 
@@ -665,7 +667,7 @@
 
       const time = timestamp * .001;
       const particleColor = document.documentElement.classList.contains('is-day-mode') ? [0, 0, 0] : [255, 255, 255];
-      const interactionColor = [48, 132, 255];
+      const interactionColor = [212, 175, 55];
       particleBuildStartedAt ??= timestamp;
       const fieldBuildProgress = Math.min(1, (timestamp - particleBuildStartedAt) / 2600);
       pointer.strength *= .945;
@@ -716,7 +718,7 @@
     const resizeCanvas = () => {
       if (!logoMaskImage.naturalWidth) return;
       const rect = logoParticleCanvas.getBoundingClientRect();
-      const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 4);
+      const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 4) * particleRenderScale;
       const nextWidth = Math.max(1, Math.round(rect.width * pixelRatio));
       const nextHeight = Math.max(1, Math.round(rect.height * pixelRatio));
       if (nextWidth === width && nextHeight === height && particles.length) return;
