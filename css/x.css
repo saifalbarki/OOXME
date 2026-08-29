@@ -171,6 +171,10 @@ html.s-x-initializing .s-page__submit:active {
   margin-top: calc(var(--s-x) * 2);
 }
 
+.s-page__flow-group.s-page__flow-group--text {
+  margin-top: calc(var(--s-x) * 4);
+}
+
 .s-page__flow-group--strips {
   margin-bottom: calc(var(--s-x) * 2);
 }
