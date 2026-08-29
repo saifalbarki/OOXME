@@ -142,7 +142,6 @@ html.s-x-initializing .s-page__submit:active {
   flex-direction: column;
   justify-content: flex-start;
   padding: 0;
-  will-change: transform;
 }
 
 .s-page__section--future {

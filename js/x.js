@@ -99,30 +99,9 @@
       }
     }
   };
-  let activeGroupIndex = -1;
-  let lastScrollY = window.scrollY;
-  let scrollFrame = 0;
   let keyboardFrame = 0;
-  let initializationFrame = 0;
   let composerPulseFrame = 0;
   let composerMenuPulseFrame = 0;
-  let groupGeometryDirty = true;
-  let groupGeometry = [];
-  let sectionGeometry = [];
-  let sharedAnchorViewportTop = null;
-  let groupHandoffSpacing = 18;
-  let groupComposerTriggerTop = 0;
-  const groupTransformOffsets = groups.map(() => Number.NaN);
-  const typingFrames = groups.map(() => 0);
-  const typingProgress = groups.map(() => []);
-  let initialGroupOnePending = true;
-  const titleTypingCharactersPerSecond = 28;
-  const titleTypingWordsPerSecond = 5;
-  const preferredDescriptionCharacterIntervalMs = 45;
-  const preferredArabicDescriptionWordIntervalMs = 150;
-  const maximumDescriptionTypingDurationMs = 3000;
-  let keyboardLockedGroup = -1;
-  let keyboardLockedScrollY = 0;
   let addFlashTimer = 0;
   const menuItemFlashTimers = new WeakMap();
   const sendUtilityPulseFrames = new WeakMap();
@@ -299,210 +278,10 @@
     activateTemporaryUi('none');
     if (document.activeElement === input) input.blur();
   }, { passive: true });
-  const getStableLayoutMetrics = (element) => {
-    let top = 0;
-    let current = element;
-    while (current) {
-      top += current.offsetTop;
-      current = current.offsetParent;
-    }
-    return { top, height: element.offsetHeight };
-  };
-
-  const measureGroupGeometry = () => {
-    groupHandoffSpacing = Number.parseFloat(getComputedStyle(content).paddingLeft) || 18;
-    groupComposerTriggerTop = composer.getBoundingClientRect().top - groupHandoffSpacing;
-    const scrollPosition = window.scrollY;
-    const measurements = groups.map((group) => {
-      const metrics = getStableLayoutMetrics(group);
-      return {
-        top: metrics.top,
-        height: metrics.height,
-        bottom: metrics.top + metrics.height
-      };
-    });
-    let sectionTimelineStart = 0;
-    sectionGeometry = sections.map((section, sectionIndex) => {
-      const sectionMeasurements = section.groups.map((group) => measurements[groups.indexOf(group)]);
-      const sectionHeight = section.element.offsetHeight;
-      const anchorTop = sectionMeasurements[0].top;
-      if (sharedAnchorViewportTop === null) sharedAnchorViewportTop = sectionMeasurements[0].top - scrollPosition;
-      const anchorViewportTop = sharedAnchorViewportTop;
-      const finalGroups = sectionMeasurements.reduce((finalized, measurement, index) => {
-        const top = index === 0
-          ? anchorTop
-          : finalized[index - 1].top + finalized[index - 1].height + groupHandoffSpacing;
-        finalized.push({ top, height: measurement.height });
-        return finalized;
-      }, []);
-      const contentHeight = finalGroups.at(-1).top + finalGroups.at(-1).height - anchorTop;
-      const overflowAmount = Math.max(0, anchorViewportTop + contentHeight - window.innerHeight);
-      const entryDistance = window.innerHeight;
-      const initialGroupAnchored = sectionIndex === 0;
-      const entryStart = initialGroupAnchored
-        ? sectionTimelineStart - entryDistance
-        : sectionTimelineStart;
-      const groupCompletion = entryStart + (entryDistance * section.groups.length);
-      const holdStart = groupCompletion + overflowAmount;
-      const pushStart = holdStart + (window.innerHeight * .2);
-      const pushDistance = sectionIndex < sections.length - 1 ? window.innerHeight : 0;
-      sectionTimelineStart = pushStart + pushDistance;
-      return {
-        element: section.element,
-        groupElements: section.groups,
-        groups: finalGroups,
-        anchorTop,
-        anchorViewportTop,
-        height: sectionHeight,
-        contentHeight,
-        groupSpacing: groupHandoffSpacing,
-        overflowAmount,
-        entryDistance,
-        entryStart,
-        initialGroupAnchored,
-        groupCompletion,
-        overflowStart: groupCompletion,
-        overflowEnd: groupCompletion + overflowAmount,
-        holdStart,
-        holdDistance: window.innerHeight * .2,
-        pushStart,
-        pushDistance,
-        pushEnd: pushStart + pushDistance,
-        pushProgress: 0,
-        holdProgress: 0,
-        overflowProgress: 0,
-        phase: 'entry'
-      };
-    });
-    groupGeometry = measurements.map((measurement, index) => ({
-      top: measurement.top,
-      height: measurement.height
-    }));
-    groupGeometryDirty = false;
-  };
-
-  const getGroupScrollOffset = (index, scrollPosition) => {
-    const sectionIndex = sections.findIndex((section) => section.groups.includes(groups[index]));
-    const section = sectionGeometry[sectionIndex];
-    if (!section) return 0;
-    const groupIndex = section.groupElements.indexOf(groups[index]);
-    const rawTop = groupGeometry[index].top;
-    const finalTop = section.anchorViewportTop
-      + section.groups[groupIndex].top - section.anchorTop;
-    const belowViewportTop = window.innerHeight + section.groupSpacing;
-    const entryStart = section.entryStart + (groupIndex * section.entryDistance);
-    const entryEnd = entryStart + section.entryDistance;
-    const overflowProgress = Math.max(0, Math.min(section.overflowAmount, scrollPosition - section.overflowStart));
-    const holdProgress = Math.max(0, Math.min(section.holdDistance, scrollPosition - section.holdStart));
-    const pushProgress = Math.max(0, Math.min(section.pushDistance, scrollPosition - section.pushStart));
-    section.overflowProgress = overflowProgress;
-    section.holdProgress = holdProgress;
-    section.pushProgress = pushProgress;
-    section.phase = scrollPosition >= section.holdStart + section.holdDistance
-      ? 'boundary'
-      : holdProgress > 0 || section.overflowAmount === 0 && scrollPosition >= section.holdStart
-        ? 'hold'
-        : overflowProgress > 0
-          ? 'overflow'
-          : pushProgress > 0
-            ? 'push'
-          : 'entry';
-    let targetViewportTop = belowViewportTop;
-
-    if (scrollPosition >= entryEnd) {
-      targetViewportTop = finalTop;
-    } else if (scrollPosition > entryStart) {
-      const progress = (scrollPosition - entryStart) / section.entryDistance;
-      targetViewportTop = belowViewportTop + ((finalTop - belowViewportTop) * progress);
-    }
-
-    targetViewportTop -= overflowProgress;
-
-    if (scrollPosition >= section.pushStart) {
-      targetViewportTop -= pushProgress;
-    }
-
-    if (scrollPosition >= section.holdStart + section.holdDistance) {
-      targetViewportTop += section.holdStart + section.holdDistance - scrollPosition;
-    }
-    return targetViewportTop + scrollPosition - rawTop;
-  };
-
-  const updateGroupPushPositions = (scrollPosition) => {
-    groups.forEach((group, index) => {
-      const offset = getGroupScrollOffset(index, scrollPosition);
-      if (Math.abs(groupTransformOffsets[index] - offset) < .01) return;
-      groupTransformOffsets[index] = offset;
-      group.style.transform = `translate3d(0, ${offset}px, 0)`;
-    });
-  };
-
-  const updateRevealGroups = (scrollPosition) => {
-    const scrollDirection = scrollPosition - lastScrollY;
-    lastScrollY = scrollPosition;
-    const crossed = groupGeometry
-      .map((geometry, index) => {
-        const top = geometry.top - scrollPosition + getGroupScrollOffset(index, scrollPosition);
-        return { index, top, bottom: top + geometry.height };
-      })
-      .filter(({ top, bottom }) => top <= groupComposerTriggerTop && bottom > groupComposerTriggerTop);
-    if (!crossed.length) return;
-    const target = (scrollDirection < 0 ? crossed[0] : crossed[crossed.length - 1]).index;
-    if (target === activeGroupIndex) return;
-    if (activeGroupIndex >= 0) setGroupState(activeGroupIndex, 'fading');
-    activeGroupIndex = target;
-    initialGroupOnePending = false;
-    setGroupState(target, 'typing');
-  };
-
-  const updateScrollVisuals = () => {
-    scrollFrame = 0;
-    if (!initializationReady) return;
-    if (keyboardLockedGroup >= 0) {
-      maintainKeyboardGroupPosition();
-      return;
-    }
-    if (groupGeometryDirty) measureGroupGeometry();
-    const scrollPosition = window.scrollY;
-    updateGroupPushPositions(scrollPosition);
-    updateRevealGroups(scrollPosition);
-  };
-
-  const scheduleScrollVisuals = () => {
-    if (!initializationReady || scrollFrame) return;
-    scrollFrame = window.requestAnimationFrame(updateScrollVisuals);
-  };
-
-  const lockActiveGroupForKeyboard = () => {
-    if (keyboardLockedGroup >= 0) return;
-    keyboardLockedGroup = Math.max(0, activeGroupIndex);
-    keyboardLockedScrollY = window.scrollY;
-  };
-
-  const maintainKeyboardGroupPosition = () => {
-    if (keyboardLockedGroup < 0 || Math.abs(window.scrollY - keyboardLockedScrollY) < 1) return;
-    window.scrollTo({ top: keyboardLockedScrollY, behavior: 'auto' });
-  };
-
-  const releaseKeyboardGroupLock = () => {
-    keyboardLockedGroup = -1;
-    keyboardLockedScrollY = 0;
-    lastScrollY = window.scrollY;
-    groupGeometryDirty = true;
-    scheduleScrollVisuals();
-  };
-
   const updateKeyboardOffset = () => {
     if (!window.visualViewport) return;
     const layoutHeight = Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight || 0));
     const keyboardOverlap = Math.max(0, layoutHeight - window.visualViewport.height - window.visualViewport.offsetTop);
-    if (keyboardOverlap > 0) {
-      lockActiveGroupForKeyboard();
-      maintainKeyboardGroupPosition();
-    }
-    if (keyboardOverlap === 0 && lastKeyboardOverlap > 0) {
-      releaseKeyboardGroupLock();
-    }
     if (Math.abs(keyboardOverlap - lastKeyboardOverlap) >= .01) {
       page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
     }
@@ -525,126 +304,6 @@
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
-  let typingCharacters = [];
-
-  const prepareTypingCharacters = (language = document.documentElement.lang) => {
-    const useWordReveal = language === 'ar';
-    groupElements.flat().forEach((element) => {
-      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-      const textNodes = [];
-      while (walker.nextNode()) textNodes.push(walker.currentNode);
-      textNodes.forEach((textNode) => {
-        const fragment = document.createDocumentFragment();
-        const units = useWordReveal
-          ? textNode.nodeValue.split(/(\s+)/u)
-          : Array.from(textNode.nodeValue);
-        units.forEach((unit) => {
-          if (useWordReveal && /^\s+$/u.test(unit)) {
-            fragment.appendChild(document.createTextNode(unit));
-            return;
-          }
-          const span = document.createElement('span');
-          span.className = useWordReveal ? 's-page__typing-word' : 's-page__typing-character';
-          span.textContent = unit;
-          fragment.appendChild(span);
-        });
-        textNode.parentNode.replaceChild(fragment, textNode);
-      });
-    });
-    typingCharacters = groupElements.map((elements) => elements.map((element) =>
-      Array.from(element.querySelectorAll('.s-page__typing-character, .s-page__typing-word'))
-    ));
-    groupElements.flat().forEach((element) => {
-      const units = Math.max(1, element.querySelectorAll('.s-page__typing-character, .s-page__typing-word').length);
-      element.style.setProperty('--s-typing-steps', String(units));
-      element.style.setProperty('--s-typing-duration', `${(getTypingDurationMs(element, units) / 1000).toFixed(2)}s`);
-      if (useWordReveal) {
-        const duration = getArabicWordRevealDurationMs(element, units);
-        element.querySelectorAll('.s-page__typing-word').forEach((word) => {
-          word.style.setProperty('--s-arabic-word-reveal-duration', `${duration}ms`);
-        });
-      }
-    });
-  };
-
-  const stopGroupTyping = (index, hideCharacters = false) => {
-    if (typingFrames[index]) window.cancelAnimationFrame(typingFrames[index]);
-    typingFrames[index] = 0;
-    const charactersByElement = typingCharacters[index] || [];
-    typingProgress[index] = charactersByElement.map(() => 0);
-    if (hideCharacters) {
-      charactersByElement.flat().forEach((character) => character.classList.remove('is-revealed'));
-    }
-  };
-
-  const getDescriptionCharacterInterval = (characterCount) => (
-    Math.min(preferredDescriptionCharacterIntervalMs, maximumDescriptionTypingDurationMs / Math.max(1, characterCount - 1))
-  );
-
-  const getArabicDescriptionWordInterval = (wordCount) => (
-    Math.min(preferredArabicDescriptionWordIntervalMs, maximumDescriptionTypingDurationMs / Math.max(1, wordCount - 1))
-  );
-
-  const getArabicWordRevealDurationMs = (element, wordCount) => (
-    element.classList.contains('s-page__group-description')
-      ? getArabicDescriptionWordInterval(wordCount)
-      : 1000 / titleTypingWordsPerSecond
-  );
-
-  const getTypingRate = (element, characterCount) => {
-    if (document.documentElement.lang === 'ar') {
-      return 1000 / getArabicWordRevealDurationMs(element, characterCount);
-    }
-    if (!element.classList.contains('s-page__group-description')) return titleTypingCharactersPerSecond;
-    return 1000 / getDescriptionCharacterInterval(characterCount);
-  };
-
-  const getTypingDurationMs = (element, characterCount) => {
-    if (document.documentElement.lang === 'ar') {
-      return getArabicWordRevealDurationMs(element, characterCount) * Math.max(0, characterCount - 1);
-    }
-    if (!element.classList.contains('s-page__group-description')) {
-      return (characterCount / titleTypingCharactersPerSecond) * 1000;
-    }
-    return getDescriptionCharacterInterval(characterCount) * Math.max(0, characterCount - 1);
-  };
-
-  const startGroupTyping = (index) => {
-    stopGroupTyping(index, true);
-    if (reducedMotion.matches) {
-      typingCharacters[index].flat().forEach((character) => character.classList.add('is-revealed'));
-      return;
-    }
-    const startedAt = performance.now();
-    const typeNextCharacters = (now) => {
-      let complete = true;
-      typingCharacters[index].forEach((characters, elementIndex) => {
-        const element = groupElements[index][elementIndex];
-        const typingRate = getTypingRate(element, characters.length);
-        const visibleCount = Math.floor(((now - startedAt) / 1000) * typingRate) + 1;
-        const nextCount = Math.min(visibleCount, characters.length);
-        const revealedCount = typingProgress[index][elementIndex] || 0;
-        for (let characterIndex = revealedCount; characterIndex < nextCount; characterIndex += 1) {
-          characters[characterIndex].classList.add('is-revealed');
-        }
-        typingProgress[index][elementIndex] = nextCount;
-        if (nextCount < characters.length) complete = false;
-      });
-      typingFrames[index] = complete ? 0 : window.requestAnimationFrame(typeNextCharacters);
-    };
-    typingFrames[index] = window.requestAnimationFrame(typeNextCharacters);
-  };
-
-  const setGroupState = (index, state) => {
-    groupElements[index].forEach((element) => {
-      element.classList.remove('is-typing', 'is-visible', 'is-fading');
-      if (state === 'typing') element.classList.add(reducedMotion.matches ? 'is-visible' : 'is-typing');
-      if (state === 'visible') element.classList.add('is-visible');
-      if (state === 'fading') element.classList.add('is-fading');
-    });
-    if (state === 'typing') startGroupTyping(index);
-    if (state === 'fading') stopGroupTyping(index, false);
-  };
 
   const setLocalizedText = (element, value) => {
     const fragment = document.createDocumentFragment();
@@ -657,14 +316,10 @@
 
   applyPageCopy = (language) => {
     const copy = pageCopy[language];
-    if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
-    scrollFrame = 0;
-    typingFrames.forEach((_, index) => stopGroupTyping(index));
     groupElements.forEach((elements, groupIndex) => {
       const localizedGroup = copy.groups[groupIndex];
       if (!localizedGroup) return;
       elements.forEach((element, elementIndex) => {
-        element.classList.remove('is-typing', 'is-visible', 'is-fading');
         setLocalizedText(element, localizedGroup[elementIndex]);
       });
     });
@@ -679,15 +334,6 @@
       conversationFinalCopy.dir = language === 'ar' ? 'rtl' : 'ltr';
       conversationFinalCopy.textContent = finalMessages[language];
     }
-    prepareTypingCharacters(language);
-    if (!initializationReady || activeGroupIndex < 0) return;
-
-    setGroupState(activeGroupIndex, 'typing');
-    typingCharacters[activeGroupIndex].forEach((characters) => {
-      characters[0]?.classList.add('is-revealed');
-    });
-    groupGeometryDirty = true;
-    scheduleScrollVisuals();
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
 
@@ -704,8 +350,6 @@
       applyLanguage(event.newValue, { persist: false });
     }
   });
-
-  groupElements.flat().forEach((element) => element.classList.remove('is-visible'));
 
   const arabicScriptPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
   const latinScriptPattern = /[A-Za-z]/u;
@@ -905,72 +549,31 @@
     window.visualViewport.addEventListener('scroll', scheduleKeyboardOffset, { passive: true });
   }
 
-  window.addEventListener('scroll', () => {
-    if (activeTemporaryUi === 'menu' || activeTemporaryUi === 'utilities') activateTemporaryUi('none');
-    scheduleScrollVisuals();
-  }, { passive: true });
   window.addEventListener('resize', () => {
-    groupGeometryDirty = true;
     syncConversationInputBounds();
     scheduleKeyboardOffset();
-    scheduleScrollVisuals();
   }, { passive: true });
   window.addEventListener('orientationchange', () => {
-    groupGeometryDirty = true;
     syncConversationInputBounds();
     scheduleKeyboardOffset();
-    scheduleScrollVisuals();
   }, { passive: true });
-  document.fonts?.ready.then(() => {
-    groupGeometryDirty = true;
-    scheduleScrollVisuals();
-  });
   const initializeGroupOne = () => {
-    const run = ++initializationRun;
+    initializationRun += 1;
     document.documentElement.classList.add('s-x-initializing');
     initializationReady = false;
-    if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
     if (keyboardFrame) window.cancelAnimationFrame(keyboardFrame);
-    if (initializationFrame) window.cancelAnimationFrame(initializationFrame);
     if (composerPulseFrame) window.cancelAnimationFrame(composerPulseFrame);
     if (composerMenuPulseFrame) window.cancelAnimationFrame(composerMenuPulseFrame);
-    scrollFrame = 0;
     keyboardFrame = 0;
-    initializationFrame = 0;
     composerPulseFrame = 0;
     composerMenuPulseFrame = 0;
     resetAddButton();
     composer.classList.remove('is-pulsing');
-    activeGroupIndex = -1;
-    keyboardLockedGroup = -1;
-    keyboardLockedScrollY = 0;
     lastKeyboardOverlap = 0;
-    initialGroupOnePending = true;
-    lastScrollY = 0;
-    groupGeometryDirty = true;
-    groupTransformOffsets.fill(Number.NaN);
-    window.scrollTo({ top: 0, behavior: 'auto' });
-    groupElements.forEach((elements, index) => {
-      stopGroupTyping(index, true);
-      elements.forEach((element) => element.classList.remove('is-visible', 'is-typing', 'is-fading'));
-    });
-    initializationFrame = window.requestAnimationFrame(() => {
-      initializationFrame = window.requestAnimationFrame(() => {
-        initializationFrame = 0;
-        if (run !== initializationRun) return;
-        window.scrollTo({ top: 0, behavior: 'auto' });
-        updateKeyboardOffset();
-        activeGroupIndex = 0;
-        initialGroupOnePending = false;
-        setGroupState(0, 'typing');
-        lastScrollY = window.scrollY;
-        initializationReady = true;
-        syncConversationInputBounds();
-        measureGroupGeometry();
-        updateGroupPushPositions(window.scrollY);
-        document.documentElement.classList.remove('s-x-initializing');
-      });
-    });
+    updateKeyboardOffset();
+    initializationReady = true;
+    syncConversationInputBounds();
+    document.documentElement.classList.remove('s-x-initializing');
   };
   window.addEventListener('pageshow', () => {
     if (!initializationReady) initializeGroupOne();
