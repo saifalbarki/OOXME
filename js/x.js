@@ -388,6 +388,15 @@
     const particleContext = particleCanvas.getContext('2d', { alpha: true });
     if (!maskContext || !particleContext) return;
 
+    const configureCanvasContexts = () => {
+      [context, maskContext, particleContext].forEach((canvasContext) => {
+        canvasContext.filter = 'none';
+        canvasContext.imageSmoothingEnabled = true;
+        canvasContext.imageSmoothingQuality = 'high';
+        canvasContext.shadowBlur = 0;
+      });
+    };
+
     const logoMaskImage = new Image();
     const pointer = { x: 0, y: 0, strength: 0 };
     let particles = [];
@@ -437,10 +446,10 @@
         const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
         const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
         const alpha = Math.min(1, (twinkle * visibility) + (influence * .48)) * buildEase;
-        const radius = particle.radius * (1 + influence * .32);
+        const radius = Math.max(.5, Math.round((particle.radius * (1 + influence * .32)) * 2) / 2);
         const localMotion = influence * particle.pixelRatio * 1.1;
-        const x = particle.x + Math.sin((time * particle.drift) + particle.phase) * (particle.pixelRatio * .22 + localMotion);
-        const y = particle.y + Math.cos((time * particle.drift * .8) + particle.phase) * (particle.pixelRatio * .16 + localMotion);
+        const x = Math.round(particle.x + (Math.sin((time * particle.drift) + particle.phase) * localMotion));
+        const y = Math.round(particle.y + (Math.cos((time * particle.drift * .8) + particle.phase) * localMotion));
 
         particleContext.beginPath();
         particleContext.fillStyle = `rgba(${particleColor}, ${alpha.toFixed(3)})`;
@@ -466,7 +475,7 @@
     const resizeCanvas = () => {
       if (!logoMaskImage.naturalWidth) return;
       const rect = logoParticleCanvas.getBoundingClientRect();
-      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
       const nextWidth = Math.max(1, Math.round(rect.width * pixelRatio));
       const nextHeight = Math.max(1, Math.round(rect.height * pixelRatio));
       if (nextWidth === width && nextHeight === height && particles.length) return;
@@ -477,6 +486,7 @@
         canvas.width = width;
         canvas.height = height;
       });
+      configureCanvasContexts();
       maskContext.clearRect(0, 0, width, height);
       maskContext.drawImage(logoMaskImage, 0, 0, width, height);
       const maskPixels = maskContext.getImageData(0, 0, width, height).data;
