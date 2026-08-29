@@ -11,6 +11,7 @@
   const addButton = document.querySelector('.s-page__add');
   const input = document.querySelector('.s-page__composer-input');
   const submitButton = composer?.querySelector('.s-page__submit');
+  const logoReveal = document.querySelector('[data-s-logo-reveal]');
   const conversation = document.querySelector('[data-s-conversation]');
   const conversationFinal = document.querySelector('[data-s-conversation-final]');
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
@@ -22,7 +23,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoReveal || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -319,10 +320,17 @@
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
+  let hasRunLogoReveal = false;
+  const runLogoRevealOnce = () => {
+    if (hasRunLogoReveal) return;
+    hasRunLogoReveal = true;
+    logoReveal.classList.add('is-revealing');
+  };
   const revealObserver = 'IntersectionObserver' in window
     ? new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         entry.target.classList.toggle('is-visible', entry.isIntersecting);
+        if (entry.target === groups[0] && entry.isIntersecting) runLogoRevealOnce();
       });
     }, { threshold: 0.15 })
     : null;
@@ -371,7 +379,10 @@
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
   groups.forEach((group) => {
     if (revealObserver) revealObserver.observe(group);
-    else group.classList.add('is-visible');
+    else {
+      group.classList.add('is-visible');
+      if (group === groups[0]) runLogoRevealOnce();
+    }
   });
 
   sendThemeUtility.addEventListener('click', (event) => {

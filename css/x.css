@@ -145,6 +145,78 @@ html.s-x-initializing .s-page__submit:active {
   padding: 0;
 }
 
+.s-page__logo-reveal {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: min(44vw, 220px);
+  aspect-ratio: 1500 / 2019;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.s-page__logo-reveal::before {
+  position: absolute;
+  inset: -18%;
+  background: radial-gradient(ellipse at center, rgba(77, 159, 255, .18) 0%, rgba(61, 129, 255, .08) 38%, transparent 72%);
+  content: "";
+  filter: blur(18px);
+  opacity: 0;
+}
+
+.s-page__logo-reveal-mark {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  background: #000000;
+  -webkit-mask-image: url('../assets/logo/OX-001-LOGO-black.png');
+  mask-image: url('../assets/logo/OX-001-LOGO-black.png');
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+html.s-route.is-day-mode .s-page__logo-reveal-mark {
+  background: #FFFFFF;
+}
+
+.s-page__logo-reveal-mark::after {
+  position: absolute;
+  inset: -60% 0;
+  background: linear-gradient(to bottom, transparent 34%, rgba(80, 153, 255, .12) 43%, rgba(126, 196, 255, .72) 49%, rgba(211, 237, 255, .86) 50%, rgba(85, 158, 255, .26) 57%, transparent 66%);
+  content: "";
+  opacity: 0;
+  transform: translateY(-72%);
+}
+
+.s-page__logo-reveal.is-revealing::before {
+  animation: s-page-logo-radiance 2.1s ease-out 1.51s both;
+}
+
+.s-page__logo-reveal.is-revealing .s-page__logo-reveal-mark::after {
+  animation: s-page-logo-sweep 1.4s cubic-bezier(.22, .61, .36, 1) 1.51s both;
+}
+
+@keyframes s-page-logo-sweep {
+  0% { opacity: 0; transform: translateY(-72%); }
+  12% { opacity: .72; }
+  84% { opacity: .58; }
+  100% { opacity: 0; transform: translateY(72%); }
+}
+
+@keyframes s-page-logo-radiance {
+  0% { opacity: 0; }
+  14% { opacity: .72; }
+  66.666% { opacity: .52; }
+  100% { opacity: 0; }
+}
+
 .s-page__image-group {
   display: block;
   width: 100%;
@@ -997,6 +1069,8 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   .s-page__send-utility { transition: none; }
   .s-page__send-utility-inner { transition: none; }
   .s-page__add > span { transition: none; }
+  .s-page__logo-reveal.is-revealing::before,
+  .s-page__logo-reveal.is-revealing .s-page__logo-reveal-mark::after { animation: none; }
   .s-page__composer.is-pulsing { animation: none; }
   .s-page__composer-menu.is-pulsing { animation: none; }
   .s-page__send-utility.is-pulsing { animation: none; }
