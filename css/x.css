@@ -29,8 +29,8 @@
 }
 
 @font-face {
-  font-family: OOXMEArabic;
-  src: url('../assets/fonts/SF-Arabic-Rounded.ttf') format('truetype');
+  font-family: OOXMETosh;
+  src: url('../assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf') format('truetype');
   font-weight: 100 900;
   font-display: swap;
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF;
@@ -70,7 +70,25 @@ html[lang="ar"] .s-page__group-description,
 html[lang="ar"] .s-page__conversation-final-copy,
 html[lang="ar"] .s-page__composer-menu-item,
 html[lang="ar"] .s-page__composer-input {
-  font-family: OOXMEArabic, OOXMEScript, Arial, sans-serif;
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html[lang="ar"] .s-page__group-title {
+  font-size: 13.5px;
+}
+
+html[lang="ar"] .s-page__group-description {
+  font-size: 14.4px;
+}
+
+html[lang="ar"] .s-page__composer-menu-item,
+html[lang="ar"] .s-page__composer-input {
+  font-size: 14.4px;
+}
+
+.s-page__conversation-bubble[lang="ar"],
+.s-page__conversation-final-copy[lang="ar"] {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
 }
 
 html.s-route.is-day-mode,
@@ -303,8 +321,7 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
 }
 
 .s-page__conversation-bubble[lang="ar"] {
-  font-family: OOXMEArabic, OOXMEScript, Arial, sans-serif;
-  font-size: 15.5px;
+  font-size: 14.4px;
   overflow-wrap: normal;
   word-break: normal;
   letter-spacing: normal;
@@ -403,6 +420,10 @@ html.s-route.is-day-mode .s-page__conversation-final {
   font: 500 clamp(18px, 2.2vw, 25px)/1.42 OOXMEScript, Arial, sans-serif;
   text-align: center;
   white-space: pre-line;
+}
+
+.s-page__conversation-final-copy[lang="ar"] {
+  font-size: clamp(16.2px, 1.98vw, 22.5px);
 }
 
 html.s-route.is-day-mode .s-page__conversation-final-copy {
@@ -691,7 +712,9 @@ html.s-route.is-day-mode .s-page__composer-menu {
   appearance: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  transform-origin: center;
+  /* The button itself is the pulse surface; its indicator inherits this motion. */
+  transform-box: border-box;
+  transform-origin: 50% 50%;
   opacity: 0;
   transform: translateY(6px) scale(.97);
   transition: opacity .18s ease, transform .18s ease;
@@ -724,7 +747,9 @@ html.s-route.is-day-mode .s-page__composer-menu {
   border-radius: 50%;
   background: transparent;
   transition: background-color .18s ease, border-color .18s ease;
-  transform-origin: center;
+  /* State only: this element never owns the utility tap pulse. */
+  transform: none;
+  animation: none;
 }
 
 .s-page__send-utility.is-active .s-page__send-utility-inner {
@@ -775,11 +800,7 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 }
 
 .s-page__send-utility.is-pulsing {
-  animation: s-page-send-utility-pulse .18s ease-out;
-}
-
-.s-page__send-utility.is-pulsing .s-page__send-utility-inner {
-  animation: s-page-send-utility-indicator-pulse .18s ease-out;
+  animation: s-page-composer-menu-pulse .18s ease-out;
 }
 
 @keyframes s-page-composer-pulse {
@@ -790,16 +811,6 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 @keyframes s-page-composer-menu-pulse {
   0%, 100% { transform: translateY(0) scale(1); }
   45% { transform: translateY(0) scale(1.015); }
-}
-
-@keyframes s-page-send-utility-pulse {
-  0%, 100% { transform: scale(1); }
-  45% { transform: scale(1.015); }
-}
-
-@keyframes s-page-send-utility-indicator-pulse {
-  0%, 100% { transform: scale(1); }
-  45% { transform: scale(1.015); }
 }
 
 .s-page__visually-hidden {
@@ -868,5 +879,4 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
   .s-page__composer.is-pulsing { animation: none; }
   .s-page__composer-menu.is-pulsing { animation: none; }
   .s-page__send-utility.is-pulsing { animation: none; }
-  .s-page__send-utility.is-pulsing .s-page__send-utility-inner { animation: none; }
 }

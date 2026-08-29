@@ -24,7 +24,6 @@
   const finalRevealDelayMs = 1600;
   const finalMessageDurationMs = 10000;
   const finalFadeOutDurationMs = 320;
-  const chatInactivityDelayMs = 3000;
   const englishReplies = [
     'Sorry, we don’t reply to messages for free.',
     'Hmm... it seems you didn’t read the previous message.',
@@ -128,7 +127,6 @@
   let conversationState = 'active';
   let finalVisibleTimer = 0;
   let finalResetTimer = 0;
-  let chatInactivityTimer = 0;
   let conversationVisible = true;
   let activeTemporaryUi = 'none';
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
@@ -252,7 +250,7 @@
   [sendThemeUtility, sendLanguageUtility].forEach((control) => {
     control.addEventListener('pointerdown', () => pulseSendUtility(control), { passive: true });
     control.addEventListener('animationend', (event) => {
-      if (event.animationName === 's-page-send-utility-pulse') control.classList.remove('is-pulsing');
+      if (event.animationName === 's-page-composer-menu-pulse') control.classList.remove('is-pulsing');
     });
   });
 
@@ -603,11 +601,6 @@
       : language === 'ar' ? 'rtl' : 'ltr'
   );
 
-  const clearChatInactivityTimer = () => {
-    window.clearTimeout(chatInactivityTimer);
-    chatInactivityTimer = 0;
-  };
-
   const setConversationVisibility = (isVisible) => {
     if (conversationVisible === isVisible) return;
     conversationVisible = isVisible;
@@ -624,20 +617,10 @@
     setSendUtilityAvailability(!hasVisibleBubbles);
   };
 
-  const scheduleChatInactivity = () => {
-    clearChatInactivityTimer();
-    if (activeTemporaryUi !== 'chat' || conversationState === 'finished' || conversationState === 'resetting') return;
-    chatInactivityTimer = window.setTimeout(() => {
-      chatInactivityTimer = 0;
-      if (activeTemporaryUi === 'chat') activateTemporaryUi('none');
-    }, chatInactivityDelayMs);
-  };
-
   const activateTemporaryUi = (nextState) => {
-    const next = ['none', 'chat', 'menu', 'utilities', 'input'].includes(nextState)
+    const next = ['none', 'chat', 'menu', 'utilities'].includes(nextState)
       ? nextState
       : 'none';
-    clearChatInactivityTimer();
     activeTemporaryUi = next;
 
     const menuIsActive = next === 'menu';
@@ -647,17 +630,12 @@
     setSendUtilitiesOpen(next === 'utilities');
     setConversationVisibility(next === 'chat');
 
-    if (next !== 'input' && document.activeElement === input) input.blur();
-    if (next === 'chat') scheduleChatInactivity();
+    if ((next === 'menu' || next === 'utilities') && document.activeElement === input) input.blur();
   };
 
-  const showChatForInteraction = () => {
-    clearChatInactivityTimer();
-    if (conversationState === 'finished' || conversationState === 'resetting') return;
-    activateTemporaryUi('chat');
-  };
-
-  conversation.addEventListener('pointerdown', () => showChatForInteraction(), { passive: true });
+  conversation.addEventListener('pointerdown', () => {
+    if (conversationState !== 'finished' && conversationState !== 'resetting') activateTemporaryUi('chat');
+  }, { passive: true });
 
   const setComposerInteractivity = (enabled) => {
     composerControls.forEach((control) => { control.disabled = !enabled; });
@@ -762,11 +740,11 @@
   };
 
   input.addEventListener('pointerdown', () => {
-    activateTemporaryUi('input');
+    activateTemporaryUi('chat');
   }, { passive: true });
 
   input.addEventListener('focus', () => {
-    activateTemporaryUi('input');
+    activateTemporaryUi('chat');
     lockActiveGroupForKeyboard();
   });
 
@@ -776,7 +754,7 @@
   });
 
   input.addEventListener('input', () => {
-    activateTemporaryUi('input');
+    activateTemporaryUi('chat');
   });
 
   composer.addEventListener('submit', (event) => {
@@ -811,7 +789,7 @@
   }
 
   window.addEventListener('scroll', () => {
-    if (activeTemporaryUi !== 'input') activateTemporaryUi('none');
+    if (activeTemporaryUi === 'menu' || activeTemporaryUi === 'utilities') activateTemporaryUi('none');
     scheduleScrollVisuals();
   }, { passive: true });
   window.addEventListener('resize', () => {
