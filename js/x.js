@@ -304,6 +304,13 @@
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
+  const revealObserver = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        entry.target.classList.toggle('is-visible', entry.isIntersecting);
+      });
+    }, { threshold: 0.15 })
+    : null;
 
   const setLocalizedText = (element, value) => {
     const fragment = document.createDocumentFragment();
@@ -336,6 +343,10 @@
     }
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
+  groupElements.flat().forEach((element) => {
+    if (revealObserver) revealObserver.observe(element);
+    else element.classList.add('is-visible');
+  });
 
   sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();

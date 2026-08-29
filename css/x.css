@@ -216,9 +216,10 @@ html[dir="rtl"] [data-s-reveal] {
 }
 
 .s-page__group [data-s-reveal] {
-  opacity: 1;
-  filter: none;
-  clip-path: none;
+  opacity: 0;
+  filter: blur(8px);
+  clip-path: inset(0 100% 0 0);
+  transition: opacity .48s cubic-bezier(.22, .61, .36, 1), filter .48s cubic-bezier(.22, .61, .36, 1), clip-path .48s cubic-bezier(.22, .61, .36, 1);
 }
 
 .s-page__group [data-s-reveal].is-typing {
@@ -226,7 +227,13 @@ html[dir="rtl"] [data-s-reveal] {
 }
 
 html[dir="rtl"] .s-page__group [data-s-reveal] {
-  clip-path: none;
+  clip-path: inset(0 0 0 100%);
+}
+
+.s-page__group [data-s-reveal].is-visible {
+  opacity: 1;
+  filter: blur(0);
+  clip-path: inset(0 0 0 0);
 }
 
 .s-page__group [data-s-reveal].is-fading {
