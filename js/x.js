@@ -120,7 +120,6 @@
   const menuItemFlashTimers = new WeakMap();
   const sendUtilityPulseFrames = new WeakMap();
   let addRotated = false;
-  let sendUtilitiesOpen = false;
   let initializationReady = false;
   let initializationRun = 0;
   let lastKeyboardOverlap = 0;
@@ -130,6 +129,7 @@
   let finalResetTimer = 0;
   let chatInactivityTimer = 0;
   let conversationVisible = true;
+  let activeTemporaryUi = 'none';
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
   const inputLabel = composer.querySelector('.s-page__visually-hidden');
   const menuLabels = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-label'));
@@ -172,8 +172,8 @@
   applyLanguage(initialLanguage, { persist: false, emit: false });
   applyTheme('dark');
 
-  const isComposerMenuInteraction = (target) => (
-    addButton.contains(target) || composerMenu.contains(target) || sendUtilities.contains(target)
+  const isTemporaryUiInteraction = (target) => (
+    composer.contains(target) || conversation.contains(target)
   );
 
   const setComposerMenuOpen = (isOpen) => {
@@ -182,7 +182,6 @@
   };
 
   const setSendUtilitiesOpen = (isOpen) => {
-    sendUtilitiesOpen = isOpen;
     sendUtilities.classList.toggle('is-open', isOpen);
     sendUtilities.setAttribute('aria-hidden', String(!isOpen));
   };
@@ -199,6 +198,7 @@
     addButton.classList.remove('is-rotated', 'is-active');
     setComposerMenuOpen(false);
     setSendUtilitiesOpen(false);
+    if (activeTemporaryUi === 'menu' || activeTemporaryUi === 'utilities') activeTemporaryUi = 'none';
   };
 
   const pulseComposer = () => {
@@ -269,21 +269,19 @@
   addButton.addEventListener('click', (event) => {
     if (!initializationReady) return;
     event.stopPropagation();
-    setSendUtilitiesOpen(false);
-    addRotated = !addRotated;
-    addButton.classList.toggle('is-rotated', addRotated);
-    setComposerMenuOpen(addRotated);
-    if (addRotated) pauseConversationForMenu();
+    if (activeTemporaryUi === 'menu') {
+      activateTemporaryUi('none');
+    } else {
+      activateTemporaryUi('menu');
+    }
     window.clearTimeout(addFlashTimer);
     addButton.classList.add('is-active');
     addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
   });
 
   document.addEventListener('pointerdown', (event) => {
-    if (isComposerMenuInteraction(event.target)) return;
-    if (composerMenu.classList.contains('is-open')) {
-      resetAddButton();
-    }
+    if (isTemporaryUiInteraction(event.target)) return;
+    activateTemporaryUi('none');
   }, { passive: true });
   const measureGroupGeometry = () => {
     const pageStyles = getComputedStyle(page);
@@ -611,26 +609,38 @@
 
   const scheduleChatInactivity = () => {
     clearChatInactivityTimer();
-    if (conversationState === 'finished' || conversationState === 'resetting' || composerMenu.classList.contains('is-open')) return;
+    if (activeTemporaryUi !== 'chat' || conversationState === 'finished' || conversationState === 'resetting') return;
     chatInactivityTimer = window.setTimeout(() => {
       chatInactivityTimer = 0;
-      setConversationVisibility(false);
+      if (activeTemporaryUi === 'chat') activateTemporaryUi('none');
     }, chatInactivityDelayMs);
   };
 
-  const markChatActive = () => {
+  const activateTemporaryUi = (nextState) => {
+    const next = ['none', 'chat', 'menu', 'utilities', 'input'].includes(nextState)
+      ? nextState
+      : 'none';
     clearChatInactivityTimer();
-    if (conversationState === 'finished' || conversationState === 'resetting' || composerMenu.classList.contains('is-open')) return;
-    setConversationVisibility(true);
-    scheduleChatInactivity();
+    activeTemporaryUi = next;
+
+    const menuIsActive = next === 'menu';
+    addRotated = menuIsActive;
+    addButton.classList.toggle('is-rotated', menuIsActive);
+    setComposerMenuOpen(menuIsActive);
+    setSendUtilitiesOpen(next === 'utilities');
+    setConversationVisibility(next === 'chat');
+
+    if (next !== 'input' && document.activeElement === input) input.blur();
+    if (next === 'chat') scheduleChatInactivity();
   };
 
-  const pauseConversationForMenu = () => {
+  const showChatForInteraction = () => {
     clearChatInactivityTimer();
-    setConversationVisibility(false);
+    if (conversationState === 'finished' || conversationState === 'resetting') return;
+    activateTemporaryUi('chat');
   };
 
-  conversation.addEventListener('pointerdown', () => markChatActive(), { passive: true });
+  conversation.addEventListener('pointerdown', () => showChatForInteraction(), { passive: true });
 
   const setComposerInteractivity = (enabled) => {
     composerControls.forEach((control) => { control.disabled = !enabled; });
@@ -689,8 +699,7 @@
   const resetConversationDemo = () => {
     window.clearTimeout(finalVisibleTimer);
     finalVisibleTimer = 0;
-    clearChatInactivityTimer();
-    setConversationVisibility(true);
+    activateTemporaryUi('none');
     conversationFinal.classList.remove('is-visible');
     conversationFinal.setAttribute('aria-hidden', 'true');
     conversation.replaceChildren();
@@ -717,7 +726,7 @@
   const revealConversationFinal = (language) => {
     window.clearTimeout(finalVisibleTimer);
     window.clearTimeout(finalResetTimer);
-    clearChatInactivityTimer();
+    activateTemporaryUi('none');
     conversationState = 'finished';
     resetAddButton();
     setComposerInteractivity(false);
@@ -734,9 +743,12 @@
     );
   };
 
+  input.addEventListener('pointerdown', () => {
+    activateTemporaryUi('input');
+  }, { passive: true });
+
   input.addEventListener('focus', () => {
-    setSendUtilitiesOpen(false);
-    markChatActive();
+    activateTemporaryUi('input');
     lockActiveGroupForKeyboard();
   });
 
@@ -746,24 +758,22 @@
   });
 
   input.addEventListener('input', () => {
-    setSendUtilitiesOpen(false);
-    markChatActive();
+    activateTemporaryUi('input');
   });
 
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
-    markChatActive();
     const message = input.value.trim();
     if (!message) {
-      setSendUtilitiesOpen(!sendUtilitiesOpen);
+      activateTemporaryUi(activeTemporaryUi === 'utilities' ? 'none' : 'utilities');
       return;
     }
     if (conversationState !== 'active') return;
 
-    setSendUtilitiesOpen(false);
     const language = detectMessageLanguage(message);
     const currentReplyIndex = replyIndex;
     const replies = language === 'ar' ? arabicReplies : englishReplies;
+    activateTemporaryUi('chat');
     addConversationBubble(message, 'user', language);
     input.value = '';
     replyIndex += 1;
@@ -783,7 +793,7 @@
   }
 
   window.addEventListener('scroll', () => {
-    setSendUtilitiesOpen(false);
+    if (activeTemporaryUi !== 'input') activateTemporaryUi('none');
     scheduleScrollVisuals();
   }, { passive: true });
   window.addEventListener('resize', () => {
