@@ -97,7 +97,7 @@ html.s-x-initializing .s-page__composer :is(button, input) {
 }
 
 html.s-x-initializing .s-page__composer {
-  transform: translate3d(-50%, 0, 0) !important;
+  transform: none !important;
   animation: none !important;
 }
 
@@ -311,7 +311,7 @@ html[dir="rtl"] .s-page__reveal-line {
   position: fixed;
   z-index: 15;
   top: var(--s-x);
-  left: 50%;
+  left: max(calc(var(--s-x) * 2), calc((100% - 660px) / 2));
   width: min(calc(100% - (var(--s-x) * 4)), 660px);
   max-width: 100%;
   bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px) + 48px + (var(--s-x) * 2));
@@ -324,9 +324,7 @@ html[dir="rtl"] .s-page__reveal-line {
   overflow: visible;
   opacity: 1;
   pointer-events: none;
-  transform: translateX(-50%);
   transition: opacity 320ms ease;
-  will-change: opacity;
 }
 
 .s-page__conversation.is-chat-hidden {
@@ -351,7 +349,6 @@ html[dir="rtl"] .s-page__reveal-line {
   font: 500 14px/1.2 OOXMEScript, Arial, sans-serif;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-  will-change: transform;
   -webkit-backdrop-filter: blur(18px) saturate(115%);
   backdrop-filter: blur(18px) saturate(115%);
 }
@@ -478,7 +475,7 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   --s-composer-surface: rgba(255, 255, 255, .16);
   position: fixed;
   z-index: 20;
-  left: 50%;
+  left: max(calc(var(--s-x) * 2), calc((100% - 660px) / 2));
   bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
@@ -495,7 +492,7 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   background: var(--s-composer-surface);
   box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
   color: #0b0b0b;
-  transform: translate3d(-50%, 0, 0);
+  transform: none;
   transition: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-backdrop-filter: blur(20px) saturate(125%);
@@ -586,7 +583,7 @@ html[dir="rtl"] .s-page__composer-menu {
 .s-page__composer-menu.is-open {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: none;
   visibility: visible;
   transition-delay: 0s;
 }
@@ -775,7 +772,7 @@ html.s-route.is-day-mode .s-page__add.is-active {
 
 .s-page__send-utilities.is-open .s-page__send-utility {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: none;
   transition-delay: .06s;
 }
 
@@ -872,8 +869,8 @@ html.s-route:not(.is-day-mode) .s-page__send-utility.is-active .s-page__send-uti
 }
 
 @keyframes s-page-composer-pulse {
-  0%, 100% { transform: translate3d(-50%, 0, 0) scale(1); }
-  45% { transform: translate3d(-50%, 0, 0) scale(1.015); }
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.015); }
 }
 
 @keyframes s-page-composer-menu-pulse {
