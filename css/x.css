@@ -42,6 +42,7 @@
 
 html.s-route {
   --s-x: max(18px, calc((100vw - 660px) / 4));
+  --s-composer-radius: 28px;
   min-height: 100%;
   overflow-x: hidden;
   background: #000000;
@@ -150,7 +151,7 @@ html.s-x-initializing .s-page__submit:active {
   max-width: 100%;
   height: auto;
   margin: var(--s-x) 0 0;
-  border-radius: 28px;
+  border-radius: var(--s-composer-radius);
   opacity: 0;
   filter: blur(10px);
   visibility: hidden;
@@ -491,7 +492,7 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   margin: 0;
   padding: 2px;
   border: 1px solid transparent;
-  border-radius: 28px;
+  border-radius: var(--s-composer-radius);
   background: transparent;
   box-shadow: none;
   color: #0b0b0b;
@@ -556,6 +557,18 @@ html.s-route.is-day-mode .s-page__composer {
 .s-page__composer-input::placeholder {
   color: rgba(11, 11, 11, .52);
   opacity: 1;
+}
+
+html.s-route .s-page__composer-input.is-english-input {
+  font-family: OOXMESFPro, Arial, sans-serif;
+  direction: ltr;
+  text-align: left;
+}
+
+html.s-route .s-page__composer-input.is-arabic-input {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+  direction: rtl;
+  text-align: right;
 }
 
 /* The composer stays physically LTR; only its empty Arabic text starts at the arrow edge. */
@@ -961,7 +974,7 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
       transform-origin: left center;
     }
 
-    html[lang="ar"] .s-page__composer-input {
+    .s-page__composer-input.is-arabic-input {
       transform-origin: right center;
     }
   }

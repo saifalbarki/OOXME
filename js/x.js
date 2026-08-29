@@ -120,6 +120,19 @@
   const menuLabels = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-label'));
   let applyPageCopy = null;
   let manualThemeOverride = false;
+  const arabicScriptPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
+
+  const updateComposerInputLanguage = () => {
+    const hasTypedText = input.value.trim().length > 0;
+    const language = hasTypedText
+      ? arabicScriptPattern.test(input.value) ? 'ar' : 'en'
+      : document.documentElement.lang === 'ar' ? 'ar' : 'en';
+    const isArabic = language === 'ar';
+    input.classList.toggle('is-arabic-input', isArabic);
+    input.classList.toggle('is-english-input', !isArabic);
+    input.lang = language;
+    input.dir = isArabic ? 'rtl' : 'ltr';
+  };
 
   const updateThemeToggleLabel = () => {
     const copy = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
@@ -137,6 +150,7 @@
     sendLanguageUtility.setAttribute('aria-pressed', String(language === 'en'));
     sendLanguageUtility.setAttribute('aria-label', language === 'en' ? copy.utilities.switchToArabic : copy.utilities.switchToEnglish);
     applyPageCopy?.(language);
+    updateComposerInputLanguage();
     updateThemeToggleLabel();
     if (persist) {
       try { localStorage.setItem('ooxme-language', language); } catch (_) {}
@@ -374,7 +388,6 @@
     }
   });
 
-  const arabicScriptPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
   const latinScriptPattern = /[A-Za-z]/u;
   const detectMessageLanguage = (message) => (arabicScriptPattern.test(message) ? 'ar' : 'en');
   const getMessageDirection = (message, language) => (
@@ -489,6 +502,7 @@
     applySystemTheme();
     input.blur();
     input.value = '';
+    updateComposerInputLanguage();
     input.placeholder = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'].inputPlaceholder;
     resetAddButton();
     initializeGroupOne();
@@ -515,6 +529,7 @@
     conversationFinal.setAttribute('aria-hidden', 'false');
     conversationFinal.classList.add('is-visible');
     input.value = '';
+    updateComposerInputLanguage();
     input.blur();
     finalVisibleTimer = window.setTimeout(
       resetConversationDemo,
@@ -537,6 +552,7 @@
   });
 
   input.addEventListener('input', () => {
+    updateComposerInputLanguage();
     activateTemporaryUi('chat');
   });
 
@@ -556,6 +572,7 @@
     activateTemporaryUi('chat');
     addConversationBubble(message, 'user', language);
     input.value = '';
+    updateComposerInputLanguage();
     replyIndex += 1;
     if (replyIndex >= englishReplies.length) conversationState = 'awaiting-final';
 
