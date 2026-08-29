@@ -277,7 +277,7 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
   flex-direction: column;
   justify-content: flex-end;
   gap: var(--s-chat-gap);
-  overflow: hidden;
+  overflow: visible;
   opacity: 1;
   pointer-events: none;
   transform: translateX(-50%);
@@ -557,7 +557,7 @@ html[dir="rtl"] .s-page__composer-menu {
   color: inherit;
   font: 400 16px/1.2 OOXMEScript, Arial, sans-serif;
   letter-spacing: normal;
-  text-align: start;
+  text-align: center;
   appearance: none;
   cursor: pointer;
   z-index: 0;
@@ -801,7 +801,7 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 
 @keyframes s-page-send-utility-pulse {
   0%, 100% { transform: translateY(0) scale(1); }
-  45% { transform: translateY(0) scale(1.045); }
+  45% { transform: translateY(0) scale(1.09); }
 }
 
 .s-page__visually-hidden {
