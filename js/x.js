@@ -431,9 +431,11 @@
           ? Math.max(0, 1 - distance / (44 * particle.pixelRatio)) * pointer.strength
           : 0;
         const twinkle = .5 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .2);
+        const visibilityWave = (Math.sin((time * particle.visibilitySpeed) + particle.visibilityPhase) + 1) * .5;
+        const visibility = .06 + (.94 * Math.pow(visibilityWave, 1.3));
         const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
         const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
-        const alpha = Math.min(.9, particle.alpha * twinkle + influence * .48) * buildEase;
+        const alpha = Math.min(.9, (particle.alpha * twinkle * visibility) + (influence * .48)) * buildEase;
         const radius = particle.radius * (1 + influence * .32);
         const localMotion = influence * particle.pixelRatio * 1.1;
         const x = particle.x + Math.sin((time * particle.drift) + particle.phase) * (particle.pixelRatio * .22 + localMotion);
@@ -477,7 +479,7 @@
       maskContext.clearRect(0, 0, width, height);
       maskContext.drawImage(logoMaskImage, 0, 0, width, height);
       const maskPixels = maskContext.getImageData(0, 0, width, height).data;
-      const particleCount = Math.min(440, Math.max(320, Math.round((rect.width * rect.height) / 175)));
+      const particleCount = Math.min(880, Math.max(640, Math.round((rect.width * rect.height) / 87.5)));
       const alphaAt = (x, y) => {
         if (x < 0 || x >= width || y < 0 || y >= height) return 0;
         return maskPixels[((Math.floor(y) * width + Math.floor(x)) * 4) + 3];
@@ -510,12 +512,14 @@
           x,
           y,
           pixelRatio,
-          radius: random(.65, 1.38) * pixelRatio,
+          radius: random(.325, .69) * pixelRatio,
           alpha: random(.28, .56) + (edgeWeight * .12),
           phase: random(0, Math.PI * 2),
           speed: random(.7, 1.45),
           drift: random(.22, .6),
-          buildDelay: random(0, .7)
+          buildDelay: random(0, .7),
+          visibilityPhase: random(0, Math.PI * 2),
+          visibilitySpeed: random(.16, .42)
         });
       }
       isReady = true;
