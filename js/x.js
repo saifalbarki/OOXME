@@ -2,6 +2,7 @@
   'use strict';
 
   const page = document.querySelector('.s-page');
+  const content = document.querySelector('.s-page__content');
   const composer = document.querySelector('[data-s-composer]');
   const composerMenu = document.querySelector('[data-s-composer-menu]');
   const sendUtilities = document.querySelector('[data-s-send-utilities]');
@@ -21,7 +22,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -263,6 +264,7 @@
   [addButton, input, submitButton].forEach((control) => {
     control?.addEventListener('pointerdown', pulseComposer, { passive: true });
   });
+  submitButton.addEventListener('pointerdown', (event) => event.preventDefault());
 
   [addButton, composerMenu, sendUtilities].forEach((control) => {
     control.addEventListener('pointerdown', (event) => event.stopPropagation());
@@ -297,26 +299,32 @@
     activateTemporaryUi('none');
     if (document.activeElement === input) input.blur();
   }, { passive: true });
+  const getStableLayoutMetrics = (element) => {
+    let top = 0;
+    let current = element;
+    while (current) {
+      top += current.offsetTop;
+      current = current.offsetParent;
+    }
+    return { top, height: element.offsetHeight };
+  };
+
   const measureGroupGeometry = () => {
-    const pageStyles = getComputedStyle(page);
-    groupHandoffSpacing = parseFloat(pageStyles.getPropertyValue('--s-x')) || 18;
+    groupHandoffSpacing = Number.parseFloat(getComputedStyle(content).paddingLeft) || 18;
     groupComposerTriggerTop = composer.getBoundingClientRect().top - groupHandoffSpacing;
     const scrollPosition = window.scrollY;
-    const measurements = groups.map((group, index) => {
-      const rect = group.getBoundingClientRect();
-      const appliedOffset = Number.isFinite(groupTransformOffsets[index])
-        ? groupTransformOffsets[index]
-        : 0;
+    const measurements = groups.map((group) => {
+      const metrics = getStableLayoutMetrics(group);
       return {
-        top: rect.top + scrollPosition - appliedOffset,
-        height: rect.height,
-        bottom: rect.top + scrollPosition - appliedOffset + rect.height
+        top: metrics.top,
+        height: metrics.height,
+        bottom: metrics.top + metrics.height
       };
     });
     let sectionTimelineStart = 0;
     sectionGeometry = sections.map((section, sectionIndex) => {
       const sectionMeasurements = section.groups.map((group) => measurements[groups.indexOf(group)]);
-      const sectionRect = section.element.getBoundingClientRect();
+      const sectionHeight = section.element.offsetHeight;
       const anchorTop = sectionMeasurements[0].top;
       if (sharedAnchorViewportTop === null) sharedAnchorViewportTop = sectionMeasurements[0].top - scrollPosition;
       const anchorViewportTop = sharedAnchorViewportTop;
@@ -330,7 +338,10 @@
       const contentHeight = finalGroups.at(-1).top + finalGroups.at(-1).height - anchorTop;
       const overflowAmount = Math.max(0, anchorViewportTop + contentHeight - window.innerHeight);
       const entryDistance = window.innerHeight;
-      const entryStart = sectionTimelineStart;
+      const initialGroupAnchored = sectionIndex === 0;
+      const entryStart = initialGroupAnchored
+        ? sectionTimelineStart - entryDistance
+        : sectionTimelineStart;
       const groupCompletion = entryStart + (entryDistance * section.groups.length);
       const holdStart = groupCompletion + overflowAmount;
       const pushStart = holdStart + (window.innerHeight * .2);
@@ -342,12 +353,13 @@
         groups: finalGroups,
         anchorTop,
         anchorViewportTop,
-        height: sectionRect.height,
+        height: sectionHeight,
         contentHeight,
         groupSpacing: groupHandoffSpacing,
         overflowAmount,
         entryDistance,
         entryStart,
+        initialGroupAnchored,
         groupCompletion,
         overflowStart: groupCompletion,
         overflowEnd: groupCompletion + overflowAmount,
