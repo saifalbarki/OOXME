@@ -432,7 +432,8 @@
           : 0;
         const twinkle = .5 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .2);
         const visibilityWave = (Math.sin((time * particle.visibilitySpeed) + particle.visibilityPhase) + 1) * .5;
-        const visibility = .06 + (.94 * Math.pow(visibilityWave, 1.3));
+        const minimumVisibility = .1 + (particle.edgeWeight * .26);
+        const visibility = minimumVisibility + ((1 - minimumVisibility) * Math.pow(visibilityWave, 1.3));
         const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
         const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
         const alpha = Math.min(.9, (particle.alpha * twinkle * visibility) + (influence * .48)) * buildEase;
@@ -483,6 +484,8 @@
       const particleCount = isPhoneViewport
         ? Math.min(1320, Math.max(1100, Math.round((rect.width * rect.height) / 54)))
         : Math.min(880, Math.max(640, Math.round((rect.width * rect.height) / 87.5)));
+      const edgeParticleCount = Math.round(particleCount * .6);
+      const particleTargetCount = particleCount + edgeParticleCount;
       const particleRadius = isPhoneViewport ? [.44, .9] : [.325, .69];
       const alphaAt = (x, y) => {
         if (x < 0 || x >= width || y < 0 || y >= height) return 0;
@@ -505,19 +508,23 @@
       particles = [];
       particleBuildStartedAt = null;
       let attempts = 0;
-      while (particles.length < particleCount && attempts < particleCount * 420) {
+      while (particles.length < particleTargetCount && attempts < particleTargetCount * 520) {
         attempts += 1;
         const x = Math.floor(Math.random() * width);
         const y = Math.floor(Math.random() * height);
         if (maskPixels[((y * width + x) * 4) + 3] < 160) continue;
         const edgeWeight = edgeWeightAt(x, y);
-        if (Math.random() > (.18 + (edgeWeight * .82))) continue;
+        const isEdgeReinforcement = particles.length >= particleCount;
+        if (isEdgeReinforcement) {
+          if (edgeWeight < .42 || Math.random() > (.4 + (edgeWeight * .6))) continue;
+        } else if (Math.random() > (.18 + (edgeWeight * .82))) continue;
         particles.push({
           x,
           y,
           pixelRatio,
           radius: random(...particleRadius) * pixelRatio,
-          alpha: random(.28, .56) + (edgeWeight * .12),
+          alpha: random(.31, .59) + (edgeWeight * .13),
+          edgeWeight,
           phase: random(0, Math.PI * 2),
           speed: random(.7, 1.45),
           drift: random(.22, .6),
