@@ -109,6 +109,7 @@
   let addFlashTimer = 0;
   const menuItemFlashTimers = new WeakMap();
   const sendUtilityPulseFrames = new WeakMap();
+  const marqueePulseFrames = new WeakMap();
   let addRotated = false;
   let initializationReady = false;
   let initializationRun = 0;
@@ -250,6 +251,24 @@
     });
     sendUtilityPulseFrames.set(control, frame);
   };
+
+  const pulseMarquee = (marquee) => {
+    const pendingFrame = marqueePulseFrames.get(marquee);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    marquee.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      marqueePulseFrames.delete(marquee);
+      marquee.classList.add('is-pulsing');
+    });
+    marqueePulseFrames.set(marquee, frame);
+  };
+
+  document.querySelectorAll('.s-page__marquee').forEach((marquee) => {
+    marquee.addEventListener('pointerdown', () => pulseMarquee(marquee), { passive: true });
+    marquee.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-marquee-pulse') marquee.classList.remove('is-pulsing');
+    });
+  });
 
   [sendThemeUtility, sendLanguageUtility].forEach((control) => {
     control.addEventListener('pointerdown', () => pulseSendUtility(control), { passive: true });
