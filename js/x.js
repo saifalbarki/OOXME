@@ -162,7 +162,7 @@
   let initialLanguage = 'en';
   try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
   applyLanguage(initialLanguage, { persist: false, emit: false });
-  applySystemTheme();
+  applyTheme('dark');
   systemThemePreference.addEventListener?.('change', applySystemTheme);
 
   const isTemporaryUiInteraction = (target) => (

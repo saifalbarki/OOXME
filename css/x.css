@@ -668,6 +668,16 @@ html.s-route.is-day-mode .s-page__composer-menu-item::before {
   color: #fff;
 }
 
+html.s-route.is-day-mode .s-page__submit {
+  background: #FFFFFF;
+  color: #000000;
+}
+
+html.s-route.is-day-mode.s-x-initializing .s-page__submit {
+  background: #FFFFFF !important;
+  color: #000000 !important;
+}
+
 .s-page__add > span,
 .s-page__add > span::after {
   width: 13px;
@@ -854,6 +864,11 @@ html.s-route:not(.is-day-mode) .s-page__send-utility.is-active .s-page__send-uti
 .s-page__composer .s-page__submit:active {
   background: #080808;
   transform: none;
+}
+
+html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
+  background: #FFFFFF;
+  color: #000000;
 }
 
 .s-page__composer.is-pulsing {
