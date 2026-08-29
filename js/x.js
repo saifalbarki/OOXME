@@ -60,9 +60,9 @@
   const pageCopy = {
     en: {
       groups: [
-        ['Welcome to ooxme', 'Premium brand management and business development.'],
-        ['Premium Service.', 'Your partner in managing and developing your business into a global brand.'],
-        ['Be among the first.', 'Just like OOXME, make your business the first and only one in its field.']
+        ['Welcome\nOur Next Client', 'Iraq’s one and only brand management service\nPremium business development service'],
+        ['Re-engineered\nBuilt for New Terrain', 'Discover the fourth update to the OOXME operating system, designed for engineering, architectural, construction, contracting, and similar businesses.'],
+        ['From Businesses\nTo Global Brands', 'Take the next step and contact us. You’ll be impressed!']
       ],
       menu: ['The Brand management', 'The Gallery', 'The Consultation', 'The Dashboard', 'Other'],
       inputPlaceholder: 'Type...',
