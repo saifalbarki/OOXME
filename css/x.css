@@ -151,6 +151,15 @@ html.s-x-initializing .s-page__submit:active {
   height: auto;
   margin: var(--s-x) 0 0;
   border-radius: 28px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .32s ease, visibility 0s linear 0s;
+}
+
+.s-page__group.is-visible .s-page__image-group {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 2.81s, 2.81s;
 }
 
 .s-page__section--future {
@@ -397,7 +406,7 @@ html.s-route.is-day-mode .s-page__conversation-bubble--user {
 }
 
 .s-page__conversation-bubble--ooxme {
-  align-self: start;
+  align-self: flex-start;
   border-color: rgba(255, 255, 255, .17);
   border-radius: 28px;
   border-bottom-left-radius: 8px;
