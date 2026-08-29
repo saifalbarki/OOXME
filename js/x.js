@@ -4,18 +4,19 @@
   const page = document.querySelector('.s-page');
   const composer = document.querySelector('[data-s-composer]');
   const composerMenu = document.querySelector('[data-s-composer-menu]');
+  const sendUtilities = document.querySelector('[data-s-send-utilities]');
+  const sendThemeUtility = document.querySelector('[data-s-utility="theme"]');
+  const sendLanguageUtility = document.querySelector('[data-s-utility="language"]');
   const addButton = document.querySelector('.s-page__add');
   const input = document.querySelector('.s-page__composer-input');
   const submitButton = composer?.querySelector('.s-page__submit');
   const conversation = document.querySelector('[data-s-conversation]');
   const conversationFinal = document.querySelector('[data-s-conversation-final]');
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
-  const languageToggle = document.querySelector('[data-s-language-toggle]');
-  const themeToggle = document.querySelector('[data-s-theme-toggle]');
   const groups = Array.from(document.querySelectorAll('.s-page__group'));
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (!page || !composer || !composerMenu || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || !languageToggle || !themeToggle || groups.length !== 3) return;
+  if (!page || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || groups.length !== 3) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -36,20 +37,20 @@
     'Your account has been dramatically, completely, and absolutely... suspended.'
   ];
   const arabicReplies = [
-    'عذرــًا، نحن لا نرد على الرسائل مجانــًا.',
+    'عذرًا، نحن لا نرد على الرسائل مجانًا.',
     'همم... يبدو انك لم تقرأ الرسالة السابقة.',
     'نعم. ما زالت الاجابة نفسها.',
-    'احقــًا تحاول مرة اخرى؟',
+    'احقًا تحاول مرة اخرى؟',
     'لدينا فكرة افضل. اتصل بنا.',
     'لنجعل الامر اسهل - اضغط زر +.',
     'يبدو انك ما زلت لا تفهم ما نقصده.',
-    'من فضلك توقف. التزامك بالامر بدأ يصبح لافتــًا.',
-    'رسالة اخرى وقد نضطر - مازحين طبعــًا - الى تنبيه قسم العلامة التجارية.',
+    'من فضلك توقف. التزامك بالامر بدأ يصبح لافتًا.',
+    'رسالة اخرى وقد نضطر - مازحين طبعًا - الى تنبيه قسم العلامة التجارية.',
     'تم تعليق حسابك بصورة درامية، وكاملة، ومطلقة... مزحة فقط.'
   ];
   const finalMessages = {
     en: 'Alright, we’re joking.\nThe ooxme conversation experience is still under development. Until it’s ready, reach us through our official channels and we’ll take it from there.',
-    ar: 'حسنــًا، نحن نمزح.\nتجربة المحادثة لدى اوكسوم ما تزال قيد التطوير. وحتى تصبح جاهزة، تواصل معنا عبر قنواتنا الرسمية، وسنتولى الامر من هناك.'
+    ar: 'حسنًا، نحن نمزح.\nتجربة المحادثة لدى اوكسوم ما تزال قيد التطوير. وحتى تصبح جاهزة، تواصل معنا عبر قنواتنا الرسمية، وسنتولى الامر من هناك.'
   };
   const pageCopy = {
     en: {
@@ -74,14 +75,14 @@
     },
     ar: {
       groups: [
-        ['اهلــًا بك في اوكسوم', 'نحن اول خدمة متميزة لادارة العلامات التجارية في العراق، صممنا لتحويل الاعمال الطموحة الى علامات تنافس عالميــًا عبر تموضع اوضح، وحضور اقوى في السوق، ونمو مستدام، وقدرة اكبر على زيادة الايرادات.'],
+        ['اهلًا بك في اوكسوم', 'نحن اول خدمة متميزة لادارة العلامات التجارية في العراق، صممنا لتحويل الاعمال الطموحة الى علامات تنافس عالميًا عبر تموضع اوضح، وحضور اقوى في السوق، ونمو مستدام، وقدرة اكبر على زيادة الايرادات.'],
         ['وضوح في كل جزء متحرك.', 'صممنا لنحافظ على وضوح الاتجاه بينما تستمر التفاصيل في الحركة.'],
         ['من الفكرة\nالى الخطوة التالية.', 'ابدأ بسؤال.']
       ],
       menu: ['ادارة العلامة التجارية', 'المعرض', 'الاستشارة', 'لوحة التحكم', 'اخرى'],
       inputPlaceholder: 'اكتب...',
       ask: 'اسأل اوكسوم',
-      addContext: 'اضف سياقــًا',
+      addContext: 'اضف سياقًا',
       submitQuestion: 'ارسال السؤال',
       conversation: 'المحادثة',
       utilities: {
@@ -115,7 +116,9 @@
   let keyboardLockedScrollY = 0;
   let addFlashTimer = 0;
   const menuItemFlashTimers = new WeakMap();
+  const sendUtilityPulseFrames = new WeakMap();
   let addRotated = false;
+  let sendUtilitiesOpen = false;
   let initializationReady = false;
   let initializationRun = 0;
   let lastKeyboardOverlap = 0;
@@ -124,17 +127,15 @@
   let finalVisibleTimer = 0;
   let finalResetTimer = 0;
   let chatInactivityTimer = 0;
-  let submitArrowReady = null;
   let conversationVisible = true;
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
-  const utilityControls = document.querySelector('.s-page__utilities');
   const inputLabel = composer.querySelector('.s-page__visually-hidden');
   const menuLabels = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-label'));
   let applyPageCopy = null;
 
   const updateThemeToggleLabel = () => {
     const copy = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
-    themeToggle.setAttribute('aria-label', document.documentElement.classList.contains('is-day-mode')
+    sendThemeUtility.setAttribute('aria-label', document.documentElement.classList.contains('is-day-mode')
       ? copy.utilities.switchToDark
       : copy.utilities.switchToDay);
   };
@@ -144,10 +145,9 @@
     const copy = pageCopy[language];
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-    languageToggle.classList.toggle('is-active', language === 'en');
-    languageToggle.setAttribute('aria-pressed', String(language === 'en'));
-    languageToggle.setAttribute('aria-label', language === 'en' ? copy.utilities.switchToArabic : copy.utilities.switchToEnglish);
-    utilityControls?.setAttribute('aria-label', copy.utilities.label);
+    sendLanguageUtility.classList.toggle('is-active', language === 'en');
+    sendLanguageUtility.setAttribute('aria-pressed', String(language === 'en'));
+    sendLanguageUtility.setAttribute('aria-label', language === 'en' ? copy.utilities.switchToArabic : copy.utilities.switchToEnglish);
     applyPageCopy?.(language);
     updateThemeToggleLabel();
     if (persist) {
@@ -159,8 +159,8 @@
   const applyTheme = (next) => {
     const isDayMode = next === 'day';
     document.documentElement.classList.toggle('is-day-mode', isDayMode);
-    themeToggle.classList.toggle('is-active', !isDayMode);
-    themeToggle.setAttribute('aria-pressed', String(!isDayMode));
+    sendThemeUtility.classList.toggle('is-active', !isDayMode);
+    sendThemeUtility.setAttribute('aria-pressed', String(!isDayMode));
     updateThemeToggleLabel();
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDayMode ? '#FFFFFF' : '#000000');
   };
@@ -171,7 +171,7 @@
   applyTheme('dark');
 
   const isComposerMenuInteraction = (target) => (
-    addButton.contains(target) || composerMenu.contains(target)
+    addButton.contains(target) || composerMenu.contains(target) || sendUtilities.contains(target)
   );
 
   const setComposerMenuOpen = (isOpen) => {
@@ -179,11 +179,24 @@
     composerMenu.setAttribute('aria-hidden', String(!isOpen));
   };
 
+  const setSendUtilitiesOpen = (isOpen) => {
+    sendUtilitiesOpen = isOpen;
+    sendUtilities.classList.toggle('is-open', isOpen);
+    sendUtilities.setAttribute('aria-hidden', String(!isOpen));
+  };
+
+  const setSendUtilityAvailability = (isAvailable) => {
+    [sendThemeUtility, sendLanguageUtility].forEach((control) => {
+      control.disabled = !isAvailable;
+    });
+  };
+
   const resetAddButton = () => {
     window.clearTimeout(addFlashTimer);
     addRotated = false;
     addButton.classList.remove('is-rotated', 'is-active');
     setComposerMenuOpen(false);
+    setSendUtilitiesOpen(false);
   };
 
   const pulseComposer = () => {
@@ -214,15 +227,34 @@
     if (event.animationName === 's-page-composer-menu-pulse') composerMenu.classList.remove('is-pulsing');
   });
 
+  const pulseSendUtility = (control) => {
+    const pendingFrame = sendUtilityPulseFrames.get(control);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    control.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      sendUtilityPulseFrames.delete(control);
+      control.classList.add('is-pulsing');
+    });
+    sendUtilityPulseFrames.set(control, frame);
+  };
+
+  [sendThemeUtility, sendLanguageUtility].forEach((control) => {
+    control.addEventListener('pointerdown', () => pulseSendUtility(control), { passive: true });
+    control.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-send-utility-pulse') control.classList.remove('is-pulsing');
+    });
+  });
+
   [addButton, input, submitButton].forEach((control) => {
     control?.addEventListener('pointerdown', pulseComposer, { passive: true });
   });
 
-  [addButton, composerMenu].forEach((control) => {
+  [addButton, composerMenu, sendUtilities].forEach((control) => {
     control.addEventListener('pointerdown', (event) => event.stopPropagation());
     control.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
   });
   composerMenu.addEventListener('click', (event) => event.stopPropagation());
+  sendUtilities.addEventListener('click', (event) => event.stopPropagation());
   composerMenu.querySelectorAll('.s-page__composer-menu-item').forEach((item) => {
     item.addEventListener('pointerdown', () => {
       pulseComposerMenu();
@@ -235,6 +267,7 @@
   addButton.addEventListener('click', (event) => {
     if (!initializationReady) return;
     event.stopPropagation();
+    setSendUtilitiesOpen(false);
     addRotated = !addRotated;
     addButton.classList.toggle('is-rotated', addRotated);
     setComposerMenuOpen(addRotated);
@@ -496,11 +529,13 @@
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
 
-  languageToggle.addEventListener('click', () => {
-    applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar');
-  });
-  themeToggle.addEventListener('click', () => {
+  sendThemeUtility.addEventListener('click', (event) => {
+    event.stopPropagation();
     applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day');
+  });
+  sendLanguageUtility.addEventListener('click', (event) => {
+    event.stopPropagation();
+    applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar');
   });
   window.addEventListener('storage', (event) => {
     if (event.key === 'ooxme-language' && event.newValue) {
@@ -513,13 +548,6 @@
   const detectMessageLanguage = (message) => (
     /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(message) ? 'ar' : 'en'
   );
-
-  const updateSubmitArrow = () => {
-    const isReadyToSend = document.activeElement === input || Boolean(input.value.trim());
-    if (submitArrowReady === isReadyToSend) return;
-    submitArrowReady = isReadyToSend;
-    submitButton.classList.toggle('is-send-ready', isReadyToSend);
-  };
 
   const clearChatInactivityTimer = () => {
     window.clearTimeout(chatInactivityTimer);
@@ -538,6 +566,8 @@
     const hasVisibleBubbles = !conversation.classList.contains('is-chat-hidden')
       && Boolean(conversation.querySelector('.s-page__conversation-bubble:not(.is-exiting)'));
     page.classList.toggle('is-chat-active', hasVisibleBubbles);
+    if (hasVisibleBubbles) setSendUtilitiesOpen(false);
+    setSendUtilityAvailability(!hasVisibleBubbles);
   };
 
   const scheduleChatInactivity = () => {
@@ -628,11 +658,11 @@
     syncPageTextForChat();
     replyIndex = 0;
     conversationState = 'resetting';
+    applyLanguage('en', { emit: false });
+    applyTheme('dark');
     input.blur();
     input.value = '';
     input.placeholder = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'].inputPlaceholder;
-    submitArrowReady = null;
-    submitButton.classList.remove('is-send-ready');
     resetAddButton();
     initializeGroupOne();
     window.clearTimeout(finalResetTimer);
@@ -642,7 +672,6 @@
       conversationFinalCopy.removeAttribute('dir');
       setComposerInteractivity(true);
       conversationState = 'active';
-      updateSubmitArrow();
     }, reducedMotion.matches ? 0 : finalFadeOutDurationMs);
   };
 
@@ -660,7 +689,6 @@
     conversationFinal.classList.add('is-visible');
     input.value = '';
     input.blur();
-    updateSubmitArrow();
     finalVisibleTimer = window.setTimeout(
       resetConversationDemo,
       finalMessageDurationMs
@@ -668,40 +696,37 @@
   };
 
   input.addEventListener('focus', () => {
+    setSendUtilitiesOpen(false);
     markChatActive();
-    updateSubmitArrow();
     lockActiveGroupForKeyboard();
   });
 
   input.addEventListener('blur', () => {
-    updateSubmitArrow();
     if (lastKeyboardOverlap > 0) return;
     releaseKeyboardGroupLock();
   });
 
   input.addEventListener('input', () => {
+    setSendUtilitiesOpen(false);
     markChatActive();
-    updateSubmitArrow();
   });
-  updateSubmitArrow();
 
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
     markChatActive();
     const message = input.value.trim();
     if (!message) {
-      input.focus({ preventScroll: true });
-      updateSubmitArrow();
+      setSendUtilitiesOpen(!sendUtilitiesOpen);
       return;
     }
     if (conversationState !== 'active') return;
 
+    setSendUtilitiesOpen(false);
     const language = detectMessageLanguage(message);
     const currentReplyIndex = replyIndex;
     const replies = language === 'ar' ? arabicReplies : englishReplies;
     addConversationBubble(message, 'user', language);
     input.value = '';
-    updateSubmitArrow();
     replyIndex += 1;
     if (replyIndex >= englishReplies.length) conversationState = 'awaiting-final';
 
@@ -719,6 +744,7 @@
   }
 
   window.addEventListener('scroll', () => {
+    setSendUtilitiesOpen(false);
     scheduleScrollVisuals();
   }, { passive: true });
   window.addEventListener('resize', () => {
