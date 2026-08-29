@@ -227,7 +227,7 @@ html[dir="rtl"] [data-s-reveal] {
 }
 
 html[dir="rtl"] .s-page__group [data-s-reveal] {
-  clip-path: inset(0 0 0 100%);
+  clip-path: none;
 }
 
 .s-page__reveal-line {
