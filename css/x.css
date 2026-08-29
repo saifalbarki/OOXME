@@ -40,6 +40,14 @@
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF;
 }
 
+@font-face {
+  font-family: OOXMEPlayfair;
+  src: url('../assets/fonts/PlayfairDisplay-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 html.s-route {
   --s-x: max(18px, calc((100vw - 660px) / 4));
   --s-composer-radius: 28px;
@@ -213,14 +221,15 @@ html.s-x-initializing .s-page__submit:active {
   pointer-events: none;
   opacity: 0;
   filter: blur(14px);
-  transition: opacity 1s cubic-bezier(.22, .61, .36, 1), filter 1s cubic-bezier(.22, .61, .36, 1);
+  visibility: hidden;
+  transition: opacity 1s cubic-bezier(.22, .61, .36, 1), filter 1s cubic-bezier(.22, .61, .36, 1), visibility 0s linear 0s;
 }
 
 .s-page__image-copy-language {
   display: flex;
   width: min(78%, 360px);
   flex-direction: column;
-  gap: calc(var(--s-x) * .55);
+  gap: 0;
   text-align: left;
 }
 
@@ -244,9 +253,9 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
 
 .s-page__image-copy-main {
   color: #ffffff;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: OOXMEPlayfair, "Playfair Display", Georgia, serif;
   font-size: clamp(30px, 7vw, 54px);
-  font-weight: 600;
+  font-weight: 700;
   font-style: italic;
   letter-spacing: -.035em;
   line-height: .98;
@@ -261,6 +270,14 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
   line-height: 1.2;
 }
 
+.s-page__image-copy-main + .s-page__image-copy-supporting {
+  margin-top: calc(var(--s-x) * .55) !important;
+}
+
+.s-page__image-copy-supporting + .s-page__image-copy-supporting {
+  margin-top: calc(var(--s-x) * .25) !important;
+}
+
 .s-page__image-copy-language--ar .s-page__image-copy-main,
 .s-page__image-copy-language--ar .s-page__image-copy-supporting {
   font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
@@ -270,7 +287,8 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
 .s-page__group.is-image-copy-visible .s-page__image-copy {
   opacity: 1;
   filter: blur(0);
-  transition-delay: 3.7s;
+  visibility: visible;
+  transition-delay: 4.7s, 4.7s, 4.7s;
 }
 
 .s-page__marquee {

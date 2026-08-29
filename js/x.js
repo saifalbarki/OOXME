@@ -107,9 +107,10 @@
   let composerPulseFrame = 0;
   let composerMenuPulseFrame = 0;
   let addFlashTimer = 0;
-  const menuItemFlashTimers = new WeakMap();
-  const sendUtilityPulseFrames = new WeakMap();
-  const marqueePulseFrames = new WeakMap();
+  const menuItemFlashTimers = new Map();
+  const sendUtilityPulseFrames = new Map();
+  const marqueePulseFrames = new Map();
+  const pendingReplyTimers = new Set();
   let addRotated = false;
   let initializationReady = false;
   let initializationRun = 0;
@@ -118,6 +119,7 @@
   let conversationState = 'active';
   let finalVisibleTimer = 0;
   let finalResetTimer = 0;
+  let pendingFinalRevealTimer = 0;
   let conversationVisible = true;
   let activeTemporaryUi = 'none';
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
@@ -736,32 +738,7 @@
   };
 
   const resetConversationDemo = () => {
-    window.clearTimeout(finalVisibleTimer);
-    finalVisibleTimer = 0;
-    activateTemporaryUi('none');
-    conversationFinal.classList.remove('is-visible');
-    conversationFinal.setAttribute('aria-hidden', 'true');
-    conversation.replaceChildren();
-    syncPageTextForChat();
-    replyIndex = 0;
-    conversationState = 'resetting';
-    applyLanguage('en', { emit: false });
-    manualThemeOverride = false;
-    applySystemTheme();
-    input.blur();
-    input.value = '';
-    updateComposerInputLanguage();
-    input.placeholder = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'].inputPlaceholder;
-    resetAddButton();
-    initializeGroupOne();
-    window.clearTimeout(finalResetTimer);
-    finalResetTimer = window.setTimeout(() => {
-      conversationFinalCopy.textContent = '';
-      conversationFinalCopy.removeAttribute('lang');
-      conversationFinalCopy.removeAttribute('dir');
-      setComposerInteractivity(true);
-      conversationState = 'active';
-    }, reducedMotion.matches ? 0 : finalFadeOutDurationMs);
+    resetPageToInitialState();
   };
 
   const revealConversationFinal = (language) => {
@@ -824,12 +801,17 @@
     replyIndex += 1;
     if (replyIndex >= englishReplies.length) conversationState = 'awaiting-final';
 
-    window.setTimeout(() => {
+    const replyTimer = window.setTimeout(() => {
+      pendingReplyTimers.delete(replyTimer);
       addConversationBubble(replies[currentReplyIndex], 'ooxme', language);
       if (currentReplyIndex === englishReplies.length - 1) {
-        window.setTimeout(() => revealConversationFinal(language), finalRevealDelayMs);
+        pendingFinalRevealTimer = window.setTimeout(() => {
+          pendingFinalRevealTimer = 0;
+          revealConversationFinal(language);
+        }, finalRevealDelayMs);
       }
     }, replyDelayMs);
+    pendingReplyTimers.add(replyTimer);
   });
 
   if (window.visualViewport) {
@@ -863,8 +845,71 @@
     syncConversationInputBounds();
     document.documentElement.classList.remove('s-x-initializing');
   };
+
+  const inactivityResetDelayMs = 15000;
+  let inactivityResetTimer = 0;
+
+  const resetPageToInitialState = () => {
+    window.clearTimeout(inactivityResetTimer);
+    window.clearTimeout(finalVisibleTimer);
+    window.clearTimeout(finalResetTimer);
+    window.clearTimeout(pendingFinalRevealTimer);
+    inactivityResetTimer = 0;
+    finalVisibleTimer = 0;
+    finalResetTimer = 0;
+    pendingFinalRevealTimer = 0;
+    pendingReplyTimers.forEach((timer) => window.clearTimeout(timer));
+    pendingReplyTimers.clear();
+    sendUtilityPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    sendUtilityPulseFrames.clear();
+    marqueePulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    marqueePulseFrames.clear();
+    menuItemFlashTimers.forEach((timer) => window.clearTimeout(timer));
+    menuItemFlashTimers.clear();
+    document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
+    composerMenu.querySelectorAll('.is-active').forEach((element) => element.classList.remove('is-active'));
+    groups.forEach((group) => group.classList.remove('is-visible', 'is-image-copy-visible'));
+    imageCopy.setAttribute('aria-hidden', 'true');
+    conversation.replaceChildren();
+    conversationFinal.classList.remove('is-visible');
+    conversationFinal.setAttribute('aria-hidden', 'true');
+    conversationFinalCopy.textContent = '';
+    conversationFinalCopy.removeAttribute('lang');
+    conversationFinalCopy.removeAttribute('dir');
+    replyIndex = 0;
+    conversationState = 'active';
+    manualThemeOverride = false;
+    applyLanguage(initialLanguage, { persist: false, emit: false });
+    applyTheme('dark');
+    input.blur();
+    input.value = '';
+    updateComposerInputLanguage();
+    setComposerInteractivity(true);
+    activateTemporaryUi('none');
+    resetAddButton();
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    initializeGroupOne();
+    window.requestAnimationFrame(() => {
+      groups[0]?.classList.add('is-visible');
+      syncImageCopyVisibility();
+    });
+    inactivityResetTimer = window.setTimeout(resetPageToInitialState, inactivityResetDelayMs);
+  };
+
+  const noteInteraction = () => {
+    if (!initializationReady) return;
+    window.clearTimeout(inactivityResetTimer);
+    inactivityResetTimer = window.setTimeout(resetPageToInitialState, inactivityResetDelayMs);
+  };
+
+  ['pointerdown', 'mousemove', 'touchstart', 'click', 'keydown', 'input'].forEach((eventName) => {
+    document.addEventListener(eventName, noteInteraction, { passive: true });
+  });
+  window.addEventListener('scroll', noteInteraction, { passive: true });
+
   window.addEventListener('pageshow', () => {
     if (!initializationReady) initializeGroupOne();
   }, { once: true });
   initializeGroupOne();
+  noteInteraction();
 })();
