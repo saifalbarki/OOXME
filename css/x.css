@@ -800,7 +800,7 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 }
 
 .s-page__send-utility.is-pulsing {
-  animation: s-page-composer-menu-pulse .18s ease-out;
+  animation: s-page-send-utility-pulse .18s ease-out;
 }
 
 @keyframes s-page-composer-pulse {
@@ -811,6 +811,11 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 @keyframes s-page-composer-menu-pulse {
   0%, 100% { transform: translateY(0) scale(1); }
   45% { transform: translateY(0) scale(1.015); }
+}
+
+@keyframes s-page-send-utility-pulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(0) scale(1.045); }
 }
 
 .s-page__visually-hidden {
@@ -836,6 +841,12 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 }
 
 @media (max-width: 600px) {
+  /* iPhone Safari zooms focused text inputs below 16px. Keep the visual
+     layout unchanged while meeting its no-auto-zoom threshold. */
+  html[lang="ar"] .s-page__composer-input {
+    font-size: 16px;
+  }
+
   .s-page__content {
     padding-inline: var(--s-x);
     padding-bottom: calc(136px + env(safe-area-inset-bottom));
