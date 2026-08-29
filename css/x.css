@@ -175,9 +175,9 @@ html.s-x-initializing .s-page__submit:active {
   margin: var(--s-x) 0 0;
   border-radius: var(--s-composer-radius);
   opacity: 0;
-  filter: blur(10px);
+  filter: blur(14px);
   visibility: hidden;
-  transition: opacity .48s ease, filter .48s ease, visibility 0s linear 0s;
+  transition: opacity 1s cubic-bezier(.22, .61, .36, 1), filter 1s cubic-bezier(.22, .61, .36, 1), visibility 0s linear 0s;
 }
 
 .s-page__group.is-visible .s-page__image-group {

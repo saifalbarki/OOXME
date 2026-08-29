@@ -428,7 +428,8 @@
       if (!isReady || !isInViewport || document.hidden) return;
 
       const time = timestamp * .001;
-      const particleColor = document.documentElement.classList.contains('is-day-mode') ? '0, 0, 0' : '255, 255, 255';
+      const particleColor = document.documentElement.classList.contains('is-day-mode') ? [0, 0, 0] : [255, 255, 255];
+      const interactionColor = [48, 132, 255];
       particleBuildStartedAt ??= timestamp;
       const fieldBuildProgress = Math.min(1, (timestamp - particleBuildStartedAt) / 2600);
       pointer.strength *= .945;
@@ -437,7 +438,7 @@
       particles.forEach((particle) => {
         const distance = Math.hypot(particle.x - pointer.x, particle.y - pointer.y);
         const influence = pointer.strength > .004
-          ? Math.max(0, 1 - distance / (92 * particle.pixelRatio)) * pointer.strength
+          ? Math.max(0, 1 - distance / (148 * particle.pixelRatio)) * pointer.strength
           : 0;
         const twinkle = .82 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .09);
         const visibilityWave = (Math.sin((time * particle.visibilitySpeed) + particle.visibilityPhase) + 1) * .5;
@@ -445,14 +446,18 @@
         const visibility = minimumVisibility + ((1 - minimumVisibility) * Math.pow(visibilityWave, 1.3));
         const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
         const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
-        const alpha = Math.min(1, (twinkle * visibility) + (influence * .86)) * buildEase;
-        const radius = Math.max(.5, Math.round((particle.radius * (1 + influence * .72)) * 2) / 2);
-        const localMotion = influence * particle.pixelRatio * 2.8;
+        const alpha = Math.min(1, (twinkle * visibility) + (influence * 1.05)) * buildEase;
+        const radius = Math.max(.5, Math.round((particle.radius * (1 + influence * 1.25)) * 2) / 2);
+        const localMotion = influence * particle.pixelRatio * 4.2;
+        const interactionMix = Math.min(1, influence * 1.15);
+        const red = Math.round(particleColor[0] + ((interactionColor[0] - particleColor[0]) * interactionMix));
+        const green = Math.round(particleColor[1] + ((interactionColor[1] - particleColor[1]) * interactionMix));
+        const blue = Math.round(particleColor[2] + ((interactionColor[2] - particleColor[2]) * interactionMix));
         const x = Math.round(particle.x + (Math.sin((time * particle.drift) + particle.phase) * localMotion));
         const y = Math.round(particle.y + (Math.cos((time * particle.drift * .8) + particle.phase) * localMotion));
 
         particleContext.beginPath();
-        particleContext.fillStyle = `rgba(${particleColor}, ${alpha.toFixed(3)})`;
+        particleContext.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha.toFixed(3)})`;
         particleContext.arc(x, y, radius, 0, Math.PI * 2);
         particleContext.fill();
       });
