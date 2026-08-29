@@ -299,9 +299,9 @@
 
   const syncConversationInputBounds = () => {
     const conversationRect = conversation.getBoundingClientRect();
-    const inputRect = input.getBoundingClientRect();
-    conversation.style.paddingLeft = `${Math.max(0, inputRect.left - conversationRect.left)}px`;
-    conversation.style.paddingRight = `${Math.max(0, conversationRect.right - inputRect.right)}px`;
+    const inputFieldRect = input.parentElement.getBoundingClientRect();
+    conversation.style.paddingLeft = `${Math.max(0, inputFieldRect.left - conversationRect.left)}px`;
+    conversation.style.paddingRight = `${Math.max(0, conversationRect.right - inputFieldRect.right)}px`;
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
