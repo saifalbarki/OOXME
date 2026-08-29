@@ -430,13 +430,13 @@
         const influence = pointer.strength > .004
           ? Math.max(0, 1 - distance / (44 * particle.pixelRatio)) * pointer.strength
           : 0;
-        const twinkle = .5 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .2);
+        const twinkle = .82 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .09);
         const visibilityWave = (Math.sin((time * particle.visibilitySpeed) + particle.visibilityPhase) + 1) * .5;
-        const minimumVisibility = .1 + (particle.edgeWeight * .26);
+        const minimumVisibility = .12 + (particle.edgeWeight * .72);
         const visibility = minimumVisibility + ((1 - minimumVisibility) * Math.pow(visibilityWave, 1.3));
         const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
         const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
-        const alpha = Math.min(.9, (particle.alpha * twinkle * visibility) + (influence * .48)) * buildEase;
+        const alpha = Math.min(1, (twinkle * visibility) + (influence * .48)) * buildEase;
         const radius = particle.radius * (1 + influence * .32);
         const localMotion = influence * particle.pixelRatio * 1.1;
         const x = particle.x + Math.sin((time * particle.drift) + particle.phase) * (particle.pixelRatio * .22 + localMotion);
@@ -523,14 +523,13 @@
           y,
           pixelRatio,
           radius: random(...particleRadius) * pixelRatio,
-          alpha: random(.31, .59) + (edgeWeight * .13),
           edgeWeight,
           phase: random(0, Math.PI * 2),
-          speed: random(.7, 1.45),
+          speed: random(3.4, 7.2),
           drift: random(.22, .6),
           buildDelay: random(0, .7),
           visibilityPhase: random(0, Math.PI * 2),
-          visibilitySpeed: random(.16, .42)
+          visibilitySpeed: random(1.2, 2.8)
         });
       }
       isReady = true;
