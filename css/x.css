@@ -161,6 +161,24 @@ html.s-x-initializing .s-page__submit:active {
   padding-bottom: calc(var(--s-x) * 2);
 }
 
+.s-page__flow-group {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.s-page__flow-group + .s-page__flow-group {
+  margin-top: calc(var(--s-x) * 2);
+}
+
+.s-page__flow-group--strips {
+  margin-bottom: calc(var(--s-x) * 2);
+}
+
+.s-page__flow-text {
+  width: 100%;
+}
+
 .s-page__logo-particle-field {
   position: absolute;
   z-index: 0;
@@ -185,7 +203,7 @@ html.s-x-initializing .s-page__submit:active {
   position: relative;
   width: 100%;
   max-width: 100%;
-  margin: calc(var(--s-x) * 2) 0 0;
+  margin: 0;
   border-radius: var(--s-composer-radius);
   overflow: hidden;
 }
@@ -198,17 +216,6 @@ html.s-x-initializing .s-page__submit:active {
   margin: 0;
   border: 1px solid var(--s-glass-stroke);
   border-radius: var(--s-composer-radius);
-  opacity: 0;
-  filter: blur(14px);
-  visibility: hidden;
-  transition: opacity 1s cubic-bezier(.22, .61, .36, 1), filter 1s cubic-bezier(.22, .61, .36, 1), visibility 0s linear 0s;
-}
-
-.s-page__group.is-visible .s-page__image-group {
-  opacity: 1;
-  filter: blur(0);
-  visibility: visible;
-  transition-delay: 1.7s, 1.7s, 1.7s;
 }
 
 .s-page__image-copy {
@@ -219,10 +226,6 @@ html.s-x-initializing .s-page__submit:active {
   align-items: center;
   padding: calc(var(--s-x) * 2);
   pointer-events: none;
-  opacity: 0;
-  filter: blur(14px);
-  visibility: hidden;
-  transition: opacity 1s cubic-bezier(.22, .61, .36, 1), filter 1s cubic-bezier(.22, .61, .36, 1), visibility 0s linear 0s;
 }
 
 .s-page__image-copy-language {
@@ -288,35 +291,33 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
   font-style: normal;
 }
 
-.s-page__group.is-visible.is-image-copy-ready.is-image-copy-visible .s-page__image-copy {
-  opacity: 1;
-  filter: blur(0);
-  visibility: visible;
-}
-
 .s-page__marquee {
   position: relative;
   width: calc(100% + (var(--s-x) * 2));
   margin-right: calc(var(--s-x) * -1);
   margin-left: calc(var(--s-x) * -1);
-  opacity: 0;
-  filter: blur(14px);
   overflow: hidden;
-  visibility: hidden;
   direction: ltr;
   text-align: left;
-  transition: opacity 1s cubic-bezier(.22, .61, .36, 1), filter 1s cubic-bezier(.22, .61, .36, 1), visibility 0s linear 0s;
 }
 
-.s-page__group.is-visible .s-page__marquee {
+.s-page__flow-media {
+  --s-flow-duration: 1000ms;
+  opacity: 0;
+  filter: blur(14px);
+  visibility: hidden;
+  transition: opacity var(--s-flow-duration) cubic-bezier(.22, .61, .36, 1), filter var(--s-flow-duration) cubic-bezier(.22, .61, .36, 1), visibility 0s linear var(--s-flow-duration);
+}
+
+.s-page__flow-media.is-visible {
   opacity: 1;
   filter: blur(0);
   visibility: visible;
-  transition-delay: 1.7s, 1.7s, 1.7s;
+  transition-delay: 0s;
 }
 
 .s-page__marquee--hijab {
-  margin-top: calc(var(--s-x) * 2);
+  margin-top: 0;
 }
 
 .s-page__marquee--albasri {

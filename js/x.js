@@ -15,7 +15,11 @@
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
   const imageFrame = document.querySelector('[data-s-image-frame]');
   const imageCopy = document.querySelector('[data-s-image-copy]');
-  const imageRevealGroup = imageFrame?.closest('[data-s-group]');
+  const firstGroup = document.querySelector('[data-s-first-group]');
+  const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
+  const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')));
+  const localizedGroups = Array.from(document.querySelectorAll('[data-s-copy-group]'))
+    .sort((first, second) => Number(first.dataset.sCopyGroup) - Number(second.dataset.sCopyGroup));
   const conversation = document.querySelector('[data-s-conversation]');
   const conversationFinal = document.querySelector('[data-s-conversation-final]');
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
@@ -27,16 +31,16 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !imageRevealGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 3) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
   const finalRevealDelayMs = 1600;
   const finalMessageDurationMs = 10000;
   const finalFadeOutDurationMs = 320;
-  const imageRevealDelayMs = 1700;
-  const imageRevealDurationMs = 1000;
-  const imageCopyRevealDelayMs = 2000;
+  const flowBaselineDurationMs = 1000;
+  const flowMinimumDurationMs = 520;
+  const flowThresholdHysteresisPx = 8;
   const englishReplies = [
     'Sorry, we don’t reply to messages for free.',
     'Hmm... it seems you didn’t read the previous message.',
@@ -124,8 +128,15 @@
   let finalVisibleTimer = 0;
   let finalResetTimer = 0;
   let pendingFinalRevealTimer = 0;
-  let imageCopyReadyTimer = 0;
   let localizedGeometryFrame = 0;
+  let flowFrame = 0;
+  let flowTimer = 0;
+  let flowVisibleCount = 0;
+  let flowTargetCount = 0;
+  let lastFlowScrollY = window.scrollY;
+  let lastFlowScrollTime = performance.now();
+  let flowScrollVelocity = 0;
+  const flowCrossed = flowItems.map(() => false);
   let conversationVisible = true;
   let activeTemporaryUi = 'none';
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
@@ -364,42 +375,113 @@
     conversation.style.paddingRight = `${Math.max(0, conversationRect.right - inputFieldRect.right)}px`;
   };
 
-  const syncImageCopyVisibility = () => {
-    const imageRect = imageFrame.getBoundingClientRect();
-    const composerRect = composer.getBoundingClientRect();
-    const crossedComposerThreshold = imageRect.top <= composerRect.top;
-    imageRevealGroup.classList.toggle('is-image-copy-visible', crossedComposerThreshold);
-    const copyIsRevealed = crossedComposerThreshold
-      && imageRevealGroup.classList.contains('is-visible')
-      && imageRevealGroup.classList.contains('is-image-copy-ready');
-    imageCopy.setAttribute('aria-hidden', String(!copyIsRevealed));
-  };
-
-  const syncImageCopyReadiness = (groupIsVisible) => {
-    window.clearTimeout(imageCopyReadyTimer);
-    imageCopyReadyTimer = 0;
-    imageRevealGroup.classList.remove('is-image-copy-ready');
-    if (!groupIsVisible) {
-      syncImageCopyVisibility();
-      return;
-    }
-    imageCopyReadyTimer = window.setTimeout(() => {
-      imageCopyReadyTimer = 0;
-      if (!imageRevealGroup.classList.contains('is-visible')) return;
-      imageRevealGroup.classList.add('is-image-copy-ready');
-      syncImageCopyVisibility();
-    }, imageRevealDelayMs + imageRevealDurationMs + imageCopyRevealDelayMs);
-  };
-
-  const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
-  const revealObserver = 'IntersectionObserver' in window
+  const groupElements = localizedGroups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
+  const firstGroupObserver = 'IntersectionObserver' in window
     ? new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         entry.target.classList.toggle('is-visible', entry.isIntersecting);
-        if (entry.target === imageRevealGroup) syncImageCopyReadiness(entry.isIntersecting);
       });
     }, { threshold: 0.15 })
     : null;
+
+  const getFlowDuration = (item) => {
+    if (reducedMotion.matches) return 0;
+    const minimumDuration = item.dataset.sFlowKind === 'text'
+      ? 720
+      : flowMinimumDurationMs;
+    return Math.round(Math.max(
+      minimumDuration,
+      flowBaselineDurationMs - Math.min(flowBaselineDurationMs - minimumDuration, flowScrollVelocity * 180)
+    ));
+  };
+
+  const syncFlowGroupState = (group) => {
+    const hasVisibleItem = Array.from(group.querySelectorAll('[data-s-flow-item]'))
+      .some((item) => item.classList.contains('is-visible'));
+    group.classList.toggle('is-visible', hasVisibleItem);
+    group.setAttribute('aria-hidden', String(!hasVisibleItem));
+  };
+
+  const setFlowItemVisibility = (item, isVisible, duration) => {
+    item.style.setProperty('--s-flow-duration', `${duration}ms`);
+    item.classList.toggle('is-visible', isVisible);
+    item.setAttribute('aria-hidden', String(!isVisible));
+    syncFlowGroupState(item.closest('[data-s-flow-group]'));
+  };
+
+  const processFlowQueue = () => {
+    if (flowTimer || flowVisibleCount === flowTargetCount) return;
+    const isRevealing = flowVisibleCount < flowTargetCount;
+    const itemIndex = isRevealing ? flowVisibleCount : flowVisibleCount - 1;
+    const item = flowItems[itemIndex];
+    const duration = getFlowDuration(item);
+    setFlowItemVisibility(item, isRevealing, duration);
+    flowVisibleCount += isRevealing ? 1 : -1;
+    flowScrollVelocity *= .72;
+    if (!duration) {
+      processFlowQueue();
+      return;
+    }
+    flowTimer = window.setTimeout(() => {
+      flowTimer = 0;
+      processFlowQueue();
+    }, duration + 24);
+  };
+
+  const syncFlowTarget = () => {
+    flowFrame = 0;
+    const composerTop = composer.getBoundingClientRect().top;
+    flowItems.forEach((item, index) => {
+      const itemTop = item.getBoundingClientRect().top;
+      flowCrossed[index] = flowCrossed[index]
+        ? itemTop <= composerTop + flowThresholdHysteresisPx
+        : itemTop <= composerTop;
+    });
+    let crossedCount = 0;
+    while (crossedCount < flowCrossed.length && flowCrossed[crossedCount]) crossedCount += 1;
+    flowTargetCount = crossedCount > 0
+      ? Math.min(flowItems.length, crossedCount + 1)
+      : 0;
+    processFlowQueue();
+  };
+
+  const scheduleFlowSync = () => {
+    if (flowFrame) return;
+    flowFrame = window.requestAnimationFrame(syncFlowTarget);
+  };
+
+  const noteFlowScroll = () => {
+    const now = performance.now();
+    const nextScrollY = window.scrollY;
+    const elapsed = Math.max(1, now - lastFlowScrollTime);
+    const instantaneousVelocity = Math.abs(nextScrollY - lastFlowScrollY) / elapsed;
+    flowScrollVelocity = (flowScrollVelocity * .35) + (instantaneousVelocity * .65);
+    lastFlowScrollY = nextScrollY;
+    lastFlowScrollTime = now;
+    scheduleFlowSync();
+  };
+
+  const resetFlowRevealState = () => {
+    window.clearTimeout(flowTimer);
+    if (flowFrame) window.cancelAnimationFrame(flowFrame);
+    flowTimer = 0;
+    flowFrame = 0;
+    flowVisibleCount = 0;
+    flowTargetCount = 0;
+    flowScrollVelocity = 0;
+    lastFlowScrollY = 0;
+    lastFlowScrollTime = performance.now();
+    flowCrossed.fill(false);
+    flowItems.forEach((item) => {
+      item.classList.remove('is-visible');
+      item.setAttribute('aria-hidden', 'true');
+      item.style.removeProperty('--s-flow-duration');
+    });
+    flowGroups.forEach((group) => {
+      group.classList.remove('is-visible');
+      group.setAttribute('aria-hidden', 'true');
+    });
+  };
 
   const setLocalizedText = (element, value) => {
     const fragment = document.createDocumentFragment();
@@ -464,6 +546,7 @@
         if (height) element.style.height = `${Math.ceil(height)}px`;
       });
     });
+    scheduleFlowSync();
   };
 
   const scheduleLocalizedGeometry = () => {
@@ -496,14 +579,10 @@
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
   document.fonts?.ready.then(scheduleLocalizedGeometry);
-  syncImageCopyVisibility();
-  groups.forEach((group) => {
-    if (revealObserver) revealObserver.observe(group);
-    else {
-      group.classList.add('is-visible');
-      if (group === imageRevealGroup) syncImageCopyReadiness(true);
-    }
-  });
+  if (firstGroupObserver) firstGroupObserver.observe(firstGroup);
+  else firstGroup.classList.add('is-visible');
+  flowGroups.forEach((group) => group.setAttribute('aria-hidden', 'true'));
+  scheduleFlowSync();
 
   const setupLogoParticleField = () => {
     const context = logoParticleCanvas.getContext('2d', { alpha: true });
@@ -707,17 +786,9 @@
   };
   setupLogoParticleField();
 
-  let imageCopyFrame = 0;
-  const requestImageCopyVisibilitySync = () => {
-    if (imageCopyFrame) return;
-    imageCopyFrame = window.requestAnimationFrame(() => {
-      imageCopyFrame = 0;
-      syncImageCopyVisibility();
-    });
-  };
-  window.addEventListener('scroll', requestImageCopyVisibilitySync, { passive: true });
-  window.addEventListener('resize', requestImageCopyVisibilitySync, { passive: true });
-  window.visualViewport?.addEventListener('resize', requestImageCopyVisibilitySync, { passive: true });
+  window.addEventListener('scroll', noteFlowScroll, { passive: true });
+  window.addEventListener('resize', scheduleFlowSync, { passive: true });
+  window.visualViewport?.addEventListener('resize', scheduleFlowSync, { passive: true });
 
   sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -951,12 +1022,10 @@
     window.clearTimeout(finalVisibleTimer);
     window.clearTimeout(finalResetTimer);
     window.clearTimeout(pendingFinalRevealTimer);
-    window.clearTimeout(imageCopyReadyTimer);
     inactivityResetTimer = 0;
     finalVisibleTimer = 0;
     finalResetTimer = 0;
     pendingFinalRevealTimer = 0;
-    imageCopyReadyTimer = 0;
     pendingReplyTimers.forEach((timer) => window.clearTimeout(timer));
     pendingReplyTimers.clear();
     sendUtilityPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
@@ -967,8 +1036,8 @@
     menuItemFlashTimers.clear();
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
     composerMenu.querySelectorAll('.is-active').forEach((element) => element.classList.remove('is-active'));
-    groups.forEach((group) => group.classList.remove('is-visible', 'is-image-copy-visible', 'is-image-copy-ready'));
-    imageCopy.setAttribute('aria-hidden', 'true');
+    groups.forEach((group) => group.classList.remove('is-visible'));
+    resetFlowRevealState();
     conversation.replaceChildren();
     conversationFinal.classList.remove('is-visible');
     conversationFinal.setAttribute('aria-hidden', 'true');
@@ -989,8 +1058,8 @@
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     initializeGroupOne();
     window.requestAnimationFrame(() => {
-      groups[0]?.classList.add('is-visible');
-      syncImageCopyVisibility();
+      firstGroup.classList.add('is-visible');
+      scheduleFlowSync();
     });
     inactivityResetTimer = window.setTimeout(resetPageToInitialState, inactivityResetDelayMs);
   };
