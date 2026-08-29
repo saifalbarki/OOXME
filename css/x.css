@@ -651,7 +651,7 @@ html.s-route.is-day-mode .s-page__composer-menu {
   opacity: 0;
   transform: translateY(6px) scale(.97);
   transition: opacity .18s ease, transform .18s ease;
-  transition-delay: .06s;
+  transition-delay: 0s;
 }
 
 .s-page__send-utility:active {
@@ -659,7 +659,7 @@ html.s-route.is-day-mode .s-page__composer-menu {
 }
 
 .s-page__send-utility:nth-child(2) {
-  transition-delay: 0s;
+  transition-delay: .06s;
 }
 
 .s-page__send-utilities.is-open .s-page__send-utility {
@@ -668,12 +668,8 @@ html.s-route.is-day-mode .s-page__composer-menu {
   transition-delay: .06s;
 }
 
-.s-page__send-utilities.is-open .s-page__send-utility:first-child {
-  transition-delay: 0s;
-}
-
 .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
-  transition-delay: .06s;
+  transition-delay: 0s;
 }
 
 .s-page__send-utility-inner {

@@ -287,15 +287,25 @@
     const pageStyles = getComputedStyle(page);
     groupHandoffSpacing = parseFloat(pageStyles.getPropertyValue('--s-x')) || 18;
     groupComposerTriggerTop = composer.getBoundingClientRect().top - groupHandoffSpacing;
-    const anchorPosition = groups[0].offsetTop;
-    const positions = groups.map((group) => group.offsetTop);
-    groupGeometry = groups.map((group, index) => ({
-      top: positions[index],
-      height: group.offsetHeight,
-      pinStart: index === 0 ? 0 : positions[index] - anchorPosition,
+    const scrollPosition = window.scrollY;
+    const measurements = groups.map((group, index) => {
+      const rect = group.getBoundingClientRect();
+      const appliedOffset = Number.isFinite(groupTransformOffsets[index])
+        ? groupTransformOffsets[index]
+        : 0;
+      return {
+        top: rect.top + scrollPosition - appliedOffset,
+        height: rect.height
+      };
+    });
+    const anchorPosition = measurements[0].top;
+    groupGeometry = measurements.map((measurement, index) => ({
+      top: measurement.top,
+      height: measurement.height,
+      pinStart: index === 0 ? 0 : measurement.top - anchorPosition,
       pinEnd: index === groups.length - 1
         ? Number.POSITIVE_INFINITY
-        : positions[index + 1] - anchorPosition - groupHandoffSpacing
+        : measurements[index + 1].top - anchorPosition - groupHandoffSpacing
     }));
     groupGeometryDirty = false;
   };
@@ -310,7 +320,7 @@
       const offset = getGroupPushOffset(index, scrollPosition);
       if (Math.abs(groupTransformOffsets[index] - offset) < .01) return;
       groupTransformOffsets[index] = offset;
-      group.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0)`;
+      group.style.transform = `translate3d(0, ${offset}px, 0)`;
     });
   };
 
