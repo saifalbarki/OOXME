@@ -60,9 +60,9 @@
   const pageCopy = {
     en: {
       groups: [
-        ['Welcome to ooxme', 'We are Iraq’s first and only premium brand management service, built to transform ambitious businesses into globally competitive brands through sharper positioning, stronger market presence, sustainable growth, and greater revenue potential.'],
-        ['Clarity across every moving part.', 'Built to keep direction visible while the details keep moving.'],
-        ['Move from thought\nto next step.', 'Start with a question.']
+        ['Welcome to ooxme', 'Premium brand management and business development.'],
+        ['Premium Service.', 'Your partner in managing and developing your business into a global brand.'],
+        ['Be among the first.', 'Just like OOXME, make your business the first and only one in its field.']
       ],
       menu: ['The Brand management', 'The Gallery', 'The Consultation', 'The Dashboard', 'Other'],
       inputPlaceholder: 'Type...',
@@ -80,9 +80,9 @@
     },
     ar: {
       groups: [
-        ['اهلًا بك في اوكسوم', 'نحن اول خدمة متميزة لادارة العلامات التجارية في العراق، صممنا لتحويل الاعمال الطموحة الى علامات تنافس عالميًا عبر تموضع اوضح، وحضور اقوى في السوق، ونمو مستدام، وقدرة اكبر على زيادة الايرادات.'],
-        ['وضوح في كل جزء متحرك.', 'صممنا لنحافظ على وضوح الاتجاه بينما تستمر التفاصيل في الحركة.'],
-        ['من الفكرة\nالى الخطوة التالية.', 'ابدأ بسؤال.']
+        ['مرحبــا\nعميلنا القادم', 'ادارة العلامات التجارية الواحد والوحيد في العراق\nخدمة بريميوم لتطوير الاعمال'],
+        ['إعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
+        ['من انشطة تجارية\nالى علامات عالمية', 'خذ الخطوة التالية وتواصل معنا، سوف تنبهر!']
       ],
       menu: ['ادارة العلامة التجارية', 'المعرض', 'الاستشارة', 'لوحة التحكم', 'اخرى'],
       inputPlaceholder: 'اكتب...',
