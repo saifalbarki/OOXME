@@ -147,6 +147,12 @@ html.s-x-initializing .s-page__submit:active {
   padding: 0;
 }
 
+.s-page__group--showcase {
+  min-height: auto;
+  padding-top: calc(var(--s-x) * 2);
+  padding-bottom: calc(var(--s-x) * 2);
+}
+
 .s-page__logo-particle-field {
   position: absolute;
   z-index: 0;
@@ -274,6 +280,62 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
   opacity: 1;
   filter: blur(0);
   transform: none;
+}
+
+.s-page__marquee {
+  width: calc(100% + (var(--s-x) * 2));
+  margin-right: calc(var(--s-x) * -1);
+  margin-left: calc(var(--s-x) * -1);
+  overflow: hidden;
+}
+
+.s-page__marquee--hijab {
+  margin-top: calc(var(--s-x) * 2);
+}
+
+.s-page__marquee--albasri {
+  margin-top: var(--s-x);
+}
+
+.s-page__marquee-track,
+.s-page__marquee-set {
+  display: flex;
+  width: max-content;
+}
+
+.s-page__marquee-track {
+  animation: s-page-marquee-forward 42s linear infinite;
+  will-change: transform;
+}
+
+.s-page__marquee--albasri .s-page__marquee-track {
+  animation-name: s-page-marquee-reverse;
+  animation-duration: 48s;
+}
+
+.s-page__marquee-set {
+  gap: var(--s-x);
+  padding-right: var(--s-x);
+}
+
+.s-page__marquee img {
+  display: block;
+  width: clamp(112px, 18vw, 164px);
+  height: clamp(168px, 27vw, 246px);
+  flex: 0 0 auto;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  object-fit: cover;
+}
+
+@keyframes s-page-marquee-forward {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes s-page-marquee-reverse {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
 }
 
 .s-page__section--future {
@@ -1091,6 +1153,7 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
 
 @media (prefers-reduced-motion: reduce) {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
+  .s-page__marquee-track { animation: none; }
   .s-page__typing-character,
   .s-page__typing-word { opacity: 1; clip-path: none; animation: none !important; }
   .s-page__conversation-bubble.is-entering { animation: none; }

@@ -66,7 +66,7 @@
       groups: [
         ['Welcome\nOur Next Client', 'Iraq’s one and only brand management service\nPremium business development service'],
         ['Re-engineered\nBuilt for New Terrain', 'Discover the fourth update to the OOXME operating system, designed for engineering, architectural, construction, contracting, and similar businesses.'],
-        ['From Businesses\nTo Global Brands', 'Take the next step and contact us. You’ll be impressed!']
+        ['Striking Designs\nFor Distinctive Projects', 'We design with an exceptional, precise, and remarkably clean approach that serves your goals and reflects the value of your projects.']
       ],
       menu: ['The Brand management', 'The Gallery', 'The Consultation', 'The Dashboard', 'Other'],
       inputPlaceholder: 'Type...',
@@ -86,7 +86,7 @@
       groups: [
         ['مرحبــا\nعميلنا القادم', 'ادارة العلامات التجارية الواحد والوحيد في العراق\nخدمة بريميوم لتطوير الاعمال'],
         ['إعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
-        ['من انشطة تجارية\nالى علامات عالمية', 'خذ الخطوة التالية وتواصل معنا، سوف تنبهر!']
+        ['تصاميم ملفتة\nلمشاريع مميزة', 'نصمم بأسلوب استثنائي، دقيق، ونظيف للغاية بما يخدم أهدافكم ويعكس قيمة مشاريعكم.']
       ],
       menu: ['ادارة العلامة التجارية', 'المعرض', 'الاستشارة', 'لوحة التحكم', 'اخرى'],
       inputPlaceholder: 'اكتب...',
