@@ -680,6 +680,7 @@ html.s-route.is-day-mode .s-page__composer-menu {
   appearance: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+  transform-origin: center;
   opacity: 0;
   transform: translateY(6px) scale(.97);
   transition: opacity .18s ease, transform .18s ease;
@@ -712,6 +713,7 @@ html.s-route.is-day-mode .s-page__composer-menu {
   border-radius: 50%;
   background: transparent;
   transition: background-color .18s ease, border-color .18s ease;
+  transform-origin: center;
 }
 
 .s-page__send-utility.is-active .s-page__send-utility-inner {
@@ -765,6 +767,10 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
   animation: s-page-send-utility-pulse .18s ease-out;
 }
 
+.s-page__send-utility.is-pulsing .s-page__send-utility-inner {
+  animation: s-page-send-utility-indicator-pulse .18s ease-out;
+}
+
 @keyframes s-page-composer-pulse {
   0%, 100% { transform: translate3d(-50%, 0, 0) scale(1); }
   45% { transform: translate3d(-50%, 0, 0) scale(1.015); }
@@ -776,6 +782,11 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 }
 
 @keyframes s-page-send-utility-pulse {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.015); }
+}
+
+@keyframes s-page-send-utility-indicator-pulse {
   0%, 100% { transform: scale(1); }
   45% { transform: scale(1.015); }
 }
@@ -846,4 +857,5 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
   .s-page__composer.is-pulsing { animation: none; }
   .s-page__composer-menu.is-pulsing { animation: none; }
   .s-page__send-utility.is-pulsing { animation: none; }
+  .s-page__send-utility.is-pulsing .s-page__send-utility-inner { animation: none; }
 }
