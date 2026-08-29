@@ -110,7 +110,9 @@
   const typingProgress = groups.map(() => []);
   let initialGroupOnePending = true;
   const titleTypingCharactersPerSecond = 28;
+  const titleTypingWordsPerSecond = 5;
   const preferredDescriptionCharacterIntervalMs = 45;
+  const preferredArabicDescriptionWordIntervalMs = 150;
   const maximumDescriptionTypingDurationMs = 3000;
   let keyboardLockedGroup = -1;
   let keyboardLockedScrollY = 0;
@@ -407,29 +409,37 @@
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
   let typingCharacters = [];
 
-  const prepareTypingCharacters = () => {
+  const prepareTypingCharacters = (language = document.documentElement.lang) => {
+    const useWordReveal = language === 'ar';
     groupElements.flat().forEach((element) => {
       const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
       const textNodes = [];
       while (walker.nextNode()) textNodes.push(walker.currentNode);
       textNodes.forEach((textNode) => {
         const fragment = document.createDocumentFragment();
-        Array.from(textNode.nodeValue).forEach((character) => {
+        const units = useWordReveal
+          ? textNode.nodeValue.split(/(\s+)/u)
+          : Array.from(textNode.nodeValue);
+        units.forEach((unit) => {
+          if (useWordReveal && /^\s+$/u.test(unit)) {
+            fragment.appendChild(document.createTextNode(unit));
+            return;
+          }
           const span = document.createElement('span');
-          span.className = 's-page__typing-character';
-          span.textContent = character;
+          span.className = useWordReveal ? 's-page__typing-word' : 's-page__typing-character';
+          span.textContent = unit;
           fragment.appendChild(span);
         });
         textNode.parentNode.replaceChild(fragment, textNode);
       });
     });
     typingCharacters = groupElements.map((elements) => elements.map((element) =>
-      Array.from(element.querySelectorAll('.s-page__typing-character'))
+      Array.from(element.querySelectorAll('.s-page__typing-character, .s-page__typing-word'))
     ));
     groupElements.flat().forEach((element) => {
-      const characters = Math.max(1, Array.from(element.textContent.trim()).length);
-      element.style.setProperty('--s-typing-steps', String(characters));
-      element.style.setProperty('--s-typing-duration', `${(getTypingDurationMs(element, characters) / 1000).toFixed(2)}s`);
+      const units = Math.max(1, element.querySelectorAll('.s-page__typing-character, .s-page__typing-word').length);
+      element.style.setProperty('--s-typing-steps', String(units));
+      element.style.setProperty('--s-typing-duration', `${(getTypingDurationMs(element, units) / 1000).toFixed(2)}s`);
     });
   };
 
@@ -447,12 +457,26 @@
     Math.min(preferredDescriptionCharacterIntervalMs, maximumDescriptionTypingDurationMs / Math.max(1, characterCount - 1))
   );
 
+  const getArabicDescriptionWordInterval = (wordCount) => (
+    Math.min(preferredArabicDescriptionWordIntervalMs, maximumDescriptionTypingDurationMs / Math.max(1, wordCount - 1))
+  );
+
   const getTypingRate = (element, characterCount) => {
+    if (document.documentElement.lang === 'ar') {
+      if (!element.classList.contains('s-page__group-description')) return titleTypingWordsPerSecond;
+      return 1000 / getArabicDescriptionWordInterval(characterCount);
+    }
     if (!element.classList.contains('s-page__group-description')) return titleTypingCharactersPerSecond;
     return 1000 / getDescriptionCharacterInterval(characterCount);
   };
 
   const getTypingDurationMs = (element, characterCount) => {
+    if (document.documentElement.lang === 'ar') {
+      if (!element.classList.contains('s-page__group-description')) {
+        return (characterCount / titleTypingWordsPerSecond) * 1000;
+      }
+      return getArabicDescriptionWordInterval(characterCount) * Math.max(0, characterCount - 1);
+    }
     if (!element.classList.contains('s-page__group-description')) {
       return (characterCount / titleTypingCharactersPerSecond) * 1000;
     }
@@ -527,7 +551,7 @@
       conversationFinalCopy.dir = language === 'ar' ? 'rtl' : 'ltr';
       conversationFinalCopy.textContent = finalMessages[language];
     }
-    prepareTypingCharacters();
+    prepareTypingCharacters(language);
     if (!initializationReady || activeGroupIndex < 0) return;
 
     setGroupState(activeGroupIndex, 'typing');
@@ -555,8 +579,13 @@
 
   groupElements.flat().forEach((element) => element.classList.remove('is-visible'));
 
-  const detectMessageLanguage = (message) => (
-    /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(message) ? 'ar' : 'en'
+  const arabicScriptPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
+  const latinScriptPattern = /[A-Za-z]/u;
+  const detectMessageLanguage = (message) => (arabicScriptPattern.test(message) ? 'ar' : 'en');
+  const getMessageDirection = (message, language) => (
+    arabicScriptPattern.test(message) && latinScriptPattern.test(message)
+      ? 'auto'
+      : language === 'ar' ? 'rtl' : 'ltr'
   );
 
   const clearChatInactivityTimer = () => {
@@ -649,7 +678,7 @@
     const bubble = document.createElement('p');
     bubble.className = `s-page__conversation-bubble s-page__conversation-bubble--${speaker} is-entering`;
     bubble.lang = language;
-    bubble.dir = language === 'ar' ? 'rtl' : 'ltr';
+    bubble.dir = getMessageDirection(message, language);
     bubble.textContent = message;
     bubble.addEventListener('animationend', () => bubble.classList.remove('is-entering'), { once: true });
     conversation.appendChild(bubble);

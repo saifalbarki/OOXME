@@ -67,7 +67,6 @@ body.s-page {
 html[lang="ar"] body.s-page,
 html[lang="ar"] .s-page__group-title,
 html[lang="ar"] .s-page__group-description,
-html[lang="ar"] .s-page__conversation-bubble,
 html[lang="ar"] .s-page__conversation-final-copy,
 html[lang="ar"] .s-page__composer-menu-item,
 html[lang="ar"] .s-page__composer-input {
@@ -233,7 +232,13 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
   opacity: 0;
 }
 
-.s-page__typing-character.is-revealed {
+.s-page__typing-word {
+  opacity: 0;
+  letter-spacing: normal;
+}
+
+.s-page__typing-character.is-revealed,
+.s-page__typing-word.is-revealed {
   opacity: 1;
 }
 
@@ -248,6 +253,7 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
   bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px) + 48px + var(--s-x));
   display: flex;
   min-height: 0;
+  direction: ltr;
   flex-direction: column;
   justify-content: flex-end;
   gap: var(--s-chat-gap);
@@ -286,7 +292,27 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
 }
 
 .s-page__conversation-bubble[lang="ar"] {
+  font-family: OOXMEArabic, OOXMEScript, Arial, sans-serif;
   font-size: 15.5px;
+  overflow-wrap: normal;
+  word-break: normal;
+  letter-spacing: normal;
+}
+
+.s-page__conversation-bubble[lang="en"] {
+  font-family: OOXMEScript, Arial, sans-serif;
+}
+
+.s-page__conversation-bubble[dir="rtl"] {
+  text-align: right;
+}
+
+.s-page__conversation-bubble[dir="ltr"] {
+  text-align: left;
+}
+
+.s-page__conversation-bubble[dir="auto"] {
+  text-align: start;
 }
 
 .s-page__conversation-bubble.is-entering {
@@ -306,7 +332,7 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
 
 .s-page__conversation-bubble--user {
   align-self: end;
-  border-end-end-radius: 8px;
+  border-bottom-right-radius: 8px;
   background: #1C1C1E;
   color: #FFFFFF;
 }
@@ -319,7 +345,7 @@ html.s-route.is-day-mode .s-page__conversation-bubble--user {
   align-self: start;
   border-color: rgba(255, 255, 255, .34);
   border-radius: 28px;
-  border-end-start-radius: 8px;
+  border-bottom-left-radius: 8px;
   background: rgba(255, 255, 255, .68);
   box-shadow: 0 6px 20px rgba(0, 0, 0, .1), 0 1px 3px rgba(0, 0, 0, .05);
   color: #0b0b0b;
@@ -452,6 +478,12 @@ html.s-route.is-day-mode .s-page__composer {
 .s-page__composer-input::placeholder {
   color: rgba(11, 11, 11, .52);
   opacity: 1;
+}
+
+/* The composer stays physically LTR; only its empty Arabic text starts at the arrow edge. */
+html[lang="ar"] .s-page__composer-input:placeholder-shown {
+  direction: rtl;
+  text-align: right;
 }
 
 .s-page__composer-menu {
@@ -796,7 +828,8 @@ html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-i
 
 @media (prefers-reduced-motion: reduce) {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
-  .s-page__typing-character { opacity: 1; animation: none !important; }
+  .s-page__typing-character,
+  .s-page__typing-word { opacity: 1; animation: none !important; }
   .s-page__conversation-bubble.is-entering { animation: none; }
   .s-page__conversation-bubble.is-shifting { transition: none; }
   .s-page__conversation-bubble.is-exiting { animation: none; }
