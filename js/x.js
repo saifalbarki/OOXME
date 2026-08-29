@@ -51,11 +51,62 @@
     en: 'Alright, we’re joking.\nThe ooxme conversation experience is still under development. Until it’s ready, reach us through our official channels and we’ll take it from there.',
     ar: 'حسنــًا، نحن نمزح.\nتجربة المحادثة لدى اوكسوم ما تزال قيد التطوير. وحتى تصبح جاهزة، تواصل معنا عبر قنواتنا الرسمية، وسنتولى الامر من هناك.'
   };
+  const pageCopy = {
+    en: {
+      groups: [
+        ['Welcome to ooxme', 'We are Iraq’s first and only premium brand management service, built to transform ambitious businesses into globally competitive brands through sharper positioning, stronger market presence, sustainable growth, and greater revenue potential.'],
+        ['Clarity across every moving part.', 'Built to keep direction visible while the details keep moving.'],
+        ['Move from thought\nto next step.', 'Start with a question.']
+      ],
+      menu: ['The Brand management', 'The Gallery', 'The Consultation', 'The Dashboard', 'Other'],
+      inputPlaceholder: 'Type...',
+      ask: 'Ask ooxme',
+      addContext: 'Add context',
+      submitQuestion: 'Submit question',
+      conversation: 'Conversation',
+      utilities: {
+        label: 'Page utilities',
+        switchToArabic: 'Switch to Arabic',
+        switchToEnglish: 'Switch to English',
+        switchToDay: 'Switch to Day Mode',
+        switchToDark: 'Switch to Dark Mode'
+      }
+    },
+    ar: {
+      groups: [
+        ['اهلــًا بك في اوكسوم', 'نحن اول خدمة متميزة لادارة العلامات التجارية في العراق، صممنا لتحويل الاعمال الطموحة الى علامات تنافس عالميــًا عبر تموضع اوضح، وحضور اقوى في السوق، ونمو مستدام، وقدرة اكبر على زيادة الايرادات.'],
+        ['وضوح في كل جزء متحرك.', 'صممنا لنحافظ على وضوح الاتجاه بينما تستمر التفاصيل في الحركة.'],
+        ['من الفكرة\nالى الخطوة التالية.', 'ابدأ بسؤال.']
+      ],
+      menu: ['ادارة العلامة التجارية', 'المعرض', 'الاستشارة', 'لوحة التحكم', 'اخرى'],
+      inputPlaceholder: 'اكتب...',
+      ask: 'اسأل اوكسوم',
+      addContext: 'اضف سياقــًا',
+      submitQuestion: 'ارسال السؤال',
+      conversation: 'المحادثة',
+      utilities: {
+        label: 'ادوات الصفحة',
+        switchToArabic: 'التبديل الى العربية',
+        switchToEnglish: 'التبديل الى الانجليزية',
+        switchToDay: 'التبديل الى الوضع النهاري',
+        switchToDark: 'التبديل الى الوضع الداكن'
+      }
+    }
+  };
   let activeGroupIndex = -1;
   let lastScrollY = window.scrollY;
-  let revealFrame = 0;
-  let groupPushFrame = 0;
+  let scrollFrame = 0;
+  let keyboardFrame = 0;
+  let initializationFrame = 0;
+  let composerPulseFrame = 0;
+  let composerMenuPulseFrame = 0;
+  let groupGeometryDirty = true;
+  let groupGeometry = [];
+  let groupHandoffSpacing = 18;
+  let groupComposerTriggerTop = 0;
+  const groupTransformOffsets = groups.map(() => Number.NaN);
   const typingFrames = groups.map(() => 0);
+  const typingProgress = groups.map(() => []);
   let initialGroupOnePending = true;
   const titleTypingCharactersPerSecond = 28;
   const preferredDescriptionCharacterIntervalMs = 45;
@@ -73,16 +124,32 @@
   let finalVisibleTimer = 0;
   let finalResetTimer = 0;
   let chatInactivityTimer = 0;
-  const initialInputPlaceholder = input.placeholder;
+  let submitArrowReady = null;
+  let conversationVisible = true;
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
+  const utilityControls = document.querySelector('.s-page__utilities');
+  const inputLabel = composer.querySelector('.s-page__visually-hidden');
+  const menuLabels = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-label'));
+  let applyPageCopy = null;
+
+  const updateThemeToggleLabel = () => {
+    const copy = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
+    themeToggle.setAttribute('aria-label', document.documentElement.classList.contains('is-day-mode')
+      ? copy.utilities.switchToDark
+      : copy.utilities.switchToDay);
+  };
 
   const applyLanguage = (next, { persist = true, emit = true } = {}) => {
     const language = next === 'ar' ? 'ar' : 'en';
+    const copy = pageCopy[language];
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     languageToggle.classList.toggle('is-active', language === 'en');
     languageToggle.setAttribute('aria-pressed', String(language === 'en'));
-    languageToggle.setAttribute('aria-label', language === 'en' ? 'Switch to Arabic' : 'Switch to English');
+    languageToggle.setAttribute('aria-label', language === 'en' ? copy.utilities.switchToArabic : copy.utilities.switchToEnglish);
+    utilityControls?.setAttribute('aria-label', copy.utilities.label);
+    applyPageCopy?.(language);
+    updateThemeToggleLabel();
     if (persist) {
       try { localStorage.setItem('ooxme-language', language); } catch (_) {}
     }
@@ -94,7 +161,7 @@
     document.documentElement.classList.toggle('is-day-mode', isDayMode);
     themeToggle.classList.toggle('is-active', !isDayMode);
     themeToggle.setAttribute('aria-pressed', String(!isDayMode));
-    themeToggle.setAttribute('aria-label', isDayMode ? 'Switch to Dark Mode' : 'Switch to Day Mode');
+    updateThemeToggleLabel();
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDayMode ? '#FFFFFF' : '#000000');
   };
 
@@ -102,12 +169,6 @@
   try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
   applyLanguage(initialLanguage, { persist: false, emit: false });
   applyTheme('dark');
-
-  languageToggle.addEventListener('click', () => applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar'));
-  themeToggle.addEventListener('click', () => applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day'));
-  window.addEventListener('storage', (event) => {
-    if (event.key === 'ooxme-language') applyLanguage(event.newValue, { persist: false, emit: false });
-  });
 
   const isComposerMenuInteraction = (target) => (
     addButton.contains(target) || composerMenu.contains(target)
@@ -127,9 +188,12 @@
 
   const pulseComposer = () => {
     if (!initializationReady) return;
+    if (composerPulseFrame) window.cancelAnimationFrame(composerPulseFrame);
     composer.classList.remove('is-pulsing');
-    void composer.offsetWidth;
-    composer.classList.add('is-pulsing');
+    composerPulseFrame = window.requestAnimationFrame(() => {
+      composerPulseFrame = 0;
+      composer.classList.add('is-pulsing');
+    });
   };
 
   composer.addEventListener('animationend', (event) => {
@@ -138,9 +202,12 @@
 
   const pulseComposerMenu = () => {
     if (!initializationReady) return;
+    if (composerMenuPulseFrame) window.cancelAnimationFrame(composerMenuPulseFrame);
     composerMenu.classList.remove('is-pulsing');
-    void composerMenu.offsetWidth;
-    composerMenu.classList.add('is-pulsing');
+    composerMenuPulseFrame = window.requestAnimationFrame(() => {
+      composerMenuPulseFrame = 0;
+      composerMenu.classList.add('is-pulsing');
+    });
   };
 
   composerMenu.addEventListener('animationend', (event) => {
@@ -183,30 +250,71 @@
       resetAddButton();
     }
   }, { passive: true });
-  window.addEventListener('scroll', () => {
-    if (!composerMenu.classList.contains('is-open')) resetAddButton();
-  }, { passive: true });
-  const updateGroupPushPositions = () => {
-    groupPushFrame = 0;
-    if (!initializationReady || keyboardLockedGroup >= 0) return;
-    const handoffSpacing = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
+  const measureGroupGeometry = () => {
+    const pageStyles = getComputedStyle(page);
+    groupHandoffSpacing = parseFloat(pageStyles.getPropertyValue('--s-x')) || 18;
+    groupComposerTriggerTop = composer.getBoundingClientRect().top - groupHandoffSpacing;
     const anchorPosition = groups[0].offsetTop;
-    const groupPositions = groups.map((group) => group.offsetTop);
-    const scrollPosition = window.scrollY;
-
-    groups.forEach((group, index) => {
-      const pinStart = index === 0 ? 0 : groupPositions[index] - anchorPosition;
-      const pinEnd = index === groups.length - 1
+    const positions = groups.map((group) => group.offsetTop);
+    groupGeometry = groups.map((group, index) => ({
+      top: positions[index],
+      height: group.offsetHeight,
+      pinStart: index === 0 ? 0 : positions[index] - anchorPosition,
+      pinEnd: index === groups.length - 1
         ? Number.POSITIVE_INFINITY
-        : groupPositions[index + 1] - anchorPosition - handoffSpacing;
-      const pinnedDistance = Math.max(0, Math.min(scrollPosition - pinStart, pinEnd - pinStart));
-      group.style.transform = `translate3d(0, ${pinnedDistance.toFixed(2)}px, 0)`;
+        : positions[index + 1] - anchorPosition - groupHandoffSpacing
+    }));
+    groupGeometryDirty = false;
+  };
+
+  const getGroupPushOffset = (index, scrollPosition) => {
+    const geometry = groupGeometry[index];
+    return Math.max(0, Math.min(scrollPosition - geometry.pinStart, geometry.pinEnd - geometry.pinStart));
+  };
+
+  const updateGroupPushPositions = (scrollPosition) => {
+    groups.forEach((group, index) => {
+      const offset = getGroupPushOffset(index, scrollPosition);
+      if (Math.abs(groupTransformOffsets[index] - offset) < .01) return;
+      groupTransformOffsets[index] = offset;
+      group.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0)`;
     });
   };
 
-  const scheduleGroupPushPositions = () => {
-    if (!initializationReady || keyboardLockedGroup >= 0 || groupPushFrame) return;
-    groupPushFrame = window.requestAnimationFrame(updateGroupPushPositions);
+  const updateRevealGroups = (scrollPosition) => {
+    const scrollDirection = scrollPosition - lastScrollY;
+    lastScrollY = scrollPosition;
+    const crossed = groupGeometry
+      .map((geometry, index) => {
+        const top = geometry.top - scrollPosition + getGroupPushOffset(index, scrollPosition);
+        return { index, top, bottom: top + geometry.height };
+      })
+      .filter(({ top, bottom }) => top <= groupComposerTriggerTop && bottom > groupComposerTriggerTop);
+    if (!crossed.length) return;
+    const target = (scrollDirection < 0 ? crossed[0] : crossed[crossed.length - 1]).index;
+    if (target === activeGroupIndex) return;
+    if (activeGroupIndex >= 0) setGroupState(activeGroupIndex, 'fading');
+    activeGroupIndex = target;
+    initialGroupOnePending = false;
+    setGroupState(target, 'typing');
+  };
+
+  const updateScrollVisuals = () => {
+    scrollFrame = 0;
+    if (!initializationReady) return;
+    if (keyboardLockedGroup >= 0) {
+      maintainKeyboardGroupPosition();
+      return;
+    }
+    if (groupGeometryDirty) measureGroupGeometry();
+    const scrollPosition = window.scrollY;
+    updateGroupPushPositions(scrollPosition);
+    updateRevealGroups(scrollPosition);
+  };
+
+  const scheduleScrollVisuals = () => {
+    if (!initializationReady || scrollFrame) return;
+    scrollFrame = window.requestAnimationFrame(updateScrollVisuals);
   };
 
   const lockActiveGroupForKeyboard = () => {
@@ -224,7 +332,8 @@
     keyboardLockedGroup = -1;
     keyboardLockedScrollY = 0;
     lastScrollY = window.scrollY;
-    scheduleGroupPushPositions();
+    groupGeometryDirty = true;
+    scheduleScrollVisuals();
   };
 
   const updateKeyboardOffset = () => {
@@ -238,35 +347,56 @@
     if (keyboardOverlap === 0 && lastKeyboardOverlap > 0) {
       releaseKeyboardGroupLock();
     }
-    page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
+    if (Math.abs(keyboardOverlap - lastKeyboardOverlap) >= .01) {
+      page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
+    }
     lastKeyboardOverlap = keyboardOverlap;
   };
 
-  const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
-  groupElements.flat().forEach((element) => {
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-    const textNodes = [];
-    while (walker.nextNode()) textNodes.push(walker.currentNode);
-    textNodes.forEach((textNode) => {
-      const fragment = document.createDocumentFragment();
-      Array.from(textNode.nodeValue).forEach((character) => {
-        const span = document.createElement('span');
-        span.className = 's-page__typing-character';
-        span.textContent = character;
-        fragment.appendChild(span);
-      });
-      textNode.parentNode.replaceChild(fragment, textNode);
+  const scheduleKeyboardOffset = () => {
+    if (keyboardFrame) return;
+    keyboardFrame = window.requestAnimationFrame(() => {
+      keyboardFrame = 0;
+      updateKeyboardOffset();
     });
-  });
-  const typingCharacters = groupElements.map((elements) => elements.map((element) =>
-    Array.from(element.querySelectorAll('.s-page__typing-character'))
-  ));
+  };
+
+  const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
+  let typingCharacters = [];
+
+  const prepareTypingCharacters = () => {
+    groupElements.flat().forEach((element) => {
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+      textNodes.forEach((textNode) => {
+        const fragment = document.createDocumentFragment();
+        Array.from(textNode.nodeValue).forEach((character) => {
+          const span = document.createElement('span');
+          span.className = 's-page__typing-character';
+          span.textContent = character;
+          fragment.appendChild(span);
+        });
+        textNode.parentNode.replaceChild(fragment, textNode);
+      });
+    });
+    typingCharacters = groupElements.map((elements) => elements.map((element) =>
+      Array.from(element.querySelectorAll('.s-page__typing-character'))
+    ));
+    groupElements.flat().forEach((element) => {
+      const characters = Math.max(1, Array.from(element.textContent.trim()).length);
+      element.style.setProperty('--s-typing-steps', String(characters));
+      element.style.setProperty('--s-typing-duration', `${(getTypingDurationMs(element, characters) / 1000).toFixed(2)}s`);
+    });
+  };
 
   const stopGroupTyping = (index, hideCharacters = false) => {
     if (typingFrames[index]) window.cancelAnimationFrame(typingFrames[index]);
     typingFrames[index] = 0;
+    const charactersByElement = typingCharacters[index] || [];
+    typingProgress[index] = charactersByElement.map(() => 0);
     if (hideCharacters) {
-      typingCharacters[index].flat().forEach((character) => character.classList.remove('is-revealed'));
+      charactersByElement.flat().forEach((character) => character.classList.remove('is-revealed'));
     }
   };
 
@@ -300,21 +430,17 @@
         const typingRate = getTypingRate(element, characters.length);
         const visibleCount = Math.floor(((now - startedAt) / 1000) * typingRate) + 1;
         const nextCount = Math.min(visibleCount, characters.length);
-        for (let characterIndex = 0; characterIndex < nextCount; characterIndex += 1) {
+        const revealedCount = typingProgress[index][elementIndex] || 0;
+        for (let characterIndex = revealedCount; characterIndex < nextCount; characterIndex += 1) {
           characters[characterIndex].classList.add('is-revealed');
         }
+        typingProgress[index][elementIndex] = nextCount;
         if (nextCount < characters.length) complete = false;
       });
       typingFrames[index] = complete ? 0 : window.requestAnimationFrame(typeNextCharacters);
     };
     typingFrames[index] = window.requestAnimationFrame(typeNextCharacters);
   };
-
-  groupElements.flat().forEach((element) => {
-    const characters = Math.max(1, Array.from(element.textContent.trim()).length);
-    element.style.setProperty('--s-typing-steps', String(characters));
-    element.style.setProperty('--s-typing-duration', `${(getTypingDurationMs(element, characters) / 1000).toFixed(2)}s`);
-  });
 
   const setGroupState = (index, state) => {
     groupElements[index].forEach((element) => {
@@ -327,37 +453,60 @@
     if (state === 'fading') stopGroupTyping(index, false);
   };
 
-  const updateRevealGroups = () => {
-    revealFrame = 0;
-    if (!initializationReady) return;
-    const scrollY = window.scrollY;
-    const scrollDirection = scrollY - lastScrollY;
-    lastScrollY = scrollY;
-    if (keyboardLockedGroup >= 0) return;
-    const x = parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 18;
-    const triggerLine = composer.getBoundingClientRect().top - x;
-    const visibleGroups = groups.map((group, index) => ({ index, rect: group.getBoundingClientRect() }))
-      .filter(({ rect }) => rect.bottom > 0 && rect.top < (window.innerHeight || document.documentElement.clientHeight));
-    if (!visibleGroups.length) return;
-    const crossed = visibleGroups.filter(({ rect }) => rect.top <= triggerLine && rect.bottom > triggerLine);
-    if (!crossed.length) return;
-    const target = (scrollDirection < 0 ? crossed[0] : crossed[crossed.length - 1]).index;
-    if (target === activeGroupIndex) return;
-    if (activeGroupIndex >= 0) setGroupState(activeGroupIndex, 'fading');
-    activeGroupIndex = target;
-    if (target === 0 && initialGroupOnePending) {
-      initialGroupOnePending = false;
-      setGroupState(0, 'typing');
-    } else {
-      initialGroupOnePending = false;
-      setGroupState(target, 'typing');
-    }
+  const setLocalizedText = (element, value) => {
+    const fragment = document.createDocumentFragment();
+    value.split('\n').forEach((line, index) => {
+      if (index) fragment.appendChild(document.createElement('br'));
+      fragment.appendChild(document.createTextNode(line));
+    });
+    element.replaceChildren(fragment);
   };
 
-  const scheduleRevealGroups = () => {
-    if (!initializationReady) return;
-    if (!revealFrame) revealFrame = window.requestAnimationFrame(updateRevealGroups);
+  applyPageCopy = (language) => {
+    const copy = pageCopy[language];
+    if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
+    scrollFrame = 0;
+    typingFrames.forEach((_, index) => stopGroupTyping(index));
+    groupElements.forEach((elements, groupIndex) => {
+      elements.forEach((element, elementIndex) => {
+        element.classList.remove('is-typing', 'is-visible', 'is-fading');
+        setLocalizedText(element, copy.groups[groupIndex][elementIndex]);
+      });
+    });
+    menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });
+    input.placeholder = copy.inputPlaceholder;
+    inputLabel.textContent = copy.ask;
+    addButton.setAttribute('aria-label', copy.addContext);
+    submitButton.setAttribute('aria-label', copy.submitQuestion);
+    conversation.setAttribute('aria-label', copy.conversation);
+    if (conversationFinal.classList.contains('is-visible')) {
+      conversationFinalCopy.lang = language;
+      conversationFinalCopy.dir = language === 'ar' ? 'rtl' : 'ltr';
+      conversationFinalCopy.textContent = finalMessages[language];
+    }
+    prepareTypingCharacters();
+    if (!initializationReady || activeGroupIndex < 0) return;
+
+    setGroupState(activeGroupIndex, 'typing');
+    typingCharacters[activeGroupIndex].forEach((characters) => {
+      characters[0]?.classList.add('is-revealed');
+    });
+    groupGeometryDirty = true;
+    scheduleScrollVisuals();
   };
+  applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
+
+  languageToggle.addEventListener('click', () => {
+    applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar');
+  });
+  themeToggle.addEventListener('click', () => {
+    applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day');
+  });
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'ooxme-language' && event.newValue) {
+      applyLanguage(event.newValue, { persist: false });
+    }
+  });
 
   groupElements.flat().forEach((element) => element.classList.remove('is-visible'));
 
@@ -367,6 +516,8 @@
 
   const updateSubmitArrow = () => {
     const isReadyToSend = document.activeElement === input || Boolean(input.value.trim());
+    if (submitArrowReady === isReadyToSend) return;
+    submitArrowReady = isReadyToSend;
     submitButton.classList.toggle('is-send-ready', isReadyToSend);
   };
 
@@ -376,6 +527,8 @@
   };
 
   const setConversationVisibility = (isVisible) => {
+    if (conversationVisible === isVisible) return;
+    conversationVisible = isVisible;
     conversation.classList.toggle('is-chat-hidden', !isVisible);
     conversation.setAttribute('aria-hidden', String(!isVisible));
     syncPageTextForChat();
@@ -477,7 +630,8 @@
     conversationState = 'resetting';
     input.blur();
     input.value = '';
-    input.placeholder = initialInputPlaceholder;
+    input.placeholder = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'].inputPlaceholder;
+    submitArrowReady = null;
     submitButton.classList.remove('is-send-ready');
     resetAddButton();
     initializeGroupOne();
@@ -560,30 +714,41 @@
   });
 
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', updateKeyboardOffset, { passive: true });
-    window.visualViewport.addEventListener('scroll', updateKeyboardOffset, { passive: true });
+    window.visualViewport.addEventListener('resize', scheduleKeyboardOffset, { passive: true });
+    window.visualViewport.addEventListener('scroll', scheduleKeyboardOffset, { passive: true });
   }
 
   window.addEventListener('scroll', () => {
-    if (keyboardLockedGroup >= 0) {
-      maintainKeyboardGroupPosition();
-      return;
-    }
-    scheduleGroupPushPositions();
+    scheduleScrollVisuals();
   }, { passive: true });
-  window.addEventListener('scroll', () => {
-    if (window.scrollY !== lastScrollY) scheduleRevealGroups();
+  window.addEventListener('resize', () => {
+    groupGeometryDirty = true;
+    scheduleKeyboardOffset();
+    scheduleScrollVisuals();
   }, { passive: true });
-  window.addEventListener('resize', scheduleGroupPushPositions, { passive: true });
-  window.addEventListener('orientationchange', scheduleGroupPushPositions, { passive: true });
+  window.addEventListener('orientationchange', () => {
+    groupGeometryDirty = true;
+    scheduleKeyboardOffset();
+    scheduleScrollVisuals();
+  }, { passive: true });
+  document.fonts?.ready.then(() => {
+    groupGeometryDirty = true;
+    scheduleScrollVisuals();
+  });
   const initializeGroupOne = () => {
     const run = ++initializationRun;
     document.documentElement.classList.add('s-x-initializing');
     initializationReady = false;
-    if (revealFrame) window.cancelAnimationFrame(revealFrame);
-    if (groupPushFrame) window.cancelAnimationFrame(groupPushFrame);
-    revealFrame = 0;
-    groupPushFrame = 0;
+    if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
+    if (keyboardFrame) window.cancelAnimationFrame(keyboardFrame);
+    if (initializationFrame) window.cancelAnimationFrame(initializationFrame);
+    if (composerPulseFrame) window.cancelAnimationFrame(composerPulseFrame);
+    if (composerMenuPulseFrame) window.cancelAnimationFrame(composerMenuPulseFrame);
+    scrollFrame = 0;
+    keyboardFrame = 0;
+    initializationFrame = 0;
+    composerPulseFrame = 0;
+    composerMenuPulseFrame = 0;
     resetAddButton();
     composer.classList.remove('is-pulsing');
     activeGroupIndex = -1;
@@ -592,23 +757,29 @@
     lastKeyboardOverlap = 0;
     initialGroupOnePending = true;
     lastScrollY = 0;
+    groupGeometryDirty = true;
+    groupTransformOffsets.fill(Number.NaN);
     window.scrollTo({ top: 0, behavior: 'auto' });
     groupElements.forEach((elements, index) => {
       stopGroupTyping(index, true);
       elements.forEach((element) => element.classList.remove('is-visible', 'is-typing', 'is-fading'));
     });
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (run !== initializationRun) return;
-      window.scrollTo({ top: 0, behavior: 'auto' });
-      updateKeyboardOffset();
-      activeGroupIndex = 0;
-      initialGroupOnePending = false;
-      setGroupState(0, 'typing');
-      lastScrollY = window.scrollY;
-      initializationReady = true;
-      updateGroupPushPositions();
-      document.documentElement.classList.remove('s-x-initializing');
-    }));
+    initializationFrame = window.requestAnimationFrame(() => {
+      initializationFrame = window.requestAnimationFrame(() => {
+        initializationFrame = 0;
+        if (run !== initializationRun) return;
+        window.scrollTo({ top: 0, behavior: 'auto' });
+        updateKeyboardOffset();
+        activeGroupIndex = 0;
+        initialGroupOnePending = false;
+        setGroupState(0, 'typing');
+        lastScrollY = window.scrollY;
+        initializationReady = true;
+        measureGroupGeometry();
+        updateGroupPushPositions(window.scrollY);
+        document.documentElement.classList.remove('s-x-initializing');
+      });
+    });
   };
   window.addEventListener('pageshow', () => {
     if (!initializationReady) initializeGroupOne();
