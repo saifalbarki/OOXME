@@ -410,7 +410,7 @@ html.s-route.is-day-mode .s-page__conversation-bubble--user {
   border-color: rgba(255, 255, 255, .17);
   border-radius: 28px;
   border-bottom-left-radius: 8px;
-  background: rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .16);
   box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
   color: #0b0b0b;
   -webkit-backdrop-filter: blur(20px) saturate(125%);
