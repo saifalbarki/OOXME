@@ -15,6 +15,7 @@
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
   const imageFrame = document.querySelector('[data-s-image-frame]');
   const imageCopy = document.querySelector('[data-s-image-copy]');
+  const squareLogoStage = document.querySelector('[data-s-square-logo-stage]');
   const firstGroup = document.querySelector('[data-s-first-group]');
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')));
@@ -31,7 +32,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 3) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 4) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -74,7 +75,8 @@
       groups: [
         ['Welcome\nOur Next Client', 'Iraq’s one and only brand management service\nPremium business development service'],
         ['Re-engineered\nBuilt for New Terrain', 'Discover the fourth update to the OOXME operating system, designed for engineering, architectural, construction, contracting, and similar businesses.'],
-        ['Striking Designs\nFor Distinctive Projects', 'We design with an exceptional, precise, and remarkably clean approach that serves your goals and reflects the value of your projects.']
+        ['Striking Designs\nFor Distinctive Projects', 'We design with an exceptional, precise, and remarkably clean approach that serves your goals and reflects the value of your projects.'],
+        ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.']
       ],
       menu: ['The Brand management', 'The Gallery', 'The Consultation', 'The Dashboard', 'Other'],
       inputPlaceholder: 'Type...',
@@ -94,7 +96,8 @@
       groups: [
         ['مرحبــا\nعميلنا القادم', 'ادارة العلامات التجارية الواحد والوحيد في العراق\nخدمة بريميوم لتطوير الاعمال'],
         ['إعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
-        ['تصاميم ملفتة\nلمشاريع مميزة', 'نصمم بأسلوب استثنائي، دقيق، ونظيف للغاية بما يخدم أهدافكم ويعكس قيمة مشاريعكم.']
+        ['تصاميم ملفتة\nلمشاريع مميزة', 'نصمم بأسلوب استثنائي، دقيق، ونظيف للغاية بما يخدم أهدافكم ويعكس قيمة مشاريعكم.'],
+        ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.']
       ],
       menu: ['ادارة العلامة التجارية', 'المعرض', 'الاستشارة', 'لوحة التحكم', 'اخرى'],
       inputPlaceholder: 'اكتب...',
@@ -118,6 +121,7 @@
   const menuItemFlashTimers = new Map();
   const sendUtilityPulseFrames = new Map();
   const marqueeItemPulseFrames = new Map();
+  const squareLogoPulseFrames = new Map();
   const pendingReplyTimers = new Set();
   let addRotated = false;
   let initializationReady = false;
@@ -302,6 +306,26 @@
       });
     };
     Promise.all(images.map(settleImage)).then(() => marquee.classList.add('is-marquee-ready'));
+  });
+
+  const pulseSquareLogo = (logo) => {
+    const pendingFrame = squareLogoPulseFrames.get(logo);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    logo.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      squareLogoPulseFrames.delete(logo);
+      logo.classList.add('is-pulsing');
+    });
+    squareLogoPulseFrames.set(logo, frame);
+  };
+
+  squareLogoStage.addEventListener('pointerdown', (event) => {
+    const logo = event.target.closest('.s-page__square-logo');
+    if (logo && squareLogoStage.contains(logo)) pulseSquareLogo(logo);
+  }, { passive: true });
+  squareLogoStage.addEventListener('animationend', (event) => {
+    if (event.animationName !== 's-page-square-logo-pulse') return;
+    event.target.closest('.s-page__square-logo')?.classList.remove('is-pulsing');
   });
 
   [sendThemeUtility, sendLanguageUtility].forEach((control) => {
@@ -1032,6 +1056,8 @@
     sendUtilityPulseFrames.clear();
     marqueeItemPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     marqueeItemPulseFrames.clear();
+    squareLogoPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    squareLogoPulseFrames.clear();
     menuItemFlashTimers.forEach((timer) => window.clearTimeout(timer));
     menuItemFlashTimers.clear();
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
