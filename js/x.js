@@ -479,7 +479,11 @@
       maskContext.clearRect(0, 0, width, height);
       maskContext.drawImage(logoMaskImage, 0, 0, width, height);
       const maskPixels = maskContext.getImageData(0, 0, width, height).data;
-      const particleCount = Math.min(880, Math.max(640, Math.round((rect.width * rect.height) / 87.5)));
+      const isPhoneViewport = window.matchMedia('(max-width: 600px)').matches;
+      const particleCount = isPhoneViewport
+        ? Math.min(1320, Math.max(1100, Math.round((rect.width * rect.height) / 54)))
+        : Math.min(880, Math.max(640, Math.round((rect.width * rect.height) / 87.5)));
+      const particleRadius = isPhoneViewport ? [.44, .9] : [.325, .69];
       const alphaAt = (x, y) => {
         if (x < 0 || x >= width || y < 0 || y >= height) return 0;
         return maskPixels[((Math.floor(y) * width + Math.floor(x)) * 4) + 3];
@@ -512,7 +516,7 @@
           x,
           y,
           pixelRatio,
-          radius: random(.325, .69) * pixelRatio,
+          radius: random(...particleRadius) * pixelRatio,
           alpha: random(.28, .56) + (edgeWeight * .12),
           phase: random(0, Math.PI * 2),
           speed: random(.7, 1.45),
