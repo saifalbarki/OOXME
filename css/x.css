@@ -263,14 +263,14 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
 }
 
 .s-page__conversation {
-  --s-chat-gap: calc(var(--s-x) * .625);
+  --s-chat-gap: calc(var(--s-x) * .5);
   position: fixed;
   z-index: 15;
   top: var(--s-x);
   left: 50%;
   width: min(calc(100% - (var(--s-x) * 4)), 660px);
   max-width: 100%;
-  bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px) + 48px + var(--s-x));
+  bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px) + 48px + (var(--s-x) * 2));
   display: flex;
   min-height: 0;
   direction: ltr;
@@ -298,12 +298,13 @@ html[dir="rtl"] .s-page__group [data-s-reveal] {
   flex: 0 0 auto;
   width: fit-content;
   max-width: min(78vw, 520px);
+  min-height: 32px;
   margin: 0;
-  padding: 11px 15px 12px;
+  padding: 6px 15px;
   border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 22px;
   box-shadow: 0 8px 28px rgba(0, 0, 0, .14), 0 1px 3px rgba(0, 0, 0, .08);
-  font: 500 16px/1.32 OOXMEScript, Arial, sans-serif;
+  font: 500 14px/1.2 OOXMEScript, Arial, sans-serif;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
   will-change: transform;
@@ -509,7 +510,7 @@ html[lang="ar"] .s-page__composer-input:placeholder-shown {
   --s-menu-inset: 8px;
   --s-menu-active-radius: 20px;
   position: absolute;
-  bottom: calc(100% + var(--s-x));
+  bottom: calc(100% + (var(--s-x) * 2));
   left: 16.5px;
   display: flex;
   width: 220px;
@@ -667,7 +668,7 @@ html.s-route.is-day-mode .s-page__composer-menu {
 .s-page__send-utilities {
   position: absolute;
   right: 8px;
-  bottom: calc(100% + var(--s-x));
+  bottom: calc(100% + (var(--s-x) * 2));
   display: flex;
   gap: calc(var(--s-x) * .5);
   flex-direction: column;

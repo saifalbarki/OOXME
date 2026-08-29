@@ -289,6 +289,7 @@
   document.addEventListener('pointerdown', (event) => {
     if (isTemporaryUiInteraction(event.target)) return;
     activateTemporaryUi('none');
+    if (document.activeElement === input) input.blur();
   }, { passive: true });
   const measureGroupGeometry = () => {
     const pageStyles = getComputedStyle(page);
@@ -409,6 +410,13 @@
       keyboardFrame = 0;
       updateKeyboardOffset();
     });
+  };
+
+  const syncConversationInputBounds = () => {
+    const conversationRect = conversation.getBoundingClientRect();
+    const inputRect = input.getBoundingClientRect();
+    conversation.style.paddingLeft = `${Math.max(0, inputRect.left - conversationRect.left)}px`;
+    conversation.style.paddingRight = `${Math.max(0, conversationRect.right - inputRect.right)}px`;
   };
 
   const groupElements = groups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
@@ -674,6 +682,7 @@
   };
 
   const addConversationBubble = (message, speaker, language) => {
+    syncConversationInputBounds();
     const previousPositions = new Map(
       Array.from(conversation.children)
         .filter((existingBubble) => !existingBubble.classList.contains('is-exiting'))
@@ -759,6 +768,7 @@
 
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
+    event.stopPropagation();
     const message = input.value.trim();
     if (!message) {
       activateTemporaryUi(activeTemporaryUi === 'utilities' ? 'none' : 'utilities');
@@ -794,11 +804,13 @@
   }, { passive: true });
   window.addEventListener('resize', () => {
     groupGeometryDirty = true;
+    syncConversationInputBounds();
     scheduleKeyboardOffset();
     scheduleScrollVisuals();
   }, { passive: true });
   window.addEventListener('orientationchange', () => {
     groupGeometryDirty = true;
+    syncConversationInputBounds();
     scheduleKeyboardOffset();
     scheduleScrollVisuals();
   }, { passive: true });
@@ -846,6 +858,7 @@
         setGroupState(0, 'typing');
         lastScrollY = window.scrollY;
         initializationReady = true;
+        syncConversationInputBounds();
         measureGroupGeometry();
         updateGroupPushPositions(window.scrollY);
         document.documentElement.classList.remove('s-x-initializing');
