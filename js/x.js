@@ -286,6 +286,7 @@
       page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
     }
     lastKeyboardOverlap = keyboardOverlap;
+    syncConversationInputBounds();
   };
 
   const scheduleKeyboardOffset = () => {
