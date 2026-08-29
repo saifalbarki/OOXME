@@ -437,7 +437,7 @@
       particles.forEach((particle) => {
         const distance = Math.hypot(particle.x - pointer.x, particle.y - pointer.y);
         const influence = pointer.strength > .004
-          ? Math.max(0, 1 - distance / (76 * particle.pixelRatio)) * pointer.strength
+          ? Math.max(0, 1 - distance / (92 * particle.pixelRatio)) * pointer.strength
           : 0;
         const twinkle = .82 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .09);
         const visibilityWave = (Math.sin((time * particle.visibilitySpeed) + particle.visibilityPhase) + 1) * .5;
@@ -445,9 +445,9 @@
         const visibility = minimumVisibility + ((1 - minimumVisibility) * Math.pow(visibilityWave, 1.3));
         const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
         const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
-        const alpha = Math.min(1, (twinkle * visibility) + (influence * .72)) * buildEase;
-        const radius = Math.max(.5, Math.round((particle.radius * (1 + influence * .58)) * 2) / 2);
-        const localMotion = influence * particle.pixelRatio * 2.2;
+        const alpha = Math.min(1, (twinkle * visibility) + (influence * .86)) * buildEase;
+        const radius = Math.max(.5, Math.round((particle.radius * (1 + influence * .72)) * 2) / 2);
+        const localMotion = influence * particle.pixelRatio * 2.8;
         const x = Math.round(particle.x + (Math.sin((time * particle.drift) + particle.phase) * localMotion));
         const y = Math.round(particle.y + (Math.cos((time * particle.drift * .8) + particle.phase) * localMotion));
 
@@ -475,7 +475,7 @@
     const resizeCanvas = () => {
       if (!logoMaskImage.naturalWidth) return;
       const rect = logoParticleCanvas.getBoundingClientRect();
-      const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 3);
+      const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 4);
       const nextWidth = Math.max(1, Math.round(rect.width * pixelRatio));
       const nextHeight = Math.max(1, Math.round(rect.height * pixelRatio));
       if (nextWidth === width && nextHeight === height && particles.length) return;
@@ -496,7 +496,7 @@
         : Math.min(880, Math.max(640, Math.round((rect.width * rect.height) / 87.5)));
       const edgeParticleCount = Math.round(particleCount * .6);
       const particleTargetCount = particleCount + edgeParticleCount;
-      const particleRadius = isPhoneViewport ? [.44, .9] : [.325, .69];
+      const particleRadius = isPhoneViewport ? [.56, .76] : [.46, .62];
       const alphaAt = (x, y) => {
         if (x < 0 || x >= width || y < 0 || y >= height) return 0;
         return maskPixels[((Math.floor(y) * width + Math.floor(x)) * 4) + 3];
@@ -524,11 +524,11 @@
         const y = Math.floor(Math.random() * height);
         if (maskPixels[((y * width + x) * 4) + 3] < 160) continue;
         const edgeWeight = edgeWeightAt(x, y);
-        const edgeDensity = Math.pow(edgeWeight, .7);
+        const edgeDensity = Math.pow(edgeWeight, .58);
         const isEdgeReinforcement = particles.length >= particleCount;
         if (isEdgeReinforcement) {
-          if (Math.random() > (.1 + (edgeDensity * .9))) continue;
-        } else if (Math.random() > (.12 + (edgeDensity * .88))) continue;
+          if (Math.random() > (.12 + (edgeDensity * .88))) continue;
+        } else if (Math.random() > (.22 + (edgeDensity * .78))) continue;
         particles.push({
           x,
           y,
