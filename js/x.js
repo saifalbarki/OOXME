@@ -13,11 +13,15 @@
   const conversation = document.querySelector('[data-s-conversation]');
   const conversationFinal = document.querySelector('[data-s-conversation-final]');
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
-  const groups = Array.from(document.querySelectorAll('.s-page__group'));
+  const sections = Array.from(document.querySelectorAll('[data-s-section]')).map((element) => ({
+    element,
+    groups: Array.from(element.querySelectorAll(':scope > [data-s-group]'))
+  }));
+  const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || groups.length !== 3) return;
+  if (!page || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || sections.some((section) => section.groups.length !== 3)) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -103,6 +107,8 @@
   let composerMenuPulseFrame = 0;
   let groupGeometryDirty = true;
   let groupGeometry = [];
+  let sectionGeometry = [];
+  let sharedAnchorViewportTop = null;
   let groupHandoffSpacing = 18;
   let groupComposerTriggerTop = 0;
   const groupTransformOffsets = groups.map(() => Number.NaN);
@@ -303,29 +309,116 @@
         : 0;
       return {
         top: rect.top + scrollPosition - appliedOffset,
-        height: rect.height
+        height: rect.height,
+        bottom: rect.top + scrollPosition - appliedOffset + rect.height
       };
     });
-    const anchorPosition = measurements[0].top;
+    let sectionTimelineStart = 0;
+    sectionGeometry = sections.map((section, sectionIndex) => {
+      const sectionMeasurements = section.groups.map((group) => measurements[groups.indexOf(group)]);
+      const sectionRect = section.element.getBoundingClientRect();
+      const anchorTop = sectionMeasurements[0].top;
+      if (sharedAnchorViewportTop === null) sharedAnchorViewportTop = sectionMeasurements[0].top - scrollPosition;
+      const anchorViewportTop = sharedAnchorViewportTop;
+      const finalGroups = sectionMeasurements.reduce((finalized, measurement, index) => {
+        const top = index === 0
+          ? anchorTop
+          : finalized[index - 1].top + finalized[index - 1].height + groupHandoffSpacing;
+        finalized.push({ top, height: measurement.height });
+        return finalized;
+      }, []);
+      const contentHeight = finalGroups.at(-1).top + finalGroups.at(-1).height - anchorTop;
+      const overflowAmount = Math.max(0, anchorViewportTop + contentHeight - window.innerHeight);
+      const entryDistance = window.innerHeight;
+      const entryStart = sectionTimelineStart;
+      const groupCompletion = entryStart + (entryDistance * section.groups.length);
+      const holdStart = groupCompletion + overflowAmount;
+      const pushStart = holdStart + (window.innerHeight * .2);
+      const pushDistance = sectionIndex < sections.length - 1 ? window.innerHeight : 0;
+      sectionTimelineStart = pushStart + pushDistance;
+      return {
+        element: section.element,
+        groupElements: section.groups,
+        groups: finalGroups,
+        anchorTop,
+        anchorViewportTop,
+        height: sectionRect.height,
+        contentHeight,
+        groupSpacing: groupHandoffSpacing,
+        overflowAmount,
+        entryDistance,
+        entryStart,
+        groupCompletion,
+        overflowStart: groupCompletion,
+        overflowEnd: groupCompletion + overflowAmount,
+        holdStart,
+        holdDistance: window.innerHeight * .2,
+        pushStart,
+        pushDistance,
+        pushEnd: pushStart + pushDistance,
+        pushProgress: 0,
+        holdProgress: 0,
+        overflowProgress: 0,
+        phase: 'entry'
+      };
+    });
     groupGeometry = measurements.map((measurement, index) => ({
       top: measurement.top,
-      height: measurement.height,
-      pinStart: index === 0 ? 0 : measurement.top - anchorPosition,
-      pinEnd: index === groups.length - 1
-        ? Number.POSITIVE_INFINITY
-        : measurements[index + 1].top - anchorPosition - groupHandoffSpacing
+      height: measurement.height
     }));
     groupGeometryDirty = false;
   };
 
-  const getGroupPushOffset = (index, scrollPosition) => {
-    const geometry = groupGeometry[index];
-    return Math.max(0, Math.min(scrollPosition - geometry.pinStart, geometry.pinEnd - geometry.pinStart));
+  const getGroupScrollOffset = (index, scrollPosition) => {
+    const sectionIndex = sections.findIndex((section) => section.groups.includes(groups[index]));
+    const section = sectionGeometry[sectionIndex];
+    if (!section) return 0;
+    const groupIndex = section.groupElements.indexOf(groups[index]);
+    const rawTop = groupGeometry[index].top;
+    const finalTop = section.anchorViewportTop
+      + section.groups[groupIndex].top - section.anchorTop;
+    const belowViewportTop = window.innerHeight + section.groupSpacing;
+    const entryStart = section.entryStart + (groupIndex * section.entryDistance);
+    const entryEnd = entryStart + section.entryDistance;
+    const overflowProgress = Math.max(0, Math.min(section.overflowAmount, scrollPosition - section.overflowStart));
+    const holdProgress = Math.max(0, Math.min(section.holdDistance, scrollPosition - section.holdStart));
+    const pushProgress = Math.max(0, Math.min(section.pushDistance, scrollPosition - section.pushStart));
+    section.overflowProgress = overflowProgress;
+    section.holdProgress = holdProgress;
+    section.pushProgress = pushProgress;
+    section.phase = scrollPosition >= section.holdStart + section.holdDistance
+      ? 'boundary'
+      : holdProgress > 0 || section.overflowAmount === 0 && scrollPosition >= section.holdStart
+        ? 'hold'
+        : overflowProgress > 0
+          ? 'overflow'
+          : pushProgress > 0
+            ? 'push'
+          : 'entry';
+    let targetViewportTop = belowViewportTop;
+
+    if (scrollPosition >= entryEnd) {
+      targetViewportTop = finalTop;
+    } else if (scrollPosition > entryStart) {
+      const progress = (scrollPosition - entryStart) / section.entryDistance;
+      targetViewportTop = belowViewportTop + ((finalTop - belowViewportTop) * progress);
+    }
+
+    targetViewportTop -= overflowProgress;
+
+    if (scrollPosition >= section.pushStart) {
+      targetViewportTop -= pushProgress;
+    }
+
+    if (scrollPosition >= section.holdStart + section.holdDistance) {
+      targetViewportTop += section.holdStart + section.holdDistance - scrollPosition;
+    }
+    return targetViewportTop + scrollPosition - rawTop;
   };
 
   const updateGroupPushPositions = (scrollPosition) => {
     groups.forEach((group, index) => {
-      const offset = getGroupPushOffset(index, scrollPosition);
+      const offset = getGroupScrollOffset(index, scrollPosition);
       if (Math.abs(groupTransformOffsets[index] - offset) < .01) return;
       groupTransformOffsets[index] = offset;
       group.style.transform = `translate3d(0, ${offset}px, 0)`;
@@ -337,7 +430,7 @@
     lastScrollY = scrollPosition;
     const crossed = groupGeometry
       .map((geometry, index) => {
-        const top = geometry.top - scrollPosition + getGroupPushOffset(index, scrollPosition);
+        const top = geometry.top - scrollPosition + getGroupScrollOffset(index, scrollPosition);
         return { index, top, bottom: top + geometry.height };
       })
       .filter(({ top, bottom }) => top <= groupComposerTriggerTop && bottom > groupComposerTriggerTop);
@@ -556,9 +649,11 @@
     scrollFrame = 0;
     typingFrames.forEach((_, index) => stopGroupTyping(index));
     groupElements.forEach((elements, groupIndex) => {
+      const localizedGroup = copy.groups[groupIndex];
+      if (!localizedGroup) return;
       elements.forEach((element, elementIndex) => {
         element.classList.remove('is-typing', 'is-visible', 'is-fading');
-        setLocalizedText(element, copy.groups[groupIndex][elementIndex]);
+        setLocalizedText(element, localizedGroup[elementIndex]);
       });
     });
     menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });

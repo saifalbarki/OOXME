@@ -145,6 +145,11 @@ html.s-x-initializing .s-page__submit:active {
   will-change: transform;
 }
 
+.s-page__section--future {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .s-page__group-title,
 .s-page__group-description {
   margin: 0;
