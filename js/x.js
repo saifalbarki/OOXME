@@ -315,10 +315,20 @@
   const setLocalizedText = (element, value) => {
     const fragment = document.createDocumentFragment();
     value.split('\n').forEach((line, index) => {
-      if (index) fragment.appendChild(document.createElement('br'));
-      fragment.appendChild(document.createTextNode(line));
+      const lineElement = document.createElement('span');
+      lineElement.className = 's-page__reveal-line';
+      lineElement.textContent = line;
+      fragment.appendChild(lineElement);
     });
     element.replaceChildren(fragment);
+  };
+
+  const setRevealLineDelays = () => {
+    groups.forEach((group) => {
+      group.querySelectorAll('.s-page__reveal-line').forEach((line, index) => {
+        line.style.setProperty('--s-reveal-delay', `${index * 110}ms`);
+      });
+    });
   };
 
   applyPageCopy = (language) => {
@@ -341,11 +351,12 @@
       conversationFinalCopy.dir = language === 'ar' ? 'rtl' : 'ltr';
       conversationFinalCopy.textContent = finalMessages[language];
     }
+    setRevealLineDelays();
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
-  groupElements.flat().forEach((element) => {
-    if (revealObserver) revealObserver.observe(element);
-    else element.classList.add('is-visible');
+  groups.forEach((group) => {
+    if (revealObserver) revealObserver.observe(group);
+    else group.classList.add('is-visible');
   });
 
   sendThemeUtility.addEventListener('click', (event) => {
