@@ -144,6 +144,15 @@ html.s-x-initializing .s-page__submit:active {
   padding: 0;
 }
 
+.s-page__image-group {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: var(--s-x) 0 0;
+  border-radius: 28px;
+}
+
 .s-page__section--future {
   visibility: hidden;
   pointer-events: none;
