@@ -321,7 +321,9 @@ html[dir="rtl"] .s-page__image-copy-language--ar {
 }
 
 .s-page__square-logo-stage {
-  --s-square-logo-size: 12%;
+  --s-square-logo-size: 6%;
+  --s-square-logo-grid-step: 18%;
+  --s-square-logo-grid-double-step: calc(var(--s-square-logo-grid-step) + var(--s-square-logo-grid-step));
   position: relative;
   isolation: isolate;
   display: block;
