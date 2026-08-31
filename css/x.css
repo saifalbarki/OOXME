@@ -51,6 +51,7 @@
 html.s-route {
   --s-x: max(18px, calc((100vw - 660px) / 4));
   --s-composer-radius: 28px;
+  --s-composer-bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
   --s-glass-stroke: rgba(255, 255, 255, .17);
   min-height: 100%;
   overflow-x: hidden;
@@ -672,7 +673,7 @@ html[dir="rtl"] .s-page__reveal-line {
   left: max(calc(var(--s-x) * 2), calc((100% - 660px) / 2));
   width: min(calc(100% - (var(--s-x) * 4)), 660px);
   max-width: 100%;
-  bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px) + 48px + (var(--s-x) * 2));
+  bottom: calc(var(--s-composer-bottom) + 48px + (var(--s-x) * 2));
   display: flex;
   min-height: 0;
   direction: ltr;
@@ -836,7 +837,7 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   position: fixed;
   z-index: 20;
   left: max(calc(var(--s-x) * 2), calc((100% - 660px) / 2));
-  bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
+  bottom: var(--s-composer-bottom);
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   direction: ltr;
@@ -1324,7 +1325,7 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   .s-page__content { padding-top: calc(var(--s-x) * 2); }
 
   .s-page__composer {
-    bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
+    bottom: var(--s-composer-bottom);
     grid-template-columns: 44px minmax(0, 1fr) 44px;
     width: min(calc(100% - (var(--s-x) * 4)), 660px);
     max-width: 100%;
@@ -1336,6 +1337,12 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   .s-page__submit {
     width: 32px;
     height: 32px;
+  }
+}
+
+@media (orientation: landscape) {
+  html.s-route {
+    --s-composer-bottom: calc(max(16px, calc(env(safe-area-inset-bottom) + 12px)) + var(--s-keyboard-offset, 0px));
   }
 }
 
