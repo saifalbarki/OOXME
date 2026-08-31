@@ -1053,6 +1053,7 @@
     composerPulseFrame = 0;
     composerMenuPulseFrame = 0;
     resetAddButton();
+    activateTemporaryUi('none');
     composer.classList.remove('is-pulsing');
     lastKeyboardOverlap = 0;
     updateKeyboardOffset();
