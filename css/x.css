@@ -370,6 +370,11 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   opacity: .13;
   stroke-dashoffset: 0;
   transition-delay: calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration) + 20ms);
+  animation: s-page-square-logo-guide-solidify 0s linear calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration) + 760ms) forwards;
+}
+
+@keyframes s-page-square-logo-guide-solidify {
+  to { stroke-dasharray: none; }
 }
 
 .s-page__square-logo {
@@ -1342,7 +1347,8 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
 
 @media (orientation: landscape) {
   html.s-route {
-    --s-composer-bottom: calc(max(16px, calc(env(safe-area-inset-bottom) + 12px)) + var(--s-keyboard-offset, 0px));
+    --s-x: max(16px, calc(env(safe-area-inset-bottom) + 12px));
+    --s-composer-bottom: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
   }
 }
 
@@ -1365,6 +1371,7 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
   .s-page__flow-media { transition: none; }
   .s-page__square-logo-guides line { transition: none; }
+  .s-page__square-logo-stage.is-visible .s-page__square-logo-guides line { stroke-dasharray: none; animation: none; }
   .s-page__square-logo { transition: none; }
   .s-page__square-logo.is-pulsing img { animation: none; }
   .s-page__marquee-track { animation: none; }
