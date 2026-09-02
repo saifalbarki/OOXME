@@ -12,7 +12,8 @@
   const sendLanguageUtility = document.querySelector('[data-s-utility="language"]');
   const addButton = document.querySelector('.s-page__add');
   const input = document.querySelector('.s-page__composer-input');
-  const submitButton = composer?.querySelector('.s-page__submit');
+  const submitButton = composer?.querySelector('button[type="submit"]');
+  const utilitySmileButton = composerMenuPanel?.querySelector('.s-page__composer-menu-panel-control');
   const logoParticleField = document.querySelector('[data-s-logo-particles]');
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
   const imageFrame = document.querySelector('[data-s-image-frame]');
@@ -38,7 +39,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 5) return;
+  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 5) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -369,7 +370,7 @@
     });
   });
 
-  [addButton, input, submitButton].forEach((control) => {
+  [addButton, input, submitButton, utilitySmileButton].forEach((control) => {
     control?.addEventListener('pointerdown', pulseComposer, { passive: true });
   });
   submitButton.addEventListener('pointerdown', (event) => event.preventDefault());
