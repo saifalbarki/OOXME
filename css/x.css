@@ -675,8 +675,7 @@ html.s-route.is-day-mode .s-page__square-logo img {
 }
 
 .s-page__section--future {
-  visibility: hidden;
-  pointer-events: none;
+  display: none;
 }
 
 .s-page__group-title,

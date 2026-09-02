@@ -609,6 +609,10 @@
     document.documentElement.removeAttribute('data-s-portrait-reference-y');
     document.documentElement.style.removeProperty('--s-portrait-section-height');
     document.documentElement.style.removeProperty('--s-portrait-final-section-height');
+    majorSections.forEach((section) => {
+      section.style.removeProperty('height');
+      section.removeAttribute('data-s-portrait-overflow');
+    });
     portraitSectionCompositions.forEach(({ first, last, type }) => {
       last.style.removeProperty('--s-portrait-bottom-up-offset');
       last.classList.remove('is-portrait-bottom-up');
@@ -646,6 +650,19 @@
       const firstRect = first.getBoundingClientRect();
       const lastRect = last.getBoundingClientRect();
       const naturalRelativeBottom = lastRect.bottom - firstRect.top;
+      const majorSection = first.closest('[data-s-major-section]');
+
+      // Preserve natural spacing on short screens when the approved composition cannot fit.
+      if (type !== 'particle' && naturalRelativeBottom > desiredRelativeBottom + .5) {
+        const requiredOverflow = naturalRelativeBottom - desiredRelativeBottom;
+        majorSection.style.setProperty('height', `${document.documentElement.clientHeight + requiredOverflow}px`);
+        majorSection.setAttribute('data-s-portrait-overflow', requiredOverflow.toFixed(3));
+        first.setAttribute('data-s-portrait-layout', 'natural-overflow');
+        first.setAttribute('data-s-portrait-final-gap', (composerTop - (sectionViewportTop + naturalRelativeBottom)).toFixed(3));
+        first.setAttribute('data-s-portrait-final-y', (sectionViewportTop + naturalRelativeBottom).toFixed(3));
+        first.setAttribute('data-s-portrait-reference-delta', (desiredRelativeBottom - naturalRelativeBottom).toFixed(3));
+        return;
+      }
 
       if (type === 'particle') {
         const requiredBottom = firstRect.height - desiredRelativeBottom;
@@ -1291,12 +1308,6 @@
 
   input.addEventListener('focus', () => {
     activateTemporaryUi('chat');
-    lockActiveGroupForKeyboard();
-  });
-
-  input.addEventListener('blur', () => {
-    if (lastKeyboardOverlap > 0) return;
-    releaseKeyboardGroupLock();
   });
 
   input.addEventListener('input', () => {
