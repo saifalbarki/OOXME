@@ -839,6 +839,10 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   --s-composer-stroke: var(--s-glass-stroke);
   --s-composer-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
   --s-composer-backdrop: blur(20px) saturate(125%);
+  --s-composer-menu-width: 220px;
+  --s-composer-menu-height: 222px;
+  --s-composer-height: 48px;
+  --s-control-stagger: .06s;
   position: fixed;
   z-index: 20;
   left: max(calc(var(--s-x) * 2), calc((100% - 660px) / 2));
@@ -849,8 +853,8 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   align-items: center;
   width: min(calc(100% - (var(--s-x) * 4)), 660px);
   max-width: 100%;
-  height: 48px;
-  min-height: 48px;
+  height: var(--s-composer-height);
+  min-height: var(--s-composer-height);
   margin: 0;
   padding: 2px;
   border: 1px solid transparent;
@@ -946,7 +950,7 @@ html[lang="ar"] .s-page__composer-input:placeholder-shown {
   bottom: calc(100% + (var(--s-x) * 2));
   left: 16.5px;
   display: flex;
-  width: 220px;
+  width: var(--s-composer-menu-width);
   margin: 0;
   padding: var(--s-menu-inset);
   flex-direction: column;
@@ -963,6 +967,59 @@ html[lang="ar"] .s-page__composer-input:placeholder-shown {
   transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
   -webkit-backdrop-filter: var(--s-composer-backdrop);
   backdrop-filter: var(--s-composer-backdrop);
+}
+
+.s-page__composer-menu-panel {
+  --s-composer-menu-panel-inset: calc((var(--s-composer-height) - 32px) / 2);
+  --s-composer-menu-panel-vertical-inset: calc(var(--s-composer-menu-panel-inset) - 1px);
+  position: absolute;
+  bottom: calc(100% + (var(--s-x) * 2) + var(--s-composer-menu-height) + (var(--s-x) * .5));
+  left: 16.5px;
+  display: flex;
+  width: var(--s-composer-menu-width);
+  height: var(--s-composer-height);
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  border: 1px solid var(--s-composer-stroke);
+  border-radius: var(--s-composer-radius);
+  background: var(--s-composer-surface);
+  box-shadow: var(--s-composer-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  visibility: hidden;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
+}
+
+.s-page__composer-menu-panel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  visibility: visible;
+  transition-delay: var(--s-control-stagger), var(--s-control-stagger), 0s;
+}
+
+.s-page__composer-menu-panel .s-page__composer-menu-panel-control {
+  position: absolute;
+  top: var(--s-composer-menu-panel-vertical-inset);
+  bottom: var(--s-composer-menu-panel-vertical-inset);
+  left: var(--s-composer-menu-panel-inset);
+  transform: none;
+}
+
+.s-page__composer-menu-panel-smile {
+  display: block;
+  width: 13px;
+  height: 13px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 html[dir="rtl"] .s-page__composer-menu {
@@ -1164,7 +1221,7 @@ html.s-route.is-day-mode .s-page__add.is-active {
 }
 
 .s-page__send-utility:nth-child(2) {
-  transition-delay: .06s;
+  transition-delay: var(--s-control-stagger);
 }
 
 .s-page__send-utility:nth-child(3) {
@@ -1174,11 +1231,11 @@ html.s-route.is-day-mode .s-page__add.is-active {
 .s-page__send-utilities.is-open .s-page__send-utility {
   opacity: 1;
   transform: none;
-  transition-delay: .06s;
+  transition-delay: var(--s-control-stagger);
 }
 
 .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
-  transition-delay: .06s;
+  transition-delay: var(--s-control-stagger);
 }
 
 .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
@@ -1386,7 +1443,8 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   .s-page__composer,
   .s-page__icon-button,
   .s-page__submit,
-  .s-page__composer-menu { transition: none; }
+  .s-page__composer-menu,
+  .s-page__composer-menu-panel { transition: none; }
   .s-page__send-utilities { transition: none; }
   .s-page__send-utility { transition: none; }
   .s-page__send-utility-inner { transition: none; }

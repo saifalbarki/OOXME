@@ -5,6 +5,7 @@
   const content = document.querySelector('.s-page__content');
   const composer = document.querySelector('[data-s-composer]');
   const composerMenu = document.querySelector('[data-s-composer-menu]');
+  const composerMenuPanel = document.querySelector('[data-s-composer-menu-panel]');
   const sendUtilities = document.querySelector('[data-s-send-utilities]');
   const sendStatusUtility = document.querySelector('[data-s-utility="status"]');
   const sendThemeUtility = document.querySelector('[data-s-utility="theme"]');
@@ -33,7 +34,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 4) return;
+  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 4) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -118,6 +119,7 @@
   let keyboardFrame = 0;
   let composerPulseFrame = 0;
   let composerMenuPulseFrame = 0;
+  let composerMenuCloseTimer = 0;
   let addFlashTimer = 0;
   const menuItemFlashTimers = new Map();
   const sendUtilityPulseFrames = new Map();
@@ -213,8 +215,30 @@
   );
 
   const setComposerMenuOpen = (isOpen) => {
-    composerMenu.classList.toggle('is-open', isOpen);
-    composerMenu.setAttribute('aria-hidden', String(!isOpen));
+    window.clearTimeout(composerMenuCloseTimer);
+    composerMenuCloseTimer = 0;
+    if (isOpen) {
+      composer.style.setProperty('--s-composer-menu-height', `${composerMenu.offsetHeight}px`);
+      composerMenu.classList.add('is-open');
+      composerMenu.setAttribute('aria-hidden', 'false');
+      composerMenuPanel.classList.add('is-open');
+      composerMenuPanel.setAttribute('aria-hidden', 'false');
+      return;
+    }
+
+    const menuWasOpen = composerMenu.classList.contains('is-open');
+    composerMenuPanel.classList.remove('is-open');
+    composerMenuPanel.setAttribute('aria-hidden', 'true');
+    if (!menuWasOpen) {
+      composerMenu.setAttribute('aria-hidden', 'true');
+      return;
+    }
+
+    composerMenuCloseTimer = window.setTimeout(() => {
+      composerMenuCloseTimer = 0;
+      composerMenu.classList.remove('is-open');
+      composerMenu.setAttribute('aria-hidden', 'true');
+    }, 60);
   };
 
   const setSendUtilitiesOpen = (isOpen) => {
@@ -341,11 +365,12 @@
   });
   submitButton.addEventListener('pointerdown', (event) => event.preventDefault());
 
-  [addButton, composerMenu, sendUtilities].forEach((control) => {
+  [addButton, composerMenu, composerMenuPanel, sendUtilities].forEach((control) => {
     control.addEventListener('pointerdown', (event) => event.stopPropagation());
     control.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
   });
   composerMenu.addEventListener('click', (event) => event.stopPropagation());
+  composerMenuPanel.addEventListener('click', (event) => event.stopPropagation());
   sendUtilities.addEventListener('click', (event) => event.stopPropagation());
   composerMenu.querySelectorAll('.s-page__composer-menu-item').forEach((item) => {
     item.addEventListener('pointerdown', () => {
