@@ -660,6 +660,66 @@ html.s-route.is-day-mode .s-page__square-logo img {
   text-wrap: wrap;
 }
 
+.s-page__consultation-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin-top: calc(var(--s-x) * 2);
+  padding: 12px 20px;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: rgba(255, 255, 255, .12);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  color: #FFFFFF;
+  font: 600 15px/1.2 OOXMEScript, Arial, sans-serif;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.s-page__flow-group--consultation .s-page__flow-text {
+  display: flex;
+  width: calc(100vw - (var(--s-x) * 2));
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.s-page__flow-group--consultation .s-page__group-title,
+.s-page__flow-group--consultation .s-page__group-description {
+  width: 100%;
+}
+
+.s-page__flow-group--consultation .s-page__consultation-cta {
+  align-self: center;
+}
+
+.s-page__consultation-cta:hover,
+.s-page__consultation-cta:focus-visible {
+  background: rgba(255, 255, 255, .2);
+  border-color: rgba(255, 255, 255, .34);
+}
+
+.s-page__consultation-cta:active {
+  transform: scale(.98);
+}
+
+html[lang="ar"] .s-page__consultation-cta {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode .s-page__consultation-cta {
+  background: rgba(255, 255, 255, .62);
+  color: #111111;
+}
+
+html.s-route.is-day-mode .s-page__consultation-cta:hover,
+html.s-route.is-day-mode .s-page__consultation-cta:focus-visible {
+  background: rgba(255, 255, 255, .86);
+  border-color: rgba(17, 17, 17, .2);
+}
+
 .s-page__group-title {
   width: calc(100vw - (var(--s-x) * 2));
   max-width: none;

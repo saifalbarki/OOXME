@@ -22,6 +22,7 @@
   const numbersMetrics = document.querySelector('[data-s-numbers-metrics]');
   const numberMetricItems = Array.from(document.querySelectorAll('[data-s-number-metric]'));
   const squareLogoStage = document.querySelector('[data-s-square-logo-stage]');
+  const consultationCta = document.querySelector('[data-s-consultation-cta]');
   const firstGroup = document.querySelector('[data-s-first-group]');
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
@@ -39,7 +40,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 5) return;
+  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !consultationCta || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 6) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -84,7 +85,8 @@
         ['Re-engineered\nBuilt for New Terrain', 'Discover the fourth update to the OOXME operating system, designed for engineering, architectural, construction, contracting, and similar businesses.'],
         ['The numbers speak\nfor the work', 'Real results that summarize what we’ve achieved across different businesses and brands.'],
         ['Striking Designs\nFor Distinctive Projects', 'We design with an exceptional, precise, and remarkably clean approach that serves your goals and reflects the value of your projects.'],
-        ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.']
+        ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.'],
+        ['Let’s talk\nabout what’s next', 'A focused consultation to understand your business, identify the right direction, and define the next practical step.']
       ],
       menu: ['The Brand management', 'The Gallery', 'The Consultation', 'The Dashboard', 'Other'],
       inputPlaceholder: 'Type...',
@@ -98,7 +100,8 @@
         switchToEnglish: 'Switch to English',
         switchToDay: 'Switch to Day Mode',
         switchToDark: 'Switch to Dark Mode'
-      }
+      },
+      consultationCta: 'Book a Consultation'
     },
     ar: {
       groups: [
@@ -106,7 +109,8 @@
         ['إعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
         ['الأرقام تتحدث\nعن العمل', 'نتائج حقيقية تلخص ما حققناه مع أعمال وعلامات مختلفة.'],
         ['تصاميم ملفتة\nلمشاريع مميزة', 'نصمم بأسلوب استثنائي، دقيق، ونظيف للغاية بما يخدم أهدافكم ويعكس قيمة مشاريعكم.'],
-        ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.']
+        ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.'],
+        ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول إلى الخطوة العملية التالية.']
       ],
       menu: ['ادارة العلامة التجارية', 'المعرض', 'الاستشارة', 'لوحة التحكم', 'اخرى'],
       inputPlaceholder: 'اكتب...',
@@ -120,7 +124,8 @@
         switchToEnglish: 'التبديل الى الانجليزية',
         switchToDay: 'التبديل الى الوضع النهاري',
         switchToDark: 'التبديل الى الوضع الداكن'
-      }
+      },
+      consultationCta: 'احجز استشارة'
     }
   };
   let keyboardFrame = 0;
@@ -694,6 +699,9 @@
       });
     });
     menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });
+    consultationCta.textContent = copy.consultationCta;
+    consultationCta.lang = language;
+    consultationCta.dir = language === 'ar' ? 'rtl' : 'ltr';
     input.placeholder = copy.inputPlaceholder;
     inputLabel.textContent = copy.ask;
     addButton.setAttribute('aria-label', copy.addContext);
