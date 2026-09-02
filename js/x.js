@@ -154,8 +154,8 @@
   let majorSectionSettleFrame = 0;
   let majorSectionSettleTarget = null;
   let majorSectionPointerActive = false;
-  let majorSectionScrolledDuringPointer = false;
   let majorSectionSettleStableFrames = 0;
+  const majorSectionSettleDelayMs = 3000;
   let flowFrame = 0;
   let flowTimer = 0;
   let imageCopyRevealTimer = 0;
@@ -514,7 +514,7 @@
       return;
     }
 
-    const duration = 420;
+    const duration = 1000;
     const startedAt = performance.now();
     const render = (timestamp) => {
       const progress = Math.min(1, (timestamp - startedAt) / duration);
@@ -608,6 +608,7 @@
     document.documentElement.removeAttribute('data-s-portrait-section-top');
     document.documentElement.removeAttribute('data-s-portrait-reference-y');
     document.documentElement.style.removeProperty('--s-portrait-section-height');
+    document.documentElement.style.removeProperty('--s-portrait-final-section-height');
     portraitSectionCompositions.forEach(({ first, last, type }) => {
       last.style.removeProperty('--s-portrait-bottom-up-offset');
       last.classList.remove('is-portrait-bottom-up');
@@ -634,6 +635,7 @@
     const sectionViewportTop = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
     const desiredRelativeBottom = floatingUiReferenceY - sectionViewportTop;
     document.documentElement.style.setProperty('--s-portrait-section-height', `${document.documentElement.clientHeight}px`);
+    document.documentElement.style.setProperty('--s-portrait-final-section-height', `${desiredRelativeBottom}px`);
     document.documentElement.style.setProperty('--s-portrait-measured-x', `${x}px`);
     document.documentElement.setAttribute('data-s-portrait-composer-top', composerTop.toFixed(3));
     document.documentElement.setAttribute('data-s-portrait-viewport-height', `${document.documentElement.clientHeight}`);
@@ -696,7 +698,7 @@
 
   const getMajorSectionSettleThreshold = () => {
     const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
-    return Math.min(48, Math.max(32, x * 2));
+    return Math.min(180, Math.max(120, x * 8));
   };
 
   const cancelMajorSectionSettle = () => {
@@ -748,7 +750,7 @@
   const scheduleMajorSectionSettle = () => {
     if (majorSectionPointerActive || majorSectionSettleTarget !== null) return;
     window.clearTimeout(majorSectionSettleTimer);
-    majorSectionSettleTimer = window.setTimeout(settleNearestMajorSection, 160);
+    majorSectionSettleTimer = window.setTimeout(settleNearestMajorSection, majorSectionSettleDelayMs);
   };
 
   const noteFlowScroll = () => {
@@ -1176,22 +1178,22 @@
   window.addEventListener('scroll', () => {
     noteFlowScroll();
     closeConversationWithoutReset();
-    if (majorSectionPointerActive) majorSectionScrolledDuringPointer = true;
     if (majorSectionSettleTarget === null) scheduleMajorSectionSettle();
   }, { passive: true });
 
-  document.addEventListener('pointerdown', () => {
+  const beginMajorSectionInteraction = () => {
     majorSectionPointerActive = true;
-    majorSectionScrolledDuringPointer = false;
     cancelMajorSectionSettle();
-  }, { capture: true, passive: true });
+  };
+  const endMajorSectionInteraction = () => {
+    majorSectionPointerActive = false;
+    scheduleMajorSectionSettle();
+  };
+
+  document.addEventListener('pointerdown', beginMajorSectionInteraction, { capture: true, passive: true });
+  document.addEventListener('touchstart', beginMajorSectionInteraction, { capture: true, passive: true });
   ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
-    document.addEventListener(eventName, () => {
-      const shouldSettle = majorSectionScrolledDuringPointer;
-      majorSectionPointerActive = false;
-      majorSectionScrolledDuringPointer = false;
-      if (shouldSettle) scheduleMajorSectionSettle();
-    }, { passive: true });
+    document.addEventListener(eventName, endMajorSectionInteraction, { passive: true });
   });
   window.addEventListener('wheel', () => {
     cancelMajorSectionSettle();

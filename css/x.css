@@ -1615,6 +1615,16 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   }
 }
 
+@media (orientation: portrait) {
+  .s-page__content {
+    padding-bottom: 0;
+  }
+
+  .s-page__major-section--final {
+    height: var(--s-portrait-final-section-height, auto);
+  }
+}
+
 @supports (-webkit-touch-callout: none) {
   @media (pointer: coarse) {
     .s-page__composer-input {
