@@ -17,10 +17,14 @@
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
   const imageFrame = document.querySelector('[data-s-image-frame]');
   const imageCopy = document.querySelector('[data-s-image-copy]');
+  const imageMedia = imageFrame?.querySelector('[data-s-flow-item]');
+  const numbersMetrics = document.querySelector('[data-s-numbers-metrics]');
+  const numberMetricItems = Array.from(document.querySelectorAll('[data-s-number-metric]'));
   const squareLogoStage = document.querySelector('[data-s-square-logo-stage]');
   const firstGroup = document.querySelector('[data-s-first-group]');
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
-  const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')));
+  const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
+    .filter((item) => item !== imageCopy);
   const localizedGroups = Array.from(document.querySelectorAll('[data-s-copy-group]'))
     .sort((first, second) => Number(first.dataset.sCopyGroup) - Number(second.dataset.sCopyGroup));
   const conversation = document.querySelector('[data-s-conversation]');
@@ -34,7 +38,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageCopy || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 4) return;
+  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 5) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -77,6 +81,7 @@
       groups: [
         ['Welcome\nOur Next Client', 'Iraq’s one and only brand management service\nPremium business development service'],
         ['Re-engineered\nBuilt for New Terrain', 'Discover the fourth update to the OOXME operating system, designed for engineering, architectural, construction, contracting, and similar businesses.'],
+        ['The numbers speak\nfor the work', 'Real results that summarize what we’ve achieved across different businesses and brands.'],
         ['Striking Designs\nFor Distinctive Projects', 'We design with an exceptional, precise, and remarkably clean approach that serves your goals and reflects the value of your projects.'],
         ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.']
       ],
@@ -98,6 +103,7 @@
       groups: [
         ['مرحبــا\nعميلنا القادم', 'ادارة العلامات التجارية الواحد والوحيد في العراق\nخدمة بريميوم لتطوير الاعمال'],
         ['إعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
+        ['الأرقام تتحدث\nعن العمل', 'نتائج حقيقية تلخص ما حققناه مع أعمال وعلامات مختلفة.'],
         ['تصاميم ملفتة\nلمشاريع مميزة', 'نصمم بأسلوب استثنائي، دقيق، ونظيف للغاية بما يخدم أهدافكم ويعكس قيمة مشاريعكم.'],
         ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.']
       ],
@@ -138,6 +144,9 @@
   let localizedGeometryFrame = 0;
   let flowFrame = 0;
   let flowTimer = 0;
+  let imageCopyRevealTimer = 0;
+  const metricCountFrames = new Map();
+  const metricCountTimers = new Map();
   let flowVisibleCount = 0;
   let flowTargetCount = 0;
   let lastFlowScrollY = window.scrollY;
@@ -458,10 +467,71 @@
     group.setAttribute('aria-hidden', String(!hasVisibleItem));
   };
 
+  const setImageCopyVisibility = (isVisible) => {
+    window.clearTimeout(imageCopyRevealTimer);
+    imageCopyRevealTimer = 0;
+    if (!isVisible) {
+      imageCopy.classList.remove('is-visible');
+      imageCopy.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    imageCopyRevealTimer = window.setTimeout(() => {
+      imageCopyRevealTimer = 0;
+      imageCopy.classList.add('is-visible');
+      imageCopy.setAttribute('aria-hidden', 'false');
+    }, 250);
+  };
+
+  const cancelMetricCounts = () => {
+    metricCountTimers.forEach((timer) => window.clearTimeout(timer));
+    metricCountTimers.clear();
+    metricCountFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    metricCountFrames.clear();
+  };
+
+  const countMetric = (metric) => {
+    const value = metric.querySelector('[data-s-metric-value]');
+    const target = Number(value?.dataset.sMetricTarget);
+    if (!value || !Number.isFinite(target)) return;
+    value.textContent = '0+';
+    if (reducedMotion.matches) {
+      value.textContent = `${target}+`;
+      return;
+    }
+
+    const duration = 420;
+    const startedAt = performance.now();
+    const render = (timestamp) => {
+      const progress = Math.min(1, (timestamp - startedAt) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      value.textContent = `${Math.round(target * eased)}+`;
+      if (progress < 1) {
+        metricCountFrames.set(metric, window.requestAnimationFrame(render));
+      } else {
+        metricCountFrames.delete(metric);
+      }
+    };
+    metricCountFrames.set(metric, window.requestAnimationFrame(render));
+  };
+
+  const setMetricCountsActive = (isActive) => {
+    cancelMetricCounts();
+    if (!isActive) return;
+    numberMetricItems.forEach((metric, index) => {
+      const timer = window.setTimeout(() => {
+        metricCountTimers.delete(metric);
+        countMetric(metric);
+      }, index * 180);
+      metricCountTimers.set(metric, timer);
+    });
+  };
+
   const setFlowItemVisibility = (item, isVisible, duration) => {
     item.style.setProperty('--s-flow-duration', `${duration}ms`);
     item.classList.toggle('is-visible', isVisible);
     item.setAttribute('aria-hidden', String(!isVisible));
+    if (item === imageMedia) setImageCopyVisibility(isVisible);
+    if (item === numbersMetrics) setMetricCountsActive(isVisible);
     syncFlowGroupState(item.closest('[data-s-flow-group]'));
   };
 
@@ -519,6 +589,8 @@
 
   const resetFlowRevealState = () => {
     window.clearTimeout(flowTimer);
+    window.clearTimeout(imageCopyRevealTimer);
+    setMetricCountsActive(false);
     if (flowFrame) window.cancelAnimationFrame(flowFrame);
     flowTimer = 0;
     flowFrame = 0;
@@ -533,6 +605,7 @@
       item.setAttribute('aria-hidden', 'true');
       item.style.removeProperty('--s-flow-duration');
     });
+    setImageCopyVisibility(false);
     flowGroups.forEach((group) => {
       group.classList.remove('is-visible');
       group.setAttribute('aria-hidden', 'true');
@@ -692,7 +765,7 @@
 
       const time = timestamp * .001;
       const particleColor = document.documentElement.classList.contains('is-day-mode') ? [0, 0, 0] : [255, 255, 255];
-      const interactionColor = [212, 175, 55];
+      const interactionColor = [175, 145, 123];
       particleBuildStartedAt ??= timestamp;
       const fieldBuildProgress = Math.min(1, (timestamp - particleBuildStartedAt) / 2600);
       pointer.strength *= .945;
