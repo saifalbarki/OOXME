@@ -601,7 +601,7 @@
     { first: document.querySelector('.s-page__flow-group--consultation'), last: consultationCta }
   ].filter(({ first, last }) => first && last);
 
-  const resetPortraitSectionLayout = () => {
+  const resetPortraitSectionLayout = ({ preserveFinalSettleSpace = false } = {}) => {
     document.documentElement.style.removeProperty('--s-portrait-measured-x');
     document.documentElement.removeAttribute('data-s-portrait-composer-top');
     document.documentElement.removeAttribute('data-s-portrait-viewport-height');
@@ -609,6 +609,7 @@
     document.documentElement.removeAttribute('data-s-portrait-reference-y');
     document.documentElement.style.removeProperty('--s-portrait-section-height');
     document.documentElement.style.removeProperty('--s-portrait-final-section-height');
+    if (!preserveFinalSettleSpace) document.documentElement.style.removeProperty('--s-portrait-final-settle-space');
     majorSections.forEach((section) => {
       section.style.removeProperty('height');
       section.removeAttribute('data-s-portrait-overflow');
@@ -630,8 +631,9 @@
 
   const syncPortraitSectionLayout = () => {
     portraitSectionLayoutFrame = 0;
-    resetPortraitSectionLayout();
-    if (!window.matchMedia('(orientation: portrait)').matches) return;
+    const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+    resetPortraitSectionLayout({ preserveFinalSettleSpace: isPortrait });
+    if (!isPortrait) return;
 
     const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
     const composerTop = composer.getBoundingClientRect().top;
@@ -700,6 +702,18 @@
         first.setAttribute('data-s-portrait-live-gap', (floatingUiReferenceY - last.getBoundingClientRect().bottom).toFixed(3));
       }
     });
+
+    const finalMajorSection = majorSections[majorSections.length - 1];
+    const existingFinalSettleSpace = Number.parseFloat(
+      document.documentElement.style.getPropertyValue('--s-portrait-final-settle-space')
+    ) || 0;
+    const finalSettleTarget = window.scrollY + finalMajorSection.getBoundingClientRect().top - getMajorSectionReferenceY();
+    const baseScrollHeight = document.documentElement.scrollHeight - existingFinalSettleSpace;
+    const requiredFinalSettleSpace = Math.max(
+      0,
+      finalSettleTarget + document.documentElement.clientHeight - baseScrollHeight
+    );
+    document.documentElement.style.setProperty('--s-portrait-final-settle-space', `${requiredFinalSettleSpace}px`);
 
     scheduleFlowSync();
   };

@@ -1616,7 +1616,7 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
 
 @media (orientation: portrait) {
   .s-page__content {
-    padding-bottom: 0;
+    padding-bottom: var(--s-portrait-final-settle-space, 0px);
   }
 
   .s-page__major-section--final {
