@@ -148,6 +148,7 @@
   let finalResetTimer = 0;
   let pendingFinalRevealTimer = 0;
   let localizedGeometryFrame = 0;
+  let portraitSectionLayoutFrame = 0;
   let flowFrame = 0;
   let flowTimer = 0;
   let imageCopyRevealTimer = 0;
@@ -429,6 +430,7 @@
     }
     lastKeyboardOverlap = keyboardOverlap;
     syncConversationInputBounds();
+    schedulePortraitSectionLayout();
   };
 
   const scheduleKeyboardOffset = () => {
@@ -582,6 +584,63 @@
     flowFrame = window.requestAnimationFrame(syncFlowTarget);
   };
 
+  // Each composition keeps its first Text Group untouched; only its final item gains free space.
+  const portraitSectionCompositions = [
+    { first: firstGroup, last: logoParticleField, type: 'particle' },
+    { first: document.querySelector('[data-s-copy-group="1"]'), last: document.querySelector('.s-page__flow-group--image') },
+    { first: document.querySelector('[data-s-copy-group="2"]'), last: document.querySelector('.s-page__flow-group--numbers') },
+    { first: document.querySelector('[data-s-copy-group="3"]'), last: document.querySelector('.s-page__flow-group--strips') },
+    { first: document.querySelector('[data-s-copy-group="4"]'), last: document.querySelector('.s-page__flow-group--logos') },
+    { first: document.querySelector('.s-page__flow-group--consultation'), last: consultationCta }
+  ].filter(({ first, last }) => first && last);
+
+  const resetPortraitSectionLayout = () => {
+    portraitSectionCompositions.forEach(({ last, type }) => {
+      last.style.removeProperty('margin-top');
+      if (type === 'particle') {
+        last.style.removeProperty('bottom');
+        last.classList.remove('is-portrait-composed');
+      }
+    });
+  };
+
+  const syncPortraitSectionLayout = () => {
+    portraitSectionLayoutFrame = 0;
+    resetPortraitSectionLayout();
+    if (!window.matchMedia('(orientation: portrait)').matches) return;
+
+    const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
+    const composerTop = composer.getBoundingClientRect().top;
+    const bottomTarget = composerTop - x;
+
+    portraitSectionCompositions.forEach(({ first, last, type }) => {
+      const firstRect = first.getBoundingClientRect();
+      const lastRect = last.getBoundingClientRect();
+      const desiredBottom = firstRect.top + bottomTarget;
+
+      if (type === 'particle') {
+        const requiredBottom = firstRect.bottom - desiredBottom;
+        const canFit = desiredBottom >= firstRect.top + lastRect.height && requiredBottom >= 0;
+        if (!canFit) return;
+        last.style.setProperty('bottom', `${Math.round(requiredBottom)}px`);
+        last.classList.add('is-portrait-composed');
+        return;
+      }
+
+      const additionalGap = desiredBottom - lastRect.bottom;
+      if (additionalGap < 0) return;
+      const baseMargin = Number.parseFloat(getComputedStyle(last).marginTop) || 0;
+      last.style.setProperty('margin-top', `${Math.round(baseMargin + additionalGap)}px`);
+    });
+
+    scheduleFlowSync();
+  };
+
+  const schedulePortraitSectionLayout = () => {
+    if (portraitSectionLayoutFrame) return;
+    portraitSectionLayoutFrame = window.requestAnimationFrame(syncPortraitSectionLayout);
+  };
+
   const noteFlowScroll = () => {
     const now = performance.now();
     const nextScrollY = window.scrollY;
@@ -682,6 +741,7 @@
       });
     });
     scheduleFlowSync();
+    schedulePortraitSectionLayout();
   };
 
   const scheduleLocalizedGeometry = () => {
@@ -716,11 +776,16 @@
     scheduleLocalizedGeometry();
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
-  document.fonts?.ready.then(scheduleLocalizedGeometry);
+  document.fonts?.ready.then(() => {
+    scheduleLocalizedGeometry();
+    schedulePortraitSectionLayout();
+  });
   if (firstGroupObserver) firstGroupObserver.observe(firstGroup);
   else firstGroup.classList.add('is-visible');
   flowGroups.forEach((group) => group.setAttribute('aria-hidden', 'true'));
   scheduleFlowSync();
+  schedulePortraitSectionLayout();
+  window.addEventListener('load', schedulePortraitSectionLayout, { once: true });
 
   const setupLogoParticleField = () => {
     const particleRenderScale = 3;
@@ -925,8 +990,14 @@
   };
   setupLogoParticleField();
 
-  window.addEventListener('resize', scheduleFlowSync, { passive: true });
-  window.visualViewport?.addEventListener('resize', scheduleFlowSync, { passive: true });
+  window.addEventListener('resize', () => {
+    scheduleFlowSync();
+    schedulePortraitSectionLayout();
+  }, { passive: true });
+  window.visualViewport?.addEventListener('resize', () => {
+    scheduleFlowSync();
+    schedulePortraitSectionLayout();
+  }, { passive: true });
 
   sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -1143,11 +1214,13 @@
     syncConversationInputBounds();
     scheduleKeyboardOffset();
     scheduleLocalizedGeometry();
+    schedulePortraitSectionLayout();
   }, { passive: true });
   window.addEventListener('orientationchange', () => {
     syncConversationInputBounds();
     scheduleKeyboardOffset();
     scheduleLocalizedGeometry();
+    schedulePortraitSectionLayout();
   }, { passive: true });
   const initializeGroupOne = () => {
     initializationRun += 1;

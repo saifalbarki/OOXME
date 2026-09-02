@@ -321,6 +321,13 @@ html.s-route.is-day-mode .s-page__number-metric-label {
   touch-action: manipulation;
 }
 
+@media (orientation: portrait) {
+  .s-page__logo-particle-field.is-portrait-composed {
+    top: auto;
+    transform: translateX(-50%);
+  }
+}
+
 .s-page__image-frame {
   position: relative;
   width: 100%;
