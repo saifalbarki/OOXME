@@ -34,7 +34,7 @@
   const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
   const sections = Array.from(document.querySelectorAll('[data-s-section]')).map((element) => ({
     element,
-    groups: Array.from(element.querySelectorAll(':scope > [data-s-group]'))
+    groups: Array.from(element.querySelectorAll('[data-s-group]'))
   }));
   const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -595,8 +595,20 @@
   ].filter(({ first, last }) => first && last);
 
   const resetPortraitSectionLayout = () => {
-    portraitSectionCompositions.forEach(({ last, type }) => {
-      last.style.removeProperty('margin-top');
+    document.documentElement.style.removeProperty('--s-portrait-measured-x');
+    document.documentElement.removeAttribute('data-s-portrait-composer-top');
+    document.documentElement.removeAttribute('data-s-portrait-viewport-height');
+    document.documentElement.removeAttribute('data-s-portrait-section-top');
+    document.documentElement.removeAttribute('data-s-portrait-reference-y');
+    document.documentElement.style.removeProperty('--s-portrait-section-height');
+    portraitSectionCompositions.forEach(({ first, last, type }) => {
+      last.style.removeProperty('--s-portrait-bottom-up-offset');
+      last.classList.remove('is-portrait-bottom-up');
+      first.removeAttribute('data-s-portrait-final-gap');
+      first.removeAttribute('data-s-portrait-final-y');
+      first.removeAttribute('data-s-portrait-reference-delta');
+      first.removeAttribute('data-s-portrait-live-gap');
+      first.removeAttribute('data-s-portrait-layout');
       if (type === 'particle') {
         last.style.removeProperty('bottom');
         last.classList.remove('is-portrait-composed');
@@ -611,26 +623,56 @@
 
     const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
     const composerTop = composer.getBoundingClientRect().top;
-    const bottomTarget = composerTop - x;
+    const floatingUiReferenceY = conversation.getBoundingClientRect().bottom;
+    const sectionViewportTop = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const desiredRelativeBottom = floatingUiReferenceY - sectionViewportTop;
+    document.documentElement.style.setProperty('--s-portrait-section-height', `${document.documentElement.clientHeight}px`);
+    document.documentElement.style.setProperty('--s-portrait-measured-x', `${x}px`);
+    document.documentElement.setAttribute('data-s-portrait-composer-top', composerTop.toFixed(3));
+    document.documentElement.setAttribute('data-s-portrait-viewport-height', `${document.documentElement.clientHeight}`);
+    document.documentElement.setAttribute('data-s-portrait-section-top', sectionViewportTop.toFixed(3));
+    document.documentElement.setAttribute('data-s-portrait-reference-y', floatingUiReferenceY.toFixed(3));
 
     portraitSectionCompositions.forEach(({ first, last, type }) => {
       const firstRect = first.getBoundingClientRect();
       const lastRect = last.getBoundingClientRect();
-      const desiredBottom = firstRect.top + bottomTarget;
+      const naturalRelativeBottom = lastRect.bottom - firstRect.top;
 
       if (type === 'particle') {
-        const requiredBottom = firstRect.bottom - desiredBottom;
-        const canFit = desiredBottom >= firstRect.top + lastRect.height && requiredBottom >= 0;
-        if (!canFit) return;
-        last.style.setProperty('bottom', `${Math.round(requiredBottom)}px`);
+        const requiredBottom = firstRect.height - desiredRelativeBottom;
+        last.style.setProperty('bottom', `${requiredBottom}px`);
         last.classList.add('is-portrait-composed');
-        return;
+      } else {
+        const bottomUpAdjustment = desiredRelativeBottom - naturalRelativeBottom;
+        last.style.setProperty('--s-portrait-bottom-up-offset', `${bottomUpAdjustment}px`);
+        last.classList.add('is-portrait-bottom-up');
       }
 
-      const additionalGap = desiredBottom - lastRect.bottom;
-      if (additionalGap < 0) return;
-      const baseMargin = Number.parseFloat(getComputedStyle(last).marginTop) || 0;
-      last.style.setProperty('margin-top', `${Math.round(baseMargin + additionalGap)}px`);
+      // Re-read the rendered geometry and correct any fractional layout error.
+      for (let pass = 0; pass < 2; pass += 1) {
+        const renderedFirstTop = first.getBoundingClientRect().top;
+        const renderedLastBottom = last.getBoundingClientRect().bottom;
+        const correction = desiredRelativeBottom - (renderedLastBottom - renderedFirstTop);
+        if (Math.abs(correction) <= .001) break;
+        if (type === 'particle') {
+          const currentBottom = Number.parseFloat(getComputedStyle(last).bottom) || 0;
+          last.style.setProperty('bottom', `${currentBottom - correction}px`);
+        } else {
+          const currentOffset = Number.parseFloat(last.style.getPropertyValue('--s-portrait-bottom-up-offset')) || 0;
+          last.style.setProperty('--s-portrait-bottom-up-offset', `${currentOffset + correction}px`);
+        }
+      }
+
+      const verifiedRelativeBottom = last.getBoundingClientRect().bottom - first.getBoundingClientRect().top;
+      const verifiedFinalY = sectionViewportTop + verifiedRelativeBottom;
+      const verifiedDelta = floatingUiReferenceY - verifiedFinalY;
+      first.setAttribute('data-s-portrait-layout', 'composed');
+      first.setAttribute('data-s-portrait-final-gap', (composerTop - verifiedFinalY).toFixed(3));
+      first.setAttribute('data-s-portrait-final-y', verifiedFinalY.toFixed(3));
+      first.setAttribute('data-s-portrait-reference-delta', verifiedDelta.toFixed(3));
+      if (first === firstGroup) {
+        first.setAttribute('data-s-portrait-live-gap', (floatingUiReferenceY - last.getBoundingClientRect().bottom).toFixed(3));
+      }
     });
 
     scheduleFlowSync();

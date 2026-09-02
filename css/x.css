@@ -156,6 +156,10 @@ html.s-x-initializing .s-page__submit:active {
   padding: 0;
 }
 
+.s-page__major-section {
+  position: relative;
+}
+
 .s-page__group--showcase {
   min-height: auto;
   padding-top: calc(var(--s-x) * 2);
@@ -184,6 +188,10 @@ html.s-x-initializing .s-page__submit:active {
 }
 
 .s-page__section-divider + .s-page__flow-group {
+  margin-top: 0;
+}
+
+.s-page__section-divider + .s-page__major-section > .s-page__flow-group:first-child {
   margin-top: 0;
 }
 
@@ -322,9 +330,17 @@ html.s-route.is-day-mode .s-page__number-metric-label {
 }
 
 @media (orientation: portrait) {
+  .s-page__major-section {
+    height: var(--s-portrait-section-height, 100dvh);
+  }
+
   .s-page__logo-particle-field.is-portrait-composed {
     top: auto;
     transform: translateX(-50%);
+  }
+
+  .is-portrait-bottom-up {
+    translate: 0 var(--s-portrait-bottom-up-offset, 0px);
   }
 }
 
