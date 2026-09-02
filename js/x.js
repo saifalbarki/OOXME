@@ -24,6 +24,7 @@
   const squareLogoStage = document.querySelector('[data-s-square-logo-stage]');
   const consultationCta = document.querySelector('[data-s-consultation-cta]');
   const firstGroup = document.querySelector('[data-s-first-group]');
+  const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
     .filter((item) => item !== imageCopy);
@@ -40,7 +41,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
-  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !consultationCta || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 6) return;
+  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !consultationCta || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 6) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -149,6 +150,12 @@
   let pendingFinalRevealTimer = 0;
   let localizedGeometryFrame = 0;
   let portraitSectionLayoutFrame = 0;
+  let majorSectionSettleTimer = 0;
+  let majorSectionSettleFrame = 0;
+  let majorSectionSettleTarget = null;
+  let majorSectionPointerActive = false;
+  let majorSectionScrolledDuringPointer = false;
+  let majorSectionSettleStableFrames = 0;
   let flowFrame = 0;
   let flowTimer = 0;
   let imageCopyRevealTimer = 0;
@@ -683,6 +690,67 @@
     portraitSectionLayoutFrame = window.requestAnimationFrame(syncPortraitSectionLayout);
   };
 
+  const getMajorSectionReferenceY = () => (
+    Number.parseFloat(getComputedStyle(content).paddingTop) || 0
+  );
+
+  const getMajorSectionSettleThreshold = () => {
+    const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
+    return Math.min(48, Math.max(32, x * 2));
+  };
+
+  const cancelMajorSectionSettle = () => {
+    window.clearTimeout(majorSectionSettleTimer);
+    majorSectionSettleTimer = 0;
+    if (majorSectionSettleFrame) window.cancelAnimationFrame(majorSectionSettleFrame);
+    majorSectionSettleFrame = 0;
+    majorSectionSettleTarget = null;
+    majorSectionSettleStableFrames = 0;
+  };
+
+  const watchMajorSectionSettle = () => {
+    majorSectionSettleFrame = 0;
+    if (majorSectionSettleTarget === null) return;
+    if (Math.abs(window.scrollY - majorSectionSettleTarget) <= 1) {
+      majorSectionSettleStableFrames += 1;
+      if (majorSectionSettleStableFrames >= 2) {
+        cancelMajorSectionSettle();
+        return;
+      }
+    } else {
+      majorSectionSettleStableFrames = 0;
+    }
+    majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
+  };
+
+  const settleNearestMajorSection = () => {
+    majorSectionSettleTimer = 0;
+    if (majorSectionPointerActive || majorSectionSettleTarget !== null) return;
+
+    const referenceY = getMajorSectionReferenceY();
+    const nearest = majorSections.reduce((candidate, section) => {
+      const distance = Math.abs(section.getBoundingClientRect().top - referenceY);
+      return !candidate || distance < candidate.distance ? { section, distance } : candidate;
+    }, null);
+    if (!nearest || nearest.distance > getMajorSectionSettleThreshold()) return;
+
+    const target = Math.max(0, Math.min(
+      document.documentElement.scrollHeight - window.innerHeight,
+      window.scrollY + nearest.section.getBoundingClientRect().top - referenceY
+    ));
+    if (Math.abs(target - window.scrollY) <= 1) return;
+
+    majorSectionSettleTarget = target;
+    window.scrollTo({ top: target, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
+  };
+
+  const scheduleMajorSectionSettle = () => {
+    if (majorSectionPointerActive || majorSectionSettleTarget !== null) return;
+    window.clearTimeout(majorSectionSettleTimer);
+    majorSectionSettleTimer = window.setTimeout(settleNearestMajorSection, 160);
+  };
+
   const noteFlowScroll = () => {
     const now = performance.now();
     const nextScrollY = window.scrollY;
@@ -1108,6 +1176,27 @@
   window.addEventListener('scroll', () => {
     noteFlowScroll();
     closeConversationWithoutReset();
+    if (majorSectionPointerActive) majorSectionScrolledDuringPointer = true;
+    if (majorSectionSettleTarget === null) scheduleMajorSectionSettle();
+  }, { passive: true });
+
+  document.addEventListener('pointerdown', () => {
+    majorSectionPointerActive = true;
+    majorSectionScrolledDuringPointer = false;
+    cancelMajorSectionSettle();
+  }, { capture: true, passive: true });
+  ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
+    document.addEventListener(eventName, () => {
+      const shouldSettle = majorSectionScrolledDuringPointer;
+      majorSectionPointerActive = false;
+      majorSectionScrolledDuringPointer = false;
+      if (shouldSettle) scheduleMajorSectionSettle();
+    }, { passive: true });
+  });
+  window.addEventListener('wheel', () => {
+    cancelMajorSectionSettle();
+    majorSectionPointerActive = false;
+    scheduleMajorSectionSettle();
   }, { passive: true });
 
   conversation.addEventListener('pointerdown', () => {
