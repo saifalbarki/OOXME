@@ -348,6 +348,7 @@ html.s-route.is-day-mode .s-page__number-metric-label {
   position: relative;
   width: 100%;
   max-width: 100%;
+  aspect-ratio: 1 / 1;
   margin: 0;
   border-radius: var(--s-composer-radius);
   overflow: hidden;
@@ -357,10 +358,12 @@ html.s-route.is-day-mode .s-page__number-metric-label {
   display: block;
   width: 100%;
   max-width: 100%;
-  height: auto;
+  height: 100%;
   margin: 0;
   border: 1px solid var(--s-glass-stroke);
   border-radius: var(--s-composer-radius);
+  object-fit: cover;
+  object-position: center;
 }
 
 .s-page__image-copy {
