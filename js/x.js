@@ -708,11 +708,11 @@
       document.documentElement.style.getPropertyValue('--s-portrait-final-settle-space')
     ) || 0;
     const finalSettleTarget = window.scrollY + finalMajorSection.getBoundingClientRect().top - getMajorSectionReferenceY();
-    const baseScrollHeight = document.documentElement.scrollHeight - existingFinalSettleSpace;
-    const requiredFinalSettleSpace = Math.max(
-      0,
-      finalSettleTarget + document.documentElement.clientHeight - baseScrollHeight
-    );
+    const renderedPageEnd = window.scrollY + content.getBoundingClientRect().bottom;
+    const previousMaxScroll = renderedPageEnd - existingFinalSettleSpace - window.innerHeight;
+    const missingScrollRange = finalSettleTarget - previousMaxScroll;
+    const settleReachTolerance = 1;
+    const requiredFinalSettleSpace = Math.max(0, missingScrollRange + settleReachTolerance);
     document.documentElement.style.setProperty('--s-portrait-final-settle-space', `${requiredFinalSettleSpace}px`);
 
     scheduleFlowSync();
