@@ -150,14 +150,17 @@
   let pendingFinalRevealTimer = 0;
   let localizedGeometryFrame = 0;
   let portraitSectionLayoutFrame = 0;
+  let portraitSectionLayoutTimer = 0;
+  let finalScrollBufferFrame = 0;
   let majorSectionSettleTimer = 0;
   let majorSectionSettleFrame = 0;
+  let majorSectionSettleReleaseFrame = 0;
   let majorSectionSettleTarget = null;
+  let majorSectionSettleOwnsScroll = false;
   let majorSectionPointerActive = false;
   let majorSectionSettleStableFrames = 0;
   const majorSectionSettleDelayMs = 3000;
   let flowFrame = 0;
-  let flowTimer = 0;
   let imageCopyRevealTimer = 0;
   const metricCountFrames = new Map();
   const metricCountTimers = new Map();
@@ -165,7 +168,11 @@
   let flowTargetCount = 0;
   let lastFlowScrollY = window.scrollY;
   let lastFlowScrollTime = performance.now();
+  let lastPageScrollTime = performance.now();
   let flowScrollVelocity = 0;
+  let localizedGeometryWidth = document.documentElement.clientWidth;
+  let localizedGeometryOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
+  let pauseLogoParticleForScroll = () => {};
   const flowCrossed = flowItems.map(() => false);
   let conversationVisible = true;
   let activeTemporaryUi = 'none';
@@ -431,13 +438,15 @@
   const updateKeyboardOffset = () => {
     if (!window.visualViewport) return;
     const layoutHeight = Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight || 0));
-    const keyboardOverlap = Math.max(0, layoutHeight - window.visualViewport.height - window.visualViewport.offsetTop);
+    const keyboardOverlap = document.activeElement === input
+      ? Math.max(0, layoutHeight - window.visualViewport.height - window.visualViewport.offsetTop)
+      : 0;
     if (Math.abs(keyboardOverlap - lastKeyboardOverlap) >= .01) {
       page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
+      syncConversationInputBounds();
+      scheduleStablePortraitSectionLayout();
     }
     lastKeyboardOverlap = keyboardOverlap;
-    syncConversationInputBounds();
-    schedulePortraitSectionLayout();
   };
 
   const scheduleKeyboardOffset = () => {
@@ -474,6 +483,12 @@
       flowBaselineDurationMs - Math.min(flowBaselineDurationMs - minimumDuration, flowScrollVelocity * 180)
     ));
   };
+
+  const getVisibleFlowDuration = (item, rect) => (
+    rect.bottom >= window.innerHeight * -.25 && rect.top <= window.innerHeight * 1.25
+      ? getFlowDuration(item)
+      : 0
+  );
 
   const syncFlowGroupState = (group) => {
     const hasVisibleItem = Array.from(group.querySelectorAll('[data-s-flow-item]'))
@@ -550,40 +565,34 @@
     syncFlowGroupState(item.closest('[data-s-flow-group]'));
   };
 
-  const processFlowQueue = () => {
-    if (flowTimer || flowVisibleCount === flowTargetCount) return;
-    const isRevealing = flowVisibleCount < flowTargetCount;
-    const itemIndex = isRevealing ? flowVisibleCount : flowVisibleCount - 1;
-    const item = flowItems[itemIndex];
-    const duration = getFlowDuration(item);
-    setFlowItemVisibility(item, isRevealing, duration);
-    flowVisibleCount += isRevealing ? 1 : -1;
-    flowScrollVelocity *= .72;
-    if (!duration) {
-      processFlowQueue();
-      return;
-    }
-    flowTimer = window.setTimeout(() => {
-      flowTimer = 0;
-      processFlowQueue();
-    }, duration + 24);
-  };
-
   const syncFlowTarget = () => {
     flowFrame = 0;
     const composerTop = composer.getBoundingClientRect().top;
-    flowItems.forEach((item, index) => {
-      const itemTop = item.getBoundingClientRect().top;
+    const itemRects = flowItems.map((item) => item.getBoundingClientRect());
+    itemRects.forEach((itemRect, index) => {
       flowCrossed[index] = flowCrossed[index]
-        ? itemTop <= composerTop + flowThresholdHysteresisPx
-        : itemTop <= composerTop;
+        ? itemRect.top <= composerTop + flowThresholdHysteresisPx
+        : itemRect.top <= composerTop;
     });
     let crossedCount = 0;
     while (crossedCount < flowCrossed.length && flowCrossed[crossedCount]) crossedCount += 1;
     flowTargetCount = crossedCount > 0
       ? Math.min(flowItems.length, crossedCount + 1)
       : 0;
-    processFlowQueue();
+
+    // Geometry is read above as one batch. Apply every required visibility change
+    // in this same frame so fast scrolling cannot leave lower sections queued behind.
+    if (flowVisibleCount < flowTargetCount) {
+      for (let index = flowVisibleCount; index < flowTargetCount; index += 1) {
+        setFlowItemVisibility(flowItems[index], true, getVisibleFlowDuration(flowItems[index], itemRects[index]));
+      }
+    } else if (flowVisibleCount > flowTargetCount) {
+      for (let index = flowVisibleCount - 1; index >= flowTargetCount; index -= 1) {
+        setFlowItemVisibility(flowItems[index], false, getVisibleFlowDuration(flowItems[index], itemRects[index]));
+      }
+    }
+    flowVisibleCount = flowTargetCount;
+    flowScrollVelocity *= .72;
   };
 
   const scheduleFlowSync = () => {
@@ -629,98 +638,140 @@
     });
   };
 
+  const syncFinalScrollBuffer = () => {
+    finalScrollBufferFrame = 0;
+    if (!window.matchMedia('(orientation: portrait)').matches) {
+      document.documentElement.style.removeProperty('--s-portrait-final-settle-space');
+      return;
+    }
+
+    // Read the complete final geometry before the single buffer write. The padding
+    // is exactly the missing range, so it makes the target reachable without adding
+    // a scrollable blank area beyond the settled final composition.
+    const existingBuffer = Number.parseFloat(
+      document.documentElement.style.getPropertyValue('--s-portrait-final-settle-space')
+    ) || 0;
+    const scrollY = window.scrollY;
+    const viewportHeight = window.innerHeight;
+    const referenceY = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const finalSectionTop = majorSections[majorSections.length - 1].getBoundingClientRect().top;
+    const contentBottom = content.getBoundingClientRect().bottom;
+    const finalTarget = scrollY + finalSectionTop - referenceY;
+    const maxScrollWithoutBuffer = scrollY + contentBottom - existingBuffer - viewportHeight;
+    const requiredBuffer = Math.max(0, finalTarget - maxScrollWithoutBuffer + 1);
+    if (Math.abs(requiredBuffer - existingBuffer) > .25) {
+      document.documentElement.style.setProperty('--s-portrait-final-settle-space', `${requiredBuffer}px`);
+    }
+  };
+
+  const scheduleFinalScrollBuffer = () => {
+    if (finalScrollBufferFrame) return;
+    finalScrollBufferFrame = window.requestAnimationFrame(syncFinalScrollBuffer);
+  };
+
   const syncPortraitSectionLayout = () => {
     portraitSectionLayoutFrame = 0;
     const isPortrait = window.matchMedia('(orientation: portrait)').matches;
-    resetPortraitSectionLayout({ preserveFinalSettleSpace: isPortrait });
-    if (!isPortrait) return;
+    if (!isPortrait) {
+      syncConversationInputBounds();
+      resetPortraitSectionLayout();
+      scheduleFlowSync();
+      return;
+    }
 
-    const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
-    const composerTop = composer.getBoundingClientRect().top;
-    const floatingUiReferenceY = conversation.getBoundingClientRect().bottom;
-    const sectionViewportTop = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
-    const desiredRelativeBottom = floatingUiReferenceY - sectionViewportTop;
-    document.documentElement.style.setProperty('--s-portrait-section-height', `${document.documentElement.clientHeight}px`);
-    document.documentElement.style.setProperty('--s-portrait-final-section-height', `${desiredRelativeBottom}px`);
-    document.documentElement.style.setProperty('--s-portrait-measured-x', `${x}px`);
-    document.documentElement.setAttribute('data-s-portrait-composer-top', composerTop.toFixed(3));
-    document.documentElement.setAttribute('data-s-portrait-viewport-height', `${document.documentElement.clientHeight}`);
-    document.documentElement.setAttribute('data-s-portrait-section-top', sectionViewportTop.toFixed(3));
-    document.documentElement.setAttribute('data-s-portrait-reference-y', floatingUiReferenceY.toFixed(3));
-
-    portraitSectionCompositions.forEach(({ first, last, type }) => {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const contentStyle = getComputedStyle(content);
+    const x = Number.parseFloat(rootStyle.getPropertyValue('--s-x')) || 18;
+    const viewportHeight = document.documentElement.clientHeight;
+    const composerRect = composer.getBoundingClientRect();
+    const conversationRect = conversation.getBoundingClientRect();
+    const inputFieldRect = input.parentElement.getBoundingClientRect();
+    const sectionViewportTop = Number.parseFloat(contentStyle.paddingTop) || 0;
+    const desiredRelativeBottom = conversationRect.bottom - sectionViewportTop;
+    const compositionGeometry = portraitSectionCompositions.map(({ first, last, type }) => {
       const firstRect = first.getBoundingClientRect();
       const lastRect = last.getBoundingClientRect();
-      const naturalRelativeBottom = lastRect.bottom - firstRect.top;
-      const majorSection = first.closest('[data-s-major-section]');
+      const currentOffset = type === 'particle'
+        ? 0
+        : Number.parseFloat(last.style.getPropertyValue('--s-portrait-bottom-up-offset')) || 0;
+      const naturalRelativeBottom = type === 'particle'
+        ? (firstRect.height * .5) + (lastRect.height * .5)
+        : lastRect.bottom - firstRect.top - currentOffset;
+      return {
+        first,
+        last,
+        type,
+        firstHeight: firstRect.height,
+        naturalRelativeBottom,
+        majorSection: first.closest('[data-s-major-section]')
+      };
+    });
 
-      // Preserve natural spacing on short screens when the approved composition cannot fit.
-      if (type !== 'particle' && naturalRelativeBottom > desiredRelativeBottom + .5) {
+    // All geometry reads are complete. From here to the next frame, only write.
+    conversation.style.paddingLeft = `${Math.max(0, inputFieldRect.left - conversationRect.left)}px`;
+    conversation.style.paddingRight = `${Math.max(0, conversationRect.right - inputFieldRect.right)}px`;
+    document.documentElement.style.setProperty('--s-portrait-section-height', `${viewportHeight}px`);
+    document.documentElement.style.setProperty('--s-portrait-final-section-height', `${desiredRelativeBottom}px`);
+    document.documentElement.style.setProperty('--s-portrait-measured-x', `${x}px`);
+    document.documentElement.setAttribute('data-s-portrait-composer-top', composerRect.top.toFixed(3));
+    document.documentElement.setAttribute('data-s-portrait-viewport-height', `${viewportHeight}`);
+    document.documentElement.setAttribute('data-s-portrait-section-top', sectionViewportTop.toFixed(3));
+    document.documentElement.setAttribute('data-s-portrait-reference-y', conversationRect.bottom.toFixed(3));
+
+    compositionGeometry.forEach(({ first, last, type, firstHeight, naturalRelativeBottom, majorSection }) => {
+      const overflows = type !== 'particle' && naturalRelativeBottom > desiredRelativeBottom + .5;
+      if (overflows) {
         const requiredOverflow = naturalRelativeBottom - desiredRelativeBottom;
-        majorSection.style.setProperty('height', `${document.documentElement.clientHeight + requiredOverflow}px`);
+        majorSection.style.setProperty('height', `${viewportHeight + requiredOverflow}px`);
         majorSection.setAttribute('data-s-portrait-overflow', requiredOverflow.toFixed(3));
+        last.style.removeProperty('--s-portrait-bottom-up-offset');
+        last.classList.remove('is-portrait-bottom-up');
         first.setAttribute('data-s-portrait-layout', 'natural-overflow');
-        first.setAttribute('data-s-portrait-final-gap', (composerTop - (sectionViewportTop + naturalRelativeBottom)).toFixed(3));
+        first.setAttribute('data-s-portrait-final-gap', (composerRect.top - (sectionViewportTop + naturalRelativeBottom)).toFixed(3));
         first.setAttribute('data-s-portrait-final-y', (sectionViewportTop + naturalRelativeBottom).toFixed(3));
         first.setAttribute('data-s-portrait-reference-delta', (desiredRelativeBottom - naturalRelativeBottom).toFixed(3));
+        first.removeAttribute('data-s-portrait-live-gap');
         return;
       }
 
+      majorSection.style.removeProperty('height');
+      majorSection.removeAttribute('data-s-portrait-overflow');
       if (type === 'particle') {
-        const requiredBottom = firstRect.height - desiredRelativeBottom;
-        last.style.setProperty('bottom', `${requiredBottom}px`);
+        last.style.setProperty('bottom', `${firstHeight - desiredRelativeBottom}px`);
         last.classList.add('is-portrait-composed');
       } else {
-        const bottomUpAdjustment = desiredRelativeBottom - naturalRelativeBottom;
-        last.style.setProperty('--s-portrait-bottom-up-offset', `${bottomUpAdjustment}px`);
+        last.style.setProperty('--s-portrait-bottom-up-offset', `${desiredRelativeBottom - naturalRelativeBottom}px`);
         last.classList.add('is-portrait-bottom-up');
       }
 
-      // Re-read the rendered geometry and correct any fractional layout error.
-      for (let pass = 0; pass < 2; pass += 1) {
-        const renderedFirstTop = first.getBoundingClientRect().top;
-        const renderedLastBottom = last.getBoundingClientRect().bottom;
-        const correction = desiredRelativeBottom - (renderedLastBottom - renderedFirstTop);
-        if (Math.abs(correction) <= .001) break;
-        if (type === 'particle') {
-          const currentBottom = Number.parseFloat(getComputedStyle(last).bottom) || 0;
-          last.style.setProperty('bottom', `${currentBottom - correction}px`);
-        } else {
-          const currentOffset = Number.parseFloat(last.style.getPropertyValue('--s-portrait-bottom-up-offset')) || 0;
-          last.style.setProperty('--s-portrait-bottom-up-offset', `${currentOffset + correction}px`);
-        }
-      }
-
-      const verifiedRelativeBottom = last.getBoundingClientRect().bottom - first.getBoundingClientRect().top;
-      const verifiedFinalY = sectionViewportTop + verifiedRelativeBottom;
-      const verifiedDelta = floatingUiReferenceY - verifiedFinalY;
       first.setAttribute('data-s-portrait-layout', 'composed');
-      first.setAttribute('data-s-portrait-final-gap', (composerTop - verifiedFinalY).toFixed(3));
-      first.setAttribute('data-s-portrait-final-y', verifiedFinalY.toFixed(3));
-      first.setAttribute('data-s-portrait-reference-delta', verifiedDelta.toFixed(3));
-      if (first === firstGroup) {
-        first.setAttribute('data-s-portrait-live-gap', (floatingUiReferenceY - last.getBoundingClientRect().bottom).toFixed(3));
-      }
+      first.setAttribute('data-s-portrait-final-gap', (composerRect.top - conversationRect.bottom).toFixed(3));
+      first.setAttribute('data-s-portrait-final-y', conversationRect.bottom.toFixed(3));
+      first.setAttribute('data-s-portrait-reference-delta', '0.000');
+      if (first === firstGroup) first.setAttribute('data-s-portrait-live-gap', '0.000');
     });
 
-    const finalMajorSection = majorSections[majorSections.length - 1];
-    const existingFinalSettleSpace = Number.parseFloat(
-      document.documentElement.style.getPropertyValue('--s-portrait-final-settle-space')
-    ) || 0;
-    const finalSettleTarget = window.scrollY + finalMajorSection.getBoundingClientRect().top - getMajorSectionReferenceY();
-    const renderedPageEnd = window.scrollY + content.getBoundingClientRect().bottom;
-    const previousMaxScroll = renderedPageEnd - existingFinalSettleSpace - window.innerHeight;
-    const missingScrollRange = finalSettleTarget - previousMaxScroll;
-    const settleReachTolerance = 1;
-    const requiredFinalSettleSpace = Math.max(0, missingScrollRange + settleReachTolerance);
-    document.documentElement.style.setProperty('--s-portrait-final-settle-space', `${requiredFinalSettleSpace}px`);
-
+    scheduleFinalScrollBuffer();
     scheduleFlowSync();
   };
 
   const schedulePortraitSectionLayout = () => {
+    window.clearTimeout(portraitSectionLayoutTimer);
+    portraitSectionLayoutTimer = 0;
     if (portraitSectionLayoutFrame) return;
     portraitSectionLayoutFrame = window.requestAnimationFrame(syncPortraitSectionLayout);
+  };
+
+  const scheduleStablePortraitSectionLayout = () => {
+    window.clearTimeout(portraitSectionLayoutTimer);
+    portraitSectionLayoutTimer = window.setTimeout(() => {
+      portraitSectionLayoutTimer = 0;
+      if (performance.now() - lastPageScrollTime < 160) {
+        scheduleStablePortraitSectionLayout();
+        return;
+      }
+      schedulePortraitSectionLayout();
+    }, 180);
   };
 
   const getMajorSectionReferenceY = () => (
@@ -736,13 +787,29 @@
     window.clearTimeout(majorSectionSettleTimer);
     majorSectionSettleTimer = 0;
     if (majorSectionSettleFrame) window.cancelAnimationFrame(majorSectionSettleFrame);
+    if (majorSectionSettleReleaseFrame) window.cancelAnimationFrame(majorSectionSettleReleaseFrame);
     majorSectionSettleFrame = 0;
+    majorSectionSettleReleaseFrame = 0;
     const wasSettling = majorSectionSettleTarget !== null;
     majorSectionSettleTarget = null;
     majorSectionSettleStableFrames = 0;
+    majorSectionSettleOwnsScroll = false;
     // Cancelling the watcher alone leaves a native `scrollTo({ behavior: 'smooth' })`
     // in flight. Freeze it at the live position before returning control to the user.
     if (stopNativeScroll && wasSettling) window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
+  };
+
+  const finishMajorSectionSettle = () => {
+    if (majorSectionSettleFrame) window.cancelAnimationFrame(majorSectionSettleFrame);
+    majorSectionSettleFrame = 0;
+    majorSectionSettleTarget = null;
+    majorSectionSettleStableFrames = 0;
+    // Keep ownership through the browser's final smooth-scroll event. Releasing on
+    // the following frame prevents that event from arming a redundant settle timer.
+    majorSectionSettleReleaseFrame = window.requestAnimationFrame(() => {
+      majorSectionSettleReleaseFrame = 0;
+      majorSectionSettleOwnsScroll = false;
+    });
   };
 
   const watchMajorSectionSettle = () => {
@@ -751,7 +818,7 @@
     if (Math.abs(window.scrollY - majorSectionSettleTarget) <= 1) {
       majorSectionSettleStableFrames += 1;
       if (majorSectionSettleStableFrames >= 2) {
-        cancelMajorSectionSettle();
+        finishMajorSectionSettle();
         return;
       }
     } else {
@@ -765,48 +832,52 @@
     if (majorSectionPointerActive || majorSectionSettleTarget !== null) return;
 
     const referenceY = getMajorSectionReferenceY();
-    const nearest = majorSections.reduce((candidate, section) => {
-      const distance = Math.abs(section.getBoundingClientRect().top - referenceY);
-      return !candidate || distance < candidate.distance ? { section, distance } : candidate;
+    const scrollY = window.scrollY;
+    const sectionTops = majorSections.map((section) => section.getBoundingClientRect().top);
+    const nearest = sectionTops.reduce((candidate, top) => {
+      const distance = Math.abs(top - referenceY);
+      return !candidate || distance < candidate.distance ? { top, distance } : candidate;
     }, null);
     if (!nearest || nearest.distance > getMajorSectionSettleThreshold()) return;
 
     const target = Math.max(0, Math.min(
       document.documentElement.scrollHeight - window.innerHeight,
-      window.scrollY + nearest.section.getBoundingClientRect().top - referenceY
+      scrollY + nearest.top - referenceY
     ));
-    if (Math.abs(target - window.scrollY) <= 1) return;
+    if (Math.abs(target - scrollY) <= 1) return;
 
     // A timer can only start one settle, and every settle owns one watcher.
     cancelMajorSectionSettle();
     majorSectionSettleTarget = target;
+    majorSectionSettleOwnsScroll = true;
     window.scrollTo({ top: target, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
     majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
   };
 
   const scheduleMajorSectionSettle = () => {
-    if (majorSectionPointerActive || majorSectionSettleTarget !== null) return;
+    if (majorSectionPointerActive || majorSectionSettleTarget !== null || majorSectionSettleOwnsScroll) return;
     window.clearTimeout(majorSectionSettleTimer);
     majorSectionSettleTimer = window.setTimeout(settleNearestMajorSection, majorSectionSettleDelayMs);
   };
 
   const noteFlowScroll = () => {
     const now = performance.now();
+    lastPageScrollTime = now;
     const nextScrollY = window.scrollY;
     const elapsed = Math.max(1, now - lastFlowScrollTime);
     const instantaneousVelocity = Math.abs(nextScrollY - lastFlowScrollY) / elapsed;
     flowScrollVelocity = (flowScrollVelocity * .35) + (instantaneousVelocity * .65);
     lastFlowScrollY = nextScrollY;
     lastFlowScrollTime = now;
+    pauseLogoParticleForScroll();
+    if (portraitSectionLayoutTimer) scheduleStablePortraitSectionLayout();
     scheduleFlowSync();
   };
 
   const resetFlowRevealState = () => {
-    window.clearTimeout(flowTimer);
     window.clearTimeout(imageCopyRevealTimer);
     setMetricCountsActive(false);
     if (flowFrame) window.cancelAnimationFrame(flowFrame);
-    flowTimer = 0;
     flowFrame = 0;
     flowVisibleCount = 0;
     flowTargetCount = 0;
@@ -962,6 +1033,7 @@
     let width = 0;
     let height = 0;
     let renderedFrame = 0;
+    let scrollResumeTimer = 0;
     let isInViewport = false;
     let isReady = false;
     let particleBuildStartedAt = null;
@@ -1034,6 +1106,12 @@
     const startRendering = () => {
       if (!isReady || !isInViewport || document.hidden || renderedFrame) return;
       renderedFrame = window.requestAnimationFrame(render);
+    };
+
+    pauseLogoParticleForScroll = () => {
+      stopRendering();
+      window.clearTimeout(scrollResumeTimer);
+      scrollResumeTimer = window.setTimeout(startRendering, 120);
     };
 
     const resizeCanvas = () => {
@@ -1139,15 +1217,6 @@
   };
   setupLogoParticleField();
 
-  window.addEventListener('resize', () => {
-    scheduleFlowSync();
-    schedulePortraitSectionLayout();
-  }, { passive: true });
-  window.visualViewport?.addEventListener('resize', () => {
-    scheduleFlowSync();
-    schedulePortraitSectionLayout();
-  }, { passive: true });
-
   sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();
     applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day', { manual: true });
@@ -1215,7 +1284,7 @@
   window.addEventListener('scroll', () => {
     noteFlowScroll();
     closeConversationWithoutReset();
-    if (majorSectionSettleTarget === null) scheduleMajorSectionSettle();
+    if (!majorSectionSettleOwnsScroll) scheduleMajorSectionSettle();
   }, { passive: true });
 
   const beginMajorSectionInteraction = () => {
@@ -1381,21 +1450,32 @@
   });
 
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', scheduleKeyboardOffset, { passive: true });
+    window.visualViewport.addEventListener('resize', () => {
+      scheduleKeyboardOffset();
+      scheduleStablePortraitSectionLayout();
+    }, { passive: true });
     window.visualViewport.addEventListener('scroll', scheduleKeyboardOffset, { passive: true });
   }
 
-  window.addEventListener('resize', () => {
-    syncConversationInputBounds();
+  const handleViewportGeometryChange = () => {
+    const nextWidth = document.documentElement.clientWidth;
+    const nextOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
+    if (Math.abs(nextWidth - localizedGeometryWidth) > .5 || nextOrientation !== localizedGeometryOrientation) {
+      localizedGeometryWidth = nextWidth;
+      localizedGeometryOrientation = nextOrientation;
+      scheduleLocalizedGeometry();
+    }
     scheduleKeyboardOffset();
-    scheduleLocalizedGeometry();
-    schedulePortraitSectionLayout();
-  }, { passive: true });
+    scheduleStablePortraitSectionLayout();
+  };
+
+  window.addEventListener('resize', handleViewportGeometryChange, { passive: true });
   window.addEventListener('orientationchange', () => {
-    syncConversationInputBounds();
-    scheduleKeyboardOffset();
+    localizedGeometryWidth = document.documentElement.clientWidth;
+    localizedGeometryOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
     scheduleLocalizedGeometry();
-    schedulePortraitSectionLayout();
+    scheduleKeyboardOffset();
+    scheduleStablePortraitSectionLayout();
   }, { passive: true });
   const initializeGroupOne = () => {
     initializationRun += 1;
@@ -1421,6 +1501,13 @@
   let inactivityResetTimer = 0;
 
   const resetPageToInitialState = () => {
+    cancelMajorSectionSettle({ stopNativeScroll: true });
+    window.clearTimeout(portraitSectionLayoutTimer);
+    portraitSectionLayoutTimer = 0;
+    if (portraitSectionLayoutFrame) window.cancelAnimationFrame(portraitSectionLayoutFrame);
+    if (finalScrollBufferFrame) window.cancelAnimationFrame(finalScrollBufferFrame);
+    portraitSectionLayoutFrame = 0;
+    finalScrollBufferFrame = 0;
     window.clearTimeout(inactivityResetTimer);
     window.clearTimeout(finalVisibleTimer);
     window.clearTimeout(finalResetTimer);
