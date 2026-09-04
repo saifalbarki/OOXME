@@ -82,7 +82,7 @@
     en: {
       groups: [
         ['Welcome\nOur Next Client', 'Iraq’s one and only brand management service\nPremium business development service'],
-        ['Re-engineered\nBuilt for New Terrain', 'Discover the fourth update to the OOXME operating system, designed for engineering, architectural, construction, contracting, and similar businesses.'],
+        ['Re-engineered\nBuilt for New Terrain', 'Discover Ooxme v4.0 system, designed for engineering, architectural, construction, contracting .. etc'],
         ['The numbers speak\nfor the work', 'Real results that summarize what we’ve achieved across different businesses and brands.'],
         ['Striking Designs\nFor Distinctive Projects', 'We design with an exceptional, precise, and remarkably clean approach that serves your goals and reflects the value of your projects.'],
         ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.'],
