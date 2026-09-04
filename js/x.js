@@ -732,13 +732,17 @@
     return Math.min(180, Math.max(120, x * 8));
   };
 
-  const cancelMajorSectionSettle = () => {
+  const cancelMajorSectionSettle = ({ stopNativeScroll = false } = {}) => {
     window.clearTimeout(majorSectionSettleTimer);
     majorSectionSettleTimer = 0;
     if (majorSectionSettleFrame) window.cancelAnimationFrame(majorSectionSettleFrame);
     majorSectionSettleFrame = 0;
+    const wasSettling = majorSectionSettleTarget !== null;
     majorSectionSettleTarget = null;
     majorSectionSettleStableFrames = 0;
+    // Cancelling the watcher alone leaves a native `scrollTo({ behavior: 'smooth' })`
+    // in flight. Freeze it at the live position before returning control to the user.
+    if (stopNativeScroll && wasSettling) window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
   };
 
   const watchMajorSectionSettle = () => {
@@ -773,6 +777,8 @@
     ));
     if (Math.abs(target - window.scrollY) <= 1) return;
 
+    // A timer can only start one settle, and every settle owns one watcher.
+    cancelMajorSectionSettle();
     majorSectionSettleTarget = target;
     window.scrollTo({ top: target, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
     majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
@@ -1214,7 +1220,7 @@
 
   const beginMajorSectionInteraction = () => {
     majorSectionPointerActive = true;
-    cancelMajorSectionSettle();
+    cancelMajorSectionSettle({ stopNativeScroll: true });
   };
   const endMajorSectionInteraction = () => {
     majorSectionPointerActive = false;
@@ -1223,12 +1229,23 @@
 
   document.addEventListener('pointerdown', beginMajorSectionInteraction, { capture: true, passive: true });
   document.addEventListener('touchstart', beginMajorSectionInteraction, { capture: true, passive: true });
+  document.addEventListener('pointermove', (event) => {
+    if (event.pointerType === 'touch' || event.buttons !== 0) beginMajorSectionInteraction();
+  }, { capture: true, passive: true });
+  document.addEventListener('touchmove', beginMajorSectionInteraction, { capture: true, passive: true });
   ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
     document.addEventListener(eventName, endMajorSectionInteraction, { passive: true });
   });
   window.addEventListener('wheel', () => {
-    cancelMajorSectionSettle();
+    cancelMajorSectionSettle({ stopNativeScroll: true });
     majorSectionPointerActive = false;
+    scheduleMajorSectionSettle();
+  }, { passive: true });
+  window.addEventListener('keydown', (event) => {
+    if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) return;
+    if (event.target instanceof Element && event.target.closest('input, textarea, [contenteditable="true"]')) return;
+    majorSectionPointerActive = false;
+    cancelMajorSectionSettle({ stopNativeScroll: true });
     scheduleMajorSectionSettle();
   }, { passive: true });
 

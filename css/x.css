@@ -259,7 +259,7 @@ html.s-route.is-day-mode .s-page__section-divider {
   color: transparent;
   -webkit-text-fill-color: transparent;
   font-family: OOXMEScript, Arial, sans-serif;
-  font-size: clamp(42px, 10vw, 64px);
+  font-size: clamp(84px, 20vw, 128px);
   font-weight: 700;
   line-height: .95;
 }
