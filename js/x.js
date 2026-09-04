@@ -39,7 +39,6 @@
   }));
   const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const systemThemePreference = window.matchMedia('(prefers-color-scheme: dark)');
 
   if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !consultationCta || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 6) return;
 
@@ -229,16 +228,10 @@
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDayMode ? '#FFFFFF' : '#000000');
   };
 
-  const applySystemTheme = () => {
-    if (manualThemeOverride) return;
-    applyTheme(systemThemePreference.matches ? 'dark' : 'day');
-  };
-
   let initialLanguage = 'en';
   try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
   applyLanguage(initialLanguage, { persist: false, emit: false });
   applyTheme('dark');
-  systemThemePreference.addEventListener?.('change', applySystemTheme);
 
   const isTemporaryUiInteraction = (target) => (
     composer.contains(target) || conversation.contains(target)
