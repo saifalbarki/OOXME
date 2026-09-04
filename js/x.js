@@ -1452,7 +1452,6 @@
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
       scheduleKeyboardOffset();
-      scheduleStablePortraitSectionLayout();
     }, { passive: true });
     window.visualViewport.addEventListener('scroll', scheduleKeyboardOffset, { passive: true });
   }
@@ -1460,13 +1459,19 @@
   const handleViewportGeometryChange = () => {
     const nextWidth = document.documentElement.clientWidth;
     const nextOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
-    if (Math.abs(nextWidth - localizedGeometryWidth) > .5 || nextOrientation !== localizedGeometryOrientation) {
+    const layoutWidthChanged = Math.abs(nextWidth - localizedGeometryWidth) > .5;
+    const orientationChanged = nextOrientation !== localizedGeometryOrientation;
+    if (layoutWidthChanged || orientationChanged) {
       localizedGeometryWidth = nextWidth;
       localizedGeometryOrientation = nextOrientation;
       scheduleLocalizedGeometry();
+    } else if (!window.visualViewport) {
+      // Desktop height-only resizing is a genuine viewport resize. On mobile,
+      // height-only changes are browser chrome motion and must not reposition a
+      // revealed portrait composition while the page is moving.
+      scheduleStablePortraitSectionLayout();
     }
     scheduleKeyboardOffset();
-    scheduleStablePortraitSectionLayout();
   };
 
   window.addEventListener('resize', handleViewportGeometryChange, { passive: true });
@@ -1475,7 +1480,6 @@
     localizedGeometryOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
     scheduleLocalizedGeometry();
     scheduleKeyboardOffset();
-    scheduleStablePortraitSectionLayout();
   }, { passive: true });
   const initializeGroupOne = () => {
     initializationRun += 1;
