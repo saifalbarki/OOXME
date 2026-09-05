@@ -163,6 +163,10 @@
     en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive advantages and rewards'],
     ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الإحالة لأوكسوم متاحة الآن للتقديم\nانضم إلينا واستفد من مزايا ومكافآت حصرية.']
   };
+  const zMainMenuCopy = {
+    en: ['The Brand Management', 'The Consultation', 'The Gallery', 'The Store', 'Contact'],
+    ar: ['إدارة العلامة التجارية', 'الاستشارة', 'المعرض', 'المتجر', 'تواصل']
+  };
   const getGroupCopy = (language, groupIndex) => (
     isZPage && groupIndex === 0 ? zFirstGroupCopy[language] : pageCopy[language].groups[groupIndex]
   );
@@ -205,10 +209,13 @@
   let zSectionOneScrollFrame = 0;
   let zSectionOneLocked = false;
   let zSectionOneLockScrollY = 0;
-  let zSectionOneReleaseDistance = 32;
-  let zSectionOneReleasing = false;
-  let zSectionOneReleaseScrollY = 0;
-  let zSectionOneReleaseOffset = 0;
+  let zSectionOneCompositionReady = false;
+  let zSectionOneOriginalImageTop = 0;
+  let zSectionOneOriginalImageBottom = 0;
+  let zSectionOneOriginalImageLeft = 0;
+  let zSectionOneOriginalImageWidth = 0;
+  let zSectionOneOriginalImageHeight = 0;
+  let zSectionOneTransitionDistance = 0;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
   let zSecondaryNavIndicatorReadyFrame = 0;
@@ -238,14 +245,14 @@
   const zPanelClasses = [['is-z-description-attached', 'is-z-description-revealed'], ['is-z-requirements-attached', 'is-z-requirements-revealed'], ['is-z-rewards-attached', 'is-z-rewards-revealed'], ['is-z-apply-attached', 'is-z-apply-revealed']];
 
   const syncZContentBoxHorizontalGeometry = () => {
-    if (!isZPage || !zSecondaryNav.classList.contains('is-z-hero-attached')) return;
+    if (!isZPage) return;
     const menuRect = composerMenu.getBoundingClientRect();
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-left', `${menuRect.left.toFixed(3)}px`);
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-width', `${menuRect.width.toFixed(3)}px`);
   };
 
   const syncZApplyButtonGeometry = () => {
-    if (!isZPage || !zSecondaryNav.classList.contains('is-z-hero-attached')) return;
+    if (!isZPage || !zSecondaryNav.classList.contains('is-z-transition-ready')) return;
     const selector = zSecondaryNavItems[zActiveContentIndex];
     if (!selector) return;
     const boxRect = zSecondaryNav.getBoundingClientRect();
@@ -256,7 +263,10 @@
   };
 
   const syncZContentBoxHeight = () => {
-    if (!isZPage || !zSecondaryNav.classList.contains('is-z-hero-attached')) return;
+    if (!isZPage) return;
+    // The box height is part of the scroll travel and therefore immutable once
+    // a transition has begun. Re-measuring mid-travel would move the endpoint.
+    if (zSectionOneCompositionReady && window.scrollY > .5) return;
     zSecondaryNav.classList.add('is-z-measuring');
     let largestContentHeight = 0;
     zPanels.forEach((panel) => {
@@ -268,6 +278,62 @@
     zSecondaryNav.style.setProperty('--s-z-content-box-height', `${(zSecondaryNavRail.offsetHeight || 36) + 6 + largestContentHeight + 16}px`);
   };
 
+  // The Description title is the concrete inner-text boundary of the unified
+  // box. Reuse its live border-box geometry instead of approximating an inset.
+  const syncZUnifiedTextAlignment = () => {
+    if (!isZPage) return;
+    const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+    const source = zDescription.querySelector(`.s-page__z-description-copy[lang="${language}"] h2`);
+    if (!source) return;
+    const sourceRect = source.getBoundingClientRect();
+    const firstGroupRect = firstGroup.getBoundingClientRect();
+    const imageRect = zHeroImage.getBoundingClientRect();
+    if (!sourceRect.width || !firstGroupRect.width || !imageRect.width) return;
+    const isRtl = language === 'ar';
+    const firstOffset = isRtl
+      ? firstGroupRect.right - sourceRect.right
+      : sourceRect.left - firstGroupRect.left;
+    const imageOffset = isRtl
+      ? imageRect.right - sourceRect.right
+      : sourceRect.left - imageRect.left;
+    firstGroup.style.setProperty('--s-z-content-text-width', `${sourceRect.width.toFixed(3)}px`);
+    firstGroup.style.setProperty('--s-z-content-text-inline-offset', `${firstOffset.toFixed(3)}px`);
+    imageCopy.style.setProperty('--s-z-content-text-width', `${sourceRect.width.toFixed(3)}px`);
+    imageCopy.style.setProperty('--s-z-content-text-inline-offset', `${imageOffset.toFixed(3)}px`);
+    firstGroup.setAttribute('data-s-z-content-text-left', sourceRect.left.toFixed(3));
+    firstGroup.setAttribute('data-s-z-content-text-right', sourceRect.right.toFixed(3));
+    imageCopy.setAttribute('data-s-z-content-text-left', sourceRect.left.toFixed(3));
+    imageCopy.setAttribute('data-s-z-content-text-right', sourceRect.right.toFixed(3));
+  };
+
+  const syncZStateOneCompositionGeometry = () => {
+    if (!isZPage || zSectionOneLocked) return;
+    if (zSectionOneCompositionReady && window.scrollY > .5) return;
+    const x = composer.getBoundingClientRect().left || 18;
+    const imageRect = zHeroImage.getBoundingClientRect();
+    // Remove the dormant 6px entrance transform before measuring the box.
+    // Otherwise its transformed rect makes the State 1 gap six pixels short.
+    zSecondaryNav.classList.add('is-z-transition-ready');
+    const boxRect = zSecondaryNav.getBoundingClientRect();
+    const desiredBoxTop = imageRect.bottom + x;
+    const resolvedTop = zSecondaryNav.offsetTop + desiredBoxTop - boxRect.top;
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-state-one-top', `${resolvedTop.toFixed(3)}px`);
+
+    const positionedBoxRect = zSecondaryNav.getBoundingClientRect();
+    zSectionOneOriginalImageTop = imageRect.top + window.scrollY;
+    zSectionOneOriginalImageBottom = imageRect.bottom + window.scrollY;
+    zSectionOneOriginalImageLeft = imageRect.left;
+    zSectionOneOriginalImageWidth = imageRect.width;
+    zSectionOneOriginalImageHeight = imageRect.height;
+    zSectionOneTransitionDistance = positionedBoxRect.height + x;
+    zSectionOneLockScrollY = zSectionOneTransitionDistance;
+    zSectionOneCompositionReady = true;
+    firstGroup.setAttribute('data-s-z-state-one-text-image-gap', (imageRect.top - firstGroup.querySelector('.s-page__group-description').getBoundingClientRect().bottom).toFixed(3));
+    firstGroup.setAttribute('data-s-z-state-one-image-box-gap', (positionedBoxRect.top - imageRect.bottom).toFixed(3));
+    firstGroup.setAttribute('data-s-z-original-image-baseline', zSectionOneOriginalImageBottom.toFixed(3));
+    syncZActiveContent(true);
+  };
+
   const resetZSecondaryNavAlignment = () => {
     if (!isZPage) return;
     if (zSecondaryNavAlignmentFrame) window.cancelAnimationFrame(zSecondaryNavAlignmentFrame);
@@ -275,8 +341,10 @@
       zSecondaryNavAlignmentFrame = 0;
       syncZApplyTitleExplanationGap();
       syncZContentBoxHorizontalGeometry();
-      syncZApplyButtonGeometry();
       syncZContentBoxHeight();
+      syncZStateOneCompositionGeometry();
+      syncZUnifiedTextAlignment();
+      syncZApplyButtonGeometry();
     });
   };
 
@@ -299,7 +367,7 @@
       target.classList.add(attachedClass);
       zContentRevealFrame = window.requestAnimationFrame(() => {
         zContentRevealFrame = 0;
-        if (!zSectionOneLocked || zPanels[zActiveContentIndex] !== target) return;
+        if (!zSecondaryNav.classList.contains('is-z-transition-ready') || zPanels[zActiveContentIndex] !== target) return;
         target.classList.add(revealedClass);
       });
     };
@@ -321,27 +389,33 @@
     if (!isZPage) return;
     if (!heroRect) {
       zSecondaryNav.classList.remove('is-z-hero-attached');
-      syncZActiveContent(false);
-      zSecondaryNav.style.removeProperty('--s-z-content-box-height');
-      zSecondaryNav.style.removeProperty('--s-z-secondary-nav-width');
-      zSecondaryNav.style.removeProperty('--s-z-secondary-nav-left');
       return;
     }
     // The composer menu is the only authority for the horizontal geometry.
     // Its border-box rect includes its own content width, inset, and stroke.
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${(heroRect.top + heroRect.height + x).toFixed(3)}px`);
+    const lockedBoxTop = Number.isFinite(heroRect.contentTop) ? heroRect.contentTop : heroRect.top + heroRect.height + x;
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${lockedBoxTop.toFixed(3)}px`);
     zSecondaryNav.classList.add('is-z-hero-attached');
     syncZContentBoxHorizontalGeometry();
     syncZApplyButtonGeometry();
-    syncZContentBoxHeight();
-    syncZActiveContent(true);
+  };
+
+  const pulsePageSurface = (element) => {
+    if (!element) return;
+    const pendingFrame = secondaryNavPulseFrames.get(element);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    element.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      secondaryNavPulseFrames.delete(element);
+      element.classList.add('is-pulsing');
+    });
+    secondaryNavPulseFrames.set(element, frame);
   };
 
   if (isZPage) {
     let heroTapStart = null;
     const pulseZHero = () => {
-      zHeroImage.classList.remove('is-pulsing');
-      window.requestAnimationFrame(() => zHeroImage.classList.add('is-pulsing'));
+      pulsePageSurface(zHeroImage);
     };
     zHeroImage.addEventListener('pointerdown', (event) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -358,6 +432,11 @@
       if (event.animationName === 's-page-composer-pulse') zHeroImage.classList.remove('is-pulsing');
     });
     let swipeStart = null;
+    let zLastHorizontalSwipeAt = -Infinity;
+    const suppressSwipeClick = () => { zLastHorizontalSwipeAt = performance.now(); };
+    const consumeSwipeClickSuppression = () => (
+      performance.now() - zLastHorizontalSwipeAt < 250
+    );
     const setZActiveSection = (index) => {
       zActiveContentIndex = (index + zSecondaryNavItems.length) % zSecondaryNavItems.length;
       zSecondaryNavItems.forEach((item, itemIndex) => {
@@ -365,11 +444,7 @@
         item.classList.toggle('is-active', active);
         item.setAttribute('aria-pressed', String(active));
       });
-      syncZActiveContent(zSectionOneLocked);
-    };
-    const pulseZContentBox = () => {
-      zSecondaryNav.classList.remove('is-pulsing');
-      window.requestAnimationFrame(() => zSecondaryNav.classList.add('is-pulsing'));
+      syncZActiveContent(zSecondaryNav.classList.contains('is-z-transition-ready'));
     };
     const beginSwipe = (event) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -381,16 +456,31 @@
       const deltaY = event.clientY - swipeStart.y;
       swipeStart = null;
       if (Math.abs(deltaX) < 36 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+      suppressSwipeClick();
       const movesForward = document.documentElement.dir === 'rtl' ? deltaX > 0 : deltaX < 0;
       setZActiveSection(zActiveContentIndex + (movesForward ? 1 : -1));
-      pulseZContentBox();
+      pulsePageSurface(zSecondaryNavItems[zActiveContentIndex]);
     };
     [zSecondaryNavRail, zContentSlot].forEach((target) => {
       target.addEventListener('pointerdown', beginSwipe, { passive: true });
       target.addEventListener('pointerup', finishSwipe, { passive: true });
       target.addEventListener('pointercancel', () => { swipeStart = null; }, { passive: true });
     });
-    zApplyButtons.forEach((button) => button.addEventListener('pointerdown', pulseZContentBox, { passive: true }));
+    zSecondaryNavItems.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        if (consumeSwipeClickSuppression()) return;
+        setZActiveSection(index);
+        pulsePageSurface(item);
+      });
+    });
+    zApplyButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        if (!consumeSwipeClickSuppression()) pulsePageSurface(button);
+      });
+      button.addEventListener('animationend', (event) => {
+        if (event.animationName === 's-page-composer-pulse') button.classList.remove('is-pulsing');
+      });
+    });
     zSecondaryNav.addEventListener('animationend', (event) => {
       if (event.animationName === 's-page-composer-menu-pulse') zSecondaryNav.classList.remove('is-pulsing');
     });
@@ -513,17 +603,6 @@
       composerPulseFrame = 0;
       composer.classList.add('is-pulsing');
     });
-  };
-
-  const pulseSecondaryNavItem = (item) => {
-    const pendingFrame = secondaryNavPulseFrames.get(item);
-    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
-    item.classList.remove('is-pulsing');
-    const frame = window.requestAnimationFrame(() => {
-      secondaryNavPulseFrames.delete(item);
-      item.classList.add('is-pulsing');
-    });
-    secondaryNavPulseFrames.set(item, frame);
   };
 
   zSecondaryNavItems.forEach((item) => {
@@ -919,10 +998,10 @@
     const imageRect = zHeroImage.getBoundingClientRect();
     const titleRect = title.getBoundingClientRect();
     const descriptionRect = description.getBoundingClientRect();
-    const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
+    const x = composer.getBoundingClientRect().left || 18;
     const currentShift = Number.parseFloat(firstGroup.style.getPropertyValue('--s-z-first-group-shift')) || 0;
     const naturalDescriptionBottom = descriptionRect.bottom - currentShift;
-    const shift = Math.max(0, imageRect.top - naturalDescriptionBottom - x);
+    const shift = imageRect.top - naturalDescriptionBottom - x;
     if (!firstGroup.hasAttribute('data-s-z-original-y')) {
       firstGroup.setAttribute('data-s-z-original-y', (titleRect.top - currentShift).toFixed(3));
     }
@@ -931,88 +1010,63 @@
     firstGroup.setAttribute('data-s-z-text-image-gap', x.toFixed(3));
   };
 
-  // /z Section 1 follows the document until its image is one shared X unit
-  // below the fixed top bar. From there, only enough visual offset is applied
-  // to hold that exact position; native page scrolling remains untouched.
+  // /z uses one normalized progress value for its two-state composition. The
+  // travel equals the box height plus X, so the box's final bottom edge lands
+  // exactly on the image's original first-view baseline.
   const syncZSectionOneScroll = () => {
     zSectionOneScrollFrame = 0;
     if (!isZPage || !zHeroImage) return;
 
     const scrollY = window.scrollY;
+    if (!zSectionOneCompositionReady) {
+      syncZContentBoxHorizontalGeometry();
+      syncZContentBoxHeight();
+      syncZStateOneCompositionGeometry();
+      syncZApplyButtonGeometry();
+    }
+    if (!zSectionOneCompositionReady || zSectionOneTransitionDistance <= 0) return;
 
-    // Once locked, do not read layout or write any hero properties while the
-    // user continues in the same direction. This is the important jitter guard.
+    // No geometry is rewritten while the user continues beyond the endpoint.
     if (zSectionOneLocked) {
-      if (scrollY < zSectionOneLockScrollY - zSectionOneReleaseDistance) {
-        const lockedTop = zHeroImage.getBoundingClientRect().top;
+      if (scrollY < zSectionOneLockScrollY - .5) {
         zSectionOneLocked = false;
-        zSectionOneReleasing = true;
-        zSectionOneReleaseScrollY = scrollY;
         setZSecondaryNavHeroAttached();
-        zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');
         zHeroImage.classList.remove('is-z-scroll-locked');
-        zSectionOneReleaseOffset = lockedTop - zHeroImage.getBoundingClientRect().top;
-        zHeroImage.style.setProperty('--s-z-hero-scroll-offset', `${zSectionOneReleaseOffset.toFixed(3)}px`);
-        // The compensating offset preserves the locked pixels on the release
-        // frame. Normal-flow movement resumes on the next reverse scroll frame.
-        return;
+        zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');
       } else {
         return;
       }
     }
 
-    const composerRect = composer.getBoundingClientRect();
-    // On compact viewports --s-x remains a CSS math expression. The bar's
-    // physical inset is the resolved shared X value in every /z breakpoint.
-    const x = composerRect.left || 18;
-    const barBottom = composerRect.bottom;
-    const fixedTop = barBottom + x;
+    const progress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
+    const remainingBlur = (1 - progress) * 12;
+    firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
+    zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
+    zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
+    zSecondaryNav.classList.toggle('is-z-content-interactive', progress > .05);
 
-    const currentOffset = Number.parseFloat(
-      zHeroImage.style.getPropertyValue('--s-z-hero-scroll-offset')
-    ) || 0;
-    const naturalRect = zHeroImage.getBoundingClientRect();
-    const naturalTop = naturalRect.top - currentOffset;
-    let offset = 0;
-    if (zSectionOneReleasing) {
-      const releaseProgress = zSectionOneReleaseScrollY > 0
-        ? Math.min(1, Math.max(0, scrollY / zSectionOneReleaseScrollY))
-        : 0;
-      offset = zSectionOneReleaseOffset * releaseProgress;
-      if (releaseProgress <= 0) zSectionOneReleasing = false;
-    }
-    const renderedTop = naturalTop + offset;
-    const fadeRange = Math.max(96, x * 6);
-    const progress = Math.min(1, Math.max(0, 1 - ((renderedTop - fixedTop) / fadeRange)));
-
-    zHeroImage.style.setProperty('--s-z-hero-scroll-offset', `${offset.toFixed(3)}px`);
-    if (renderedTop <= fixedTop + 0.5) {
+    if (progress >= 1) {
       zSectionOneLocked = true;
-      zSectionOneReleasing = false;
-      // Reconstruct the exact document-space crossing point so a fast swipe
-      // cannot move the reverse threshold to the overshot sampled scrollY.
-      zSectionOneLockScrollY = scrollY + naturalTop - fixedTop;
-      zSectionOneReleaseDistance = x * 2;
-      zHeroImage.style.setProperty('--s-z-hero-locked-top', `${fixedTop.toFixed(3)}px`);
-      zHeroImage.style.setProperty('--s-z-hero-locked-left', `${naturalRect.left.toFixed(3)}px`);
-      zHeroImage.style.setProperty('--s-z-hero-locked-width', `${naturalRect.width.toFixed(3)}px`);
-      zHeroImage.style.setProperty('--s-z-hero-locked-height', `${naturalRect.height.toFixed(3)}px`);
+      zHeroImage.style.setProperty('--s-z-hero-locked-top', `${(zSectionOneOriginalImageTop - zSectionOneTransitionDistance).toFixed(3)}px`);
+      zHeroImage.style.setProperty('--s-z-hero-locked-left', `${zSectionOneOriginalImageLeft.toFixed(3)}px`);
+      zHeroImage.style.setProperty('--s-z-hero-locked-width', `${zSectionOneOriginalImageWidth.toFixed(3)}px`);
+      zHeroImage.style.setProperty('--s-z-hero-locked-height', `${zSectionOneOriginalImageHeight.toFixed(3)}px`);
       zHeroImage.classList.add('is-z-scroll-locked');
       setZSecondaryNavHeroAttached({
-        top: fixedTop,
-        left: naturalRect.left,
-        width: naturalRect.width,
-        height: naturalRect.height
-      }, x);
+        top: zSectionOneOriginalImageTop - zSectionOneTransitionDistance,
+        left: zSectionOneOriginalImageLeft,
+        width: zSectionOneOriginalImageWidth,
+        height: zSectionOneOriginalImageHeight,
+        contentTop: zSectionOneOriginalImageBottom - zSecondaryNav.getBoundingClientRect().height
+      });
       firstGroup.style.setProperty('--s-z-first-group-scroll-progress', '1');
-    } else {
-      firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
+      zSecondaryNav.style.setProperty('--s-z-composition-progress', '1');
+      zSecondaryNav.style.setProperty('--s-z-content-blur', '0px');
+      zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSecondaryNav.getBoundingClientRect().bottom.toFixed(3));
     }
 
-    // These values are intentionally exposed for measurement during visual QA.
-    const finalTop = zSectionOneLocked ? fixedTop : renderedTop;
-    firstGroup.setAttribute('data-s-z-image-top-bar-gap', (finalTop - barBottom).toFixed(3));
     firstGroup.setAttribute('data-s-z-text-scroll-progress', progress.toFixed(4));
+    zSecondaryNav.setAttribute('data-s-z-composition-progress', progress.toFixed(4));
   };
 
   const scheduleZSectionOneScroll = () => {
@@ -1338,7 +1392,8 @@
         setLocalizedText(element, localizedGroup[elementIndex]);
       });
     });
-    menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });
+    const menuCopy = isZPage ? zMainMenuCopy[language] : copy.menu;
+    menuLabels.forEach((label, index) => { label.textContent = menuCopy[index]; });
     if (zSecondaryNav) {
       zSecondaryNav.setAttribute('aria-label', language === 'ar' ? 'التنقل بين الأقسام' : 'Section navigation');
     }
@@ -1871,13 +1926,18 @@
     if (isZPage) {
       zSectionOneLocked = false;
       zSectionOneLockScrollY = 0;
-      zSectionOneReleasing = false;
-      zSectionOneReleaseScrollY = 0;
-      zSectionOneReleaseOffset = 0;
+      zSectionOneCompositionReady = false;
+      zSectionOneTransitionDistance = 0;
       setZSecondaryNavHeroAttached();
+      zSecondaryNav.classList.remove('is-z-transition-ready', 'is-z-content-interactive');
+      zSecondaryNav.style.removeProperty('--s-z-secondary-nav-state-one-top');
+      zSecondaryNav.style.removeProperty('--s-z-composition-progress');
+      zSecondaryNav.style.removeProperty('--s-z-content-blur');
+      syncZActiveContent(false);
       zHeroImage.classList.remove('is-z-scroll-locked');
       zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');
       firstGroup.style.setProperty('--s-z-first-group-scroll-progress', '0');
+      resetZSecondaryNavAlignment();
     }
     resetAddButton();
     activateTemporaryUi('none');

@@ -158,7 +158,7 @@ html[lang="ar"] .s-page--z .s-page__secondary-nav-item > span[lang="ar"] { displ
   animation: s-page-composer-pulse .18s ease-out;
 }
 
-.s-page--z .s-page__secondary-nav-item:active { transform: scale(.97); }
+.s-page--z .s-page__secondary-nav-item:active { transform: none; }
 
 .s-page--z .s-page__z-description {
   position: absolute;
@@ -452,10 +452,14 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
 .s-page--z .s-page__z-hero-image .s-page__image-copy {
   padding-top: var(--s-x);
   padding-bottom: var(--s-x);
+  padding-inline: 0;
   overflow: visible;
 }
 
 .s-page--z .s-page__z-hero-image .s-page__image-copy-language {
+  width: var(--s-z-content-text-width);
+  max-width: none;
+  margin-inline-start: var(--s-z-content-text-inline-offset);
   overflow: visible;
 }
 
@@ -469,6 +473,10 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
 
 /* Keep the image anchored while moving only the first group's text block. */
 .s-page--z [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
+  box-sizing: border-box;
+  width: var(--s-z-content-text-width);
+  margin-inline-start: var(--s-z-content-text-inline-offset);
+  margin-inline-end: 0;
   opacity: calc(1 - var(--s-z-first-group-scroll-progress, 0));
   filter: blur(calc(var(--s-z-first-group-scroll-progress, 0) * 12px));
   transform: translateY(var(--s-z-first-group-shift, 0px));
@@ -501,13 +509,13 @@ html[dir="rtl"] .s-page--z .s-page__z-hero-image > .s-page__image-group {
 /* Section 1 overlay copy uses a reading-direction walnut-to-white gradient. */
 .s-page--z .s-page__z-hero-image .s-page__image-copy p {
   color: transparent;
-  background-image: linear-gradient(to right, #AF917B 0%, #AF917B 30%, #FFFFFF 100%);
+  background-image: linear-gradient(to right, #583B23 0%, #583B23 30%, #FFFFFF 100%);
   -webkit-background-clip: text;
   background-clip: text;
 }
 
 html[dir="rtl"] .s-page--z .s-page__z-hero-image .s-page__image-copy p {
-  background-image: linear-gradient(to left, #AF917B 0%, #AF917B 30%, #FFFFFF 100%);
+  background-image: linear-gradient(to left, #583B23 0%, #583B23 30%, #FFFFFF 100%);
 }
 
 @media (orientation: landscape) {
@@ -663,7 +671,7 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
   --s-composer-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
   --s-composer-backdrop: blur(20px) saturate(125%);
   --s-menu-radius: 28px; --s-menu-inset: 8px; --s-menu-active-radius: 20px;
-  position: absolute; z-index: 3; top: calc(48px + (var(--s-x) * 2)); right: auto; left: var(--s-x);
+  position: absolute; z-index: 3; top: var(--s-z-secondary-nav-state-one-top, calc(48px + (var(--s-x) * 2))); right: auto; left: var(--s-x);
   display: flex; box-sizing: border-box; width: var(--s-z-secondary-nav-width, 220px); max-width: none; height: var(--s-z-content-box-height, auto); min-height: 0;
   margin: 0; padding: var(--s-menu-inset); flex-direction: column; gap: 6px; overflow: hidden;
   border: 1px solid var(--s-composer-stroke); border-radius: var(--s-menu-radius); background: var(--s-composer-surface);
@@ -674,6 +682,8 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
 .s-page--z .s-page__secondary-nav::before { content: none; }
 html.s-route.is-day-mode .s-page--z .s-page__secondary-nav { --s-composer-surface: rgba(255, 255, 255, .42); --s-composer-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012); color: #000000; }
 .s-page--z .s-page__secondary-nav.is-z-hero-attached { position: fixed; top: var(--s-z-secondary-nav-top); left: var(--s-z-secondary-nav-left); width: var(--s-z-secondary-nav-width); opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition-delay: 0s; }
+.s-page--z .s-page__secondary-nav.is-z-transition-ready { opacity: var(--s-z-composition-progress, 0); visibility: visible; filter: blur(var(--s-z-content-blur, 12px)); pointer-events: none; transform: none; transition: none; }
+.s-page--z .s-page__secondary-nav.is-z-transition-ready.is-z-content-interactive { pointer-events: auto; }
 .s-page--z .s-page__secondary-nav.is-pulsing { animation: s-page-composer-menu-pulse .18s ease-out; }
 
 .s-page--z .s-page__secondary-nav-rail { display: block; width: 100%; height: 36px; min-height: 36px; padding: 0; overflow: hidden; direction: ltr; cursor: grab; touch-action: pan-y; }
