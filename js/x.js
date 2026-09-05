@@ -453,7 +453,7 @@
     const eyes = face?.querySelector('.s-page__z-face-eyes');
     const mouth = face?.querySelector('.s-page__z-face-mouth');
     if (!face || !shell || !eyes || !mouth) return null;
-    const gazeLimit = .72;
+    const gazeLimit = .95;
     const dragThreshold = 6;
     let pointer = null;
     let dragging = false;
@@ -466,7 +466,7 @@
     let previousTime = 0;
     let targetGaze = { x: 0, y: 0 };
     let currentGaze = { x: 0, y: 0 };
-    let currentMouth = { leftX: 1.5, leftY: 10, controlY: 15, rightX: 11.5, rightY: 10 };
+    let currentMouth = { leftX: 2.1, leftY: 10, controlY: 15, rightX: 10.9, rightY: 10 };
 
     const clearTimer = (timer) => {
       if (timer) window.clearTimeout(timer);
@@ -487,27 +487,27 @@
     };
     const lerp = (from, to, amount) => from + ((to - from) * amount);
     const mouthForState = (state) => {
-      if (state === 'tap') return { leftX: .7, leftY: 9.35, controlY: 15.2, rightX: 12.3, rightY: 9.35 };
-      if (state === 'drag') return { leftX: 1.5, leftY: 11.2, controlY: 6.2, rightX: 11.5, rightY: 11.2 };
-      if (state === 'settle') return { leftX: 2, leftY: 10.35, controlY: 10.35, rightX: 11, rightY: 10.35 };
-      return { leftX: 1.5, leftY: 10, controlY: 15, rightX: 11.5, rightY: 10 };
+      if (state === 'tap') return { leftX: .4, leftY: 9.2, controlY: 15.8, rightX: 12.6, rightY: 9.2 };
+      if (state === 'drag') return { leftX: 1.35, leftY: 11.35, controlY: 5.5, rightX: 11.65, rightY: 11.35 };
+      if (state === 'settle') return { leftX: 2.25, leftY: 10.45, controlY: 10.45, rightX: 10.75, rightY: 10.45 };
+      return { leftX: 2.1, leftY: 10, controlY: 15, rightX: 10.9, rightY: 10 };
     };
     const tick = (time) => {
       const delta = Math.min(48, Math.max(1, time - (previousTime || time)));
       previousTime = time;
       const state = getState();
       const mouthTarget = mouthForState(state);
-      const easing = 1 - Math.exp(-delta / 72);
+      const easing = 1 - Math.exp(-delta / 58);
       Object.keys(currentMouth).forEach((key) => {
         currentMouth[key] = lerp(currentMouth[key], mouthTarget[key], easing);
       });
-      const gazeEasing = 1 - Math.exp(-delta / (state === 'drag' ? 45 : 105));
+      const gazeEasing = 1 - Math.exp(-delta / (state === 'drag' ? 38 : 72));
       currentGaze.x = lerp(currentGaze.x, targetGaze.x, gazeEasing);
       currentGaze.y = lerp(currentGaze.y, targetGaze.y, gazeEasing);
       const phase = time / 1000;
-      const lifeOffset = state === 'idle' ? Math.sin(phase * 1.35) * .09 : 0;
-      const wiggle = state === 'drag' ? Math.sin(phase * 33) * 1.25 : state === 'apply' ? Math.sin(phase * 4.5) * 2.7 : 0;
-      const danceOffset = state === 'apply' ? Math.sin(phase * 4.5) * .12 : 0;
+      const lifeOffset = state === 'idle' ? Math.sin(phase * 1.35) * .13 : 0;
+      const wiggle = state === 'drag' ? Math.sin(phase * 31) * 1.7 : state === 'apply' ? Math.sin(phase * 4.5) * 3.3 : 0;
+      const danceOffset = state === 'apply' ? Math.sin(phase * 4.5) * .18 : 0;
       shell.setAttribute('transform', `rotate(${wiggle.toFixed(3)} 6.5 6.5) translate(0 ${(lifeOffset + danceOffset).toFixed(3)})`);
       eyes.setAttribute('transform', `translate(${currentGaze.x.toFixed(3)} ${currentGaze.y.toFixed(3)})`);
       mouth.setAttribute('d', `M${currentMouth.leftX.toFixed(3)} ${currentMouth.leftY.toFixed(3)}Q6.5 ${currentMouth.controlY.toFixed(3)} ${currentMouth.rightX.toFixed(3)} ${currentMouth.rightY.toFixed(3)}`);
