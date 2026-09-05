@@ -145,6 +145,7 @@
   );
   let keyboardFrame = 0;
   let composerPulseFrame = 0;
+  const secondaryNavPulseFrames = new Map();
   let composerMenuPulseFrame = 0;
   let composerMenuCloseTimer = 0;
   let addFlashTimer = 0;
@@ -242,7 +243,10 @@
       zSecondaryNav.classList.remove('is-z-hero-attached');
       return;
     }
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${(heroRect.top + heroRect.height + x).toFixed(3)}px`);
+    const landscapeGlassOutset = window.matchMedia('(orientation: landscape)').matches
+      ? Math.max(0, 1 - (Number.parseFloat(window.getComputedStyle(zSecondaryNav).borderTopWidth) || 0))
+      : 0;
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${(heroRect.top + heroRect.height + x + landscapeGlassOutset).toFixed(3)}px`);
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-left', `${heroRect.left.toFixed(3)}px`);
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-width', `${heroRect.width.toFixed(3)}px`);
     zSecondaryNav.classList.add('is-z-hero-attached');
@@ -259,6 +263,7 @@
           suppressNavClick = false;
           return;
         }
+        pulseSecondaryNavItem(item);
         zSecondaryNavItems.forEach((candidate) => {
           const isActive = candidate === item;
           candidate.classList.toggle('is-active', isActive);
@@ -417,6 +422,23 @@
       composer.classList.add('is-pulsing');
     });
   };
+
+  const pulseSecondaryNavItem = (item) => {
+    const pendingFrame = secondaryNavPulseFrames.get(item);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    item.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      secondaryNavPulseFrames.delete(item);
+      item.classList.add('is-pulsing');
+    });
+    secondaryNavPulseFrames.set(item, frame);
+  };
+
+  zSecondaryNavItems.forEach((item) => {
+    item.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-pulse') item.classList.remove('is-pulsing');
+    });
+  });
 
   composer.addEventListener('animationend', (event) => {
     if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing');
@@ -1801,6 +1823,8 @@
     marqueeItemPulseFrames.clear();
     squareLogoPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     squareLogoPulseFrames.clear();
+    secondaryNavPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    secondaryNavPulseFrames.clear();
     menuItemFlashTimers.forEach((timer) => window.clearTimeout(timer));
     menuItemFlashTimers.clear();
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));

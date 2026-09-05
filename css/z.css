@@ -79,7 +79,7 @@ html.s-route.is-day-mode .s-page--z .s-page__secondary-nav {
   width: 100%;
   height: 42.72px;
   /* Match the active pill's edge clearance to its vertical clearance. */
-  padding-inline: 5.36px;
+  padding-inline: 6px;
   align-items: center;
   gap: 2px;
   overflow-x: auto;
@@ -105,7 +105,8 @@ html[dir="rtl"] .s-page--z .s-page__secondary-nav-rail { direction: rtl; }
   display: inline-grid;
   flex: 0 0 auto;
   box-sizing: border-box;
-  min-height: 32px;
+  width: 120px;
+  min-height: 30.72px;
   place-items: center;
   margin: 0;
   padding: var(--s-secondary-active-inset);
@@ -129,10 +130,12 @@ html[lang="en"] .s-page--z .s-page__secondary-nav-item > span[lang="en"],
 html[lang="ar"] .s-page--z .s-page__secondary-nav-item > span[lang="ar"] { display: inline; }
 
 .s-page--z .s-page__secondary-nav-item.is-active {
-  /* Widen the content box itself; the shared 10px inset remains unchanged. */
-  min-width: 120px;
   background: #080808;
   color: #FFFFFF;
+}
+
+.s-page--z .s-page__secondary-nav-item.is-pulsing {
+  animation: s-page-composer-pulse .18s ease-out;
 }
 
 .s-page--z .s-page__secondary-nav-item:active { transform: scale(.97); }
@@ -309,6 +312,28 @@ html[dir="rtl"] .s-page--z .s-page__z-hero-image > .s-page__image-group {
 
 html[dir="rtl"] .s-page--z .s-page__z-hero-image .s-page__image-copy p {
   background-image: linear-gradient(to left, #AF917B 0%, #AF917B 30%, #FFFFFF 100%);
+}
+
+@media (orientation: landscape) {
+  .s-page--z .s-page__z-hero-image {
+    height: auto;
+    aspect-ratio: 3 / 1;
+  }
+
+  .s-page--z .s-page__secondary-nav-rail {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    overflow-x: hidden;
+    cursor: default;
+    scroll-padding-inline: 0;
+    touch-action: pan-y;
+  }
+
+  .s-page--z .s-page__secondary-nav-item {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .s-page--z .s-page__conversation {
