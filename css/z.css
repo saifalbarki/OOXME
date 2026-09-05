@@ -17,7 +17,15 @@
    both original endpoint controls and their shared interaction hooks. */
 .s-page--z .s-page__z-input { display: none; }
 .s-page--z .s-page__add { grid-column: 1; }
-.s-page--z .s-page__z-submit { display: grid; grid-column: 3; }
+.s-page--z .s-page__z-submit {
+  display: grid;
+  grid-column: 3;
+  background: transparent !important;
+  color: #111;
+}
+
+html.s-route:not(.is-day-mode) .s-page--z .s-page__z-submit { color: #FFFFFF; }
+.s-page--z .s-page__z-submit .s-page__submit-icon { stroke-width: 2.12; }
 
 .s-page--z .s-page__conversation {
   top: calc(48px + (var(--s-x) * 4));
@@ -44,7 +52,7 @@
 .s-page--z .s-page__send-utilities {
   top: calc(100% + var(--s-x) + 1px);
   bottom: auto;
-  gap: var(--s-x);
+  gap: calc(var(--s-x) * .5);
 }
 
 .s-page--z .s-page__send-utility { transform: none; }
