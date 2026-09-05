@@ -45,7 +45,7 @@
   // This controller is shared by the full /x composition and the focused /z
   // composition. Optional later-section affordances are deliberately guarded so
   // a page may include only its relevant sections without creating a parallel UI.
-  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
+  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -253,14 +253,14 @@
       composer.style.setProperty('--s-composer-menu-height', `${composerMenu.offsetHeight}px`);
       composerMenu.classList.add('is-open');
       composerMenu.setAttribute('aria-hidden', 'false');
-      composerMenuPanel.classList.add('is-open');
-      composerMenuPanel.setAttribute('aria-hidden', 'false');
+      composerMenuPanel?.classList.add('is-open');
+      composerMenuPanel?.setAttribute('aria-hidden', 'false');
       return;
     }
 
     const menuWasOpen = composerMenu.classList.contains('is-open');
-    composerMenuPanel.classList.remove('is-open');
-    composerMenuPanel.setAttribute('aria-hidden', 'true');
+    composerMenuPanel?.classList.remove('is-open');
+    composerMenuPanel?.setAttribute('aria-hidden', 'true');
     if (!menuWasOpen) {
       composerMenu.setAttribute('aria-hidden', 'true');
       return;
@@ -398,7 +398,7 @@
   });
   submitButton.addEventListener('pointerdown', (event) => event.preventDefault());
 
-  [addButton, composerMenu, composerMenuPanel, sendUtilities].forEach((control) => {
+  [addButton, composerMenu, composerMenuPanel, sendUtilities].filter(Boolean).forEach((control) => {
     control.addEventListener('pointerdown', (event) => event.stopPropagation());
     control.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
   });
@@ -408,7 +408,7 @@
     if (page.classList.contains('s-page--z') && event.target === composer) pulseComposer();
   }, { passive: true });
   composerMenu.addEventListener('click', (event) => event.stopPropagation());
-  composerMenuPanel.addEventListener('click', (event) => event.stopPropagation());
+  composerMenuPanel?.addEventListener('click', (event) => event.stopPropagation());
   sendUtilities.addEventListener('click', (event) => event.stopPropagation());
   composerMenu.querySelectorAll('.s-page__composer-menu-item').forEach((item) => {
     item.addEventListener('pointerdown', () => {

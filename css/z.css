@@ -5,6 +5,7 @@
 }
 
 .s-page--z .s-page__composer {
+  --s-z-control-diameter: 40px;
   top: var(--s-x);
   bottom: auto;
   left: var(--s-x);
@@ -16,23 +17,54 @@
 /* Keep the /x control geometry; /z simply omits the text field while retaining
    both original endpoint controls and their shared interaction hooks. */
 .s-page--z .s-page__z-input { display: none; }
-.s-page--z .s-page__add { grid-column: 1; }
+.s-page--z .s-page__add {
+  grid-column: 1;
+  width: var(--s-z-control-diameter);
+  height: var(--s-z-control-diameter);
+  background: #080808;
+  color: #FFFFFF;
+}
 .s-page--z .s-page__z-submit {
   display: grid;
   grid-column: 3;
   background: transparent !important;
   color: #111;
 }
-.s-page--z :is(.s-page__add, .s-page__z-submit).is-active {
-  width: 40px;
-  height: 40px;
+.s-page--z .s-page__z-submit.is-active {
+  width: var(--s-z-control-diameter);
+  height: var(--s-z-control-diameter);
   background: rgba(255, 255, 255, .14) !important;
 }
-html.s-route.is-day-mode .s-page--z :is(.s-page__add, .s-page__z-submit).is-active {
+html.s-route.is-day-mode .s-page--z .s-page__z-submit.is-active {
   background: rgba(0, 0, 0, .055) !important;
 }
 
+/* The /z smile control keeps its single active circle black in either theme. */
+.s-page--z .s-page__add.is-active,
+html.s-route.is-day-mode .s-page--z .s-page__add.is-active {
+  width: var(--s-z-control-diameter);
+  height: var(--s-z-control-diameter);
+  background: #080808 !important;
+  color: #FFFFFF;
+}
+
+.s-page--z .s-page__z-add-smile {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 13px;
+  height: 13px;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 html.s-route:not(.is-day-mode) .s-page--z .s-page__z-submit { color: #FFFFFF; }
+html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
 .s-page--z .s-page__z-submit .s-page__submit-icon { stroke-width: 2.12; }
 .s-page--z .s-page__z-line {
   transform-box: fill-box;
@@ -40,10 +72,10 @@ html.s-route:not(.is-day-mode) .s-page--z .s-page__z-submit { color: #FFFFFF; }
   transition: transform .24s cubic-bezier(.22, .61, .36, 1);
 }
 .s-page--z .s-page__z-submit.is-active .s-page__z-line--top {
-  transform: translateY(3.21px) rotate(45deg);
+  transform: translateY(4px) rotate(45deg);
 }
 .s-page--z .s-page__z-submit.is-active .s-page__z-line--bottom {
-  transform: translateY(-3.21px) rotate(-45deg);
+  transform: translateY(-4px) rotate(-45deg);
 }
 
 .s-page--z .s-page__z-hero-image {
@@ -56,6 +88,23 @@ html.s-route:not(.is-day-mode) .s-page--z .s-page__z-submit { color: #FFFFFF; }
   height: calc(var(--s-x) * 8);
 }
 
+/* Arabic mirrors only the Section 1 image; its frame and overlay remain fixed. */
+html[dir="rtl"] .s-page--z .s-page__z-hero-image > .s-page__image-group {
+  transform: scaleX(-1);
+}
+
+/* Section 1 overlay copy uses a reading-direction walnut-to-white gradient. */
+.s-page--z .s-page__z-hero-image .s-page__image-copy p {
+  color: transparent;
+  background-image: linear-gradient(to right, #AF917B 0%, #AF917B 30%, #FFFFFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+html[dir="rtl"] .s-page--z .s-page__z-hero-image .s-page__image-copy p {
+  background-image: linear-gradient(to left, #AF917B 0%, #AF917B 30%, #FFFFFF 100%);
+}
+
 .s-page--z .s-page__conversation {
   top: calc(48px + (var(--s-x) * 4));
   bottom: var(--s-x);
@@ -65,8 +114,9 @@ html.s-route:not(.is-day-mode) .s-page--z .s-page__z-submit { color: #FFFFFF; }
 .s-page--z .s-page__composer-menu {
   top: calc(100% + var(--s-x) + 1px);
   bottom: auto;
-  right: 4px;
-  left: auto;
+  right: 0;
+  left: 0;
+  width: 100%;
   transform: none;
 }
 
@@ -74,19 +124,25 @@ html.s-route:not(.is-day-mode) .s-page--z .s-page__z-submit { color: #FFFFFF; }
   transform: none;
 }
 
-.s-page--z .s-page__composer-menu-panel {
-  top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) * .5));
-  bottom: auto;
-  right: 4px;
-  left: auto;
-  transform: none;
+.s-page--z .s-page__composer-menu-item {
+  padding-right: 14px;
+  padding-left: 14px;
+  text-align: left;
+}
+
+html[dir="rtl"] .s-page--z .s-page__composer-menu-item {
+  text-align: right;
 }
 
 .s-page--z .s-page__send-utilities {
-  top: calc(100% + (var(--s-x) * 2) + 1px + var(--s-composer-menu-height) + var(--s-composer-height));
-  right: 4px;
+  top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) * .5));
+  right: auto;
+  left: 50%;
   bottom: auto;
+  width: max-content;
+  flex-direction: row;
   gap: calc(var(--s-x) * .5);
+  transform: translateX(-50%);
 }
 
 .s-page--z .s-page__send-utility { transform: none; }
