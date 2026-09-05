@@ -101,12 +101,33 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
 
 /* The shared .98 line box clips the font's full ascender/descender bounds. */
 .s-page--z .s-page__z-hero-image .s-page__image-copy-main {
+  /* Contains the measured 3–4px glyph paint overhang plus a 1px safety edge. */
+  padding-top: 5px;
+  padding-bottom: 5px;
   line-height: 1.12;
 }
 
 /* Keep the image anchored while moving only the first group's text block. */
 .s-page--z [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
   transform: translateY(var(--s-z-first-group-shift, 0px));
+}
+
+/* The first description follows the shared /x chat-bubble type treatment. */
+.s-page--z [data-s-first-group] > .s-page__group-description {
+  font-family: OOXMEScript, Arial, sans-serif !important;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  direction: ltr;
+  text-align: left;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="ar"] .s-page--z [data-s-first-group] > .s-page__group-description {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif !important;
+  direction: rtl;
+  text-align: right;
+  letter-spacing: normal;
 }
 
 /* Arabic mirrors only the Section 1 image; its frame and overlay remain fixed. */
