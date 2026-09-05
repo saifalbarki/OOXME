@@ -134,7 +134,7 @@
     }
   };
   const zFirstGroupCopy = {
-    en: ['Welcome\nOur Next Partner', 'OOXME RP Network is now open for applications\nJoin us and benefit from exclusive advantages and rewards'],
+    en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive rewards'],
     ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الإحالة لأوكسوم متاحة الآن للتقديم\nانضم إلينا واستفد من مزايا ومكافآت حصرية']
   };
   const getGroupCopy = (language, groupIndex) => (

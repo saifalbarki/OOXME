@@ -92,6 +92,16 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
 .s-page--z .s-page__z-hero-image .s-page__image-copy {
   padding-top: var(--s-x);
   padding-bottom: var(--s-x);
+  overflow: visible;
+}
+
+.s-page--z .s-page__z-hero-image .s-page__image-copy-language {
+  overflow: visible;
+}
+
+/* The shared .98 line box clips the font's full ascender/descender bounds. */
+.s-page--z .s-page__z-hero-image .s-page__image-copy-main {
+  line-height: 1.12;
 }
 
 /* Keep the image anchored while moving only the first group's text block. */
