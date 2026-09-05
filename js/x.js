@@ -28,6 +28,7 @@
   const zSecondaryNav = document.querySelector('[data-s-z-secondary-nav]');
   const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
   const zSecondaryNavItems = Array.from(document.querySelectorAll('[data-s-z-secondary-nav-item]'));
+  const zDescription = document.querySelector('[data-s-z-description]');
   const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
@@ -48,7 +49,7 @@
   // This controller is shared by the full /x composition and the focused /z
   // composition. Optional later-section affordances are deliberately guarded so
   // a page may include only its relevant sections without creating a parallel UI.
-  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
+  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zDescription || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -145,6 +146,7 @@
   );
   let keyboardFrame = 0;
   let composerPulseFrame = 0;
+  let zDescriptionRevealFrame = 0;
   const secondaryNavPulseFrames = new Map();
   let composerMenuPulseFrame = 0;
   let composerMenuCloseTimer = 0;
@@ -241,6 +243,12 @@
     if (!isZPage) return;
     if (!heroRect) {
       zSecondaryNav.classList.remove('is-z-hero-attached');
+      if (zDescriptionRevealFrame) window.cancelAnimationFrame(zDescriptionRevealFrame);
+      zDescriptionRevealFrame = 0;
+      zDescription.classList.remove('is-z-description-attached', 'is-z-description-revealed');
+      zDescription.style.removeProperty('--s-z-description-top');
+      zDescription.style.removeProperty('--s-z-description-left');
+      zDescription.style.removeProperty('--s-z-description-width');
       return;
     }
     const landscapeGlassOutset = window.matchMedia('(orientation: landscape)').matches
@@ -250,6 +258,20 @@
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-left', `${heroRect.left.toFixed(3)}px`);
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-width', `${heroRect.width.toFixed(3)}px`);
     zSecondaryNav.classList.add('is-z-hero-attached');
+    const navStrokeOutset = 1 - (Number.parseFloat(window.getComputedStyle(zSecondaryNav).borderTopWidth) || 0);
+    const navRect = zSecondaryNav.getBoundingClientRect();
+    const firstTextRect = firstGroup.querySelector('.s-page__group-title').getBoundingClientRect();
+    const descriptionTop = navRect.bottom + navStrokeOutset + x;
+    zDescription.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
+    zDescription.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
+    zDescription.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
+    if (zDescriptionRevealFrame) window.cancelAnimationFrame(zDescriptionRevealFrame);
+    zDescription.classList.remove('is-z-description-revealed');
+    zDescription.classList.add('is-z-description-attached');
+    zDescriptionRevealFrame = window.requestAnimationFrame(() => {
+      zDescriptionRevealFrame = 0;
+      zDescription.classList.add('is-z-description-revealed');
+    });
     scheduleZSecondaryNavOverflow();
   };
 

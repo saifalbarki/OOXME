@@ -1,7 +1,7 @@
 /* /z keeps the /x system intact; only the shared composer is re-anchored. */
 .s-page--z .s-page__content {
   padding-top: calc(48px + (var(--s-x) * 2));
-  padding-bottom: calc(var(--s-x) * 4);
+  padding-bottom: calc((var(--s-x) * 4) + 100dvh);
 }
 
 .s-page--z .s-page__composer {
@@ -139,6 +139,94 @@ html[lang="ar"] .s-page--z .s-page__secondary-nav-item > span[lang="ar"] { displ
 }
 
 .s-page--z .s-page__secondary-nav-item:active { transform: scale(.97); }
+
+.s-page--z .s-page__z-description {
+  position: absolute;
+  z-index: 2;
+  top: var(--s-z-description-top, 0px);
+  right: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  color: #FFFFFF;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.s-page--z .s-page__z-description.is-z-description-attached {
+  position: fixed;
+  top: var(--s-z-description-top);
+  right: auto;
+  left: var(--s-z-description-left);
+  width: var(--s-z-description-width);
+  opacity: 1;
+  visibility: visible;
+}
+
+.s-page--z .s-page__z-description-copy {
+  display: none;
+  width: 100%;
+  font: 500 13px/1 OOXMEScript, Arial, sans-serif;
+  white-space: normal;
+}
+
+.s-page--z .s-page__z-description-copy[lang="en"] { display: block; }
+.s-page--z .s-page__z-description-copy[lang="ar"] {
+  display: none;
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+html[lang="ar"] .s-page--z .s-page__z-description-copy[lang="en"] { display: none; }
+html[lang="ar"] .s-page--z .s-page__z-description-copy[lang="ar"] { display: block; }
+
+.s-page--z .s-page__z-description-copy h2,
+.s-page--z .s-page__z-description-copy p {
+  margin: 0;
+  color: inherit;
+  font-family: OOXMEScript, Arial, sans-serif !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 13px;
+}
+
+html[lang="ar"] .s-page--z .s-page__z-description-copy h2,
+html[lang="ar"] .s-page--z .s-page__z-description-copy p {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif !important;
+}
+
+.s-page--z .s-page__z-description-explanation {
+  margin-top: var(--s-x);
+}
+
+.s-page--z .s-page__z-description-explanation p + p {
+  margin-top: var(--s-x);
+}
+
+.s-page--z .s-page__z-description-date {
+  margin-top: var(--s-x) !important;
+}
+
+.s-page--z .s-page__z-description-title,
+.s-page--z .s-page__z-description-explanation,
+.s-page--z .s-page__z-description-date {
+  opacity: 0;
+  filter: blur(12px);
+  transform: translateY(6px);
+  transition: opacity .36s cubic-bezier(.22, .61, .36, 1), filter .36s cubic-bezier(.22, .61, .36, 1), transform .36s cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page--z .s-page__z-description.is-z-description-revealed .s-page__z-description-title,
+.s-page--z .s-page__z-description.is-z-description-revealed .s-page__z-description-explanation,
+.s-page--z .s-page__z-description.is-z-description-revealed .s-page__z-description-date {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+.s-page--z .s-page__z-description.is-z-description-revealed .s-page__z-description-explanation { transition-delay: .12s; }
+.s-page--z .s-page__z-description.is-z-description-revealed .s-page__z-description-date { transition-delay: .24s; }
+html.s-route.is-day-mode .s-page--z .s-page__z-description { color: #111111; }
 
 .s-page--z .s-page__secondary-nav.has-hidden-right .s-page__secondary-nav-rail {
   -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 22px), transparent 100%);
@@ -315,6 +403,10 @@ html[dir="rtl"] .s-page--z .s-page__z-hero-image .s-page__image-copy p {
 }
 
 @media (orientation: landscape) {
+  .s-page--z .s-page__major-section:first-child {
+    min-height: 100dvh;
+  }
+
   .s-page--z .s-page__z-hero-image {
     height: auto;
     aspect-ratio: 3 / 1;
@@ -447,7 +539,7 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
 }
 
 @media (orientation: portrait) {
-  .s-page--z .s-page__content { padding-bottom: calc(var(--s-x) * 4); }
+  .s-page--z .s-page__content { padding-bottom: calc((var(--s-x) * 4) + 100dvh); }
   .s-page--z .s-page__major-section { height: auto; min-height: 100dvh; }
   .s-page--z .s-page__z-hero-image.is-portrait-composed {
     top: auto;
