@@ -404,8 +404,6 @@ html.s-route.is-day-mode .s-page--z .s-page__add.is-active {
 }
 
 .s-page--z .s-page__z-add-smile {
-  --s-z-face-gaze-x: 0px;
-  --s-z-face-gaze-y: 0px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -420,67 +418,9 @@ html.s-route.is-day-mode .s-page--z .s-page__add.is-active {
   stroke-linejoin: round;
 }
 
-.s-page--z .s-page__z-face-shell {
-  transform-box: view-box;
-  transform-origin: 6.5px 6.5px;
-  animation: s-page-z-face-life 4.8s cubic-bezier(.22, .61, .36, 1) infinite;
-}
-
 .s-page--z .s-page__z-face-eyes {
   fill: currentColor;
   stroke: none;
-  transform: translate(var(--s-z-face-gaze-x), var(--s-z-face-gaze-y));
-  transition: transform .18s cubic-bezier(.22, .61, .36, 1);
-}
-
-.s-page--z .s-page__z-face-mouth {
-  d: path("M1.5 9Q6.5 14 11.5 9");
-  transition: d .22s cubic-bezier(.22, .61, .36, 1);
-}
-
-.s-page--z .s-page__z-add-smile[data-face-state="tap"] .s-page__z-face-mouth {
-  d: path("M.7 8.6Q6.5 14.2 12.3 8.6");
-}
-
-.s-page--z .s-page__z-add-smile[data-face-state="drag"] .s-page__z-face-shell {
-  animation: s-page-z-face-drag .16s ease-in-out infinite;
-}
-
-.s-page--z .s-page__z-add-smile[data-face-state="drag"] .s-page__z-face-eyes {
-  transition-duration: .06s;
-}
-
-.s-page--z .s-page__z-add-smile[data-face-state="drag"] .s-page__z-face-mouth {
-  d: path("M1.5 11Q6.5 6 11.5 11");
-}
-
-.s-page--z .s-page__z-add-smile[data-face-state="settle"] .s-page__z-face-shell {
-  animation: none;
-}
-
-.s-page--z .s-page__z-add-smile[data-face-state="settle"] .s-page__z-face-mouth {
-  d: path("M2 9.7Q6.5 9.7 11 9.7");
-}
-
-.s-page--z .s-page__z-add-smile[data-face-state="apply"] .s-page__z-face-shell {
-  animation: s-page-z-face-apply 2.8s cubic-bezier(.22, .61, .36, 1) infinite;
-}
-
-@keyframes s-page-z-face-life {
-  0%, 82%, 100% { transform: translateY(0); }
-  90% { transform: translateY(-.08px); }
-}
-
-@keyframes s-page-z-face-drag {
-  0%, 100% { transform: rotate(-1.25deg); }
-  50% { transform: rotate(1.25deg); }
-}
-
-@keyframes s-page-z-face-apply {
-  0%, 68%, 100% { transform: rotate(0deg) translateY(0); }
-  76% { transform: rotate(-3deg) translateY(-.12px); }
-  84% { transform: rotate(2.5deg) translateY(.08px); }
-  92% { transform: rotate(-1deg) translateY(0); }
 }
 
 html.s-route:not(.is-day-mode) .s-page--z .s-page__z-submit { color: #FFFFFF; }
