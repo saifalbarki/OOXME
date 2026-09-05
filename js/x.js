@@ -395,6 +395,11 @@
     control.addEventListener('pointerdown', (event) => event.stopPropagation());
     control.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
   });
+  // /z keeps the shared bar feedback for an empty-surface tap, without
+  // changing /x's established empty-area behavior or triggering any action.
+  composer.addEventListener('pointerdown', (event) => {
+    if (page.classList.contains('s-page--z') && event.target === composer) pulseComposer();
+  }, { passive: true });
   composerMenu.addEventListener('click', (event) => event.stopPropagation());
   composerMenuPanel.addEventListener('click', (event) => event.stopPropagation());
   sendUtilities.addEventListener('click', (event) => event.stopPropagation());

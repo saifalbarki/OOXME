@@ -17,6 +17,12 @@
    both original endpoint controls and their shared interaction hooks. */
 .s-page--z .s-page__z-input { display: none; }
 .s-page--z .s-page__add { grid-column: 1; }
+.s-page--z .s-page__add.is-active {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, .14);
+}
+html.s-route.is-day-mode .s-page--z .s-page__add.is-active {
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, .055);
+}
 .s-page--z .s-page__z-submit {
   display: grid;
   grid-column: 3;
