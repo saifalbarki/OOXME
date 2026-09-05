@@ -29,6 +29,7 @@
   const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
   const zSecondaryNavIndicator = document.querySelector('[data-s-z-secondary-nav-indicator]');
   const zSecondaryNavItems = Array.from(document.querySelectorAll('[data-s-z-secondary-nav-item]'));
+  const zContentSlot = document.querySelector('[data-s-z-content-slot]');
   const zDescription = document.querySelector('[data-s-z-description]');
   const zDescriptionDate = zDescription?.querySelector('.s-page__z-description-date');
   const zRequirements = document.querySelector('[data-s-z-requirements]');
@@ -55,14 +56,22 @@
   // This controller is shared by the full /x composition and the focused /z
   // composition. Optional later-section affordances are deliberately guarded so
   // a page may include only its relevant sections without creating a parallel UI.
-  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zSecondaryNavIndicator || !zDescription || !zRequirements || !zRewards || !zApply || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
+  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zSecondaryNavIndicator || !zContentSlot || !zDescription || !zRequirements || !zRewards || !zApply || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
 
   const syncZTextFontSize = () => {
     if (!isZPage || !zDescriptionDate) return;
     const referenceSize = window.getComputedStyle(zDescriptionDate).fontSize;
     page.style.setProperty('--s-z-reference-font-size', referenceSize);
   };
+  const syncZApplyTitleExplanationGap = () => {
+    if (!isZPage || !zApply) return;
+    const explanation = zApply.querySelector('.s-page__z-apply-row p');
+    if (!explanation) return;
+    const lineHeight = window.getComputedStyle(explanation).lineHeight;
+    if (lineHeight && lineHeight !== 'normal') zApply.style.setProperty('--s-z-apply-title-gap', lineHeight);
+  };
   syncZTextFontSize();
+  syncZApplyTitleExplanationGap();
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -160,6 +169,7 @@
   let keyboardFrame = 0;
   let composerPulseFrame = 0;
   let zContentRevealFrame = 0;
+  let zContentTransitionTimer = 0;
   let zActiveContentIndex = 0;
   const secondaryNavPulseFrames = new Map();
   let composerMenuPulseFrame = 0;
@@ -224,36 +234,27 @@
   let manualThemeOverride = false;
   const arabicScriptPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
 
-  const syncZSecondaryNavOverflow = () => {
-    zSecondaryNavOverflowFrame = 0;
-    if (!isZPage) return;
-    const railRect = zSecondaryNavRail.getBoundingClientRect();
-    const itemRects = zSecondaryNavItems.map((item) => item.getBoundingClientRect());
-    zSecondaryNav.classList.toggle('has-hidden-left', itemRects.some((rect) => rect.left < railRect.left - 0.5));
-    zSecondaryNav.classList.toggle('has-hidden-right', itemRects.some((rect) => rect.right > railRect.right + 0.5));
+  const zPanels = [zDescription, zRequirements, zRewards, zApply];
+  const zPanelClasses = [['is-z-description-attached', 'is-z-description-revealed'], ['is-z-requirements-attached', 'is-z-requirements-revealed'], ['is-z-rewards-attached', 'is-z-rewards-revealed'], ['is-z-apply-attached', 'is-z-apply-revealed']];
+
+  const syncZContentBoxHorizontalGeometry = () => {
+    if (!isZPage || !zSecondaryNav.classList.contains('is-z-hero-attached')) return;
+    const menuRect = composerMenu.getBoundingClientRect();
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-left', `${menuRect.left.toFixed(3)}px`);
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-width', `${menuRect.width.toFixed(3)}px`);
   };
 
-  const scheduleZSecondaryNavOverflow = () => {
-    if (!isZPage || zSecondaryNavOverflowFrame) return;
-    zSecondaryNavOverflowFrame = window.requestAnimationFrame(syncZSecondaryNavOverflow);
-  };
-
-  const syncZSecondaryNavIndicator = ({ animate = true } = {}) => {
-    if (!isZPage) return;
-    const activeItem = zSecondaryNavItems[zActiveContentIndex] || zSecondaryNavItems[0];
-    if (!activeItem) return;
-    if (!animate) zSecondaryNavRail.classList.remove('is-active-indicator-ready');
-    zSecondaryNavIndicator.style.setProperty('--s-z-active-indicator-x', `${activeItem.offsetLeft}px`);
-    zSecondaryNavIndicator.style.setProperty('--s-z-active-indicator-width', `${activeItem.offsetWidth}px`);
-    if (animate) {
-      zSecondaryNavRail.classList.add('is-active-indicator-ready');
-      return;
-    }
-    if (zSecondaryNavIndicatorReadyFrame) window.cancelAnimationFrame(zSecondaryNavIndicatorReadyFrame);
-    zSecondaryNavIndicatorReadyFrame = window.requestAnimationFrame(() => {
-      zSecondaryNavIndicatorReadyFrame = 0;
-      zSecondaryNavRail.classList.add('is-active-indicator-ready');
+  const syncZContentBoxHeight = () => {
+    if (!isZPage || !zSecondaryNav.classList.contains('is-z-hero-attached')) return;
+    zSecondaryNav.classList.add('is-z-measuring');
+    let largestContentHeight = 0;
+    zPanels.forEach((panel) => {
+      panel.classList.add('is-z-measuring-panel');
+      largestContentHeight = Math.max(largestContentHeight, Math.ceil(panel.scrollHeight));
+      panel.classList.remove('is-z-measuring-panel');
     });
+    zSecondaryNav.classList.remove('is-z-measuring');
+    zSecondaryNav.style.setProperty('--s-z-content-box-height', `${(zSecondaryNavRail.offsetHeight || 36) + 6 + largestContentHeight + 16}px`);
   };
 
   const resetZSecondaryNavAlignment = () => {
@@ -261,40 +262,47 @@
     if (zSecondaryNavAlignmentFrame) window.cancelAnimationFrame(zSecondaryNavAlignmentFrame);
     zSecondaryNavAlignmentFrame = window.requestAnimationFrame(() => {
       zSecondaryNavAlignmentFrame = 0;
-      // Modern RTL scrollers use zero as their logical start (the right edge).
-      zSecondaryNavRail.scrollLeft = 0;
-      zSecondaryNav.querySelector('.is-active')?.scrollIntoView({
-        behavior: 'auto',
-        block: 'nearest',
-        inline: 'nearest'
-      });
-      syncZSecondaryNavIndicator({ animate: false });
-      scheduleZSecondaryNavOverflow();
+      syncZApplyTitleExplanationGap();
+      syncZContentBoxHorizontalGeometry();
+      syncZContentBoxHeight();
     });
   };
 
   const syncZActiveContent = (attached = zSectionOneLocked) => {
     if (!isZPage) return;
     if (zContentRevealFrame) window.cancelAnimationFrame(zContentRevealFrame);
+    if (zContentTransitionTimer) window.clearTimeout(zContentTransitionTimer);
     zContentRevealFrame = 0;
-    zDescription.classList.remove('is-z-description-attached', 'is-z-description-revealed');
-    zRequirements.classList.remove('is-z-requirements-attached', 'is-z-requirements-revealed');
-    zRewards.classList.remove('is-z-rewards-attached', 'is-z-rewards-revealed');
-    zApply.classList.remove('is-z-apply-attached', 'is-z-apply-revealed');
-    if (!attached || ![0, 1, 2, 3].includes(zActiveContentIndex)) return;
-    const panels = [
-      { element: zDescription, attachedClass: 'is-z-description-attached', revealedClass: 'is-z-description-revealed' },
-      { element: zRequirements, attachedClass: 'is-z-requirements-attached', revealedClass: 'is-z-requirements-revealed' },
-      { element: zRewards, attachedClass: 'is-z-rewards-attached', revealedClass: 'is-z-rewards-revealed' },
-      { element: zApply, attachedClass: 'is-z-apply-attached', revealedClass: 'is-z-apply-revealed' }
-    ];
-    const { element: target, attachedClass, revealedClass } = panels[zActiveContentIndex];
-    target.classList.add(attachedClass);
-    zContentRevealFrame = window.requestAnimationFrame(() => {
-      zContentRevealFrame = 0;
-      if (!zSectionOneLocked || panels[zActiveContentIndex]?.element !== target) return;
-      target.classList.add(revealedClass);
-    });
+    zContentTransitionTimer = 0;
+    const outgoingIndex = zPanels.findIndex((panel, index) => panel.classList.contains(zPanelClasses[index][0]) && panel.classList.contains(zPanelClasses[index][1]));
+    zPanels.forEach((panel) => panel.classList.remove('is-z-panel-exiting'));
+    if (!attached || ![0, 1, 2, 3].includes(zActiveContentIndex)) {
+      zPanels.forEach((panel, index) => panel.classList.remove(...zPanelClasses[index]));
+      return;
+    }
+    const target = zPanels[zActiveContentIndex];
+    const [attachedClass, revealedClass] = zPanelClasses[zActiveContentIndex];
+    const revealTarget = () => {
+      zPanels.forEach((panel, index) => panel.classList.remove(...zPanelClasses[index]));
+      target.classList.add(attachedClass);
+      zContentRevealFrame = window.requestAnimationFrame(() => {
+        zContentRevealFrame = 0;
+        if (!zSectionOneLocked || zPanels[zActiveContentIndex] !== target) return;
+        target.classList.add(revealedClass);
+      });
+    };
+    if (outgoingIndex !== -1 && zPanels[outgoingIndex] !== target) {
+      const outgoing = zPanels[outgoingIndex];
+      outgoing.classList.remove(zPanelClasses[outgoingIndex][1]);
+      outgoing.classList.add('is-z-panel-exiting');
+      zContentTransitionTimer = window.setTimeout(() => {
+        zContentTransitionTimer = 0;
+        outgoing.classList.remove('is-z-panel-exiting');
+        revealTarget();
+      }, 180);
+      return;
+    }
+    revealTarget();
   };
 
   const setZSecondaryNavHeroAttached = (heroRect = null, x = 0) => {
@@ -302,117 +310,58 @@
     if (!heroRect) {
       zSecondaryNav.classList.remove('is-z-hero-attached');
       syncZActiveContent(false);
-      zDescription.style.removeProperty('--s-z-description-top');
-      zDescription.style.removeProperty('--s-z-description-left');
-      zDescription.style.removeProperty('--s-z-description-width');
-      zRequirements.style.removeProperty('--s-z-description-top');
-      zRequirements.style.removeProperty('--s-z-description-left');
-      zRequirements.style.removeProperty('--s-z-description-width');
-      zRewards.style.removeProperty('--s-z-description-top');
-      zRewards.style.removeProperty('--s-z-description-left');
-      zRewards.style.removeProperty('--s-z-description-width');
-      zApply.style.removeProperty('--s-z-description-top');
-      zApply.style.removeProperty('--s-z-description-left');
-      zApply.style.removeProperty('--s-z-description-width');
-      zApply.style.removeProperty('--s-z-apply-title-gap');
+      zSecondaryNav.style.removeProperty('--s-z-content-box-height');
+      zSecondaryNav.style.removeProperty('--s-z-secondary-nav-width');
+      zSecondaryNav.style.removeProperty('--s-z-secondary-nav-left');
       return;
     }
-    const landscapeGlassOutset = window.matchMedia('(orientation: landscape)').matches
-      ? Math.max(0, 1 - (Number.parseFloat(window.getComputedStyle(zSecondaryNav).borderTopWidth) || 0))
-      : 0;
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${(heroRect.top + heroRect.height + x + landscapeGlassOutset).toFixed(3)}px`);
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-left', `${heroRect.left.toFixed(3)}px`);
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-width', `${heroRect.width.toFixed(3)}px`);
+    // The composer menu is the only authority for the horizontal geometry.
+    // Its border-box rect includes its own content width, inset, and stroke.
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${(heroRect.top + heroRect.height + x).toFixed(3)}px`);
     zSecondaryNav.classList.add('is-z-hero-attached');
-    const navStrokeOutset = 1 - (Number.parseFloat(window.getComputedStyle(zSecondaryNav).borderTopWidth) || 0);
-    const navRect = zSecondaryNav.getBoundingClientRect();
-    const navStyle = window.getComputedStyle(zSecondaryNav);
-    const navInnerLeft = navRect.left
-      + (Number.parseFloat(navStyle.borderLeftWidth) || 0)
-      + (Number.parseFloat(navStyle.paddingLeft) || 0);
-    const navInnerRight = navRect.right
-      - (Number.parseFloat(navStyle.borderRightWidth) || 0)
-      - (Number.parseFloat(navStyle.paddingRight) || 0);
-    const firstTitleRect = firstGroup.querySelector('.s-page__group-title').getBoundingClientRect();
-    const firstDescriptionRect = firstGroup.querySelector('.s-page__group-description').getBoundingClientRect();
-    const applyTitleGap = Math.max(0, firstDescriptionRect.top - firstTitleRect.bottom);
-    const descriptionTop = navRect.bottom + navStrokeOutset + x;
-    zDescription.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
-    zDescription.style.setProperty('--s-z-description-left', `${navInnerLeft.toFixed(3)}px`);
-    zDescription.style.setProperty('--s-z-description-width', `${(navInnerRight - navInnerLeft).toFixed(3)}px`);
-    zRequirements.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
-    zRequirements.style.setProperty('--s-z-description-left', `${navInnerLeft.toFixed(3)}px`);
-    zRequirements.style.setProperty('--s-z-description-width', `${(navInnerRight - navInnerLeft).toFixed(3)}px`);
-    zRewards.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
-    zRewards.style.setProperty('--s-z-description-left', `${navInnerLeft.toFixed(3)}px`);
-    zRewards.style.setProperty('--s-z-description-width', `${(navInnerRight - navInnerLeft).toFixed(3)}px`);
-    zApply.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
-    zApply.style.setProperty('--s-z-description-left', `${navInnerLeft.toFixed(3)}px`);
-    zApply.style.setProperty('--s-z-description-width', `${(navInnerRight - navInnerLeft).toFixed(3)}px`);
-    zApply.style.setProperty('--s-z-apply-title-gap', `${applyTitleGap.toFixed(3)}px`);
+    syncZContentBoxHorizontalGeometry();
+    syncZContentBoxHeight();
     syncZActiveContent(true);
-    scheduleZSecondaryNavOverflow();
   };
 
   if (isZPage) {
-    let dragStart = null;
-    let suppressNavClick = false;
-
-    zSecondaryNavItems.forEach((item) => {
-      item.addEventListener('click', () => {
-        if (suppressNavClick) {
-          suppressNavClick = false;
-          return;
-        }
-        pulseSecondaryNavItem(item);
-        zSecondaryNavItems.forEach((candidate) => {
-          const isActive = candidate === item;
-          candidate.classList.toggle('is-active', isActive);
-          candidate.setAttribute('aria-pressed', String(isActive));
-        });
-        zActiveContentIndex = zSecondaryNavItems.indexOf(item);
-        syncZSecondaryNavIndicator();
-        syncZActiveContent(zHeroImage.classList.contains('is-z-scroll-locked'));
-        item.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
-        scheduleZSecondaryNavOverflow();
+    let swipeStart = null;
+    const setZActiveSection = (index) => {
+      zActiveContentIndex = (index + zSecondaryNavItems.length) % zSecondaryNavItems.length;
+      zSecondaryNavItems.forEach((item, itemIndex) => {
+        const active = itemIndex === zActiveContentIndex;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-pressed', String(active));
       });
-    });
-
-    zApplyButtons.forEach((button) => {
-      button.addEventListener('pointerdown', () => pulseSecondaryNavItem(button), { passive: true });
-      button.addEventListener('animationend', (event) => {
-        if (event.animationName === 's-page-composer-pulse') button.classList.remove('is-pulsing');
-      });
-    });
-
-    zSecondaryNavRail.addEventListener('scroll', scheduleZSecondaryNavOverflow, { passive: true });
-    zSecondaryNavRail.addEventListener('pointerdown', (event) => {
-      if (event.pointerType !== 'mouse' || event.button !== 0) return;
-      dragStart = { x: event.clientX, y: event.clientY, scrollLeft: zSecondaryNavRail.scrollLeft, active: false };
-    }, { passive: true });
-    zSecondaryNavRail.addEventListener('pointermove', (event) => {
-      if (!dragStart) return;
-      const deltaX = event.clientX - dragStart.x;
-      const deltaY = event.clientY - dragStart.y;
-      if (!dragStart.active && Math.abs(deltaX) > 5 && Math.abs(deltaX) > Math.abs(deltaY)) {
-        dragStart.active = true;
-        suppressNavClick = true;
-        zSecondaryNavRail.classList.add('is-dragging');
-        zSecondaryNavRail.setPointerCapture?.(event.pointerId);
-      }
-      if (!dragStart.active) return;
-      event.preventDefault();
-      zSecondaryNavRail.scrollLeft = dragStart.scrollLeft - deltaX;
-    });
-    const finishSecondaryNavDrag = () => {
-      if (!dragStart) return;
-      dragStart = null;
-      zSecondaryNavRail.classList.remove('is-dragging');
-      scheduleZSecondaryNavOverflow();
-      window.setTimeout(() => { suppressNavClick = false; }, 0);
+      syncZActiveContent(zSectionOneLocked);
     };
-    zSecondaryNavRail.addEventListener('pointerup', finishSecondaryNavDrag, { passive: true });
-    zSecondaryNavRail.addEventListener('pointercancel', finishSecondaryNavDrag, { passive: true });
+    const pulseZContentBox = () => {
+      zSecondaryNav.classList.remove('is-pulsing');
+      window.requestAnimationFrame(() => zSecondaryNav.classList.add('is-pulsing'));
+    };
+    const beginSwipe = (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      swipeStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    };
+    const finishSwipe = (event) => {
+      if (!swipeStart || event.pointerId !== swipeStart.pointerId) return;
+      const deltaX = event.clientX - swipeStart.x;
+      const deltaY = event.clientY - swipeStart.y;
+      swipeStart = null;
+      if (Math.abs(deltaX) < 36 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+      const movesForward = document.documentElement.dir === 'rtl' ? deltaX > 0 : deltaX < 0;
+      setZActiveSection(zActiveContentIndex + (movesForward ? 1 : -1));
+      pulseZContentBox();
+    };
+    [zSecondaryNavRail, zContentSlot].forEach((target) => {
+      target.addEventListener('pointerdown', beginSwipe, { passive: true });
+      target.addEventListener('pointerup', finishSwipe, { passive: true });
+      target.addEventListener('pointercancel', () => { swipeStart = null; }, { passive: true });
+    });
+    zApplyButtons.forEach((button) => button.addEventListener('pointerdown', pulseZContentBox, { passive: true }));
+    zSecondaryNav.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-menu-pulse') zSecondaryNav.classList.remove('is-pulsing');
+    });
     resetZSecondaryNavAlignment();
   }
 
@@ -1867,7 +1816,6 @@
       scheduleStablePortraitSectionLayout();
     }
     scheduleKeyboardOffset();
-    scheduleZSecondaryNavOverflow();
   };
 
   window.addEventListener('resize', handleViewportGeometryChange, { passive: true });
