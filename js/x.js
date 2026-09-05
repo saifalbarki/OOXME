@@ -29,6 +29,10 @@
   const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
   const zSecondaryNavItems = Array.from(document.querySelectorAll('[data-s-z-secondary-nav-item]'));
   const zDescription = document.querySelector('[data-s-z-description]');
+  const zRequirements = document.querySelector('[data-s-z-requirements]');
+  const zRewards = document.querySelector('[data-s-z-rewards]');
+  const zApply = document.querySelector('[data-s-z-apply]');
+  const zApplyButtons = Array.from(document.querySelectorAll('[data-s-z-apply] button'));
   const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
@@ -49,7 +53,7 @@
   // This controller is shared by the full /x composition and the focused /z
   // composition. Optional later-section affordances are deliberately guarded so
   // a page may include only its relevant sections without creating a parallel UI.
-  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zDescription || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
+  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zDescription || !zRequirements || !zRewards || !zApply || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -146,7 +150,8 @@
   );
   let keyboardFrame = 0;
   let composerPulseFrame = 0;
-  let zDescriptionRevealFrame = 0;
+  let zContentRevealFrame = 0;
+  let zActiveContentIndex = 0;
   const secondaryNavPulseFrames = new Map();
   let composerMenuPulseFrame = 0;
   let composerMenuCloseTimer = 0;
@@ -239,16 +244,47 @@
     });
   };
 
+  const syncZActiveContent = (attached = zSectionOneLocked) => {
+    if (!isZPage) return;
+    if (zContentRevealFrame) window.cancelAnimationFrame(zContentRevealFrame);
+    zContentRevealFrame = 0;
+    zDescription.classList.remove('is-z-description-attached', 'is-z-description-revealed');
+    zRequirements.classList.remove('is-z-requirements-attached', 'is-z-requirements-revealed');
+    zRewards.classList.remove('is-z-rewards-attached', 'is-z-rewards-revealed');
+    zApply.classList.remove('is-z-apply-attached', 'is-z-apply-revealed');
+    if (!attached || ![0, 1, 2, 3].includes(zActiveContentIndex)) return;
+    const panels = [
+      { element: zDescription, attachedClass: 'is-z-description-attached', revealedClass: 'is-z-description-revealed' },
+      { element: zRequirements, attachedClass: 'is-z-requirements-attached', revealedClass: 'is-z-requirements-revealed' },
+      { element: zRewards, attachedClass: 'is-z-rewards-attached', revealedClass: 'is-z-rewards-revealed' },
+      { element: zApply, attachedClass: 'is-z-apply-attached', revealedClass: 'is-z-apply-revealed' }
+    ];
+    const { element: target, attachedClass, revealedClass } = panels[zActiveContentIndex];
+    target.classList.add(attachedClass);
+    zContentRevealFrame = window.requestAnimationFrame(() => {
+      zContentRevealFrame = 0;
+      if (!zSectionOneLocked || panels[zActiveContentIndex]?.element !== target) return;
+      target.classList.add(revealedClass);
+    });
+  };
+
   const setZSecondaryNavHeroAttached = (heroRect = null, x = 0) => {
     if (!isZPage) return;
     if (!heroRect) {
       zSecondaryNav.classList.remove('is-z-hero-attached');
-      if (zDescriptionRevealFrame) window.cancelAnimationFrame(zDescriptionRevealFrame);
-      zDescriptionRevealFrame = 0;
-      zDescription.classList.remove('is-z-description-attached', 'is-z-description-revealed');
+      syncZActiveContent(false);
       zDescription.style.removeProperty('--s-z-description-top');
       zDescription.style.removeProperty('--s-z-description-left');
       zDescription.style.removeProperty('--s-z-description-width');
+      zRequirements.style.removeProperty('--s-z-description-top');
+      zRequirements.style.removeProperty('--s-z-description-left');
+      zRequirements.style.removeProperty('--s-z-description-width');
+      zRewards.style.removeProperty('--s-z-description-top');
+      zRewards.style.removeProperty('--s-z-description-left');
+      zRewards.style.removeProperty('--s-z-description-width');
+      zApply.style.removeProperty('--s-z-description-top');
+      zApply.style.removeProperty('--s-z-description-left');
+      zApply.style.removeProperty('--s-z-description-width');
       return;
     }
     const landscapeGlassOutset = window.matchMedia('(orientation: landscape)').matches
@@ -265,13 +301,16 @@
     zDescription.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
     zDescription.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
     zDescription.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
-    if (zDescriptionRevealFrame) window.cancelAnimationFrame(zDescriptionRevealFrame);
-    zDescription.classList.remove('is-z-description-revealed');
-    zDescription.classList.add('is-z-description-attached');
-    zDescriptionRevealFrame = window.requestAnimationFrame(() => {
-      zDescriptionRevealFrame = 0;
-      zDescription.classList.add('is-z-description-revealed');
-    });
+    zRequirements.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
+    zRequirements.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
+    zRequirements.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
+    zRewards.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
+    zRewards.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
+    zRewards.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
+    zApply.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
+    zApply.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
+    zApply.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
+    syncZActiveContent(true);
     scheduleZSecondaryNavOverflow();
   };
 
@@ -291,8 +330,17 @@
           candidate.classList.toggle('is-active', isActive);
           candidate.setAttribute('aria-pressed', String(isActive));
         });
+        zActiveContentIndex = zSecondaryNavItems.indexOf(item);
+        syncZActiveContent(zHeroImage.classList.contains('is-z-scroll-locked'));
         item.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
         scheduleZSecondaryNavOverflow();
+      });
+    });
+
+    zApplyButtons.forEach((button) => {
+      button.addEventListener('pointerdown', () => pulseSecondaryNavItem(button), { passive: true });
+      button.addEventListener('animationend', (event) => {
+        if (event.animationName === 's-page-composer-pulse') button.classList.remove('is-pulsing');
       });
     });
 
