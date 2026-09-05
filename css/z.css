@@ -209,12 +209,12 @@ html[lang="ar"] .s-page--z .s-page__z-description-copy p {
 .s-page--z .s-page__z-description-explanation {
   margin-top: var(--s-x);
   direction: ltr;
-  text-align: justify;
+  text-align: left;
 }
 
 .s-page--z .s-page__z-description-copy[lang="ar"] .s-page__z-description-explanation {
   direction: rtl;
-  text-align: justify;
+  text-align: right;
 }
 
 .s-page--z .s-page__z-description-explanation p + p {
