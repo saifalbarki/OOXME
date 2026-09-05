@@ -27,8 +27,10 @@
   const firstGroup = document.querySelector('[data-s-first-group]');
   const zSecondaryNav = document.querySelector('[data-s-z-secondary-nav]');
   const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
+  const zSecondaryNavIndicator = document.querySelector('[data-s-z-secondary-nav-indicator]');
   const zSecondaryNavItems = Array.from(document.querySelectorAll('[data-s-z-secondary-nav-item]'));
   const zDescription = document.querySelector('[data-s-z-description]');
+  const zDescriptionDate = zDescription?.querySelector('.s-page__z-description-date');
   const zRequirements = document.querySelector('[data-s-z-requirements]');
   const zRewards = document.querySelector('[data-s-z-rewards]');
   const zApply = document.querySelector('[data-s-z-apply]');
@@ -53,7 +55,14 @@
   // This controller is shared by the full /x composition and the focused /z
   // composition. Optional later-section affordances are deliberately guarded so
   // a page may include only its relevant sections without creating a parallel UI.
-  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zDescription || !zRequirements || !zRewards || !zApply || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
+  if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zSecondaryNavIndicator || !zDescription || !zRequirements || !zRewards || !zApply || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
+
+  const syncZTextFontSize = () => {
+    if (!isZPage || !zDescriptionDate) return;
+    const referenceSize = window.getComputedStyle(zDescriptionDate).fontSize;
+    page.style.setProperty('--s-z-reference-font-size', referenceSize);
+  };
+  syncZTextFontSize();
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -192,6 +201,7 @@
   let zSectionOneReleaseOffset = 0;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
+  let zSecondaryNavIndicatorReadyFrame = 0;
   let imageCopyRevealTimer = 0;
   const metricCountFrames = new Map();
   const metricCountTimers = new Map();
@@ -228,6 +238,24 @@
     zSecondaryNavOverflowFrame = window.requestAnimationFrame(syncZSecondaryNavOverflow);
   };
 
+  const syncZSecondaryNavIndicator = ({ animate = true } = {}) => {
+    if (!isZPage) return;
+    const activeItem = zSecondaryNavItems[zActiveContentIndex] || zSecondaryNavItems[0];
+    if (!activeItem) return;
+    if (!animate) zSecondaryNavRail.classList.remove('is-active-indicator-ready');
+    zSecondaryNavIndicator.style.setProperty('--s-z-active-indicator-x', `${activeItem.offsetLeft}px`);
+    zSecondaryNavIndicator.style.setProperty('--s-z-active-indicator-width', `${activeItem.offsetWidth}px`);
+    if (animate) {
+      zSecondaryNavRail.classList.add('is-active-indicator-ready');
+      return;
+    }
+    if (zSecondaryNavIndicatorReadyFrame) window.cancelAnimationFrame(zSecondaryNavIndicatorReadyFrame);
+    zSecondaryNavIndicatorReadyFrame = window.requestAnimationFrame(() => {
+      zSecondaryNavIndicatorReadyFrame = 0;
+      zSecondaryNavRail.classList.add('is-active-indicator-ready');
+    });
+  };
+
   const resetZSecondaryNavAlignment = () => {
     if (!isZPage) return;
     if (zSecondaryNavAlignmentFrame) window.cancelAnimationFrame(zSecondaryNavAlignmentFrame);
@@ -240,6 +268,7 @@
         block: 'nearest',
         inline: 'nearest'
       });
+      syncZSecondaryNavIndicator({ animate: false });
       scheduleZSecondaryNavOverflow();
     });
   };
@@ -285,6 +314,7 @@
       zApply.style.removeProperty('--s-z-description-top');
       zApply.style.removeProperty('--s-z-description-left');
       zApply.style.removeProperty('--s-z-description-width');
+      zApply.style.removeProperty('--s-z-apply-title-gap');
       return;
     }
     const landscapeGlassOutset = window.matchMedia('(orientation: landscape)').matches
@@ -296,20 +326,30 @@
     zSecondaryNav.classList.add('is-z-hero-attached');
     const navStrokeOutset = 1 - (Number.parseFloat(window.getComputedStyle(zSecondaryNav).borderTopWidth) || 0);
     const navRect = zSecondaryNav.getBoundingClientRect();
-    const firstTextRect = firstGroup.querySelector('.s-page__group-title').getBoundingClientRect();
+    const navStyle = window.getComputedStyle(zSecondaryNav);
+    const navInnerLeft = navRect.left
+      + (Number.parseFloat(navStyle.borderLeftWidth) || 0)
+      + (Number.parseFloat(navStyle.paddingLeft) || 0);
+    const navInnerRight = navRect.right
+      - (Number.parseFloat(navStyle.borderRightWidth) || 0)
+      - (Number.parseFloat(navStyle.paddingRight) || 0);
+    const firstTitleRect = firstGroup.querySelector('.s-page__group-title').getBoundingClientRect();
+    const firstDescriptionRect = firstGroup.querySelector('.s-page__group-description').getBoundingClientRect();
+    const applyTitleGap = Math.max(0, firstDescriptionRect.top - firstTitleRect.bottom);
     const descriptionTop = navRect.bottom + navStrokeOutset + x;
     zDescription.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
-    zDescription.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
-    zDescription.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
+    zDescription.style.setProperty('--s-z-description-left', `${navInnerLeft.toFixed(3)}px`);
+    zDescription.style.setProperty('--s-z-description-width', `${(navInnerRight - navInnerLeft).toFixed(3)}px`);
     zRequirements.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
-    zRequirements.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
-    zRequirements.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
+    zRequirements.style.setProperty('--s-z-description-left', `${navInnerLeft.toFixed(3)}px`);
+    zRequirements.style.setProperty('--s-z-description-width', `${(navInnerRight - navInnerLeft).toFixed(3)}px`);
     zRewards.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
-    zRewards.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
-    zRewards.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
+    zRewards.style.setProperty('--s-z-description-left', `${navInnerLeft.toFixed(3)}px`);
+    zRewards.style.setProperty('--s-z-description-width', `${(navInnerRight - navInnerLeft).toFixed(3)}px`);
     zApply.style.setProperty('--s-z-description-top', `${descriptionTop.toFixed(3)}px`);
-    zApply.style.setProperty('--s-z-description-left', `${firstTextRect.left.toFixed(3)}px`);
-    zApply.style.setProperty('--s-z-description-width', `${firstTextRect.width.toFixed(3)}px`);
+    zApply.style.setProperty('--s-z-description-left', `${navInnerLeft.toFixed(3)}px`);
+    zApply.style.setProperty('--s-z-description-width', `${(navInnerRight - navInnerLeft).toFixed(3)}px`);
+    zApply.style.setProperty('--s-z-apply-title-gap', `${applyTitleGap.toFixed(3)}px`);
     syncZActiveContent(true);
     scheduleZSecondaryNavOverflow();
   };
@@ -331,6 +371,7 @@
           candidate.setAttribute('aria-pressed', String(isActive));
         });
         zActiveContentIndex = zSecondaryNavItems.indexOf(item);
+        syncZSecondaryNavIndicator();
         syncZActiveContent(zHeroImage.classList.contains('is-z-scroll-locked'));
         item.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
         scheduleZSecondaryNavOverflow();
@@ -1818,6 +1859,7 @@
       localizedGeometryWidth = nextWidth;
       localizedGeometryOrientation = nextOrientation;
       scheduleLocalizedGeometry();
+      resetZSecondaryNavAlignment();
     } else if (!window.visualViewport) {
       // Desktop height-only resizing is a genuine viewport resize. On mobile,
       // height-only changes are browser chrome motion and must not reposition a
@@ -1833,6 +1875,7 @@
     localizedGeometryWidth = document.documentElement.clientWidth;
     localizedGeometryOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
     scheduleLocalizedGeometry();
+    resetZSecondaryNavAlignment();
     scheduleKeyboardOffset();
   }, { passive: true });
   const initializeGroupOne = () => {
