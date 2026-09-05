@@ -16,6 +16,7 @@
   const utilitySmileButton = composerMenuPanel?.querySelector('.s-page__composer-menu-panel-control');
   const logoParticleField = document.querySelector('[data-s-logo-particles]');
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
+  const zHeroImage = document.querySelector('.s-page__z-hero-image');
   const imageFrame = document.querySelector('[data-s-image-frame]');
   const imageCopy = document.querySelector('[data-s-image-copy]');
   const imageMedia = imageFrame?.querySelector('[data-s-flow-item]');
@@ -39,11 +40,12 @@
   }));
   const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const isZPage = page?.classList.contains('s-page--z') ?? false;
 
   // This controller is shared by the full /x composition and the focused /z
   // composition. Optional later-section affordances are deliberately guarded so
   // a page may include only its relevant sections without creating a parallel UI.
-  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
+  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -232,7 +234,11 @@
   };
 
   let initialLanguage = 'en';
-  try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
+  // /z always begins in English; its language control remains an explicit,
+  // session-local user action rather than a restored automatic preference.
+  if (!isZPage) {
+    try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
+  }
   applyLanguage(initialLanguage, { persist: false, emit: false });
   applyTheme('dark');
 
@@ -282,6 +288,7 @@
     window.clearTimeout(addFlashTimer);
     addRotated = false;
     addButton.classList.remove('is-rotated', 'is-active');
+    if (isZPage) submitButton.classList.remove('is-active');
     setComposerMenuOpen(false);
     setSendUtilitiesOpen(false);
     if (activeTemporaryUi === 'menu' || activeTemporaryUi === 'utilities') activeTemporaryUi = 'none';
@@ -415,6 +422,12 @@
   addButton.addEventListener('click', (event) => {
     if (!initializationReady) return;
     event.stopPropagation();
+    if (isZPage) {
+      window.clearTimeout(addFlashTimer);
+      addButton.classList.add('is-active');
+      addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
+      return;
+    }
     if (conversationVisible) {
       window.clearTimeout(addFlashTimer);
       addButton.classList.add('is-active');
@@ -603,7 +616,7 @@
 
   // Each composition keeps its first Text Group untouched; only its final item gains free space.
   const portraitSectionCompositions = [
-    { first: firstGroup, last: logoParticleField, type: 'particle' },
+    { first: firstGroup, last: isZPage ? zHeroImage : logoParticleField, type: 'anchored' },
     { first: document.querySelector('[data-s-copy-group="1"]'), last: document.querySelector('.s-page__flow-group--image') },
     { first: document.querySelector('[data-s-copy-group="2"]'), last: document.querySelector('.s-page__flow-group--numbers') },
     { first: document.querySelector('[data-s-copy-group="3"]'), last: document.querySelector('.s-page__flow-group--strips') },
@@ -632,7 +645,7 @@
       first.removeAttribute('data-s-portrait-reference-delta');
       first.removeAttribute('data-s-portrait-live-gap');
       first.removeAttribute('data-s-portrait-layout');
-      if (type === 'particle') {
+      if (type === 'anchored') {
         last.style.removeProperty('bottom');
         last.classList.remove('is-portrait-composed');
       }
@@ -692,10 +705,10 @@
     const compositionGeometry = portraitSectionCompositions.map(({ first, last, type }) => {
       const firstRect = first.getBoundingClientRect();
       const lastRect = last.getBoundingClientRect();
-      const currentOffset = type === 'particle'
+      const currentOffset = type === 'anchored'
         ? 0
         : Number.parseFloat(last.style.getPropertyValue('--s-portrait-bottom-up-offset')) || 0;
-      const naturalRelativeBottom = type === 'particle'
+      const naturalRelativeBottom = type === 'anchored'
         ? (firstRect.height * .5) + (lastRect.height * .5)
         : lastRect.bottom - firstRect.top - currentOffset;
       return {
@@ -720,7 +733,7 @@
     document.documentElement.setAttribute('data-s-portrait-reference-y', conversationRect.bottom.toFixed(3));
 
     compositionGeometry.forEach(({ first, last, type, firstHeight, naturalRelativeBottom, majorSection }) => {
-      const overflows = type !== 'particle' && naturalRelativeBottom > desiredRelativeBottom + .5;
+      const overflows = type !== 'anchored' && naturalRelativeBottom > desiredRelativeBottom + .5;
       if (overflows) {
         const requiredOverflow = naturalRelativeBottom - desiredRelativeBottom;
         majorSection.style.setProperty('height', `${viewportHeight + requiredOverflow}px`);
@@ -737,7 +750,7 @@
 
       majorSection.style.removeProperty('height');
       majorSection.removeAttribute('data-s-portrait-overflow');
-      if (type === 'particle') {
+      if (type === 'anchored') {
         last.style.setProperty('bottom', `${firstHeight - desiredRelativeBottom}px`);
         last.classList.add('is-portrait-composed');
       } else {
@@ -1005,6 +1018,10 @@
   });
   if (firstGroupObserver) firstGroupObserver.observe(firstGroup);
   else firstGroup.classList.add('is-visible');
+  if (isZPage) {
+    imageMedia.classList.add('is-visible');
+    setImageCopyVisibility(true);
+  }
   flowGroups.forEach((group) => group.setAttribute('aria-hidden', 'true'));
   scheduleFlowSync();
   schedulePortraitSectionLayout();
@@ -1218,7 +1235,7 @@
     logoMaskImage.addEventListener('load', resizeCanvas, { once: true });
     logoMaskImage.src = 'assets/logo/OX-001-LOGO-black.png';
   };
-  setupLogoParticleField();
+  if (logoParticleField && logoParticleCanvas) setupLogoParticleField();
 
   sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -1265,10 +1282,11 @@
     activeTemporaryUi = next;
 
     const menuIsActive = next === 'menu';
-    addRotated = menuIsActive;
-    addButton.classList.toggle('is-rotated', menuIsActive);
+    addRotated = menuIsActive && !isZPage;
+    addButton.classList.toggle('is-rotated', addRotated);
+    if (isZPage) submitButton.classList.toggle('is-active', menuIsActive);
     setComposerMenuOpen(menuIsActive);
-    setSendUtilitiesOpen(next === 'utilities');
+    setSendUtilitiesOpen(next === 'utilities' || (isZPage && menuIsActive));
     setConversationVisibility(next === 'chat');
 
     if ((next === 'menu' || next === 'utilities') && document.activeElement === input) input.blur();
@@ -1422,6 +1440,11 @@
     event.preventDefault();
     event.stopPropagation();
     const message = input.value.trim();
+    if (isZPage && !message) {
+      if (conversationVisible) return;
+      activateTemporaryUi(activeTemporaryUi === 'menu' ? 'none' : 'menu');
+      return;
+    }
     if (!message) {
       if (conversationVisible) return;
       activateTemporaryUi(activeTemporaryUi === 'utilities' ? 'none' : 'utilities');
@@ -1558,6 +1581,10 @@
     initializeGroupOne();
     window.requestAnimationFrame(() => {
       firstGroup.classList.add('is-visible');
+      if (isZPage) {
+        imageMedia.classList.add('is-visible');
+        setImageCopyVisibility(true);
+      }
       scheduleFlowSync();
     });
     inactivityResetTimer = window.setTimeout(resetPageToInitialState, inactivityResetDelayMs);
