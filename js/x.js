@@ -451,9 +451,10 @@
     const face = addButton.querySelector('[data-s-z-face]');
     const shell = face?.querySelector('.s-page__z-face-shell');
     const eyes = face?.querySelector('.s-page__z-face-eyes');
+    const eyeMotion = face?.querySelector('.s-page__z-face-eye-motion');
     const mouth = face?.querySelector('.s-page__z-face-mouth');
-    if (!face || !shell || !eyes || !mouth) return null;
-    const gazeLimit = .95;
+    if (!face || !shell || !eyes || !eyeMotion || !mouth) return null;
+    const gazeLimit = 1.5;
     const dragThreshold = 6;
     let pointer = null;
     let dragging = false;
@@ -486,30 +487,41 @@
       face.dataset.faceState = state;
     };
     const lerp = (from, to, amount) => from + ((to - from) * amount);
-    const mouthForState = (state) => {
-      if (state === 'tap') return { leftX: .4, leftY: 9.2, controlY: 15.8, rightX: 12.6, rightY: 9.2 };
-      if (state === 'drag') return { leftX: 1.35, leftY: 11.35, controlY: 5.5, rightX: 11.65, rightY: 11.35 };
+    const mouthForState = (state, idleNeutral = false) => {
+      if (state === 'tap') return { leftX: .2, leftY: 9.05, controlY: 16.1, rightX: 12.8, rightY: 9.05 };
+      if (state === 'drag') return { leftX: 1.1, leftY: 11.55, controlY: 4.6, rightX: 11.9, rightY: 11.55 };
       if (state === 'settle') return { leftX: 2.25, leftY: 10.45, controlY: 10.45, rightX: 10.75, rightY: 10.45 };
+      if (idleNeutral) return { leftX: 2.25, leftY: 10.45, controlY: 10.45, rightX: 10.75, rightY: 10.45 };
       return { leftX: 2.1, leftY: 10, controlY: 15, rightX: 10.9, rightY: 10 };
     };
     const tick = (time) => {
       const delta = Math.min(48, Math.max(1, time - (previousTime || time)));
       previousTime = time;
       const state = getState();
-      const mouthTarget = mouthForState(state);
+      const phase = time / 1000;
+      const idleCycle = (phase % 6.4) / 6.4;
+      const idleNeutral = state === 'idle' && idleCycle > .47 && idleCycle < .58;
+      const mouthTarget = mouthForState(state, idleNeutral);
       const easing = 1 - Math.exp(-delta / 58);
       Object.keys(currentMouth).forEach((key) => {
         currentMouth[key] = lerp(currentMouth[key], mouthTarget[key], easing);
       });
       const gazeEasing = 1 - Math.exp(-delta / (state === 'drag' ? 38 : 72));
-      currentGaze.x = lerp(currentGaze.x, targetGaze.x, gazeEasing);
-      currentGaze.y = lerp(currentGaze.y, targetGaze.y, gazeEasing);
-      const phase = time / 1000;
-      const lifeOffset = state === 'idle' ? Math.sin(phase * 1.35) * .13 : 0;
-      const wiggle = state === 'drag' ? Math.sin(phase * 31) * 1.7 : state === 'apply' ? Math.sin(phase * 4.5) * 3.3 : 0;
-      const danceOffset = state === 'apply' ? Math.sin(phase * 4.5) * .18 : 0;
-      shell.setAttribute('transform', `rotate(${wiggle.toFixed(3)} 6.5 6.5) translate(0 ${(lifeOffset + danceOffset).toFixed(3)})`);
+      const idleGaze = state === 'idle' ? {
+        x: Math.sin(phase * .82) * .28,
+        y: Math.sin(phase * .47 + .9) * .22
+      } : targetGaze;
+      currentGaze.x = lerp(currentGaze.x, idleGaze.x, gazeEasing);
+      currentGaze.y = lerp(currentGaze.y, idleGaze.y, gazeEasing);
+      const lifeOffset = state === 'idle' ? Math.sin(phase * 1.35) * .16 : 0;
+      const wiggle = state === 'drag' ? Math.sin(phase * 29) * 2.5 : state === 'apply' ? Math.sin(phase * 4.5) * 6.4 : 0;
+      const danceX = state === 'apply' ? Math.cos(phase * 4.5) * .36 : 0;
+      const danceOffset = state === 'apply' ? Math.sin(phase * 4.5) * .36 : 0;
+      const blinkPhase = ((phase + .7) % 5.6) / 5.6;
+      const blink = state === 'idle' ? 1 - (.84 * Math.exp(-Math.pow((blinkPhase - .72) / .032, 2))) : 1;
+      shell.setAttribute('transform', `rotate(${wiggle.toFixed(3)} 6.5 6.5) translate(${danceX.toFixed(3)} ${(lifeOffset + danceOffset).toFixed(3)})`);
       eyes.setAttribute('transform', `translate(${currentGaze.x.toFixed(3)} ${currentGaze.y.toFixed(3)})`);
+      eyeMotion.setAttribute('transform', `translate(0 3.7) scale(1 ${blink.toFixed(3)}) translate(0 -3.7)`);
       mouth.setAttribute('d', `M${currentMouth.leftX.toFixed(3)} ${currentMouth.leftY.toFixed(3)}Q6.5 ${currentMouth.controlY.toFixed(3)} ${currentMouth.rightX.toFixed(3)} ${currentMouth.rightY.toFixed(3)}`);
       render();
       animationFrame = window.requestAnimationFrame(tick);
