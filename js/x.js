@@ -244,6 +244,17 @@
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-width', `${menuRect.width.toFixed(3)}px`);
   };
 
+  const syncZApplyButtonGeometry = () => {
+    if (!isZPage || !zSecondaryNav.classList.contains('is-z-hero-attached')) return;
+    const selector = zSecondaryNavItems[zActiveContentIndex];
+    if (!selector) return;
+    const boxRect = zSecondaryNav.getBoundingClientRect();
+    const selectorRect = selector.getBoundingClientRect();
+    const selectorInset = selectorRect.top - boxRect.top;
+    zSecondaryNav.style.setProperty('--s-z-active-selector-width', `${selectorRect.width.toFixed(3)}px`);
+    zSecondaryNav.setAttribute('data-s-z-selector-top-inset', selectorInset.toFixed(3));
+  };
+
   const syncZContentBoxHeight = () => {
     if (!isZPage || !zSecondaryNav.classList.contains('is-z-hero-attached')) return;
     zSecondaryNav.classList.add('is-z-measuring');
@@ -264,6 +275,7 @@
       zSecondaryNavAlignmentFrame = 0;
       syncZApplyTitleExplanationGap();
       syncZContentBoxHorizontalGeometry();
+      syncZApplyButtonGeometry();
       syncZContentBoxHeight();
     });
   };
@@ -320,11 +332,31 @@
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${(heroRect.top + heroRect.height + x).toFixed(3)}px`);
     zSecondaryNav.classList.add('is-z-hero-attached');
     syncZContentBoxHorizontalGeometry();
+    syncZApplyButtonGeometry();
     syncZContentBoxHeight();
     syncZActiveContent(true);
   };
 
   if (isZPage) {
+    let heroTapStart = null;
+    const pulseZHero = () => {
+      zHeroImage.classList.remove('is-pulsing');
+      window.requestAnimationFrame(() => zHeroImage.classList.add('is-pulsing'));
+    };
+    zHeroImage.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      heroTapStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    }, { passive: true });
+    zHeroImage.addEventListener('pointerup', (event) => {
+      if (!heroTapStart || event.pointerId !== heroTapStart.pointerId) return;
+      const moved = Math.hypot(event.clientX - heroTapStart.x, event.clientY - heroTapStart.y);
+      heroTapStart = null;
+      if (moved <= 8) pulseZHero();
+    }, { passive: true });
+    zHeroImage.addEventListener('pointercancel', () => { heroTapStart = null; }, { passive: true });
+    zHeroImage.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-pulse') zHeroImage.classList.remove('is-pulsing');
+    });
     let swipeStart = null;
     const setZActiveSection = (index) => {
       zActiveContentIndex = (index + zSecondaryNavItems.length) % zSecondaryNavItems.length;

@@ -444,6 +444,10 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
   top: var(--s-z-hero-locked-top);
 }
 
+.s-page--z .s-page__z-hero-image.is-pulsing {
+  animation: s-page-composer-pulse .18s ease-out;
+}
+
 /* Give the image copy additional vertical clearance for the main glyphs. */
 .s-page--z .s-page__z-hero-image .s-page__image-copy {
   padding-top: var(--s-x);
@@ -633,6 +637,7 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .s-page--z .s-page__z-hero-image.is-pulsing { animation: none; }
   .s-page--z .s-page__send-utility,
   .s-page--z .s-page__send-utilities.is-open .s-page__send-utility {
     opacity: 1;
@@ -667,7 +672,7 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
   -webkit-backdrop-filter: var(--s-composer-backdrop); backdrop-filter: var(--s-composer-backdrop);
 }
 .s-page--z .s-page__secondary-nav::before { content: none; }
-html.s-route.is-day-mode .s-page--z .s-page__secondary-nav { --s-composer-surface: rgba(255, 255, 255, .42); --s-composer-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012); color: #FFFFFF; }
+html.s-route.is-day-mode .s-page--z .s-page__secondary-nav { --s-composer-surface: rgba(255, 255, 255, .42); --s-composer-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012); color: #000000; }
 .s-page--z .s-page__secondary-nav.is-z-hero-attached { position: fixed; top: var(--s-z-secondary-nav-top); left: var(--s-z-secondary-nav-left); width: var(--s-z-secondary-nav-width); opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition-delay: 0s; }
 .s-page--z .s-page__secondary-nav.is-pulsing { animation: s-page-composer-menu-pulse .18s ease-out; }
 
@@ -687,18 +692,21 @@ html.s-route.is-day-mode .s-page--z .s-page__secondary-nav-item::before { backgr
 .s-page--z .s-page__z-description.is-z-description-attached.is-z-description-revealed, .s-page--z .s-page__z-requirements.is-z-requirements-attached.is-z-requirements-revealed, .s-page--z .s-page__z-rewards.is-z-rewards-attached.is-z-rewards-revealed, .s-page--z .s-page__z-apply.is-z-apply-attached.is-z-apply-revealed { opacity: 1; }
 .s-page--z .s-page__z-description.is-z-description-attached.is-z-description-revealed.is-z-panel-exiting, .s-page--z .s-page__z-requirements.is-z-requirements-attached.is-z-requirements-revealed.is-z-panel-exiting, .s-page--z .s-page__z-rewards.is-z-rewards-attached.is-z-rewards-revealed.is-z-panel-exiting, .s-page--z .s-page__z-apply.is-z-apply-attached.is-z-apply-revealed.is-z-panel-exiting { opacity: 0; filter: blur(12px); pointer-events: none; transition: opacity .18s ease, filter .18s ease; }
 .s-page--z :is(.s-page__z-description-copy, .s-page__z-requirements-copy, .s-page__z-rewards-copy, .s-page__z-apply-copy) { box-sizing: border-box; width: 100%; height: 100%; padding: var(--s-x) 8px; text-align: start; }
-.s-page--z .s-page__secondary-nav, .s-page--z :is(.s-page__z-description, .s-page__z-requirements, .s-page__z-rewards, .s-page__z-apply) { color: #FFFFFF; }
+.s-page--z .s-page__secondary-nav { color: #FFFFFF; }
 .s-page--z .s-page__z-requirement-row, .s-page--z .s-page__z-reward-row { grid-template-columns: 30% 60%; column-gap: 10%; }
 .s-page--z .s-page__z-apply-copy { flex-direction: column; }
+.s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy { padding-bottom: 0; }
 .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy { display: none; }
 .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy[lang="en"] { display: flex; }
 html[lang="ar"] .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy[lang="en"] { display: none; }
 html[lang="ar"] .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy[lang="ar"] { display: flex; }
-.s-page--z .s-page__z-apply-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: auto; }
-.s-page--z .s-page__z-apply-actions button { position: relative; z-index: 0; display: grid; width: 100%; height: 36px; min-height: 36px; margin: 0; padding: 0; place-items: center; border: 0; border-radius: var(--s-menu-active-radius); background: transparent; box-shadow: none; color: inherit; font-size: var(--s-z-reference-font-size, 15px); line-height: 1.2; text-align: center; isolation: isolate; }
+.s-page--z .s-page__z-apply-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: auto; justify-items: center; }
+.s-page--z .s-page__z-apply-actions button { position: relative; z-index: 0; display: grid; width: var(--s-z-active-selector-width, 100%); height: 36px; min-height: 36px; margin: 0; padding: 0; place-items: center; border: 0; border-radius: var(--s-menu-active-radius); background: transparent; box-shadow: none; color: inherit; font-size: var(--s-z-reference-font-size, 15px); line-height: 1.2; text-align: center; isolation: isolate; }
 .s-page--z .s-page__z-apply-actions button::before { position: absolute; z-index: -1; inset: 0; border: 0; border-radius: var(--s-menu-active-radius); background: rgba(255, 255, 255, .14); box-shadow: none; content: ""; pointer-events: none; }
 html.s-route.is-day-mode .s-page--z .s-page__z-apply-actions button { background: transparent; color: inherit; }
 html.s-route.is-day-mode .s-page--z .s-page__z-apply-actions button::before { background: rgba(0, 0, 0, .055); }
+html.s-route.is-day-mode .s-page--z .s-page__secondary-nav-item.is-active { color: #000000; }
+html.s-route.is-day-mode .s-page--z .s-page__z-apply-actions button { color: #000000; }
 
 /* A panel is temporarily placed in normal flow so the maximum localized height
    can be measured once, then the finished box stays fixed at that height. */
