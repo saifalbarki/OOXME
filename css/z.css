@@ -154,10 +154,6 @@ html[lang="ar"] .s-page--z .s-page__secondary-nav-item > span[lang="ar"] { displ
   color: #FFFFFF;
 }
 
-.s-page--z .s-page__secondary-nav-item.is-pulsing {
-  animation: s-page-composer-pulse .18s ease-out;
-}
-
 .s-page--z .s-page__secondary-nav-item:active { transform: none; }
 
 .s-page--z .s-page__z-description {
@@ -247,15 +243,33 @@ html[lang="ar"] .s-page--z .s-page__z-description-copy p {
 
 .s-page--z .s-page__z-description-date {
   box-sizing: border-box;
-  display: grid;
+  position: relative;
+  display: flex;
   margin-top: var(--s-x) !important;
   width: var(--s-z-active-selector-width, 100%);
   height: 36px;
   min-height: 36px;
   margin-inline: auto;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
+  top: var(--s-z-description-date-offset, 0px);
+  overflow: hidden;
   text-align: center;
   line-height: 1.2;
+}
+
+.s-page--z .s-page__z-description-date > span {
+  display: -webkit-box;
+  width: 100%;
+  min-width: 0;
+  max-height: 36px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  text-align: center;
+  line-height: 18px;
+  white-space: normal;
 }
 
 .s-page--z .s-page__z-description-title,
@@ -332,7 +346,6 @@ html[lang="ar"] .s-page--z .s-page__z-apply-row h2, html[lang="ar"] .s-page--z .
 html.s-route.is-day-mode .s-page--z .s-page__z-apply-row p { color: #666666; }
 .s-page--z .s-page__z-apply-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-x); margin-top: var(--s-x); opacity: 0; filter: blur(12px); transform: translateY(6px); transition: opacity .36s cubic-bezier(.22, .61, .36, 1) .6s, filter .36s cubic-bezier(.22, .61, .36, 1) .6s, transform .36s cubic-bezier(.22, .61, .36, 1) .6s; }
 .s-page--z .s-page__z-apply-actions button { --s-apply-surface: rgba(255, 255, 255, .16); --s-apply-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025); position: relative; z-index: 0; display: grid; min-width: 0; height: 32px; place-items: center; margin: 0; padding: 0; overflow: hidden; border: 1px solid transparent; border-radius: var(--s-composer-radius); background: transparent; box-shadow: none; color: #FFFFFF; font: 500 var(--s-z-reference-font-size, 15px)/18px OOXMEScript, Arial, sans-serif; cursor: pointer; isolation: isolate; }
-.s-page--z .s-page__z-apply-actions button.is-pulsing { animation: s-page-composer-pulse .18s ease-out; }
 .s-page--z .s-page__z-apply-actions button::before { position: absolute; z-index: -1; inset: -1px; border: 1px solid var(--s-glass-stroke); border-radius: inherit; background: var(--s-apply-surface); box-shadow: var(--s-apply-shadow); content: ""; pointer-events: none; -webkit-backdrop-filter: blur(20px) saturate(125%); backdrop-filter: blur(20px) saturate(125%); }
 .s-page--z .s-page__z-apply-actions button > span { display: none; }
 html[lang="en"] .s-page--z .s-page__z-apply-actions button > span[lang="en"], html[lang="ar"] .s-page--z .s-page__z-apply-actions button > span[lang="ar"] { display: inline; }
@@ -534,7 +547,9 @@ html[dir="rtl"] .s-page--z .s-page__z-hero-image .s-page__image-copy p {
 
   .s-page--z .s-page__z-hero-image {
     height: auto;
-    aspect-ratio: 3 / 1;
+    aspect-ratio: 4 / 1;
+    /* Keep the first-view hero bottom X above the viewport edge. */
+    bottom: calc(48px + (var(--s-x) * 3));
   }
 
   .s-page--z .s-page__secondary-nav-rail {
