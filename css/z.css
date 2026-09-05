@@ -5,7 +5,7 @@
 }
 
 .s-page--z .s-page__composer {
-  --s-z-control-diameter: 40px;
+  --s-z-control-diameter: 32px;
   top: var(--s-x);
   bottom: auto;
   left: var(--s-x);
@@ -167,13 +167,38 @@ html[dir="rtl"] .s-page--z .s-page__z-hero-image .s-page__image-copy p {
 }
 
 .s-page--z .s-page__composer-menu-item {
-  padding-right: 14px;
-  padding-left: 14px;
+  padding-inline-start: 14px;
+  padding-inline-end: 8.5px;
   text-align: left;
 }
 
 html[dir="rtl"] .s-page--z .s-page__composer-menu-item {
   text-align: right;
+}
+
+.s-page--z .s-page__composer-menu-label {
+  text-align: inherit;
+}
+
+.s-page--z .s-page__z-menu-lock {
+  display: block;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  margin-inline-start: auto;
+  overflow: visible;
+}
+
+.s-page--z .s-page__z-menu-lock-body {
+  fill: currentColor;
+}
+
+.s-page--z .s-page__z-menu-lock-shackle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .s-page--z .s-page__send-utilities {
