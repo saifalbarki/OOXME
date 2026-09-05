@@ -1,4 +1,8 @@
 /* /z keeps the /x system intact; only the shared composer is re-anchored. */
+.s-page--z {
+  --s-z-reference-font-size: 14px;
+}
+
 .s-page--z .s-page__content {
   padding-top: calc(48px + (var(--s-x) * 2));
   padding-bottom: var(--s-z-final-scroll-reserve, calc((var(--s-x) * 4) + 100dvh));
@@ -243,7 +247,7 @@ html[lang="ar"] .s-page--z .s-page__z-description-copy p {
 
 .s-page--z .s-page__z-description-date {
   box-sizing: border-box;
-  position: relative;
+  position: absolute;
   display: flex;
   margin-top: var(--s-x) !important;
   width: var(--s-z-active-selector-width, 100%);
@@ -252,7 +256,10 @@ html[lang="ar"] .s-page--z .s-page__z-description-copy p {
   margin-inline: auto;
   align-items: center;
   justify-content: center;
-  top: var(--s-z-description-date-offset, 0px);
+  top: auto;
+  right: 8px;
+  bottom: var(--s-x);
+  left: 8px;
   overflow: hidden;
   text-align: center;
   line-height: 1.2;
@@ -719,7 +726,7 @@ html.s-route.is-day-mode .s-page--z .s-page__secondary-nav { --s-composer-surfac
 html[dir="rtl"] .s-page--z .s-page__secondary-nav-rail { direction: rtl; }
 .s-page--z .s-page__secondary-nav-rail.is-dragging { cursor: grabbing; }
 .s-page--z .s-page__secondary-nav-indicator { display: none; }
-.s-page--z .s-page__secondary-nav-item { position: relative; display: none; width: 100%; height: 36px; min-height: 36px; margin: 0; padding: 0; align-items: center; justify-content: center; border: 0; border-radius: 0; background: transparent; color: inherit; font: 500 var(--s-z-reference-font-size, 15px)/1.2 OOXMEScript, Arial, sans-serif; text-align: center; white-space: nowrap; cursor: grab; isolation: isolate; }
+.s-page--z .s-page__secondary-nav-item { position: relative; display: none; width: 100%; height: 36px; min-height: 36px; margin: 0; padding: 0; align-items: center; justify-content: center; border: 0; border-radius: 0; background: transparent; color: inherit; font: 500 var(--s-z-reference-font-size, 15px)/18px OOXMEScript, Arial, sans-serif; text-align: center; white-space: nowrap; cursor: grab; isolation: isolate; }
 .s-page--z .s-page__secondary-nav-item.is-active { display: flex; }
 html[lang="ar"] .s-page--z .s-page__secondary-nav-item { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
 .s-page--z .s-page__secondary-nav-item::before { position: absolute; z-index: -1; inset: 0; border-radius: var(--s-menu-active-radius); background: rgba(255, 255, 255, .14); content: ""; pointer-events: none; }
@@ -740,7 +747,7 @@ html.s-route.is-day-mode .s-page--z .s-page__secondary-nav-item::before { backgr
 html[lang="ar"] .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy[lang="en"] { display: none; }
 html[lang="ar"] .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy[lang="ar"] { display: flex; }
 .s-page--z .s-page__z-apply-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: auto; justify-items: center; }
-.s-page--z .s-page__z-apply-actions button { position: relative; z-index: 0; display: grid; width: var(--s-z-active-selector-width, 100%); height: 36px; min-height: 36px; margin: 0; padding: 0; place-items: center; border: 0; border-radius: var(--s-menu-active-radius); background: transparent; box-shadow: none; color: inherit; font-size: var(--s-z-reference-font-size, 15px); line-height: 1.2; text-align: center; isolation: isolate; }
+.s-page--z .s-page__z-apply-actions button { position: relative; z-index: 0; display: grid; width: var(--s-z-active-selector-width, 100%); height: 36px; min-height: 36px; margin: 0; padding: 0; place-items: center; border: 0; border-radius: var(--s-menu-active-radius); background: transparent; box-shadow: none; color: inherit; font-size: var(--s-z-reference-font-size, 15px); line-height: 18px; text-align: center; isolation: isolate; }
 .s-page--z .s-page__z-apply-actions button::before { position: absolute; z-index: -1; inset: 0; border: 0; border-radius: var(--s-menu-active-radius); background: rgba(255, 255, 255, .14); box-shadow: none; content: ""; pointer-events: none; }
 html.s-route.is-day-mode .s-page--z .s-page__z-apply-actions button { background: transparent; color: inherit; }
 html.s-route.is-day-mode .s-page--z .s-page__z-apply-actions button::before { background: rgba(0, 0, 0, .055); }
@@ -754,4 +761,5 @@ html.s-route.is-day-mode .s-page--z .s-page__z-apply-actions button { color: #00
 .s-page--z .s-page__secondary-nav.is-z-measuring :is(.s-page__z-description, .s-page__z-requirements, .s-page__z-rewards, .s-page__z-apply) { display: none !important; position: static !important; inset: auto !important; opacity: 1 !important; visibility: visible !important; filter: none !important; transform: none !important; }
 .s-page--z .s-page__secondary-nav.is-z-measuring .is-z-measuring-panel { display: block !important; }
 .s-page--z .s-page__secondary-nav.is-z-measuring .is-z-measuring-panel .s-page__z-apply-copy { height: auto; }
+.s-page--z .s-page__secondary-nav.is-z-measuring .s-page__z-description-date { position: relative; top: 0; right: auto; bottom: auto; left: auto; }
 @media (orientation: landscape) { .s-page--z .s-page__secondary-nav-rail { display: block; } .s-page--z .s-page__secondary-nav-item { width: 100%; } }

@@ -262,23 +262,6 @@
     zSecondaryNav.style.setProperty('--s-z-active-selector-width', `${selectorRect.width.toFixed(3)}px`);
     zSecondaryNav.setAttribute('data-s-z-selector-top-inset', selectorInset.toFixed(3));
 
-    if (!zDescription.classList.contains('is-z-description-attached')) return;
-    const activeDate = Array.from(zDescription.querySelectorAll('.s-page__z-description-date'))
-      .find((date) => getComputedStyle(date).display !== 'none' && date.getBoundingClientRect().width > 0);
-    if (!activeDate) return;
-    const navStyle = getComputedStyle(zSecondaryNav);
-    const navRect = zSecondaryNav.getBoundingClientRect();
-    const dateRange = document.createRange();
-    // Measure the visible text wrapper so clamped multi-line dates use the
-    // actual rendered text edge rather than the parent box's line box.
-    dateRange.selectNodeContents(activeDate.firstElementChild || activeDate);
-    const textRect = dateRange.getBoundingClientRect();
-    const transformParts = getComputedStyle(activeDate).transform.match(/matrix(?:3d)?\(([^)]+)\)/);
-    const transformValues = transformParts ? transformParts[1].split(',').map(Number) : [];
-    const transformY = transformValues.length > 6 ? transformValues[13] || 0 : transformValues[5] || 0;
-    const innerBottom = navRect.bottom - (Number.parseFloat(navStyle.borderBottomWidth) || 0) - (Number.parseFloat(navStyle.paddingBottom) || 0);
-    const targetTextBottom = innerBottom - (composer.getBoundingClientRect().left || 18);
-    activeDate.style.setProperty('--s-z-description-date-offset', `${(targetTextBottom - (textRect.bottom - transformY)).toFixed(3)}px`);
   };
 
   const syncZContentBoxHeight = () => {
