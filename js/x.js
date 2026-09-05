@@ -275,7 +275,16 @@
       panel.classList.remove('is-z-measuring-panel');
     });
     zSecondaryNav.classList.remove('is-z-measuring');
-    zSecondaryNav.style.setProperty('--s-z-content-box-height', `${(zSecondaryNavRail.offsetHeight || 36) + 6 + largestContentHeight + 16}px`);
+    const contentBoxHeight = (zSecondaryNavRail.offsetHeight || 36) + 6 + largestContentHeight + 16;
+    zSecondaryNav.style.setProperty('--s-z-content-box-height', `${contentBoxHeight}px`);
+
+    // Keep only the document-flow reserve needed to reach the two-state endpoint.
+    // The first major section already contributes one viewport; the remaining
+    // padding therefore equals the transition travel minus the content top inset.
+    const x = composer.getBoundingClientRect().left || 18;
+    const contentTopInset = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const finalScrollReserve = Math.max(0, contentBoxHeight + x - contentTopInset);
+    page.style.setProperty('--s-z-final-scroll-reserve', `${finalScrollReserve.toFixed(3)}px`);
   };
 
   // The Description title is the concrete inner-text boundary of the unified
@@ -476,6 +485,9 @@
     zApplyButtons.forEach((button) => {
       button.addEventListener('click', () => {
         if (!consumeSwipeClickSuppression()) pulsePageSurface(button);
+        else return;
+        const destination = button.getAttribute('data-s-z-apply-destination');
+        if (destination) window.setTimeout(() => { window.location.assign(destination); }, 180);
       });
       button.addEventListener('animationend', (event) => {
         if (event.animationName === 's-page-composer-pulse') button.classList.remove('is-pulsing');

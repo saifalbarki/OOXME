@@ -1,7 +1,7 @@
 /* /z keeps the /x system intact; only the shared composer is re-anchored. */
 .s-page--z .s-page__content {
   padding-top: calc(48px + (var(--s-x) * 2));
-  padding-bottom: calc((var(--s-x) * 4) + 100dvh);
+  padding-bottom: var(--s-z-final-scroll-reserve, calc((var(--s-x) * 4) + 100dvh));
 }
 
 .s-page--z .s-page__composer {
@@ -665,7 +665,7 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
 }
 
 @media (orientation: portrait) {
-  .s-page--z .s-page__content { padding-bottom: calc((var(--s-x) * 4) + 100dvh); }
+  .s-page--z .s-page__content { padding-bottom: var(--s-z-final-scroll-reserve, calc((var(--s-x) * 4) + 100dvh)); }
   .s-page--z .s-page__major-section { height: auto; min-height: 100dvh; }
   .s-page--z .s-page__z-hero-image.is-portrait-composed {
     top: auto;
