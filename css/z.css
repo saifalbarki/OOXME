@@ -5,9 +5,19 @@
 }
 
 .s-page--z .s-page__composer {
-  top: calc(var(--s-x) * 2);
+  top: var(--s-x);
   bottom: auto;
+  left: var(--s-x);
+  width: calc(100% - (var(--s-x) * 2));
+  max-width: none;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
 }
+
+/* Keep the /x control geometry; /z simply omits the text field while retaining
+   both original endpoint controls and their shared interaction hooks. */
+.s-page--z .s-page__z-input { display: none; }
+.s-page--z .s-page__add { grid-column: 1; }
+.s-page--z .s-page__z-submit { display: grid; grid-column: 3; }
 
 .s-page--z .s-page__conversation {
   top: calc(48px + (var(--s-x) * 4));
