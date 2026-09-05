@@ -175,6 +175,7 @@
   let zContentRevealFrame = 0;
   let zContentTransitionTimer = 0;
   let zActiveContentIndex = 0;
+  let zFaceController = null;
   const secondaryNavPulseFrames = new Map();
   let composerMenuPulseFrame = 0;
   let composerMenuCloseTimer = 0;
@@ -446,7 +447,108 @@
     secondaryNavPulseFrames.set(element, frame);
   };
 
+  const createZFaceController = () => {
+    const face = addButton.querySelector('[data-s-z-face]');
+    if (!face) return null;
+    const gazeLimit = .72;
+    const dragThreshold = 6;
+    let pointer = null;
+    let dragging = false;
+    let tapping = false;
+    let settling = false;
+    let applyActive = false;
+    let tapTimer = 0;
+    let settleTimer = 0;
+
+    const clearTimer = (timer) => {
+      if (timer) window.clearTimeout(timer);
+      return 0;
+    };
+    const setGaze = (x, y, normalize = true) => {
+      const magnitude = Math.hypot(x, y);
+      const scale = normalize && magnitude > 0 ? gazeLimit / Math.max(gazeLimit, magnitude) : 1;
+      face.style.setProperty('--s-z-face-gaze-x', `${Math.max(-gazeLimit, Math.min(gazeLimit, x * scale)).toFixed(3)}px`);
+      face.style.setProperty('--s-z-face-gaze-y', `${Math.max(-gazeLimit, Math.min(gazeLimit, y * scale)).toFixed(3)}px`);
+    };
+    const render = () => {
+      const state = dragging ? 'drag' : tapping ? 'tap' : applyActive ? 'apply' : settling ? 'settle' : 'idle';
+      face.dataset.faceState = state;
+    };
+    const centerGaze = () => setGaze(0, 0, false);
+    const gazeAtPoint = (clientX, clientY) => {
+      const rect = addButton.getBoundingClientRect();
+      setGaze(clientX - (rect.left + rect.width / 2), clientY - (rect.top + rect.height / 2));
+    };
+    const isInteractiveTarget = (target) => target instanceof Element && Boolean(target.closest(
+      'button, a, input, textarea, select, [role="button"], .s-page__z-hero-image, [data-s-z-content-slot], [data-s-composer-menu]'
+    ));
+    const begin = (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (pointer) return;
+      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, target: event.target };
+      dragging = false;
+    };
+    const move = (event) => {
+      if (!pointer || event.pointerId !== pointer.id) return;
+      const dx = event.clientX - pointer.x;
+      const dy = event.clientY - pointer.y;
+      if (!dragging && Math.hypot(dx, dy) < dragThreshold) return;
+      if (!dragging) {
+        dragging = true;
+        tapping = false;
+        settling = false;
+        tapTimer = clearTimer(tapTimer);
+        settleTimer = clearTimer(settleTimer);
+      }
+      setGaze(dx, dy);
+      render();
+    };
+    const end = (event, cancelled = false) => {
+      if (!pointer || event.pointerId !== pointer.id) return;
+      const wasDragging = dragging;
+      const tapTarget = pointer.target;
+      pointer = null;
+      dragging = false;
+      if (wasDragging) {
+        tapping = false;
+        settling = true;
+        centerGaze();
+        render();
+        settleTimer = clearTimer(settleTimer);
+        settleTimer = window.setTimeout(() => {
+          settling = false;
+          render();
+        }, 480);
+        return;
+      }
+      if (cancelled) {
+        centerGaze();
+        render();
+        return;
+      }
+      if (!isInteractiveTarget(tapTarget)) return;
+      tapping = true;
+      settling = false;
+      gazeAtPoint(event.clientX, event.clientY);
+      render();
+      tapTimer = clearTimer(tapTimer);
+      tapTimer = window.setTimeout(() => {
+        tapping = false;
+        centerGaze();
+        render();
+      }, 380);
+    };
+    const setApply = (active) => {
+      applyActive = active;
+      if (active && !dragging && !tapping) centerGaze();
+      render();
+    };
+    render();
+    return { begin, move, end, setApply };
+  };
+
   if (isZPage) {
+    zFaceController = createZFaceController();
     let heroTapStart = null;
     const pulseZHero = () => {
       pulsePageSurface(zHeroImage);
@@ -480,6 +582,7 @@
       });
       syncZActiveContent(zSecondaryNav.classList.contains('is-z-transition-ready'));
       syncZApplyButtonGeometry();
+      zFaceController?.setApply(zActiveContentIndex === 3);
     };
     const beginSwipe = (event) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -1750,14 +1853,21 @@
     if (!isZPage) scheduleMajorSectionSettle();
   };
 
-  document.addEventListener('pointerdown', beginMajorSectionInteraction, { capture: true, passive: true });
+  document.addEventListener('pointerdown', (event) => {
+    beginMajorSectionInteraction();
+    zFaceController?.begin(event);
+  }, { capture: true, passive: true });
   document.addEventListener('touchstart', beginMajorSectionInteraction, { capture: true, passive: true });
   document.addEventListener('pointermove', (event) => {
+    zFaceController?.move(event);
     if (event.pointerType === 'touch' || event.buttons !== 0) beginMajorSectionInteraction();
   }, { capture: true, passive: true });
   document.addEventListener('touchmove', beginMajorSectionInteraction, { capture: true, passive: true });
   ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
-    document.addEventListener(eventName, endMajorSectionInteraction, { passive: true });
+    document.addEventListener(eventName, (event) => {
+      endMajorSectionInteraction();
+      if (eventName.startsWith('pointer')) zFaceController?.end(event, eventName === 'pointercancel');
+    }, { passive: true });
   });
   window.addEventListener('wheel', () => {
     cancelMajorSectionSettle({ stopNativeScroll: true });
