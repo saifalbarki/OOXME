@@ -452,25 +452,25 @@
     const shell = face?.querySelector('.s-page__z-face-shell');
     const eyes = face?.querySelector('.s-page__z-face-eyes');
     const eyeMotion = face?.querySelector('.s-page__z-face-eye-motion');
-    const mouth = face?.querySelector('.s-page__z-face-mouth');
-    if (!face || !shell || !eyes || !eyeMotion || !mouth) return null;
-    const gazeLimit = 1.75;
-    const faceScale = 1.08;
+    if (!face || !shell || !eyes || !eyeMotion) return null;
+    // The eye centers sit at 3.75/9.25 with a 1.85 radius in a 13-unit viewBox.
+    // These limits retain a visible inner margin under every exclusive reaction.
+    const gazeLimit = 1.1;
     const dragThreshold = 6;
     let pointer = null;
     let dragging = false;
     let tapping = false;
     let settling = false;
     let applyActive = false;
-    let applyExitSad = false;
+    let reaction = null;
+    let reactionStartedAt = 0;
     let tapTimer = 0;
     let settleTimer = 0;
-    let applyExitTimer = 0;
+    let reactionTimer = 0;
     let animationFrame = 0;
     let previousTime = 0;
     let targetGaze = { x: 0, y: 0 };
     let currentGaze = { x: 0, y: 0 };
-    let currentMouth = { leftX: 2.1, leftY: 10, controlY: 15, rightX: 10.9, rightY: 10 };
 
     const clearTimer = (timer) => {
       if (timer) window.clearTimeout(timer);
@@ -484,51 +484,37 @@
         y: Math.max(-gazeLimit, Math.min(gazeLimit, y * scale))
       };
     };
-    const getState = () => (dragging ? 'drag' : tapping ? 'tap' : applyActive ? 'apply' : applyExitSad ? 'apply-exit-sad' : settling ? 'settle' : 'idle');
+    // A direct interaction is intentionally first: it temporarily wins over a
+    // section reaction, while the reaction itself remains a single timed state.
+    const getState = () => (dragging ? 'drag' : tapping ? 'tap' : reaction || (applyActive ? 'apply' : (settling ? 'settle' : 'idle')));
     const render = () => {
       const state = getState();
       face.dataset.faceState = state;
     };
     const lerp = (from, to, amount) => from + ((to - from) * amount);
-    const mouthForState = (state, idleNeutral = false) => {
-      if (state === 'tap') return { leftX: .2, leftY: 9.05, controlY: 16.1, rightX: 12.8, rightY: 9.05 };
-      if (state === 'drag') return { leftX: 1.1, leftY: 11.55, controlY: 4.6, rightX: 11.9, rightY: 11.55 };
-      if (state === 'apply-exit-sad') return { leftX: 1.55, leftY: 10.95, controlY: 7.35, rightX: 11.45, rightY: 10.95 };
-      if (state === 'settle') return { leftX: 2.25, leftY: 10.45, controlY: 10.45, rightX: 10.75, rightY: 10.45 };
-      if (idleNeutral) return { leftX: 2.25, leftY: 10.45, controlY: 10.45, rightX: 10.75, rightY: 10.45 };
-      return { leftX: 2.1, leftY: 10, controlY: 15, rightX: 10.9, rightY: 10 };
-    };
     const tick = (time) => {
       const delta = Math.min(48, Math.max(1, time - (previousTime || time)));
       previousTime = time;
       const state = getState();
       const phase = time / 1000;
-      const idleCycle = (phase % 6.4) / 6.4;
-      const idleNeutral = state === 'idle' && idleCycle > .47 && idleCycle < .58;
-      const mouthTarget = mouthForState(state, idleNeutral);
-      const easing = 1 - Math.exp(-delta / 58);
-      Object.keys(currentMouth).forEach((key) => {
-        currentMouth[key] = lerp(currentMouth[key], mouthTarget[key], easing);
-      });
       const gazeEasing = 1 - Math.exp(-delta / (state === 'drag' ? 38 : 72));
-      const idleGaze = state === 'idle' ? {
-        x: Math.sin(phase * .82) * .28,
-        y: Math.sin(phase * .47 + .9) * .22
-      } : state === 'apply-exit-sad' ? { x: 0, y: .62 } : targetGaze;
-      currentGaze.x = lerp(currentGaze.x, idleGaze.x, gazeEasing);
-      currentGaze.y = lerp(currentGaze.y, idleGaze.y, gazeEasing);
-      const lifeOffset = state === 'idle' ? Math.sin(phase * 1.35) * .16 : 0;
-      const wiggle = state === 'drag' ? Math.sin(phase * 29) * 2.5 : state === 'apply' ? Math.sin(phase * 4.5) * 6.4 : 0;
-      const danceX = state === 'apply' ? Math.cos(phase * 4.5) * .36 : 0;
-      const danceOffset = state === 'apply' ? Math.sin(phase * 4.5) * .36 : 0;
+      const gazeTarget = (state === 'tap' || state === 'drag') ? targetGaze : { x: 0, y: 0 };
+      currentGaze.x = lerp(currentGaze.x, gazeTarget.x, gazeEasing);
+      currentGaze.y = lerp(currentGaze.y, gazeTarget.y, gazeEasing);
+      const reactionElapsed = reaction ? Math.max(0, time - reactionStartedAt) : 0;
+      const enteringApply = state === 'apply-enter';
+      const leavingApply = state === 'apply-exit';
+      const bounce = enteringApply ? Math.sin(Math.min(1, reactionElapsed / 420) * Math.PI * 2) * .62 : 0;
+      const shake = leavingApply ? Math.sin(Math.min(1, reactionElapsed / 340) * Math.PI * 4) * .68 : 0;
+      const happyEyes = state === 'apply' || enteringApply;
       const blinkPhase = ((phase + .7) % 5.6) / 5.6;
       const blink = state === 'idle' ? 1 - (.84 * Math.exp(-Math.pow((blinkPhase - .72) / .032, 2))) : 1;
-      // Every inner-face transform is composed around the SVG's exact center.
-      // The outer 32px control never moves; Apply's orbit is zero-mean here.
-      shell.setAttribute('transform', `translate(6.5 6.5) rotate(${wiggle.toFixed(3)}) translate(${danceX.toFixed(3)} ${(lifeOffset + danceOffset).toFixed(3)}) scale(${faceScale}) translate(-6.5 -6.5)`);
+      // Reactions are exclusive and zero-mean; eye bounds stay inside the fixed circle.
+      shell.setAttribute('transform', `translate(${shake.toFixed(3)} ${bounce.toFixed(3)})`);
       eyes.setAttribute('transform', `translate(${currentGaze.x.toFixed(3)} ${currentGaze.y.toFixed(3)})`);
-      eyeMotion.setAttribute('transform', `translate(0 3.7) scale(1 ${blink.toFixed(3)}) translate(0 -3.7)`);
-      mouth.setAttribute('d', `M${currentMouth.leftX.toFixed(3)} ${currentMouth.leftY.toFixed(3)}Q6.5 ${currentMouth.controlY.toFixed(3)} ${currentMouth.rightX.toFixed(3)} ${currentMouth.rightY.toFixed(3)}`);
+      const eyeHeight = happyEyes ? .58 : blink;
+      const eyeLift = happyEyes ? -.22 : 0;
+      eyeMotion.setAttribute('transform', `translate(0 6.5) translate(0 ${eyeLift.toFixed(3)}) scale(1 ${eyeHeight.toFixed(3)}) translate(0 -6.5)`);
       render();
       animationFrame = window.requestAnimationFrame(tick);
     };
@@ -537,13 +523,10 @@
       const rect = addButton.getBoundingClientRect();
       setGaze(clientX - (rect.left + rect.width / 2), clientY - (rect.top + rect.height / 2));
     };
-    const isInteractiveTarget = (target) => target instanceof Element && Boolean(target.closest(
-      'button, a, input, textarea, select, [role="button"], .s-page__z-hero-image, [data-s-z-content-slot], [data-s-composer-menu]'
-    ));
     const begin = (event) => {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       if (pointer) return;
-      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, target: event.target };
+      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
       dragging = false;
     };
     const move = (event) => {
@@ -564,7 +547,6 @@
     const end = (event, cancelled = false) => {
       if (!pointer || event.pointerId !== pointer.id) return;
       const wasDragging = dragging;
-      const tapTarget = pointer.target;
       pointer = null;
       dragging = false;
       if (wasDragging) {
@@ -584,7 +566,6 @@
         render();
         return;
       }
-      if (!isInteractiveTarget(tapTarget)) return;
       tapping = true;
       settling = false;
       gazeAtPoint(event.clientX, event.clientY);
@@ -597,18 +578,24 @@
       }, 380);
     };
     const setApply = (active) => {
-      if (active) {
+      if (active && !applyActive) {
         applyActive = true;
-        applyExitSad = false;
-        applyExitTimer = clearTimer(applyExitTimer);
+        reaction = 'apply-enter';
+        reactionStartedAt = performance.now();
+        reactionTimer = clearTimer(reactionTimer);
         if (!dragging && !tapping) centerGaze();
-      } else if (applyActive) {
+        reactionTimer = window.setTimeout(() => {
+          reaction = null;
+          render();
+        }, 420);
+      } else if (!active && applyActive) {
         applyActive = false;
-        applyExitSad = true;
-        setGaze(0, .62, false);
-        applyExitTimer = clearTimer(applyExitTimer);
-        applyExitTimer = window.setTimeout(() => {
-          applyExitSad = false;
+        reaction = 'apply-exit';
+        reactionStartedAt = performance.now();
+        reactionTimer = clearTimer(reactionTimer);
+        centerGaze();
+        reactionTimer = window.setTimeout(() => {
+          reaction = null;
           centerGaze();
           render();
         }, 360);
@@ -1235,6 +1222,7 @@
     if (zSectionOneLocked) {
       if (scrollY < zSectionOneLockScrollY - .5) {
         zSectionOneLocked = false;
+        zFaceController?.setApply(false);
         setZSecondaryNavHeroAttached();
         zHeroImage.classList.remove('is-z-scroll-locked');
         zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');

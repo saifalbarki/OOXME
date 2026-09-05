@@ -394,7 +394,7 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit.is-active {
   background: rgba(0, 0, 0, .055) !important;
 }
 
-/* The /z smile control keeps its single active circle black in either theme. */
+/* The /z eyes control keeps its single active circle black in either theme. */
 .s-page--z .s-page__add.is-active,
 html.s-route.is-day-mode .s-page--z .s-page__add.is-active {
   width: var(--s-z-control-diameter);
@@ -403,12 +403,12 @@ html.s-route.is-day-mode .s-page--z .s-page__add.is-active {
   color: #FFFFFF;
 }
 
-.s-page--z .s-page__z-add-smile {
+.s-page--z .s-page__z-add-eyes {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 13px;
-  height: 13px;
+  width: 26px;
+  height: 26px;
   transform: translate(-50%, -50%);
   overflow: visible;
   fill: none;
