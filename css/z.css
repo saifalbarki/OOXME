@@ -14,6 +14,144 @@
   grid-template-columns: 44px minmax(0, 1fr) 44px;
 }
 
+.s-page--z .s-page__secondary-nav {
+  --s-secondary-nav-surface: rgba(255, 255, 255, .16);
+  --s-secondary-nav-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  position: absolute;
+  z-index: 3;
+  top: calc(48px + (var(--s-x) * 2));
+  right: auto;
+  left: var(--s-x);
+  width: calc(100% - (var(--s-x) * 2));
+  max-width: none;
+  height: 48px;
+  min-height: 48px;
+  padding: 2px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: var(--s-composer-radius);
+  background: transparent;
+  box-shadow: none;
+  color: #FFFFFF;
+  isolation: isolate;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .18s ease, visibility 0s linear .18s;
+}
+
+.s-page--z .s-page__secondary-nav.is-z-hero-attached {
+  position: fixed;
+  z-index: 3;
+  top: var(--s-z-secondary-nav-top);
+  left: var(--s-z-secondary-nav-left);
+  width: var(--s-z-secondary-nav-width);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.s-page--z .s-page__secondary-nav::before {
+  position: absolute;
+  z-index: -1;
+  inset: -1px;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: inherit;
+  background: var(--s-secondary-nav-surface);
+  box-shadow: var(--s-secondary-nav-shadow);
+  content: "";
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+}
+
+html.s-route.is-day-mode .s-page--z .s-page__secondary-nav {
+  --s-secondary-nav-surface: rgba(255, 255, 255, .42);
+  --s-secondary-nav-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012);
+  color: #111111;
+}
+
+.s-page--z .s-page__secondary-nav-rail {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  width: 100%;
+  height: 42.72px;
+  /* Match the active pill's edge clearance to its vertical clearance. */
+  padding-inline: 5.36px;
+  align-items: center;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  direction: ltr;
+  cursor: grab;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+  scroll-padding-inline: 22px;
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.s-page--z .s-page__secondary-nav-rail.is-dragging { cursor: grabbing; }
+
+.s-page--z .s-page__secondary-nav-rail::-webkit-scrollbar { display: none; }
+
+html[dir="rtl"] .s-page--z .s-page__secondary-nav-rail { direction: rtl; }
+
+.s-page--z .s-page__secondary-nav-item {
+  --s-secondary-active-inset: 8px;
+  position: relative;
+  display: inline-grid;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  min-height: 32px;
+  place-items: center;
+  margin: 0;
+  padding: var(--s-secondary-active-inset);
+  border: 0;
+  border-radius: 18px;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: 500 13px/1 OOXMEScript, Arial, sans-serif;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[lang="ar"] .s-page--z .s-page__secondary-nav-item {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+.s-page--z .s-page__secondary-nav-item > span { display: none; }
+html[lang="en"] .s-page--z .s-page__secondary-nav-item > span[lang="en"],
+html[lang="ar"] .s-page--z .s-page__secondary-nav-item > span[lang="ar"] { display: inline; }
+
+.s-page--z .s-page__secondary-nav-item.is-active {
+  /* Widen the content box itself; the shared 10px inset remains unchanged. */
+  min-width: 120px;
+  background: #080808;
+  color: #FFFFFF;
+}
+
+.s-page--z .s-page__secondary-nav-item:active { transform: scale(.97); }
+
+.s-page--z .s-page__secondary-nav.has-hidden-right .s-page__secondary-nav-rail {
+  -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 22px), transparent 100%);
+}
+
+.s-page--z .s-page__secondary-nav.has-hidden-left .s-page__secondary-nav-rail {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 100%);
+}
+
+.s-page--z .s-page__secondary-nav.has-hidden-left.has-hidden-right .s-page__secondary-nav-rail {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 22px, #000 calc(100% - 22px), transparent 100%);
+}
+
 /* Keep the /x control geometry; /z simply omits the text field while retaining
    both original endpoint controls and their shared interaction hooks. */
 .s-page--z .s-page__z-input { display: none; }
@@ -86,6 +224,29 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
   left: 0;
   width: 100%;
   height: calc(var(--s-x) * 8);
+  /* This offset is supplied by the /z Section 1 scroll clamp. Using the
+     independent translate property leaves the established frame sizing and
+     portrait composition transform untouched. */
+  translate: 0 var(--s-z-hero-scroll-offset, 0px);
+}
+
+/* The locked hero is removed from its scrolling containing block and pinned to
+   the viewport. The Section 1 composition already reserves its space because
+   this frame is absolutely positioned in its normal state. */
+.s-page--z .s-page__z-hero-image.is-z-scroll-locked {
+  position: fixed;
+  z-index: 2;
+  top: var(--s-z-hero-locked-top);
+  right: auto;
+  bottom: auto;
+  left: var(--s-z-hero-locked-left);
+  width: var(--s-z-hero-locked-width);
+  height: var(--s-z-hero-locked-height);
+  translate: none;
+}
+
+.s-page--z .s-page__z-hero-image.is-portrait-composed.is-z-scroll-locked {
+  top: var(--s-z-hero-locked-top);
 }
 
 /* Give the image copy additional vertical clearance for the main glyphs. */
@@ -109,7 +270,10 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
 
 /* Keep the image anchored while moving only the first group's text block. */
 .s-page--z [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
+  opacity: calc(1 - var(--s-z-first-group-scroll-progress, 0));
+  filter: blur(calc(var(--s-z-first-group-scroll-progress, 0) * 12px));
   transform: translateY(var(--s-z-first-group-shift, 0px));
+  will-change: opacity, filter;
 }
 
 /* The first description follows the shared /x chat-bubble type treatment. */
