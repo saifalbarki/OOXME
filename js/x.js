@@ -133,6 +133,13 @@
       consultationCta: 'احجز استشارة'
     }
   };
+  const zFirstGroupCopy = {
+    en: ['Welcome\nOur Next Partner', 'OOXME RP Network is now open for applications\nJoin us and benefit from exclusive advantages and rewards'],
+    ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الإحالة لأوكسوم متاحة الآن للتقديم\nانضم إلينا واستفد من مزايا ومكافآت حصرية']
+  };
+  const getGroupCopy = (language, groupIndex) => (
+    isZPage && groupIndex === 0 ? zFirstGroupCopy[language] : pageCopy[language].groups[groupIndex]
+  );
   let keyboardFrame = 0;
   let composerPulseFrame = 0;
   let composerMenuPulseFrame = 0;
@@ -683,12 +690,33 @@
     finalScrollBufferFrame = window.requestAnimationFrame(syncFinalScrollBuffer);
   };
 
+  const syncZFirstGroupTextGap = () => {
+    if (!isZPage) return;
+    const title = firstGroup.querySelector('.s-page__group-title');
+    const description = firstGroup.querySelector('.s-page__group-description');
+    if (!title || !description || !zHeroImage) return;
+    const imageRect = zHeroImage.getBoundingClientRect();
+    const titleRect = title.getBoundingClientRect();
+    const descriptionRect = description.getBoundingClientRect();
+    const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
+    const currentShift = Number.parseFloat(firstGroup.style.getPropertyValue('--s-z-first-group-shift')) || 0;
+    const naturalDescriptionBottom = descriptionRect.bottom - currentShift;
+    const shift = Math.max(0, imageRect.top - naturalDescriptionBottom - x);
+    if (!firstGroup.hasAttribute('data-s-z-original-y')) {
+      firstGroup.setAttribute('data-s-z-original-y', (titleRect.top - currentShift).toFixed(3));
+    }
+    firstGroup.style.setProperty('--s-z-first-group-shift', `${shift.toFixed(3)}px`);
+    firstGroup.setAttribute('data-s-z-final-y', (titleRect.top + shift).toFixed(3));
+    firstGroup.setAttribute('data-s-z-text-image-gap', x.toFixed(3));
+  };
+
   const syncPortraitSectionLayout = () => {
     portraitSectionLayoutFrame = 0;
     const isPortrait = window.matchMedia('(orientation: portrait)').matches;
     if (!isPortrait) {
       syncConversationInputBounds();
       resetPortraitSectionLayout();
+      syncZFirstGroupTextGap();
       scheduleFlowSync();
       return;
     }
@@ -764,6 +792,8 @@
       first.setAttribute('data-s-portrait-reference-delta', '0.000');
       if (first === firstGroup) first.setAttribute('data-s-portrait-live-gap', '0.000');
     });
+
+    syncZFirstGroupTextGap();
 
     scheduleFinalScrollBuffer();
     scheduleFlowSync();
@@ -964,12 +994,14 @@
   const stabilizeLocalizedGeometry = () => {
     localizedGeometryFrame = 0;
     groupElements.forEach((elements, groupIndex) => {
-      if (!pageCopy.en.groups[groupIndex] || !pageCopy.ar.groups[groupIndex]) return;
+      const englishGroup = getGroupCopy('en', groupIndex);
+      const arabicGroup = getGroupCopy('ar', groupIndex);
+      if (!englishGroup || !arabicGroup) return;
       elements.forEach((element, elementIndex) => {
         element.style.height = '';
         const height = Math.max(
-          measureLocalizedTextHeight(element, pageCopy.en.groups[groupIndex][elementIndex], 'en'),
-          measureLocalizedTextHeight(element, pageCopy.ar.groups[groupIndex][elementIndex], 'ar')
+          measureLocalizedTextHeight(element, englishGroup[elementIndex], 'en'),
+          measureLocalizedTextHeight(element, arabicGroup[elementIndex], 'ar')
         );
         if (height) element.style.height = `${Math.ceil(height)}px`;
       });
@@ -986,7 +1018,7 @@
   applyPageCopy = (language) => {
     const copy = pageCopy[language];
     groupElements.forEach((elements, groupIndex) => {
-      const localizedGroup = copy.groups[groupIndex];
+      const localizedGroup = getGroupCopy(language, groupIndex);
       if (!localizedGroup) return;
       elements.forEach((element, elementIndex) => {
         setLocalizedText(element, localizedGroup[elementIndex]);
