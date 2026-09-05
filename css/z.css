@@ -247,6 +247,9 @@ html[lang="ar"] .s-page--z .s-page__z-description-copy p {
 
 .s-page--z .s-page__z-description-date {
   margin-top: var(--s-x) !important;
+  width: var(--s-z-active-selector-width, 100%);
+  margin-inline: auto;
+  text-align: center;
 }
 
 .s-page--z .s-page__z-description-title,
