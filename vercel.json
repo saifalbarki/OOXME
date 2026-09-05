@@ -10,6 +10,7 @@
     { "source": "/gallery", "destination": "/gallery.html" },
     { "source": "/brand", "destination": "/brand.html" },
     { "source": "/x", "destination": "/x.html" },
+    { "source": "/z", "destination": "/z.html" },
     { "source": "/os", "destination": "/api/os/index?route=dashboard" },
     { "source": "/os/", "destination": "/api/os/index?route=dashboard" },
     { "source": "/api/os/login", "destination": "/api/os/index?route=login" },

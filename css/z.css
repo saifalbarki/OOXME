@@ -1,0 +1,40 @@
+/* /z keeps the /x system intact; only the shared composer is re-anchored. */
+.s-page--z .s-page__content {
+  padding-top: calc(48px + (var(--s-x) * 4));
+  padding-bottom: calc(var(--s-x) * 4);
+}
+
+.s-page--z .s-page__composer {
+  top: calc(var(--s-x) * 2);
+  bottom: auto;
+}
+
+.s-page--z .s-page__conversation {
+  top: calc(48px + (var(--s-x) * 4));
+  bottom: var(--s-x);
+}
+
+/* Open all composer affordances into the available page space below the top bar. */
+.s-page--z .s-page__composer-menu {
+  top: calc(100% + (var(--s-x) * 2));
+  bottom: auto;
+  transform: translateY(-6px);
+}
+
+.s-page--z .s-page__composer-menu-panel {
+  top: calc(100% + (var(--s-x) * 2) + var(--s-composer-menu-height) + (var(--s-x) * .5));
+  bottom: auto;
+  transform: translateY(-6px);
+}
+
+.s-page--z .s-page__send-utilities {
+  top: calc(100% + (var(--s-x) * 2));
+  bottom: auto;
+}
+
+.s-page--z .s-page__send-utility { transform: translateY(-6px) scale(.97); }
+
+@media (orientation: portrait) {
+  .s-page--z .s-page__content { padding-bottom: calc(var(--s-x) * 4); }
+  .s-page--z .s-page__major-section { height: auto; min-height: 100dvh; }
+}

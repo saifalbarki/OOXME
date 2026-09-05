@@ -40,7 +40,10 @@
   const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !numbersMetrics || numberMetricItems.length !== 3 || !squareLogoStage || !consultationCta || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || localizedGroups.length !== 6) return;
+  // This controller is shared by the full /x composition and the focused /z
+  // composition. Optional later-section affordances are deliberately guarded so
+  // a page may include only its relevant sections without creating a parallel UI.
+  if (!page || !content || !composer || !composerMenu || !composerMenuPanel || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !utilitySmileButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -367,11 +370,11 @@
     squareLogoPulseFrames.set(logo, frame);
   };
 
-  squareLogoStage.addEventListener('pointerdown', (event) => {
+  squareLogoStage?.addEventListener('pointerdown', (event) => {
     const logo = event.target.closest('.s-page__square-logo');
     if (logo && squareLogoStage.contains(logo)) pulseSquareLogo(logo);
   }, { passive: true });
-  squareLogoStage.addEventListener('animationend', (event) => {
+  squareLogoStage?.addEventListener('animationend', (event) => {
     if (event.animationName !== 's-page-square-logo-pulse') return;
     event.target.closest('.s-page__square-logo')?.classList.remove('is-pulsing');
   });
@@ -972,9 +975,11 @@
       });
     });
     menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });
-    consultationCta.textContent = copy.consultationCta;
-    consultationCta.lang = language;
-    consultationCta.dir = language === 'ar' ? 'rtl' : 'ltr';
+    if (consultationCta) {
+      consultationCta.textContent = copy.consultationCta;
+      consultationCta.lang = language;
+      consultationCta.dir = language === 'ar' ? 'rtl' : 'ltr';
+    }
     input.placeholder = copy.inputPlaceholder;
     inputLabel.textContent = copy.ask;
     addButton.setAttribute('aria-label', copy.addContext);
