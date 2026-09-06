@@ -1231,7 +1231,10 @@
     if (!zSectionOneCompositionReady || zSectionOneTransitionDistance <= 0) return;
 
     const rawProgress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
-    const hasReachedEndpoint = scrollY >= zSectionOneTransitionDistance - zEndpointCaptureTolerancePx;
+    const nativeScrollLimit = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const reachableEndpoint = Math.min(zSectionOneTransitionDistance, nativeScrollLimit);
+    const hasReachedEndpoint = nativeScrollLimit > zEndpointCaptureTolerancePx
+      && scrollY >= reachableEndpoint - zEndpointCaptureTolerancePx;
     let progress = rawProgress;
     if (zSectionOneLocked) {
       progress = 1;
