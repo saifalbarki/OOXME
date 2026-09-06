@@ -15,7 +15,7 @@
   padding-top: calc(48px + (var(--s-x) * 2));
   padding-bottom: 0;
   min-height: calc(100vh + var(--s-z-transition-distance, 0px));
-  min-height: calc(100dvh + var(--s-z-transition-distance, 0px));
+  min-height: calc(var(--s-portrait-section-height, 100dvh) + var(--s-z-transition-distance, 0px));
 }
 
 .s-page--z .s-page__composer {
@@ -408,6 +408,15 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
   height: calc(var(--s-x) * 8);
 }
 
+/* Keep the exact first-scroll composition on Safari-backed layers from rest. */
+.s-page--z .s-page__z-hero-image.is-z-compositor-ready,
+.s-page--z .s-page__z-hero-image .s-page__image-group.is-z-compositor-ready,
+.s-page--z .s-page__z-hero-image.is-z-compositor-ready .s-page__image-copy {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
 .s-page--z .s-page__z-hero-image.is-pulsing {
   animation: s-page-composer-pulse .18s ease-out;
 }
@@ -445,6 +454,10 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
   filter: blur(calc(var(--s-z-first-group-scroll-progress, 0) * 12px));
   transform: translateY(var(--s-z-first-group-shift, 0px));
   will-change: opacity, filter;
+}
+
+.s-page--z [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description).is-z-compositor-ready {
+  will-change: transform, opacity, filter;
 }
 
 /* The first description follows the shared /x chat-bubble type treatment. */
@@ -640,7 +653,7 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
 }
 .s-page--z .s-page__secondary-nav::before { content: none; }
 html.s-route.is-day-mode .s-page--z .s-page__secondary-nav { --s-composer-surface: rgba(255, 255, 255, .42); --s-composer-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012); color: #000000; }
-.s-page--z .s-page__secondary-nav.is-z-transition-ready { opacity: var(--s-z-composition-progress, 0); visibility: visible; filter: blur(var(--s-z-content-blur, 12px)); pointer-events: none; transform: none; transition: none; will-change: opacity, filter; }
+.s-page--z .s-page__secondary-nav.is-z-transition-ready { opacity: var(--s-z-composition-progress, 0); visibility: visible; filter: blur(var(--s-z-content-blur, 12px)); pointer-events: none; transform: translate3d(0, 0, 0); transition: none; will-change: transform, opacity, filter; }
 .s-page--z .s-page__secondary-nav.is-z-transition-ready.is-z-content-interactive { pointer-events: auto; }
 .s-page--z .s-page__secondary-nav.is-pulsing { animation: s-page-composer-menu-pulse .18s ease-out; }
 

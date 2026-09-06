@@ -39,7 +39,7 @@
   const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
-    .filter((item) => item !== imageCopy);
+    .filter((item) => item !== imageCopy && (item !== imageMedia || !page?.classList.contains('s-page--z')));
   const localizedGroups = Array.from(document.querySelectorAll('[data-s-copy-group]'))
     .sort((first, second) => Number(first.dataset.sCopyGroup) - Number(second.dataset.sCopyGroup));
   const conversation = document.querySelector('[data-s-conversation]');
@@ -52,6 +52,16 @@
   const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const isZPage = page?.classList.contains('s-page--z') ?? false;
+  const zHeroCompositorLayers = isZPage
+    ? [
+      zHeroImage,
+      imageMedia,
+      imageCopy,
+      firstGroup?.querySelector('.s-page__group-title'),
+      firstGroup?.querySelector('.s-page__group-description'),
+      zSecondaryNav
+    ].filter(Boolean)
+    : [];
 
   // This controller is shared by the full /x composition and the focused /z
   // composition. Optional later-section affordances are deliberately guarded so
@@ -199,6 +209,10 @@
   let zSectionOneStateOneImageBottom = 0;
   let zSectionOneContentBoxHeight = 0;
   let zSectionOneTransitionDistance = 0;
+  const zEndpointReverseIntentDistancePx = 8;
+  let zEndpointPointerId = null;
+  let zEndpointPointerStartY = 0;
+  let zEndpointReverseIntent = false;
   let zHeroGeometryFrozen = false;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
@@ -985,6 +999,11 @@
   const setImageCopyVisibility = (isVisible) => {
     window.clearTimeout(imageCopyRevealTimer);
     imageCopyRevealTimer = 0;
+    if (isZPage) {
+      imageCopy.classList.toggle('is-visible', isVisible);
+      imageCopy.setAttribute('aria-hidden', String(!isVisible));
+      return;
+    }
     if (!isVisible) {
       imageCopy.classList.remove('is-visible');
       imageCopy.setAttribute('aria-hidden', 'true');
@@ -1190,19 +1209,27 @@
     }
     if (!zSectionOneCompositionReady || zSectionOneTransitionDistance <= 0) return;
 
-    const progress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
+    const rawProgress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
+    let progress = rawProgress;
+    if (zSectionOneLocked) {
+      progress = 1;
+      if (zEndpointReverseIntent && rawProgress < 1) {
+        zSectionOneLocked = false;
+        zEndpointReverseIntent = false;
+        progress = rawProgress;
+        zFaceController?.rejectApply();
+      }
+    } else if (rawProgress === 1) {
+      zSectionOneLocked = true;
+      zEndpointReverseIntent = false;
+      progress = 1;
+      zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
+    }
     const remainingBlur = (1 - progress) * 12;
-    const endpointReached = progress === 1;
     firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
     zSecondaryNav.classList.toggle('is-z-content-interactive', progress > .05);
-
-    if (endpointReached !== zSectionOneLocked) {
-      zSectionOneLocked = endpointReached;
-      if (!endpointReached) zFaceController?.rejectApply();
-      else zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
-    }
 
     firstGroup.setAttribute('data-s-z-text-scroll-progress', progress.toFixed(4));
     zSecondaryNav.setAttribute('data-s-z-composition-progress', progress.toFixed(4));
@@ -1211,6 +1238,26 @@
   const scheduleZSectionOneScroll = () => {
     if (!isZPage || zSectionOneScrollFrame) return;
     zSectionOneScrollFrame = window.requestAnimationFrame(syncZSectionOneScroll);
+  };
+
+  const beginZEndpointGesture = (event) => {
+    if (!isZPage || !zSectionOneLocked) return;
+    zEndpointPointerId = event.pointerId;
+    zEndpointPointerStartY = event.clientY;
+    zEndpointReverseIntent = false;
+  };
+
+  const updateZEndpointGesture = (event) => {
+    if (!zSectionOneLocked || event.pointerId !== zEndpointPointerId) return;
+    zEndpointReverseIntent = event.clientY - zEndpointPointerStartY >= zEndpointReverseIntentDistancePx;
+  };
+
+  const endZEndpointGesture = (event) => {
+    if (event.pointerId !== zEndpointPointerId) return;
+    if (zEndpointReverseIntent && zSectionOneLocked) syncZSectionOneScroll();
+    zEndpointPointerId = null;
+    zEndpointPointerStartY = 0;
+    zEndpointReverseIntent = false;
   };
 
   const syncPortraitSectionLayout = () => {
@@ -1420,7 +1467,11 @@
     lastFlowScrollY = nextScrollY;
     lastFlowScrollTime = now;
     pauseLogoParticleForScroll();
-    scheduleZSectionOneScroll();
+    if (isZPage) {
+      if (zSectionOneScrollFrame) window.cancelAnimationFrame(zSectionOneScrollFrame);
+      zSectionOneScrollFrame = 0;
+      syncZSectionOneScroll();
+    }
     if (portraitSectionLayoutTimer) scheduleStablePortraitSectionLayout();
     scheduleFlowSync();
   };
@@ -1561,7 +1612,8 @@
       schedulePortraitSectionLayout();
     }
   });
-  if (firstGroupObserver) firstGroupObserver.observe(firstGroup);
+  if (isZPage) firstGroup.classList.add('is-visible');
+  else if (firstGroupObserver) firstGroupObserver.observe(firstGroup);
   else firstGroup.classList.add('is-visible');
   if (isZPage) {
     imageMedia.classList.add('is-visible');
@@ -1866,10 +1918,12 @@
 
   document.addEventListener('pointerdown', (event) => {
     beginMajorSectionInteraction();
+    beginZEndpointGesture(event);
     zFaceController?.begin(event);
   }, { capture: true, passive: true });
   document.addEventListener('touchstart', beginMajorSectionInteraction, { capture: true, passive: true });
   document.addEventListener('pointermove', (event) => {
+    updateZEndpointGesture(event);
     zFaceController?.move(event);
     if (event.pointerType === 'touch' || event.buttons !== 0) beginMajorSectionInteraction();
   }, { capture: true, passive: true });
@@ -1877,12 +1931,16 @@
   ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
     document.addEventListener(eventName, (event) => {
       endMajorSectionInteraction();
-      if (eventName.startsWith('pointer')) zFaceController?.end(event, eventName === 'pointercancel');
+      if (eventName.startsWith('pointer')) {
+        endZEndpointGesture(event);
+        zFaceController?.end(event, eventName === 'pointercancel');
+      }
     }, { passive: true });
   });
-  window.addEventListener('wheel', () => {
+  window.addEventListener('wheel', (event) => {
     cancelMajorSectionSettle({ stopNativeScroll: true });
     majorSectionPointerActive = false;
+    if (isZPage && zSectionOneLocked && event.deltaY < 0) zEndpointReverseIntent = true;
     if (!isZPage) scheduleMajorSectionSettle();
   }, { passive: true });
   window.addEventListener('keydown', (event) => {
@@ -1890,6 +1948,7 @@
     if (event.target instanceof Element && event.target.closest('input, textarea, [contenteditable="true"]')) return;
     majorSectionPointerActive = false;
     cancelMajorSectionSettle({ stopNativeScroll: true });
+    if (isZPage && zSectionOneLocked && ['ArrowUp', 'PageUp', 'Home'].includes(event.key)) zEndpointReverseIntent = true;
     if (!isZPage) scheduleMajorSectionSettle();
   }, { passive: true });
 
@@ -2089,8 +2148,19 @@
     syncZApplyButtonGeometry();
     syncZSectionOneScroll();
 
-    // Resolve all startup style/compositor work before the first input frame.
-    void zSecondaryNav.getBoundingClientRect();
+    // Safari otherwise defers backing-layer creation for this mixed
+    // transform/opacity/filter composition until its first scroll commit.
+    // Mark and flush only the layers used by the /z hero transition while the
+    // page is still at rest; later scroll frames only update their properties.
+    zHeroCompositorLayers.forEach((layer) => {
+      layer.classList.add('is-z-compositor-ready');
+      const style = getComputedStyle(layer);
+      void style.transform;
+      void style.opacity;
+      void style.filter;
+      void style.webkitBackdropFilter;
+      void layer.getBoundingClientRect();
+    });
     document.documentElement.setAttribute('data-s-z-hero-geometry-ready', 'true');
     if (freeze) {
       zHeroGeometryFrozen = true;
@@ -2114,6 +2184,9 @@
       zSectionOneContentBoxHeight = 0;
       zSectionOneStateOneImageBottom = 0;
       zSectionOneTransitionDistance = 0;
+      zEndpointPointerId = null;
+      zEndpointPointerStartY = 0;
+      zEndpointReverseIntent = false;
       zHeroGeometryFrozen = false;
       document.documentElement.removeAttribute('data-s-z-hero-assets-stable');
       zSecondaryNav.classList.remove('is-z-content-interactive');
