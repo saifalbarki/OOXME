@@ -1209,10 +1209,12 @@
 
     const progress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
     const travel = progress * zSectionOneTransitionDistance;
+    const endpointOffset = progress * zSectionOneEndpointCorrection;
     const remainingBlur = (1 - progress) * 12;
     const endpointReached = progress === 1;
     firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
+    zSecondaryNav.style.setProperty('--s-z-endpoint-offset', `${endpointOffset.toFixed(3)}px`);
     zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
     zSecondaryNav.classList.toggle('is-z-content-interactive', progress > .05);
 
@@ -2097,6 +2099,7 @@
       zSecondaryNav.classList.remove('is-z-transition-ready', 'is-z-content-interactive');
       zSecondaryNav.style.removeProperty('--s-z-secondary-nav-state-one-top');
       zSecondaryNav.style.removeProperty('--s-z-endpoint-correction');
+      zSecondaryNav.style.removeProperty('--s-z-endpoint-offset');
       zSecondaryNav.style.removeProperty('--s-z-composition-progress');
       zSecondaryNav.style.removeProperty('--s-z-content-blur');
       syncZActiveContent(false);
