@@ -213,7 +213,9 @@
   let zSectionOneContentBoxHeight = 0;
   let zSectionOneTransitionDistance = 0;
   const zEndpointCaptureTolerancePx = .25;
-  const zEndpointReverseIntentDistancePx = 8;
+  // Keep the endpoint immune to passive Safari rebound, but do not make a
+  // deliberate reverse drag feel like it has to overcome a second threshold.
+  const zEndpointReverseIntentDistancePx = 3;
   const zReleaseSettleDelayMs = 1000;
   const zReleaseSettleStartGraceMs = 120;
   let zEndpointLockScrollY = 0;
@@ -1267,20 +1269,20 @@
     zSectionOneScrollFrame = window.requestAnimationFrame(syncZSectionOneScroll);
   };
 
-  const beginZEndpointGesture = (event) => {
+  const beginZEndpointGesture = (pointerId, clientY) => {
     if (!isZPage || !zSectionOneLocked) return;
-    zEndpointPointerId = event.pointerId;
-    zEndpointPointerStartY = event.clientY;
+    zEndpointPointerId = pointerId;
+    zEndpointPointerStartY = clientY;
     zEndpointReverseIntent = false;
   };
 
-  const updateZEndpointGesture = (event) => {
-    if (!zSectionOneLocked || event.pointerId !== zEndpointPointerId) return;
-    zEndpointReverseIntent = event.clientY - zEndpointPointerStartY >= zEndpointReverseIntentDistancePx;
+  const updateZEndpointGesture = (pointerId, clientY) => {
+    if (!zSectionOneLocked || pointerId !== zEndpointPointerId) return;
+    zEndpointReverseIntent = clientY - zEndpointPointerStartY >= zEndpointReverseIntentDistancePx;
   };
 
-  const endZEndpointGesture = (event) => {
-    if (event.pointerId !== zEndpointPointerId) return;
+  const endZEndpointGesture = (pointerId) => {
+    if (pointerId !== zEndpointPointerId) return;
     if (zEndpointReverseIntent && zSectionOneLocked) syncZSectionOneScroll();
     zEndpointPointerId = null;
     zEndpointPointerStartY = 0;
@@ -1576,9 +1578,10 @@
     lastFlowScrollTime = now;
     pauseLogoParticleForScroll();
     if (isZPage) {
-      if (zSectionOneScrollFrame) window.cancelAnimationFrame(zSectionOneScrollFrame);
-      zSectionOneScrollFrame = 0;
-      syncZSectionOneScroll();
+      // Scroll can dispatch several times before the next paint. One write pass
+      // per frame keeps opacity/filter updates in lockstep with the rendered
+      // scroll position instead of repeatedly invalidating the same frame.
+      scheduleZSectionOneScroll();
       scheduleZReleaseSettle();
     }
     if (portraitSectionLayoutTimer) scheduleStablePortraitSectionLayout();
@@ -2029,31 +2032,45 @@
 
   document.addEventListener('pointerdown', (event) => {
     beginMajorSectionInteraction();
-    beginZEndpointGesture(event);
+    if (event.pointerType !== 'touch') beginZEndpointGesture(event.pointerId, event.clientY);
     if (isZPage) {
       zReleasePointerActive = true;
       cancelZReleaseSettle({ stopNativeScroll: true });
     }
     zFaceController?.begin(event);
   }, { capture: true, passive: true });
-  document.addEventListener('touchstart', beginMajorSectionInteraction, { capture: true, passive: true });
+  document.addEventListener('touchstart', (event) => {
+    beginMajorSectionInteraction();
+    const touch = event.changedTouches[0];
+    if (touch) beginZEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
+  }, { capture: true, passive: true });
   document.addEventListener('pointermove', (event) => {
-    updateZEndpointGesture(event);
+    if (event.pointerType !== 'touch') updateZEndpointGesture(event.pointerId, event.clientY);
     zFaceController?.move(event);
     if (event.pointerType === 'touch' || event.buttons !== 0) beginMajorSectionInteraction();
   }, { capture: true, passive: true });
-  document.addEventListener('touchmove', beginMajorSectionInteraction, { capture: true, passive: true });
+  document.addEventListener('touchmove', (event) => {
+    beginMajorSectionInteraction();
+    const touch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
+    if (touch) updateZEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
+  }, { capture: true, passive: true });
   ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
     document.addEventListener(eventName, (event) => {
       endMajorSectionInteraction();
       if (eventName.startsWith('pointer')) {
-        endZEndpointGesture(event);
-        zReleasePointerActive = false;
-        scheduleZReleaseSettle();
+        if (event.pointerType !== 'touch') {
+          endZEndpointGesture(event.pointerId);
+          zReleasePointerActive = false;
+          scheduleZReleaseSettle();
+        }
         zFaceController?.end(event, eventName === 'pointercancel');
-      } else if (isZPage && zReleasePointerActive) {
-        zReleasePointerActive = false;
-        scheduleZReleaseSettle();
+      } else {
+        const touch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
+        if (touch) endZEndpointGesture(`touch:${touch.identifier}`);
+        if (isZPage && zReleasePointerActive) {
+          zReleasePointerActive = false;
+          scheduleZReleaseSettle();
+        }
       }
     }, { passive: true });
   });
