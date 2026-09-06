@@ -58,21 +58,6 @@
   // a page may include only its relevant sections without creating a parallel UI.
   if (!page || !content || !composer || !composerMenu || (!isZPage && !composerMenuPanel) || !sendUtilities || !sendStatusUtility || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && !utilitySmileButton) || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zSecondaryNavIndicator || !zContentSlot || !zDescription || !zRequirements || !zRewards || !zApply || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
 
-  const syncZTextFontSize = () => {
-    if (!isZPage || !zDescriptionDate) return;
-    const referenceSize = window.getComputedStyle(zDescriptionDate).fontSize;
-    page.style.setProperty('--s-z-reference-font-size', referenceSize);
-  };
-  const syncZApplyTitleExplanationGap = () => {
-    if (!isZPage || !zApply) return;
-    const explanation = zApply.querySelector('.s-page__z-apply-row p');
-    if (!explanation) return;
-    const lineHeight = window.getComputedStyle(explanation).lineHeight;
-    if (lineHeight && lineHeight !== 'normal') zApply.style.setProperty('--s-z-apply-title-gap', lineHeight);
-  };
-  syncZTextFontSize();
-  syncZApplyTitleExplanationGap();
-
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
   const finalRevealDelayMs = 1600;
@@ -352,7 +337,6 @@
     if (zSecondaryNavAlignmentFrame) window.cancelAnimationFrame(zSecondaryNavAlignmentFrame);
     zSecondaryNavAlignmentFrame = window.requestAnimationFrame(() => {
       zSecondaryNavAlignmentFrame = 0;
-      syncZApplyTitleExplanationGap();
       syncZContentBoxHorizontalGeometry();
       syncZContentBoxHeight();
       syncZStateOneCompositionGeometry();
