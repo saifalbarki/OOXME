@@ -214,10 +214,18 @@
   let zSectionOneTransitionDistance = 0;
   const zEndpointCaptureTolerancePx = .25;
   const zEndpointReverseIntentDistancePx = 8;
+  const zSlowReleaseSettleDelayMs = 500;
+  const zSlowReleaseVelocityMax = .35;
   let zEndpointLockScrollY = 0;
   let zEndpointPointerId = null;
   let zEndpointPointerStartY = 0;
   let zEndpointReverseIntent = false;
+  let zSlowReleaseSettleTimer = 0;
+  let zSlowReleasePointerId = null;
+  let zSlowReleasePointerStartY = 0;
+  let zSlowReleasePointerLastY = 0;
+  let zSlowReleasePointerLastTime = 0;
+  let zSlowReleasePointerVelocity = 0;
   let zHeroGeometryFrozen = false;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
@@ -1275,6 +1283,66 @@
     zEndpointReverseIntent = false;
   };
 
+  const cancelZSlowReleaseSettle = () => {
+    if (zSlowReleaseSettleTimer) window.clearTimeout(zSlowReleaseSettleTimer);
+    zSlowReleaseSettleTimer = 0;
+  };
+
+  const beginZSlowReleaseGesture = (event) => {
+    if (!isZPage) return;
+    cancelZSlowReleaseSettle();
+    if (zSectionOneLocked) return;
+    zSlowReleasePointerId = event.pointerId;
+    zSlowReleasePointerStartY = event.clientY;
+    zSlowReleasePointerLastY = event.clientY;
+    zSlowReleasePointerLastTime = performance.now();
+    zSlowReleasePointerVelocity = 0;
+  };
+
+  const updateZSlowReleaseGesture = (event) => {
+    if (event.pointerId !== zSlowReleasePointerId) return;
+    const now = performance.now();
+    const elapsed = Math.max(1, now - zSlowReleasePointerLastTime);
+    const upwardDistance = zSlowReleasePointerLastY - event.clientY;
+    if (upwardDistance > 0) zSlowReleasePointerVelocity = upwardDistance / elapsed;
+    zSlowReleasePointerLastY = event.clientY;
+    zSlowReleasePointerLastTime = now;
+  };
+
+  const endZSlowReleaseGesture = (event, cancelled = false) => {
+    if (event.pointerId !== zSlowReleasePointerId) return;
+    const upwardDistance = zSlowReleasePointerStartY - event.clientY;
+    const isBelowEndpoint = window.scrollY > 0
+      && window.scrollY < zSectionOneTransitionDistance - zEndpointCaptureTolerancePx;
+    if (
+      !cancelled
+      && !zSectionOneLocked
+      && zSectionOneCompositionReady
+      && upwardDistance >= zEndpointReverseIntentDistancePx
+      && zSlowReleasePointerVelocity <= zSlowReleaseVelocityMax
+      && isBelowEndpoint
+    ) {
+      zSlowReleaseSettleTimer = window.setTimeout(() => {
+        zSlowReleaseSettleTimer = 0;
+        if (zSectionOneLocked || window.scrollY <= 0) return;
+        if (window.scrollY >= zSectionOneTransitionDistance - zEndpointCaptureTolerancePx) {
+          syncZSectionOneScroll();
+          return;
+        }
+        window.scrollTo({
+          top: zSectionOneTransitionDistance,
+          left: 0,
+          behavior: reducedMotion.matches ? 'auto' : 'smooth'
+        });
+      }, zSlowReleaseSettleDelayMs);
+    }
+    zSlowReleasePointerId = null;
+    zSlowReleasePointerStartY = 0;
+    zSlowReleasePointerLastY = 0;
+    zSlowReleasePointerLastTime = 0;
+    zSlowReleasePointerVelocity = 0;
+  };
+
   const syncPortraitSectionLayout = () => {
     portraitSectionLayoutFrame = 0;
     const isPortrait = window.matchMedia('(orientation: portrait)').matches;
@@ -1936,11 +2004,13 @@
   document.addEventListener('pointerdown', (event) => {
     beginMajorSectionInteraction();
     beginZEndpointGesture(event);
+    beginZSlowReleaseGesture(event);
     zFaceController?.begin(event);
   }, { capture: true, passive: true });
   document.addEventListener('touchstart', beginMajorSectionInteraction, { capture: true, passive: true });
   document.addEventListener('pointermove', (event) => {
     updateZEndpointGesture(event);
+    updateZSlowReleaseGesture(event);
     zFaceController?.move(event);
     if (event.pointerType === 'touch' || event.buttons !== 0) beginMajorSectionInteraction();
   }, { capture: true, passive: true });
@@ -1950,6 +2020,7 @@
       endMajorSectionInteraction();
       if (eventName.startsWith('pointer')) {
         endZEndpointGesture(event);
+        endZSlowReleaseGesture(event, eventName === 'pointercancel');
         zFaceController?.end(event, eventName === 'pointercancel');
       }
     }, { passive: true });
@@ -1957,7 +2028,10 @@
   window.addEventListener('wheel', (event) => {
     cancelMajorSectionSettle({ stopNativeScroll: true });
     majorSectionPointerActive = false;
-    if (isZPage && zSectionOneLocked && event.deltaY < 0) zEndpointReverseIntent = true;
+    if (isZPage) {
+      cancelZSlowReleaseSettle();
+      if (zSectionOneLocked && event.deltaY < 0) zEndpointReverseIntent = true;
+    }
     if (!isZPage) scheduleMajorSectionSettle();
   }, { passive: true });
   window.addEventListener('keydown', (event) => {
@@ -1965,7 +2039,10 @@
     if (event.target instanceof Element && event.target.closest('input, textarea, [contenteditable="true"]')) return;
     majorSectionPointerActive = false;
     cancelMajorSectionSettle({ stopNativeScroll: true });
-    if (isZPage && zSectionOneLocked && ['ArrowUp', 'PageUp', 'Home'].includes(event.key)) zEndpointReverseIntent = true;
+    if (isZPage) {
+      cancelZSlowReleaseSettle();
+      if (zSectionOneLocked && ['ArrowUp', 'PageUp', 'Home'].includes(event.key)) zEndpointReverseIntent = true;
+    }
     if (!isZPage) scheduleMajorSectionSettle();
   }, { passive: true });
 
@@ -2196,6 +2273,7 @@
     composerPulseFrame = 0;
     composerMenuPulseFrame = 0;
     if (isZPage) {
+      cancelZSlowReleaseSettle();
       zSectionOneLocked = false;
       zSectionOneCompositionReady = false;
       zSectionOneContentBoxHeight = 0;
