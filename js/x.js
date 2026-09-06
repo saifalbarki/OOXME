@@ -54,6 +54,7 @@
   const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const isZPage = page?.classList.contains('s-page--z') ?? false;
+  if (isZPage && 'scrollRestoration' in history) history.scrollRestoration = 'manual';
   const zHeroCompositorLayers = isZPage
     ? [
       zHeroImage,
@@ -2311,8 +2312,13 @@
   window.addEventListener('scroll', noteInteraction, { passive: true });
 
   window.addEventListener('pageshow', () => {
-    if (!initializationReady) initializeGroupOne();
-  }, { once: true });
+    if (isZPage) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      initializeGroupOne();
+    } else if (!initializationReady) {
+      initializeGroupOne();
+    }
+  }, { once: !isZPage });
   initializeGroupOne();
   noteInteraction();
 })();
