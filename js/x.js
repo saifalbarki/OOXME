@@ -215,6 +215,7 @@
   const zEndpointCaptureTolerancePx = .25;
   const zEndpointReverseIntentDistancePx = 8;
   const zReleaseSettleDelayMs = 1000;
+  const zReleaseSettleStartGraceMs = 120;
   let zEndpointLockScrollY = 0;
   let zEndpointPointerId = null;
   let zEndpointPointerStartY = 0;
@@ -222,6 +223,9 @@
   let zReleaseSettleTimer = 0;
   let zReleaseSettleFrame = 0;
   let zReleaseSettleTarget = null;
+  let zReleaseSettleLastScrollY = 0;
+  let zReleaseSettleStableFrames = 0;
+  let zReleaseSettleStartedAt = 0;
   let zReleasePointerActive = false;
   let zHeroGeometryFrozen = false;
   let zSecondaryNavOverflowFrame = 0;
@@ -1287,6 +1291,9 @@
     zReleaseSettleTimer = 0;
     zReleaseSettleFrame = 0;
     zReleaseSettleTarget = null;
+    zReleaseSettleLastScrollY = 0;
+    zReleaseSettleStableFrames = 0;
+    zReleaseSettleStartedAt = 0;
     if (stopNativeScroll && wasSettling) {
       window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
     }
@@ -1296,9 +1303,31 @@
     zReleaseSettleFrame = 0;
     if (zReleaseSettleTarget === null) return;
     const target = zReleaseSettleTarget;
-    if (Math.abs(window.scrollY - target) <= zEndpointCaptureTolerancePx) {
-      if (target > 0) syncZSectionOneScroll();
+    const scrollY = window.scrollY;
+    if (Math.abs(scrollY - zReleaseSettleLastScrollY) <= .01) {
+      zReleaseSettleStableFrames += 1;
+    } else {
+      zReleaseSettleStableFrames = 0;
+    }
+    zReleaseSettleLastScrollY = scrollY;
+    const reachedTarget = Math.abs(scrollY - target) <= zEndpointCaptureTolerancePx;
+    const stoppedAtNativeLimit = zReleaseSettleStableFrames >= 3
+      && performance.now() - zReleaseSettleStartedAt >= zReleaseSettleStartGraceMs;
+    if (reachedTarget || stoppedAtNativeLimit) {
+      if (target > 0) {
+        if (!zSectionOneLocked) {
+          zSectionOneLocked = true;
+          zEndpointLockScrollY = scrollY;
+          zEndpointReverseIntent = false;
+          zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
+        }
+      } else if (scrollY > zEndpointCaptureTolerancePx) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
       zReleaseSettleTarget = null;
+      zReleaseSettleStableFrames = 0;
+      zReleaseSettleStartedAt = 0;
+      syncZSectionOneScroll();
       return;
     }
     zReleaseSettleFrame = window.requestAnimationFrame(watchZReleaseSettle);
@@ -1324,6 +1353,9 @@
         return;
       }
       zReleaseSettleTarget = target;
+      zReleaseSettleLastScrollY = window.scrollY;
+      zReleaseSettleStableFrames = 0;
+      zReleaseSettleStartedAt = performance.now();
       window.scrollTo({
         top: target,
         left: 0,
@@ -2016,6 +2048,9 @@
         zReleasePointerActive = false;
         scheduleZReleaseSettle();
         zFaceController?.end(event, eventName === 'pointercancel');
+      } else if (isZPage && zReleasePointerActive) {
+        zReleasePointerActive = false;
+        scheduleZReleaseSettle();
       }
     }, { passive: true });
   });
