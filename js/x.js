@@ -199,6 +199,7 @@
   let zSectionOneStateOneImageBottom = 0;
   let zSectionOneContentBoxHeight = 0;
   let zSectionOneTransitionDistance = 0;
+  let zHeroGeometryFrozen = false;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
   let zSecondaryNavIndicatorReadyFrame = 0;
@@ -1555,8 +1556,10 @@
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
   document.fonts?.ready.then(() => {
-    scheduleLocalizedGeometry();
-    schedulePortraitSectionLayout();
+    if (!isZPage) {
+      scheduleLocalizedGeometry();
+      schedulePortraitSectionLayout();
+    }
   });
   if (firstGroupObserver) firstGroupObserver.observe(firstGroup);
   else firstGroup.classList.add('is-visible');
@@ -1567,7 +1570,9 @@
   flowGroups.forEach((group) => group.setAttribute('aria-hidden', 'true'));
   scheduleFlowSync();
   schedulePortraitSectionLayout();
-  window.addEventListener('load', schedulePortraitSectionLayout, { once: true });
+  window.addEventListener('load', () => {
+    if (!isZPage) schedulePortraitSectionLayout();
+  }, { once: true });
 
   const setupLogoParticleField = () => {
     const particleRenderScale = 3;
@@ -2058,6 +2063,41 @@
     resetZSecondaryNavAlignment();
     scheduleKeyboardOffset();
   }, { passive: true });
+
+  const prepareZHeroTransition = ({ freeze = false } = {}) => {
+    if (!isZPage || zHeroGeometryFrozen || window.scrollY > .5) return;
+    if (localizedGeometryFrame) window.cancelAnimationFrame(localizedGeometryFrame);
+    if (portraitSectionLayoutFrame) window.cancelAnimationFrame(portraitSectionLayoutFrame);
+    if (zSecondaryNavAlignmentFrame) window.cancelAnimationFrame(zSecondaryNavAlignmentFrame);
+    if (zSectionOneScrollFrame) window.cancelAnimationFrame(zSectionOneScrollFrame);
+    localizedGeometryFrame = 0;
+    portraitSectionLayoutFrame = 0;
+    zSecondaryNavAlignmentFrame = 0;
+    zSectionOneScrollFrame = 0;
+
+    stabilizeLocalizedGeometry();
+    if (portraitSectionLayoutFrame) window.cancelAnimationFrame(portraitSectionLayoutFrame);
+    portraitSectionLayoutFrame = 0;
+    syncPortraitSectionLayout();
+    if (zSectionOneScrollFrame) window.cancelAnimationFrame(zSectionOneScrollFrame);
+    zSectionOneScrollFrame = 0;
+
+    syncZContentBoxHorizontalGeometry();
+    syncZContentBoxHeight();
+    syncZStateOneCompositionGeometry();
+    syncZUnifiedTextAlignment();
+    syncZApplyButtonGeometry();
+    syncZSectionOneScroll();
+
+    // Resolve all startup style/compositor work before the first input frame.
+    void zSecondaryNav.getBoundingClientRect();
+    document.documentElement.setAttribute('data-s-z-hero-geometry-ready', 'true');
+    if (freeze) {
+      zHeroGeometryFrozen = true;
+      document.documentElement.setAttribute('data-s-z-hero-assets-stable', 'true');
+    }
+  };
+
   const initializeGroupOne = () => {
     initializationRun += 1;
     document.documentElement.classList.add('s-x-initializing');
@@ -2074,7 +2114,10 @@
       zSectionOneContentBoxHeight = 0;
       zSectionOneStateOneImageBottom = 0;
       zSectionOneTransitionDistance = 0;
-      zSecondaryNav.classList.remove('is-z-transition-ready', 'is-z-content-interactive');
+      zHeroGeometryFrozen = false;
+      document.documentElement.removeAttribute('data-s-z-hero-assets-stable');
+      zSecondaryNav.classList.remove('is-z-content-interactive');
+      zSecondaryNav.classList.add('is-z-transition-ready');
       zSecondaryNav.style.removeProperty('--s-z-secondary-nav-state-one-top');
       zSecondaryNav.style.removeProperty('--s-z-composition-progress');
       zSecondaryNav.style.removeProperty('--s-z-content-blur');
@@ -2082,7 +2125,16 @@
       page.style.removeProperty('--s-z-transition-distance');
       syncZActiveContent(false);
       firstGroup.style.setProperty('--s-z-first-group-scroll-progress', '0');
-      resetZSecondaryNavAlignment();
+      prepareZHeroTransition();
+      const preparationRun = initializationRun;
+      const heroFontsReady = document.fonts?.ready || Promise.resolve();
+      const heroImageReady = imageMedia.complete && imageMedia.naturalWidth
+        ? Promise.resolve()
+        : (imageMedia.decode?.().catch(() => {}) || Promise.resolve());
+      Promise.all([heroFontsReady, heroImageReady]).then(() => {
+        if (initializationRun !== preparationRun || window.scrollY > .5) return;
+        prepareZHeroTransition({ freeze: true });
+      });
     }
     resetAddButton();
     activateTemporaryUi('none');
