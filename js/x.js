@@ -29,6 +29,8 @@
   const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
   const zSecondaryNavIndicator = document.querySelector('[data-s-z-secondary-nav-indicator]');
   const zSecondaryNavItems = Array.from(document.querySelectorAll('[data-s-z-secondary-nav-item]'));
+  const zSecondaryNavPrevious = document.querySelector('[data-s-z-secondary-nav-previous]');
+  const zSecondaryNavNext = document.querySelector('[data-s-z-secondary-nav-next]');
   const zContentSlot = document.querySelector('[data-s-z-content-slot]');
   const zDescription = document.querySelector('[data-s-z-description]');
   const zDescriptionDate = zDescription?.querySelector('.s-page__z-description-date');
@@ -210,6 +212,7 @@
   let zSectionOneContentBoxHeight = 0;
   let zSectionOneTransitionDistance = 0;
   const zEndpointReverseIntentDistancePx = 8;
+  let zEndpointLockScrollY = 0;
   let zEndpointPointerId = null;
   let zEndpointPointerStartY = 0;
   let zEndpointReverseIntent = false;
@@ -654,6 +657,13 @@
       item.addEventListener('click', () => {
         if (consumeSwipeClickSuppression()) return;
         setZActiveSection(index);
+        pulsePageSurface(zSecondaryNav);
+      });
+    });
+    [[zSecondaryNavPrevious, -1], [zSecondaryNavNext, 1]].forEach(([button, step]) => {
+      button?.addEventListener('click', () => {
+        if (consumeSwipeClickSuppression()) return;
+        setZActiveSection(zActiveContentIndex + step);
         pulsePageSurface(zSecondaryNav);
       });
     });
@@ -1213,7 +1223,8 @@
     let progress = rawProgress;
     if (zSectionOneLocked) {
       progress = 1;
-      if (zEndpointReverseIntent && rawProgress < 1) {
+      const hasMovedAwayFromEndpoint = scrollY <= zEndpointLockScrollY - zEndpointReverseIntentDistancePx;
+      if (zEndpointReverseIntent && hasMovedAwayFromEndpoint) {
         zSectionOneLocked = false;
         zEndpointReverseIntent = false;
         progress = rawProgress;
@@ -1221,6 +1232,7 @@
       }
     } else if (rawProgress === 1) {
       zSectionOneLocked = true;
+      zEndpointLockScrollY = scrollY;
       zEndpointReverseIntent = false;
       progress = 1;
       zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
@@ -1586,6 +1598,8 @@
     menuLabels.forEach((label, index) => { label.textContent = menuCopy[index]; });
     if (zSecondaryNav) {
       zSecondaryNav.setAttribute('aria-label', language === 'ar' ? 'التنقل بين الأقسام' : 'Section navigation');
+      zSecondaryNavPrevious?.setAttribute('aria-label', language === 'ar' ? 'القسم السابق' : 'Previous section');
+      zSecondaryNavNext?.setAttribute('aria-label', language === 'ar' ? 'القسم التالي' : 'Next section');
     }
     if (consultationCta) {
       consultationCta.textContent = copy.consultationCta;
@@ -2184,6 +2198,7 @@
       zSectionOneContentBoxHeight = 0;
       zSectionOneStateOneImageBottom = 0;
       zSectionOneTransitionDistance = 0;
+      zEndpointLockScrollY = 0;
       zEndpointPointerId = null;
       zEndpointPointerStartY = 0;
       zEndpointReverseIntent = false;
