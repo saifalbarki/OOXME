@@ -214,18 +214,15 @@
   let zSectionOneTransitionDistance = 0;
   const zEndpointCaptureTolerancePx = .25;
   const zEndpointReverseIntentDistancePx = 8;
-  const zSlowReleaseSettleDelayMs = 500;
-  const zSlowReleaseVelocityMax = .35;
+  const zReleaseSettleDelayMs = 1000;
   let zEndpointLockScrollY = 0;
   let zEndpointPointerId = null;
   let zEndpointPointerStartY = 0;
   let zEndpointReverseIntent = false;
-  let zSlowReleaseSettleTimer = 0;
-  let zSlowReleasePointerId = null;
-  let zSlowReleasePointerStartY = 0;
-  let zSlowReleasePointerLastY = 0;
-  let zSlowReleasePointerLastTime = 0;
-  let zSlowReleasePointerVelocity = 0;
+  let zReleaseSettleTimer = 0;
+  let zReleaseSettleFrame = 0;
+  let zReleaseSettleTarget = null;
+  let zReleasePointerActive = false;
   let zHeroGeometryFrozen = false;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
@@ -1283,64 +1280,57 @@
     zEndpointReverseIntent = false;
   };
 
-  const cancelZSlowReleaseSettle = () => {
-    if (zSlowReleaseSettleTimer) window.clearTimeout(zSlowReleaseSettleTimer);
-    zSlowReleaseSettleTimer = 0;
-  };
-
-  const beginZSlowReleaseGesture = (event) => {
-    if (!isZPage) return;
-    cancelZSlowReleaseSettle();
-    if (zSectionOneLocked) return;
-    zSlowReleasePointerId = event.pointerId;
-    zSlowReleasePointerStartY = event.clientY;
-    zSlowReleasePointerLastY = event.clientY;
-    zSlowReleasePointerLastTime = performance.now();
-    zSlowReleasePointerVelocity = 0;
-  };
-
-  const updateZSlowReleaseGesture = (event) => {
-    if (event.pointerId !== zSlowReleasePointerId) return;
-    const now = performance.now();
-    const elapsed = Math.max(1, now - zSlowReleasePointerLastTime);
-    const upwardDistance = zSlowReleasePointerLastY - event.clientY;
-    if (upwardDistance > 0) zSlowReleasePointerVelocity = upwardDistance / elapsed;
-    zSlowReleasePointerLastY = event.clientY;
-    zSlowReleasePointerLastTime = now;
-  };
-
-  const endZSlowReleaseGesture = (event, cancelled = false) => {
-    if (event.pointerId !== zSlowReleasePointerId) return;
-    const upwardDistance = zSlowReleasePointerStartY - event.clientY;
-    const isBelowEndpoint = window.scrollY > 0
-      && window.scrollY < zSectionOneTransitionDistance - zEndpointCaptureTolerancePx;
-    if (
-      !cancelled
-      && !zSectionOneLocked
-      && zSectionOneCompositionReady
-      && upwardDistance >= zEndpointReverseIntentDistancePx
-      && zSlowReleasePointerVelocity <= zSlowReleaseVelocityMax
-      && isBelowEndpoint
-    ) {
-      zSlowReleaseSettleTimer = window.setTimeout(() => {
-        zSlowReleaseSettleTimer = 0;
-        if (zSectionOneLocked || window.scrollY <= 0) return;
-        if (window.scrollY >= zSectionOneTransitionDistance - zEndpointCaptureTolerancePx) {
-          syncZSectionOneScroll();
-          return;
-        }
-        window.scrollTo({
-          top: zSectionOneTransitionDistance,
-          left: 0,
-          behavior: reducedMotion.matches ? 'auto' : 'smooth'
-        });
-      }, zSlowReleaseSettleDelayMs);
+  const cancelZReleaseSettle = ({ stopNativeScroll = false } = {}) => {
+    if (zReleaseSettleTimer) window.clearTimeout(zReleaseSettleTimer);
+    if (zReleaseSettleFrame) window.cancelAnimationFrame(zReleaseSettleFrame);
+    const wasSettling = zReleaseSettleTarget !== null;
+    zReleaseSettleTimer = 0;
+    zReleaseSettleFrame = 0;
+    zReleaseSettleTarget = null;
+    if (stopNativeScroll && wasSettling) {
+      window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
     }
-    zSlowReleasePointerId = null;
-    zSlowReleasePointerStartY = 0;
-    zSlowReleasePointerLastY = 0;
-    zSlowReleasePointerLastTime = 0;
-    zSlowReleasePointerVelocity = 0;
+  };
+
+  const watchZReleaseSettle = () => {
+    zReleaseSettleFrame = 0;
+    if (zReleaseSettleTarget === null) return;
+    const target = zReleaseSettleTarget;
+    if (Math.abs(window.scrollY - target) <= zEndpointCaptureTolerancePx) {
+      if (target > 0) syncZSectionOneScroll();
+      zReleaseSettleTarget = null;
+      return;
+    }
+    zReleaseSettleFrame = window.requestAnimationFrame(watchZReleaseSettle);
+  };
+
+  const scheduleZReleaseSettle = () => {
+    if (
+      !isZPage
+      || zReleasePointerActive
+      || zReleaseSettleTarget !== null
+      || !zSectionOneCompositionReady
+      || zSectionOneLocked
+    ) return;
+    if (zReleaseSettleTimer) window.clearTimeout(zReleaseSettleTimer);
+    zReleaseSettleTimer = window.setTimeout(() => {
+      zReleaseSettleTimer = 0;
+      if (zReleasePointerActive || zReleaseSettleTarget !== null || zSectionOneLocked) return;
+      const target = window.scrollY < zSectionOneTransitionDistance / 2
+        ? 0
+        : zSectionOneTransitionDistance;
+      if (Math.abs(window.scrollY - target) <= zEndpointCaptureTolerancePx) {
+        if (target > 0) syncZSectionOneScroll();
+        return;
+      }
+      zReleaseSettleTarget = target;
+      window.scrollTo({
+        top: target,
+        left: 0,
+        behavior: reducedMotion.matches ? 'auto' : 'smooth'
+      });
+      zReleaseSettleFrame = window.requestAnimationFrame(watchZReleaseSettle);
+    }, zReleaseSettleDelayMs);
   };
 
   const syncPortraitSectionLayout = () => {
@@ -1554,6 +1544,7 @@
       if (zSectionOneScrollFrame) window.cancelAnimationFrame(zSectionOneScrollFrame);
       zSectionOneScrollFrame = 0;
       syncZSectionOneScroll();
+      scheduleZReleaseSettle();
     }
     if (portraitSectionLayoutTimer) scheduleStablePortraitSectionLayout();
     scheduleFlowSync();
@@ -2004,13 +1995,15 @@
   document.addEventListener('pointerdown', (event) => {
     beginMajorSectionInteraction();
     beginZEndpointGesture(event);
-    beginZSlowReleaseGesture(event);
+    if (isZPage) {
+      zReleasePointerActive = true;
+      cancelZReleaseSettle({ stopNativeScroll: true });
+    }
     zFaceController?.begin(event);
   }, { capture: true, passive: true });
   document.addEventListener('touchstart', beginMajorSectionInteraction, { capture: true, passive: true });
   document.addEventListener('pointermove', (event) => {
     updateZEndpointGesture(event);
-    updateZSlowReleaseGesture(event);
     zFaceController?.move(event);
     if (event.pointerType === 'touch' || event.buttons !== 0) beginMajorSectionInteraction();
   }, { capture: true, passive: true });
@@ -2020,7 +2013,8 @@
       endMajorSectionInteraction();
       if (eventName.startsWith('pointer')) {
         endZEndpointGesture(event);
-        endZSlowReleaseGesture(event, eventName === 'pointercancel');
+        zReleasePointerActive = false;
+        scheduleZReleaseSettle();
         zFaceController?.end(event, eventName === 'pointercancel');
       }
     }, { passive: true });
@@ -2029,7 +2023,7 @@
     cancelMajorSectionSettle({ stopNativeScroll: true });
     majorSectionPointerActive = false;
     if (isZPage) {
-      cancelZSlowReleaseSettle();
+      cancelZReleaseSettle({ stopNativeScroll: true });
       if (zSectionOneLocked && event.deltaY < 0) zEndpointReverseIntent = true;
     }
     if (!isZPage) scheduleMajorSectionSettle();
@@ -2040,7 +2034,7 @@
     majorSectionPointerActive = false;
     cancelMajorSectionSettle({ stopNativeScroll: true });
     if (isZPage) {
-      cancelZSlowReleaseSettle();
+      cancelZReleaseSettle({ stopNativeScroll: true });
       if (zSectionOneLocked && ['ArrowUp', 'PageUp', 'Home'].includes(event.key)) zEndpointReverseIntent = true;
     }
     if (!isZPage) scheduleMajorSectionSettle();
@@ -2273,7 +2267,8 @@
     composerPulseFrame = 0;
     composerMenuPulseFrame = 0;
     if (isZPage) {
-      cancelZSlowReleaseSettle();
+      cancelZReleaseSettle({ stopNativeScroll: true });
+      zReleasePointerActive = false;
       zSectionOneLocked = false;
       zSectionOneCompositionReady = false;
       zSectionOneContentBoxHeight = 0;
