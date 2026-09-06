@@ -197,9 +197,7 @@
   let zSectionOneCompositionReady = false;
   let zSectionOneOriginalImageBottom = 0;
   let zSectionOneStateOneImageBottom = 0;
-  let zSectionOneOriginalBoxBottom = 0;
   let zSectionOneContentBoxHeight = 0;
-  let zSectionOneAppliedEndpointOffset = 0;
   let zSectionOneTransitionDistance = 0;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
@@ -283,13 +281,6 @@
     const contentBoxHeight = Math.ceil((zSecondaryNavRail.offsetHeight || 36) + boxRowGap + largestContentHeight + boxChromeHeight);
     zSecondaryNav.style.setProperty('--s-z-content-box-height', `${contentBoxHeight}px`);
 
-    // Keep only the document-flow reserve needed to reach the two-state endpoint.
-    // The first major section already contributes one viewport; the remaining
-    // padding therefore equals the transition travel minus the content top inset.
-    const x = composer.getBoundingClientRect().left || 18;
-    const contentTopInset = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
-    const finalScrollReserve = Math.max(0, contentBoxHeight + x - contentTopInset);
-    page.style.setProperty('--s-z-final-scroll-reserve', `${finalScrollReserve.toFixed(3)}px`);
   };
 
   // The Description title is the concrete inner-text boundary of the unified
@@ -336,21 +327,13 @@
     const positionedBoxRect = zSecondaryNav.getBoundingClientRect();
     zSectionOneOriginalImageBottom = imageRect.bottom + window.scrollY;
     zSectionOneStateOneImageBottom = imageRect.bottom;
-    zSectionOneOriginalBoxBottom = positionedBoxRect.bottom;
     zSectionOneContentBoxHeight = positionedBoxRect.height;
-    // Use the browser's reachable native endpoint, not an idealized CSS-pixel
-    // value. This removes the fractional remainder that otherwise leaves the
-    // last interpolated frame just short of the locked state.
-    const naturalTravel = zSectionOneContentBoxHeight + x;
-    const reachableScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    const cappedTravel = reachableScroll > 0 ? Math.min(naturalTravel, reachableScroll) : naturalTravel;
-    // A native scroll endpoint is aligned to physical pixels. Quantizing the
-    // cached travel to that same grid makes progress 1 reachable rather than
-    // relying on a tolerance or a final corrective frame.
-    const scrollPixel = 1 / Math.max(1, window.devicePixelRatio || 1);
-    zSectionOneTransitionDistance = Math.floor(cappedTravel / scrollPixel) * scrollPixel;
-    zSectionOneAppliedEndpointOffset = 0;
-    zSecondaryNav.style.setProperty('--s-z-endpoint-offset', '0px');
+    // The rendered State 1 geometry is the only movement authority. The page's
+    // dynamic viewport-sized scroll surface below makes this exact distance the
+    // native scroll maximum, including while mobile browser chrome changes.
+    const measuredTravel = positionedBoxRect.bottom - imageRect.bottom;
+    zSectionOneTransitionDistance = Math.max(1, Math.round(measuredTravel));
+    page.style.setProperty('--s-z-transition-distance', `${zSectionOneTransitionDistance}px`);
     zSectionOneCompositionReady = true;
     firstGroup.setAttribute('data-s-z-state-one-text-image-gap', (imageRect.top - firstGroup.querySelector('.s-page__group-description').getBoundingClientRect().bottom).toFixed(3));
     firstGroup.setAttribute('data-s-z-state-one-image-box-gap', (positionedBoxRect.top - imageRect.bottom).toFixed(3));
@@ -1207,28 +1190,17 @@
     if (!zSectionOneCompositionReady || zSectionOneTransitionDistance <= 0) return;
 
     const progress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
-    // Safari's browser chrome can change the reachable native scroll range
-    // after State 1 has been laid out. Anchor the finished box to the actual
-    // captured State 1 image bottom, then compensate only the difference
-    // between that stable progress path and the box's rendered native position.
-    const expectedBoxBottom = zSectionOneOriginalBoxBottom
-      + ((zSectionOneStateOneImageBottom - zSectionOneOriginalBoxBottom) * progress);
-    const renderedBoxBottom = zSecondaryNav.getBoundingClientRect().bottom;
-    const nativeBoxBottom = renderedBoxBottom - zSectionOneAppliedEndpointOffset;
-    const endpointOffset = expectedBoxBottom - nativeBoxBottom;
-    zSectionOneAppliedEndpointOffset = endpointOffset;
     const remainingBlur = (1 - progress) * 12;
     const endpointReached = progress === 1;
     firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
-    zSecondaryNav.style.setProperty('--s-z-endpoint-offset', `${endpointOffset.toFixed(3)}px`);
     zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
     zSecondaryNav.classList.toggle('is-z-content-interactive', progress > .05);
 
     if (endpointReached !== zSectionOneLocked) {
       zSectionOneLocked = endpointReached;
       if (!endpointReached) zFaceController?.rejectApply();
-      else zSecondaryNav.setAttribute('data-s-z-final-content-baseline', expectedBoxBottom.toFixed(3));
+      else zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
     }
 
     firstGroup.setAttribute('data-s-z-text-scroll-progress', progress.toFixed(4));
@@ -2055,7 +2027,6 @@
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
       scheduleKeyboardOffset();
-      if (isZPage && zSectionOneCompositionReady) scheduleZSectionOneScroll();
     }, { passive: true });
     window.visualViewport.addEventListener('scroll', scheduleKeyboardOffset, { passive: true });
   }
@@ -2100,16 +2071,15 @@
     if (isZPage) {
       zSectionOneLocked = false;
       zSectionOneCompositionReady = false;
-      zSectionOneOriginalBoxBottom = 0;
       zSectionOneContentBoxHeight = 0;
       zSectionOneStateOneImageBottom = 0;
-      zSectionOneAppliedEndpointOffset = 0;
       zSectionOneTransitionDistance = 0;
       zSecondaryNav.classList.remove('is-z-transition-ready', 'is-z-content-interactive');
       zSecondaryNav.style.removeProperty('--s-z-secondary-nav-state-one-top');
-      zSecondaryNav.style.removeProperty('--s-z-endpoint-offset');
       zSecondaryNav.style.removeProperty('--s-z-composition-progress');
       zSecondaryNav.style.removeProperty('--s-z-content-blur');
+      page.style.removeProperty('--s-z-final-scroll-reserve');
+      page.style.removeProperty('--s-z-transition-distance');
       syncZActiveContent(false);
       firstGroup.style.setProperty('--s-z-first-group-scroll-progress', '0');
       resetZSecondaryNavAlignment();
