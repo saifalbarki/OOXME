@@ -212,6 +212,7 @@
   let zSectionOneStateOneImageBottom = 0;
   let zSectionOneContentBoxHeight = 0;
   let zSectionOneTransitionDistance = 0;
+  const zEndpointCaptureTolerancePx = .25;
   const zEndpointReverseIntentDistancePx = 8;
   let zEndpointLockScrollY = 0;
   let zEndpointPointerId = null;
@@ -1221,6 +1222,7 @@
     if (!zSectionOneCompositionReady || zSectionOneTransitionDistance <= 0) return;
 
     const rawProgress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
+    const hasReachedEndpoint = scrollY >= zSectionOneTransitionDistance - zEndpointCaptureTolerancePx;
     let progress = rawProgress;
     if (zSectionOneLocked) {
       progress = 1;
@@ -1231,7 +1233,7 @@
         progress = rawProgress;
         zFaceController?.rejectApply();
       }
-    } else if (rawProgress === 1) {
+    } else if (hasReachedEndpoint) {
       zSectionOneLocked = true;
       zEndpointLockScrollY = scrollY;
       zEndpointReverseIntent = false;
