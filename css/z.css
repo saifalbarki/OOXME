@@ -416,10 +416,6 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
   left: 0;
   width: 100%;
   height: calc(var(--s-x) * 8);
-  /* This offset is supplied by the /z Section 1 scroll clamp. Using the
-     independent translate property leaves the established frame sizing and
-     portrait composition transform untouched. */
-  translate: 0 var(--s-z-hero-scroll-offset, 0px);
 }
 
 /* The locked hero is removed from its scrolling containing block and pinned to
@@ -668,7 +664,7 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
   margin: 0; padding: var(--s-menu-inset); flex-direction: column; gap: 6px; overflow: hidden;
   border: 1px solid var(--s-composer-stroke); border-radius: var(--s-menu-radius); background: var(--s-composer-surface);
   box-shadow: var(--s-composer-shadow); color: #000000; isolation: isolate; opacity: 0; visibility: hidden; pointer-events: none;
-  translate: 0 var(--s-z-secondary-nav-scroll-offset, 0px); transform: translateY(6px); transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+  transform: translateY(6px); transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
   -webkit-backdrop-filter: var(--s-composer-backdrop); backdrop-filter: var(--s-composer-backdrop);
 }
 .s-page--z .s-page__secondary-nav::before { content: none; }
@@ -705,7 +701,7 @@ html.s-route.is-day-mode .s-page--z .s-page__secondary-nav-item::before { backgr
 .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy[lang="en"] { display: flex; }
 html[lang="ar"] .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy[lang="en"] { display: none; }
 html[lang="ar"] .s-page--z .s-page__z-apply.is-z-apply-attached .s-page__z-apply-copy[lang="ar"] { display: flex; }
-.s-page--z .s-page__z-apply-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: auto; justify-items: center; }
+.s-page--z .s-page__z-apply-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: var(--s-x); justify-items: center; }
 .s-page--z .s-page__z-apply-actions button { position: relative; z-index: 0; display: grid; width: var(--s-z-active-selector-width, 100%); height: 36px; min-height: 36px; margin: 0; padding: 0; place-items: center; border: 0; border-radius: var(--s-menu-active-radius); background: transparent; box-shadow: none; text-align: center; isolation: isolate; }
 .s-page--z .s-page__z-apply-actions button::before { position: absolute; z-index: -1; inset: 0; border: 0; border-radius: var(--s-menu-active-radius); background: rgba(255, 255, 255, .14); box-shadow: none; content: ""; pointer-events: none; }
 html.s-route.is-day-mode .s-page--z .s-page__z-apply-actions button { background: transparent; }
@@ -767,24 +763,4 @@ html.s-route.is-day-mode .s-page--z {
 .s-page--z .s-page__secondary-nav.is-z-measuring .is-z-measuring-panel { display: block !important; }
 .s-page--z .s-page__secondary-nav.is-z-measuring .is-z-measuring-panel .s-page__z-apply-copy { height: auto; }
 .s-page--z .s-page__secondary-nav.is-z-measuring .s-page__z-description-date { position: relative; top: 0; right: auto; bottom: auto; left: auto; }
-/* Preserve the approved outer box height calculation. Measurement temporarily
-   uses the pre-refactor text metrics and row footprint; rendered content still
-   uses only Type 1, Type 2, and the new 0.5X gap above. */
-.s-page--z .s-page__secondary-nav.is-z-measuring :is(
-  .s-page__z-description-title,
-  .s-page__z-requirement-row > h2,
-  .s-page__z-reward-row > h2,
-  .s-page__z-apply-row > h2,
-  .s-page__z-description-date,
-  .s-page__z-apply-actions > button
-) { font-size: 14px; font-weight: 500; line-height: 18px; }
-.s-page--z .s-page__secondary-nav.is-z-measuring :is(
-  .s-page__z-description-explanation p,
-  .s-page__z-requirement-row > p,
-  .s-page__z-reward-row > p,
-  .s-page__z-apply-row > p
-) { font-size: 14px; font-weight: 500; line-height: 16.8px; }
-.s-page--z .s-page__secondary-nav.is-z-measuring :is(.s-page__z-requirement-row, .s-page__z-reward-row) { grid-template-columns: 30% 60%; column-gap: 10%; }
-.s-page--z .s-page__secondary-nav.is-z-measuring .s-page__z-apply-row { display: block; }
-.s-page--z .s-page__secondary-nav.is-z-measuring .s-page__z-apply-row > p { margin-top: 16.8px; }
 @media (orientation: landscape) { .s-page--z .s-page__secondary-nav-rail { display: block; } .s-page--z .s-page__secondary-nav-item { width: 100%; } }

@@ -203,6 +203,7 @@
   let zSectionOneOriginalImageHeight = 0;
   let zSectionOneContentBoxHeight = 0;
   let zSectionOneTransitionDistance = 0;
+  let zSectionOneX = 0;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
   let zSecondaryNavIndicatorReadyFrame = 0;
@@ -257,12 +258,20 @@
     if (zSectionOneCompositionReady && window.scrollY > .5) return;
     zSecondaryNav.classList.add('is-z-measuring');
     let largestContentHeight = 0;
-    zPanels.forEach((panel) => {
+    let largestPanelIndex = 0;
+    zPanels.forEach((panel, index) => {
       panel.classList.add('is-z-measuring-panel');
-      largestContentHeight = Math.max(largestContentHeight, Math.ceil(panel.scrollHeight));
+      const panelHeight = Math.ceil(panel.scrollHeight);
+      panel.setAttribute('data-s-z-natural-height', `${panelHeight}`);
+      if (panelHeight > largestContentHeight) {
+        largestContentHeight = panelHeight;
+        largestPanelIndex = index;
+      }
       panel.classList.remove('is-z-measuring-panel');
     });
     zSecondaryNav.classList.remove('is-z-measuring');
+    zSecondaryNav.setAttribute('data-s-z-largest-panel', ['Description', 'Requirements', 'Rewards', 'Apply'][largestPanelIndex]);
+    zSecondaryNav.setAttribute('data-s-z-largest-content-height', `${largestContentHeight}`);
     const contentBoxHeight = (zSecondaryNavRail.offsetHeight || 36) + 6 + largestContentHeight + 16;
     zSecondaryNav.style.setProperty('--s-z-content-box-height', `${contentBoxHeight}px`);
 
@@ -323,7 +332,18 @@
     zSectionOneOriginalImageWidth = imageRect.width;
     zSectionOneOriginalImageHeight = imageRect.height;
     zSectionOneContentBoxHeight = positionedBoxRect.height;
-    zSectionOneTransitionDistance = zSectionOneContentBoxHeight + x;
+    zSectionOneX = x;
+    // Use the browser's reachable native endpoint, not an idealized CSS-pixel
+    // value. This removes the fractional remainder that otherwise leaves the
+    // last interpolated frame just short of the locked state.
+    const naturalTravel = zSectionOneContentBoxHeight + x;
+    const reachableScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const cappedTravel = reachableScroll > 0 ? Math.min(naturalTravel, reachableScroll) : naturalTravel;
+    // A native scroll endpoint is aligned to physical pixels. Quantizing the
+    // cached travel to that same grid makes progress 1 reachable rather than
+    // relying on a tolerance or a final corrective frame.
+    const scrollPixel = 1 / Math.max(1, window.devicePixelRatio || 1);
+    zSectionOneTransitionDistance = Math.floor(cappedTravel / scrollPixel) * scrollPixel;
     zSectionOneLockScrollY = zSectionOneTransitionDistance;
     zSectionOneCompositionReady = true;
     firstGroup.setAttribute('data-s-z-state-one-text-image-gap', (imageRect.top - firstGroup.querySelector('.s-page__group-description').getBoundingClientRect().bottom).toFixed(3));
@@ -400,8 +420,6 @@
     const lockedBoxTop = Number.isFinite(heroRect.contentTop) ? heroRect.contentTop : heroRect.top + heroRect.height + x;
     zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${lockedBoxTop.toFixed(3)}px`);
     zSecondaryNav.classList.add('is-z-hero-attached');
-    syncZContentBoxHorizontalGeometry();
-    syncZApplyButtonGeometry();
   };
 
   const pulsePageSurface = (element) => {
@@ -1184,10 +1202,6 @@
   const syncZSectionOneScroll = () => {
     zSectionOneScrollFrame = 0;
     if (!isZPage || !zHeroImage) return;
-    // Browser scroll positions can end on a fractional device-pixel value.
-    // Treat that subpixel remainder as the endpoint rather than allowing a
-    // final, visually distinct correction frame.
-    const endpointTolerance = .25;
 
     const scrollY = window.scrollY;
     if (!zSectionOneCompositionReady) {
@@ -1200,13 +1214,11 @@
 
     // No geometry is rewritten while the user continues beyond the endpoint.
     if (zSectionOneLocked) {
-      if (scrollY < zSectionOneLockScrollY - endpointTolerance) {
+      if (scrollY < zSectionOneLockScrollY) {
         zSectionOneLocked = false;
         zFaceController?.rejectApply();
-        // Restore the regular scroll model at the exact same capped geometry.
-        // Clearing these before the fixed classes avoids a reverse-frame offset.
-        zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');
-        zSecondaryNav.style.setProperty('--s-z-secondary-nav-scroll-offset', '0px');
+        // The regular model resolves from the same cached endpoint geometry,
+        // so its first reverse frame is the exact native-scroll position.
         setZSecondaryNavHeroAttached();
         zHeroImage.classList.remove('is-z-scroll-locked');
       } else {
@@ -1216,13 +1228,9 @@
 
     const progress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
     const remainingBlur = (1 - progress) * 12;
-    // Scroll can advance past the travel distance before this RAF runs. Clamp
-    // both moving elements to the exact fixed endpoint first, so changing their
-    // positioning model on the next style resolution cannot correct a frame.
-    const endpointReached = scrollY >= zSectionOneTransitionDistance - endpointTolerance;
-    const endpointOffset = endpointReached ? scrollY - zSectionOneTransitionDistance : 0;
-    zHeroImage.style.setProperty('--s-z-hero-scroll-offset', `${endpointOffset.toFixed(3)}px`);
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-scroll-offset', `${endpointOffset.toFixed(3)}px`);
+    // Native scroll is the sole driver: progress is clamped only for visual
+    // state. The fixed endpoint below uses the identical cached coordinates.
+    const endpointReached = scrollY >= zSectionOneTransitionDistance;
     firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
@@ -1240,7 +1248,9 @@
         left: zSectionOneOriginalImageLeft,
         width: zSectionOneOriginalImageWidth,
         height: zSectionOneOriginalImageHeight,
-        contentTop: zSectionOneOriginalImageBottom - zSectionOneContentBoxHeight
+        // This is the same absolute position the regular model has at the
+        // reachable endpoint, including any browser subpixel rounding.
+        contentTop: zSectionOneOriginalImageBottom + zSectionOneX - zSectionOneTransitionDistance
       });
       zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSecondaryNav.getBoundingClientRect().bottom.toFixed(3));
     }
@@ -2116,6 +2126,7 @@
       zSectionOneCompositionReady = false;
       zSectionOneContentBoxHeight = 0;
       zSectionOneTransitionDistance = 0;
+      zSectionOneX = 0;
       setZSecondaryNavHeroAttached();
       zSecondaryNav.classList.remove('is-z-transition-ready', 'is-z-content-interactive');
       zSecondaryNav.style.removeProperty('--s-z-secondary-nav-state-one-top');
@@ -2123,8 +2134,6 @@
       zSecondaryNav.style.removeProperty('--s-z-content-blur');
       syncZActiveContent(false);
       zHeroImage.classList.remove('is-z-scroll-locked');
-      zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');
-      zSecondaryNav.style.setProperty('--s-z-secondary-nav-scroll-offset', '0px');
       firstGroup.style.setProperty('--s-z-first-group-scroll-progress', '0');
       resetZSecondaryNavAlignment();
     }
