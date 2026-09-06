@@ -198,6 +198,7 @@
   let zSectionOneOriginalImageBottom = 0;
   let zSectionOneOriginalBoxTop = 0;
   let zSectionOneContentBoxHeight = 0;
+  let zSectionOneEndpointCorrection = 0;
   let zSectionOneTransitionDistance = 0;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
@@ -346,6 +347,12 @@
     // relying on a tolerance or a final corrective frame.
     const scrollPixel = 1 / Math.max(1, window.devicePixelRatio || 1);
     zSectionOneTransitionDistance = Math.floor(cappedTravel / scrollPixel) * scrollPixel;
+    // Keep the first-view box position unchanged, while correcting only the
+    // continuous endpoint so its bottom lands on the cached State 1 image
+    // baseline even when native scrolling quantizes the final travel.
+    const uncorrectedFinalBottom = zSectionOneOriginalBoxTop - zSectionOneTransitionDistance + zSectionOneContentBoxHeight;
+    zSectionOneEndpointCorrection = zSectionOneOriginalImageBottom - uncorrectedFinalBottom;
+    zSecondaryNav.style.setProperty('--s-z-endpoint-correction', `${zSectionOneEndpointCorrection.toFixed(3)}px`);
     zSectionOneCompositionReady = true;
     firstGroup.setAttribute('data-s-z-state-one-text-image-gap', (imageRect.top - firstGroup.querySelector('.s-page__group-description').getBoundingClientRect().bottom).toFixed(3));
     firstGroup.setAttribute('data-s-z-state-one-image-box-gap', (positionedBoxRect.top - imageRect.bottom).toFixed(3));
@@ -1212,7 +1219,7 @@
     if (endpointReached !== zSectionOneLocked) {
       zSectionOneLocked = endpointReached;
       if (!endpointReached) zFaceController?.rejectApply();
-      else zSecondaryNav.setAttribute('data-s-z-final-content-baseline', (zSectionOneOriginalBoxTop - travel + zSectionOneContentBoxHeight).toFixed(3));
+      else zSecondaryNav.setAttribute('data-s-z-final-content-baseline', (zSectionOneOriginalBoxTop - travel + zSectionOneContentBoxHeight + zSectionOneEndpointCorrection).toFixed(3));
     }
 
     firstGroup.setAttribute('data-s-z-text-scroll-progress', progress.toFixed(4));
@@ -2085,9 +2092,11 @@
       zSectionOneCompositionReady = false;
       zSectionOneOriginalBoxTop = 0;
       zSectionOneContentBoxHeight = 0;
+      zSectionOneEndpointCorrection = 0;
       zSectionOneTransitionDistance = 0;
       zSecondaryNav.classList.remove('is-z-transition-ready', 'is-z-content-interactive');
       zSecondaryNav.style.removeProperty('--s-z-secondary-nav-state-one-top');
+      zSecondaryNav.style.removeProperty('--s-z-endpoint-correction');
       zSecondaryNav.style.removeProperty('--s-z-composition-progress');
       zSecondaryNav.style.removeProperty('--s-z-content-blur');
       syncZActiveContent(false);
