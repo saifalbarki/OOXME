@@ -216,6 +216,7 @@
   let zSectionOneOriginalImageLeft = 0;
   let zSectionOneOriginalImageWidth = 0;
   let zSectionOneOriginalImageHeight = 0;
+  let zSectionOneContentBoxHeight = 0;
   let zSectionOneTransitionDistance = 0;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
@@ -336,7 +337,8 @@
     zSectionOneOriginalImageLeft = imageRect.left;
     zSectionOneOriginalImageWidth = imageRect.width;
     zSectionOneOriginalImageHeight = imageRect.height;
-    zSectionOneTransitionDistance = positionedBoxRect.height + x;
+    zSectionOneContentBoxHeight = positionedBoxRect.height;
+    zSectionOneTransitionDistance = zSectionOneContentBoxHeight + x;
     zSectionOneLockScrollY = zSectionOneTransitionDistance;
     zSectionOneCompositionReady = true;
     firstGroup.setAttribute('data-s-z-state-one-text-image-gap', (imageRect.top - firstGroup.querySelector('.s-page__group-description').getBoundingClientRect().bottom).toFixed(3));
@@ -491,13 +493,17 @@
       const shake = leavingApply ? Math.sin(Math.min(1, reactionElapsed / 340) * Math.PI * 4) * .68 : 0;
       const happyEyes = state === 'apply' || enteringApply;
       const blinkPhase = ((phase + .7) % 5.6) / 5.6;
-      const blink = state === 'idle' ? 1 - (.84 * Math.exp(-Math.pow((blinkPhase - .72) / .032, 2))) : 1;
+      // Preserve the natural idle cadence while shortening only the close/open window.
+      const blink = state === 'idle' ? 1 - (.84 * Math.exp(-Math.pow((blinkPhase - .72) / .022, 2))) : 1;
       // Reactions are exclusive and zero-mean; eye bounds stay inside the fixed circle.
       shell.setAttribute('transform', `translate(${shake.toFixed(3)} ${bounce.toFixed(3)})`);
       eyes.setAttribute('transform', `translate(${currentGaze.x.toFixed(3)} ${currentGaze.y.toFixed(3)})`);
-      const eyeHeight = happyEyes ? .58 : blink;
+      // Apply's happy expression is a small lift only: eye geometry remains constant.
       const eyeLift = happyEyes ? -.22 : 0;
-      eyeMotion.setAttribute('transform', `translate(0 6.5) translate(0 ${eyeLift.toFixed(3)}) scale(1 ${eyeHeight.toFixed(3)}) translate(0 -6.5)`);
+      const eyeTransform = state === 'idle'
+        ? `translate(0 6.5) scale(1 ${blink.toFixed(3)}) translate(0 -6.5)`
+        : `translate(0 ${eyeLift.toFixed(3)})`;
+      eyeMotion.setAttribute('transform', eyeTransform);
       render();
       animationFrame = window.requestAnimationFrame(tick);
     };
@@ -560,6 +566,18 @@
         render();
       }, 380);
     };
+    const rejectApply = () => {
+      applyActive = false;
+      reaction = 'apply-exit';
+      reactionStartedAt = performance.now();
+      reactionTimer = clearTimer(reactionTimer);
+      centerGaze();
+      reactionTimer = window.setTimeout(() => {
+        reaction = null;
+        centerGaze();
+        render();
+      }, 360);
+    };
     const setApply = (active) => {
       if (active && !applyActive) {
         applyActive = true;
@@ -572,22 +590,13 @@
           render();
         }, 420);
       } else if (!active && applyActive) {
-        applyActive = false;
-        reaction = 'apply-exit';
-        reactionStartedAt = performance.now();
-        reactionTimer = clearTimer(reactionTimer);
-        centerGaze();
-        reactionTimer = window.setTimeout(() => {
-          reaction = null;
-          centerGaze();
-          render();
-        }, 360);
+        rejectApply();
       }
       render();
     };
     render();
     animationFrame = window.requestAnimationFrame(tick);
-    return { begin, move, end, setApply };
+    return { begin, move, end, setApply, rejectApply };
   };
 
   if (isZPage) {
@@ -1191,6 +1200,10 @@
   const syncZSectionOneScroll = () => {
     zSectionOneScrollFrame = 0;
     if (!isZPage || !zHeroImage) return;
+    // Browser scroll positions can end on a fractional device-pixel value.
+    // Treat that subpixel remainder as the endpoint rather than allowing a
+    // final, visually distinct correction frame.
+    const endpointTolerance = .25;
 
     const scrollY = window.scrollY;
     if (!zSectionOneCompositionReady) {
@@ -1203,12 +1216,15 @@
 
     // No geometry is rewritten while the user continues beyond the endpoint.
     if (zSectionOneLocked) {
-      if (scrollY < zSectionOneLockScrollY - .5) {
+      if (scrollY < zSectionOneLockScrollY - endpointTolerance) {
         zSectionOneLocked = false;
-        zFaceController?.setApply(false);
+        zFaceController?.rejectApply();
+        // Restore the regular scroll model at the exact same capped geometry.
+        // Clearing these before the fixed classes avoids a reverse-frame offset.
+        zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');
+        zSecondaryNav.style.setProperty('--s-z-secondary-nav-scroll-offset', '0px');
         setZSecondaryNavHeroAttached();
         zHeroImage.classList.remove('is-z-scroll-locked');
-        zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');
       } else {
         return;
       }
@@ -1216,12 +1232,19 @@
 
     const progress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
     const remainingBlur = (1 - progress) * 12;
+    // Scroll can advance past the travel distance before this RAF runs. Clamp
+    // both moving elements to the exact fixed endpoint first, so changing their
+    // positioning model on the next style resolution cannot correct a frame.
+    const endpointReached = scrollY >= zSectionOneTransitionDistance - endpointTolerance;
+    const endpointOffset = endpointReached ? scrollY - zSectionOneTransitionDistance : 0;
+    zHeroImage.style.setProperty('--s-z-hero-scroll-offset', `${endpointOffset.toFixed(3)}px`);
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-scroll-offset', `${endpointOffset.toFixed(3)}px`);
     firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
     zSecondaryNav.classList.toggle('is-z-content-interactive', progress > .05);
 
-    if (progress >= 1) {
+    if (endpointReached) {
       zSectionOneLocked = true;
       zHeroImage.style.setProperty('--s-z-hero-locked-top', `${(zSectionOneOriginalImageTop - zSectionOneTransitionDistance).toFixed(3)}px`);
       zHeroImage.style.setProperty('--s-z-hero-locked-left', `${zSectionOneOriginalImageLeft.toFixed(3)}px`);
@@ -1233,11 +1256,8 @@
         left: zSectionOneOriginalImageLeft,
         width: zSectionOneOriginalImageWidth,
         height: zSectionOneOriginalImageHeight,
-        contentTop: zSectionOneOriginalImageBottom - zSecondaryNav.getBoundingClientRect().height
+        contentTop: zSectionOneOriginalImageBottom - zSectionOneContentBoxHeight
       });
-      firstGroup.style.setProperty('--s-z-first-group-scroll-progress', '1');
-      zSecondaryNav.style.setProperty('--s-z-composition-progress', '1');
-      zSecondaryNav.style.setProperty('--s-z-content-blur', '0px');
       zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSecondaryNav.getBoundingClientRect().bottom.toFixed(3));
     }
 
@@ -2110,6 +2130,7 @@
       zSectionOneLocked = false;
       zSectionOneLockScrollY = 0;
       zSectionOneCompositionReady = false;
+      zSectionOneContentBoxHeight = 0;
       zSectionOneTransitionDistance = 0;
       setZSecondaryNavHeroAttached();
       zSecondaryNav.classList.remove('is-z-transition-ready', 'is-z-content-interactive');
@@ -2119,6 +2140,7 @@
       syncZActiveContent(false);
       zHeroImage.classList.remove('is-z-scroll-locked');
       zHeroImage.style.setProperty('--s-z-hero-scroll-offset', '0px');
+      zSecondaryNav.style.setProperty('--s-z-secondary-nav-scroll-offset', '0px');
       firstGroup.style.setProperty('--s-z-first-group-scroll-progress', '0');
       resetZSecondaryNavAlignment();
     }
