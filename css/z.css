@@ -52,18 +52,6 @@
   transition: opacity .18s ease, visibility 0s linear .18s;
 }
 
-.s-page--z .s-page__secondary-nav.is-z-hero-attached {
-  position: fixed;
-  z-index: 3;
-  top: var(--s-z-secondary-nav-top);
-  left: var(--s-z-secondary-nav-left);
-  width: var(--s-z-secondary-nav-width);
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transition-delay: 0s;
-}
-
 .s-page--z .s-page__secondary-nav::before {
   position: absolute;
   z-index: -1;
@@ -418,24 +406,6 @@ html.s-route.is-day-mode .s-page--z .s-page__z-submit { color: #111111; }
   height: calc(var(--s-x) * 8);
 }
 
-/* The hero uses one fixed positioning model for the complete /z transition.
-   Native scroll progress writes only its cached top coordinate. */
-.s-page--z .s-page__z-hero-image.is-z-scroll-locked {
-  position: fixed;
-  z-index: 2;
-  top: var(--s-z-hero-locked-top);
-  right: auto;
-  bottom: auto;
-  left: var(--s-z-hero-locked-left);
-  width: var(--s-z-hero-locked-width);
-  height: var(--s-z-hero-locked-height);
-  translate: none;
-}
-
-.s-page--z .s-page__z-hero-image.is-portrait-composed.is-z-scroll-locked {
-  top: var(--s-z-hero-locked-top);
-}
-
 .s-page--z .s-page__z-hero-image.is-pulsing {
   animation: s-page-composer-pulse .18s ease-out;
 }
@@ -644,7 +614,7 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
 
 @media (orientation: portrait) {
   .s-page--z .s-page__content { padding-bottom: var(--s-z-final-scroll-reserve, calc((var(--s-x) * 4) + 100dvh)); }
-  .s-page--z .s-page__major-section { height: auto; min-height: 100dvh; }
+  .s-page--z .s-page__major-section { height: auto; min-height: var(--s-portrait-section-height, 100dvh); }
   .s-page--z .s-page__z-hero-image.is-portrait-composed {
     top: auto;
     transform: none;
@@ -668,7 +638,6 @@ html[dir="rtl"] .s-page--z .s-page__send-utilities.is-open .s-page__send-utility
 }
 .s-page--z .s-page__secondary-nav::before { content: none; }
 html.s-route.is-day-mode .s-page--z .s-page__secondary-nav { --s-composer-surface: rgba(255, 255, 255, .42); --s-composer-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012); color: #000000; }
-.s-page--z .s-page__secondary-nav.is-z-hero-attached { position: fixed; top: var(--s-z-secondary-nav-top); left: var(--s-z-secondary-nav-left); width: var(--s-z-secondary-nav-width); opacity: 1; visibility: visible; pointer-events: auto; translate: none; transform: none; transition-delay: 0s; }
 .s-page--z .s-page__secondary-nav.is-z-transition-ready { opacity: var(--s-z-composition-progress, 0); visibility: visible; filter: blur(var(--s-z-content-blur, 12px)); pointer-events: none; transform: none; transition: none; }
 .s-page--z .s-page__secondary-nav.is-z-transition-ready.is-z-content-interactive { pointer-events: auto; }
 .s-page--z .s-page__secondary-nav.is-pulsing { animation: s-page-composer-menu-pulse .18s ease-out; }
