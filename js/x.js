@@ -194,16 +194,15 @@
   let flowFrame = 0;
   let zSectionOneScrollFrame = 0;
   let zSectionOneLocked = false;
-  let zSectionOneLockScrollY = 0;
   let zSectionOneCompositionReady = false;
   let zSectionOneOriginalImageTop = 0;
   let zSectionOneOriginalImageBottom = 0;
   let zSectionOneOriginalImageLeft = 0;
   let zSectionOneOriginalImageWidth = 0;
   let zSectionOneOriginalImageHeight = 0;
+  let zSectionOneOriginalBoxTop = 0;
   let zSectionOneContentBoxHeight = 0;
   let zSectionOneTransitionDistance = 0;
-  let zSectionOneX = 0;
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
   let zSecondaryNavIndicatorReadyFrame = 0;
@@ -261,7 +260,14 @@
     let largestPanelIndex = 0;
     zPanels.forEach((panel, index) => {
       panel.classList.add('is-z-measuring-panel');
-      const panelHeight = Math.ceil(panel.scrollHeight);
+      const localizedCopies = Array.from(panel.children).filter((copy) => copy.hasAttribute('lang'));
+      const originalDisplays = localizedCopies.map((copy) => copy.style.display);
+      let panelHeight = 0;
+      localizedCopies.forEach((activeCopy) => {
+        localizedCopies.forEach((copy) => { copy.style.display = copy === activeCopy ? (panel === zApply ? 'flex' : 'block') : 'none'; });
+        panelHeight = Math.max(panelHeight, Math.ceil(panel.scrollHeight));
+      });
+      localizedCopies.forEach((copy, copyIndex) => { copy.style.display = originalDisplays[copyIndex]; });
       panel.setAttribute('data-s-z-natural-height', `${panelHeight}`);
       if (panelHeight > largestContentHeight) {
         largestContentHeight = panelHeight;
@@ -272,7 +278,11 @@
     zSecondaryNav.classList.remove('is-z-measuring');
     zSecondaryNav.setAttribute('data-s-z-largest-panel', ['Description', 'Requirements', 'Rewards', 'Apply'][largestPanelIndex]);
     zSecondaryNav.setAttribute('data-s-z-largest-content-height', `${largestContentHeight}`);
-    const contentBoxHeight = (zSecondaryNavRail.offsetHeight || 36) + 6 + largestContentHeight + 16;
+    const boxStyle = getComputedStyle(zSecondaryNav);
+    const boxChromeHeight = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth']
+      .reduce((total, property) => total + (Number.parseFloat(boxStyle[property]) || 0), 0);
+    const boxRowGap = Number.parseFloat(boxStyle.rowGap) || 0;
+    const contentBoxHeight = Math.ceil((zSecondaryNavRail.offsetHeight || 36) + boxRowGap + largestContentHeight + boxChromeHeight);
     zSecondaryNav.style.setProperty('--s-z-content-box-height', `${contentBoxHeight}px`);
 
     // Keep only the document-flow reserve needed to reach the two-state endpoint.
@@ -331,8 +341,8 @@
     zSectionOneOriginalImageLeft = imageRect.left;
     zSectionOneOriginalImageWidth = imageRect.width;
     zSectionOneOriginalImageHeight = imageRect.height;
+    zSectionOneOriginalBoxTop = positionedBoxRect.top + window.scrollY;
     zSectionOneContentBoxHeight = positionedBoxRect.height;
-    zSectionOneX = x;
     // Use the browser's reachable native endpoint, not an idealized CSS-pixel
     // value. This removes the fractional remainder that otherwise leaves the
     // last interpolated frame just short of the locked state.
@@ -344,8 +354,18 @@
     // relying on a tolerance or a final corrective frame.
     const scrollPixel = 1 / Math.max(1, window.devicePixelRatio || 1);
     zSectionOneTransitionDistance = Math.floor(cappedTravel / scrollPixel) * scrollPixel;
-    zSectionOneLockScrollY = zSectionOneTransitionDistance;
     zSectionOneCompositionReady = true;
+
+    // Establish the sole positioning model once. Every scroll frame below only
+    // updates the two cached top coordinates from absolute native progress.
+    const progress = Math.min(1, Math.max(0, window.scrollY / zSectionOneTransitionDistance));
+    const travel = progress * zSectionOneTransitionDistance;
+    zHeroImage.style.setProperty('--s-z-hero-locked-top', `${(zSectionOneOriginalImageTop - travel).toFixed(3)}px`);
+    zHeroImage.style.setProperty('--s-z-hero-locked-left', `${zSectionOneOriginalImageLeft.toFixed(3)}px`);
+    zHeroImage.style.setProperty('--s-z-hero-locked-width', `${zSectionOneOriginalImageWidth.toFixed(3)}px`);
+    zHeroImage.style.setProperty('--s-z-hero-locked-height', `${zSectionOneOriginalImageHeight.toFixed(3)}px`);
+    zHeroImage.classList.add('is-z-scroll-locked');
+    setZSecondaryNavHeroAttached({ contentTop: zSectionOneOriginalBoxTop - travel });
     firstGroup.setAttribute('data-s-z-state-one-text-image-gap', (imageRect.top - firstGroup.querySelector('.s-page__group-description').getBoundingClientRect().bottom).toFixed(3));
     firstGroup.setAttribute('data-s-z-state-one-image-box-gap', (positionedBoxRect.top - imageRect.bottom).toFixed(3));
     firstGroup.setAttribute('data-s-z-original-image-baseline', zSectionOneOriginalImageBottom.toFixed(3));
@@ -1212,47 +1232,21 @@
     }
     if (!zSectionOneCompositionReady || zSectionOneTransitionDistance <= 0) return;
 
-    // No geometry is rewritten while the user continues beyond the endpoint.
-    if (zSectionOneLocked) {
-      if (scrollY < zSectionOneLockScrollY) {
-        zSectionOneLocked = false;
-        zFaceController?.rejectApply();
-        // The regular model resolves from the same cached endpoint geometry,
-        // so its first reverse frame is the exact native-scroll position.
-        setZSecondaryNavHeroAttached();
-        zHeroImage.classList.remove('is-z-scroll-locked');
-      } else {
-        return;
-      }
-    }
-
     const progress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
+    const travel = progress * zSectionOneTransitionDistance;
     const remainingBlur = (1 - progress) * 12;
-    // Native scroll is the sole driver: progress is clamped only for visual
-    // state. The fixed endpoint below uses the identical cached coordinates.
-    const endpointReached = scrollY >= zSectionOneTransitionDistance;
+    const endpointReached = progress === 1;
+    zHeroImage.style.setProperty('--s-z-hero-locked-top', `${(zSectionOneOriginalImageTop - travel).toFixed(3)}px`);
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-top', `${(zSectionOneOriginalBoxTop - travel).toFixed(3)}px`);
     firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
     zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
     zSecondaryNav.classList.toggle('is-z-content-interactive', progress > .05);
 
-    if (endpointReached) {
-      zSectionOneLocked = true;
-      zHeroImage.style.setProperty('--s-z-hero-locked-top', `${(zSectionOneOriginalImageTop - zSectionOneTransitionDistance).toFixed(3)}px`);
-      zHeroImage.style.setProperty('--s-z-hero-locked-left', `${zSectionOneOriginalImageLeft.toFixed(3)}px`);
-      zHeroImage.style.setProperty('--s-z-hero-locked-width', `${zSectionOneOriginalImageWidth.toFixed(3)}px`);
-      zHeroImage.style.setProperty('--s-z-hero-locked-height', `${zSectionOneOriginalImageHeight.toFixed(3)}px`);
-      zHeroImage.classList.add('is-z-scroll-locked');
-      setZSecondaryNavHeroAttached({
-        top: zSectionOneOriginalImageTop - zSectionOneTransitionDistance,
-        left: zSectionOneOriginalImageLeft,
-        width: zSectionOneOriginalImageWidth,
-        height: zSectionOneOriginalImageHeight,
-        // This is the same absolute position the regular model has at the
-        // reachable endpoint, including any browser subpixel rounding.
-        contentTop: zSectionOneOriginalImageBottom + zSectionOneX - zSectionOneTransitionDistance
-      });
-      zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSecondaryNav.getBoundingClientRect().bottom.toFixed(3));
+    if (endpointReached !== zSectionOneLocked) {
+      zSectionOneLocked = endpointReached;
+      if (!endpointReached) zFaceController?.rejectApply();
+      else zSecondaryNav.setAttribute('data-s-z-final-content-baseline', (zSectionOneOriginalBoxTop - travel + zSectionOneContentBoxHeight).toFixed(3));
     }
 
     firstGroup.setAttribute('data-s-z-text-scroll-progress', progress.toFixed(4));
@@ -2122,11 +2116,10 @@
     composerMenuPulseFrame = 0;
     if (isZPage) {
       zSectionOneLocked = false;
-      zSectionOneLockScrollY = 0;
       zSectionOneCompositionReady = false;
+      zSectionOneOriginalBoxTop = 0;
       zSectionOneContentBoxHeight = 0;
       zSectionOneTransitionDistance = 0;
-      zSectionOneX = 0;
       setZSecondaryNavHeroAttached();
       zSecondaryNav.classList.remove('is-z-transition-ready', 'is-z-content-interactive');
       zSecondaryNav.style.removeProperty('--s-z-secondary-nav-state-one-top');
