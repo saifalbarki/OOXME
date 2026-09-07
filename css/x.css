@@ -160,6 +160,111 @@ html.s-x-initializing .s-page__submit:active {
   position: relative;
 }
 
+/* /x sections share the first section's complete viewport frame. Individual
+   content keeps its own internal composition inside that consistent frame. */
+body.s-page:not(.s-page--rpn) .s-page__major-section {
+  width: 100%;
+  height: var(--s-section-frame-height, 100dvh);
+  min-height: var(--s-section-frame-height, 100dvh);
+  max-height: var(--s-section-frame-height, 100dvh);
+  overflow: clip;
+}
+
+html.s-x-discrete-sections {
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: calc(var(--s-x) * 2);
+}
+
+html.s-x-discrete-sections body.s-page:not(.s-page--rpn) .s-page__major-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* The first two /x frames remain contiguous snap targets. Isolation creates a
+   full-frame transition boundary without adding scrollable space between them. */
+body.s-page:not(.s-page--rpn) .s-page__major-section--transition-frame {
+  isolation: isolate;
+}
+
+/* Section 1 and Section 2 share this one internal frame contract. It prevents
+   a legacy 100vh child from extending into the adjacent 100dvh snap frame. */
+body.s-page:not(.s-page--rpn) .s-page__major-section--transition-frame > .s-page__group {
+  height: var(--s-section-frame-height, 100dvh);
+  min-height: var(--s-section-frame-height, 100dvh);
+  max-height: var(--s-section-frame-height, 100dvh);
+}
+
+/* Section 2 reuses the Section 3 image frame treatment, but its approved
+   one-image composition remains square in every viewport. */
+body.s-page:not(.s-page--rpn) .s-page__group--section-2-image {
+  justify-content: space-between;
+  gap: var(--s-x);
+  padding-top: calc(var(--s-x) * 4);
+  padding-bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin-inline-start: var(--s-x-rpn-image-text-inline-offset, 17px);
+  margin-inline-end: 0;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy-language--ar {
+  display: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-copy-language--en {
+  display: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-copy-language--ar {
+  display: block;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy :is(.s-page__group-title, .s-page__group-description) {
+  width: 100%;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy .s-page__group-title {
+  color: #FFFFFF;
+  font-size: 14px;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy .s-page__group-description {
+  margin-top: calc(var(--s-x) * .5);
+  color: #A6A6A6;
+  font-size: 12px;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__section-2-copy :is(.s-page__group-title, .s-page__group-description) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-2-copy .s-page__group-title {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-2-copy .s-page__group-description {
+  color: #666666;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame {
+  width: min(100%, calc(100dvh - (var(--s-x) * 12)));
+  height: auto;
+  aspect-ratio: 1 / 1;
+  margin-inline: auto;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-divider {
+  display: none;
+}
+
 .s-page__group--showcase {
   min-height: auto;
   padding-top: calc(var(--s-x) * 2);
@@ -330,6 +435,10 @@ html.s-route.is-day-mode .s-page__number-metric-label {
 }
 
 @media (orientation: portrait) {
+  body.s-page:not(.s-page--rpn) .s-page__major-section {
+    --s-section-frame-height: var(--s-portrait-section-height, 100dvh);
+  }
+
   .s-page__major-section {
     height: var(--s-portrait-section-height, 100dvh);
   }
@@ -1705,6 +1814,21 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-first-group] > .s
 body.s-page:not(.s-page--rpn) .s-page__logo-particle-field {
   opacity: 0 !important;
   visibility: hidden !important;
+}
+
+/* /x section content always presents at its finished visual state. The logo
+   stage retains its own appearance animation; marquees and counters keep their
+   content-driven motion independently of these ordinary-element rules. */
+body.s-page:not(.s-page--rpn) [data-s-reveal],
+body.s-page:not(.s-page--rpn) .s-page__reveal-line,
+body.s-page:not(.s-page--rpn) .s-page__flow-media,
+body.s-page:not(.s-page--rpn) .s-page__number-metric {
+  opacity: 1 !important;
+  filter: none !important;
+  clip-path: none !important;
+  visibility: visible !important;
+  transform: none !important;
+  transition: none !important;
 }
 
 /* /x uses the approved /rpn Top Bar geometry while retaining its own controls. */

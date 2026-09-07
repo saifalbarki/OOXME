@@ -26,6 +26,7 @@
   const consultationCta = document.querySelector('[data-s-consultation-cta]');
   const firstGroup = document.querySelector('[data-s-first-group]');
   const nextImageTextGroup = document.querySelector('[data-s-copy-group="1"]');
+  const sectionTwoTextGroup = document.querySelector('[data-s-section-2-text]');
   const nextImageFrame = document.querySelector('.s-page__flow-group--image [data-s-image-frame]');
   const zSecondaryNav = document.querySelector('[data-s-z-secondary-nav]');
   const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
@@ -57,6 +58,7 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const isZPage = page?.classList.contains('s-page--z') ?? false;
   if (isZPage && 'scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if (!isZPage) document.documentElement.classList.add('s-x-discrete-sections');
   const zHeroCompositorLayers = isZPage
     ? [
       zHeroImage,
@@ -172,6 +174,7 @@
   );
   let keyboardFrame = 0;
   let firstGroupBaselineFrame = 0;
+  let firstGroupBaselineLocked = false;
   let nextImageTextGapFrame = 0;
   let composerPulseFrame = 0;
   let zContentRevealFrame = 0;
@@ -207,7 +210,9 @@
   let majorSectionSettleOwnsScroll = false;
   let majorSectionPointerActive = false;
   let majorSectionSettleStableFrames = 0;
-  const majorSectionSettleDelayMs = 3000;
+  let discreteSectionTouch = null;
+  let discreteSectionInputLocked = false;
+  let discreteSectionUnlockTimer = 0;
   let flowFrame = 0;
   let zSectionOneScrollFrame = 0;
   let zSectionOneLocked = false;
@@ -1040,11 +1045,8 @@
       imageCopy.setAttribute('aria-hidden', 'true');
       return;
     }
-    imageCopyRevealTimer = window.setTimeout(() => {
-      imageCopyRevealTimer = 0;
-      imageCopy.classList.add('is-visible');
-      imageCopy.setAttribute('aria-hidden', 'false');
-    }, 250);
+    imageCopy.classList.add('is-visible');
+    imageCopy.setAttribute('aria-hidden', 'false');
   };
 
   const cancelMetricCounts = () => {
@@ -1175,6 +1177,10 @@
 
   const syncFinalScrollBuffer = () => {
     finalScrollBufferFrame = 0;
+    if (!isZPage) {
+      document.documentElement.style.removeProperty('--s-portrait-final-settle-space');
+      return;
+    }
     if (!window.matchMedia('(orientation: portrait)').matches) {
       document.documentElement.style.removeProperty('--s-portrait-final-settle-space');
       return;
@@ -1435,21 +1441,6 @@
     document.documentElement.setAttribute('data-s-portrait-reference-y', conversationRect.bottom.toFixed(3));
 
     compositionGeometry.forEach(({ first, last, type, firstHeight, naturalRelativeBottom, majorSection }) => {
-      const overflows = type !== 'anchored' && naturalRelativeBottom > desiredRelativeBottom + .5;
-      if (overflows) {
-        const requiredOverflow = naturalRelativeBottom - desiredRelativeBottom;
-        majorSection.style.setProperty('height', `${viewportHeight + requiredOverflow}px`);
-        majorSection.setAttribute('data-s-portrait-overflow', requiredOverflow.toFixed(3));
-        last.style.removeProperty('--s-portrait-bottom-up-offset');
-        last.classList.remove('is-portrait-bottom-up');
-        first.setAttribute('data-s-portrait-layout', 'natural-overflow');
-        first.setAttribute('data-s-portrait-final-gap', (composerRect.top - (sectionViewportTop + naturalRelativeBottom)).toFixed(3));
-        first.setAttribute('data-s-portrait-final-y', (sectionViewportTop + naturalRelativeBottom).toFixed(3));
-        first.setAttribute('data-s-portrait-reference-delta', (desiredRelativeBottom - naturalRelativeBottom).toFixed(3));
-        first.removeAttribute('data-s-portrait-live-gap');
-        return;
-      }
-
       majorSection.style.removeProperty('height');
       majorSection.removeAttribute('data-s-portrait-overflow');
       if (type === 'anchored') {
@@ -1500,11 +1491,6 @@
     Number.parseFloat(getComputedStyle(content).paddingTop) || 0
   );
 
-  const getMajorSectionSettleThreshold = () => {
-    const x = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s-x')) || 18;
-    return Math.min(180, Math.max(120, x * 8));
-  };
-
   const cancelMajorSectionSettle = ({ stopNativeScroll = false } = {}) => {
     window.clearTimeout(majorSectionSettleTimer);
     majorSectionSettleTimer = 0;
@@ -1549,37 +1535,40 @@
     majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
   };
 
-  const settleNearestMajorSection = () => {
-    majorSectionSettleTimer = 0;
-    if (majorSectionPointerActive || majorSectionSettleTarget !== null) return;
+  const getNearestMajorSectionIndex = () => {
+    const referenceY = getMajorSectionReferenceY();
+    const sectionTops = majorSections.map((section) => section.getBoundingClientRect().top);
+    return sectionTops.reduce((candidate, top, index) => {
+      const distance = Math.abs(top - referenceY);
+      return !candidate || distance < candidate.distance ? { index, distance } : candidate;
+    }, null);
+  };
 
+  const transitionMajorSection = (direction) => {
+    if (isZPage || !direction || majorSectionSettleTarget !== null || discreteSectionInputLocked) return;
+    const current = getNearestMajorSectionIndex();
+    if (!current) return;
+    const targetIndex = Math.max(0, Math.min(majorSections.length - 1, current.index + direction));
+    if (targetIndex === current.index) return;
     const referenceY = getMajorSectionReferenceY();
     const scrollY = window.scrollY;
-    const sectionTops = majorSections.map((section) => section.getBoundingClientRect().top);
-    const nearest = sectionTops.reduce((candidate, top) => {
-      const distance = Math.abs(top - referenceY);
-      return !candidate || distance < candidate.distance ? { top, distance } : candidate;
-    }, null);
-    if (!nearest || nearest.distance > getMajorSectionSettleThreshold()) return;
-
+    const targetRect = majorSections[targetIndex].getBoundingClientRect();
     const target = Math.max(0, Math.min(
       document.documentElement.scrollHeight - window.innerHeight,
-      scrollY + nearest.top - referenceY
+      scrollY + targetRect.top - referenceY
     ));
     if (Math.abs(target - scrollY) <= 1) return;
 
-    // A timer can only start one settle, and every settle owns one watcher.
     cancelMajorSectionSettle();
     majorSectionSettleTarget = target;
     majorSectionSettleOwnsScroll = true;
+    discreteSectionInputLocked = true;
+    window.clearTimeout(discreteSectionUnlockTimer);
+    // Absorb wheel/trackpad momentum after one deliberate gesture so it cannot
+    // spill into a second section transition.
+    discreteSectionUnlockTimer = window.setTimeout(() => { discreteSectionInputLocked = false; }, 800);
     window.scrollTo({ top: target, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
     majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
-  };
-
-  const scheduleMajorSectionSettle = () => {
-    if (majorSectionPointerActive || majorSectionSettleTarget !== null || majorSectionSettleOwnsScroll) return;
-    window.clearTimeout(majorSectionSettleTimer);
-    majorSectionSettleTimer = window.setTimeout(settleNearestMajorSection, majorSectionSettleDelayMs);
   };
 
   const noteFlowScroll = () => {
@@ -1693,7 +1682,7 @@
     const sourceStart = borderStart + paddingStart + rpnPanelInset;
     const sourceEnd = borderEnd + paddingEnd + rpnPanelInset;
     const isRtl = document.documentElement.lang === 'ar';
-    [firstGroup, nextImageTextGroup].filter(Boolean).forEach((group) => {
+    [firstGroup, sectionTwoTextGroup, nextImageTextGroup].filter(Boolean).forEach((group) => {
       const groupRect = group.getBoundingClientRect();
       if (!groupRect.width) return;
       const inlineOffset = isRtl
@@ -1707,8 +1696,10 @@
       } else {
         group.style.setProperty('--s-x-rpn-image-text-width', width);
         group.style.setProperty('--s-x-rpn-image-text-inline-offset', offset);
-        nextImageFrame?.style.setProperty('--s-x-rpn-image-text-width', width);
-        nextImageFrame?.style.setProperty('--s-x-rpn-image-text-inline-offset', offset);
+        if (group === nextImageTextGroup) {
+          nextImageFrame?.style.setProperty('--s-x-rpn-image-text-width', width);
+          nextImageFrame?.style.setProperty('--s-x-rpn-image-text-inline-offset', offset);
+        }
       }
     });
   };
@@ -1718,7 +1709,7 @@
   // layout so the last visible edge of the First Text Group is exact.
   const syncFirstGroupBaseline = () => {
     firstGroupBaselineFrame = 0;
-    if (isZPage) return;
+    if (isZPage || firstGroupBaselineLocked) return;
     const description = firstGroup.querySelector('.s-page__group-description');
     if (!description) return;
     const pageStyle = getComputedStyle(page);
@@ -1737,14 +1728,22 @@
     firstGroup.setAttribute('data-s-first-group-baseline', targetBottom.toFixed(3));
     firstGroup.setAttribute('data-s-first-group-bottom', currentBottom.toFixed(3));
     firstGroup.setAttribute('data-s-first-group-baseline-difference', difference.toFixed(3));
-    if (Math.abs(difference) <= .005) return;
+    if (Math.abs(difference) <= .005) {
+      page.style.setProperty('--s-section-2-bottom-baseline-correction', `${correction.toFixed(3)}px`);
+      firstGroupBaselineLocked = true;
+      return;
+    }
 
-    firstGroup.style.setProperty('--s-first-group-baseline-correction', `${(correction + difference).toFixed(3)}px`);
+    const nextCorrection = correction + difference;
+    firstGroup.style.setProperty('--s-first-group-baseline-correction', `${nextCorrection.toFixed(3)}px`);
+    page.style.setProperty('--s-section-2-bottom-baseline-correction', `${nextCorrection.toFixed(3)}px`);
     firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
   };
 
   const scheduleFirstGroupBaseline = () => {
-    if (!firstGroupBaselineFrame) firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
+    if (!firstGroupBaselineLocked && !firstGroupBaselineFrame) {
+      firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
+    }
   };
 
   // Keep the second /x Text Group exactly one resolved X above its image, the
@@ -1777,6 +1776,7 @@
 
   const stabilizeLocalizedGeometry = () => {
     localizedGeometryFrame = 0;
+    if (!isZPage) firstGroupBaselineLocked = false;
     syncFirstGroupTextGeometry();
     groupElements.forEach((elements, groupIndex) => {
       const englishGroup = getGroupCopy('en', groupIndex);
@@ -2137,7 +2137,6 @@
   window.addEventListener('scroll', () => {
     noteFlowScroll();
     closeConversationWithoutReset();
-    if (!isZPage && !majorSectionSettleOwnsScroll) scheduleMajorSectionSettle();
   }, { passive: true });
 
   const beginMajorSectionInteraction = () => {
@@ -2146,7 +2145,6 @@
   };
   const endMajorSectionInteraction = () => {
     majorSectionPointerActive = false;
-    if (!isZPage) scheduleMajorSectionSettle();
   };
 
   document.addEventListener('pointerdown', (event) => {
@@ -2160,6 +2158,10 @@
   }, { capture: true, passive: true });
   document.addEventListener('touchstart', (event) => {
     beginMajorSectionInteraction();
+    if (!isZPage && !event.target.closest('[data-s-composer], [data-s-conversation]')) {
+      const touch = event.changedTouches[0];
+      if (touch) discreteSectionTouch = { id: touch.identifier, y: touch.clientY, moved: false };
+    }
     const touch = event.changedTouches[0];
     if (touch) beginZEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
   }, { capture: true, passive: true });
@@ -2170,9 +2172,14 @@
   }, { capture: true, passive: true });
   document.addEventListener('touchmove', (event) => {
     beginMajorSectionInteraction();
+    const discreteTouch = Array.from(event.changedTouches).find((item) => item.identifier === discreteSectionTouch?.id);
+    if (!isZPage && discreteTouch && discreteTouch.clientY !== discreteSectionTouch.y) {
+      discreteSectionTouch.moved = true;
+      event.preventDefault();
+    }
     const touch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
     if (touch) updateZEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
-  }, { capture: true, passive: true });
+  }, { capture: true, passive: false });
   ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
     document.addEventListener(eventName, (event) => {
       endMajorSectionInteraction();
@@ -2184,8 +2191,14 @@
         }
         zFaceController?.end(event, eventName === 'pointercancel');
       } else {
-        const touch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
-        if (touch) endZEndpointGesture(`touch:${touch.identifier}`);
+        const touch = Array.from(event.changedTouches).find((item) => item.identifier === discreteSectionTouch?.id);
+        if (eventName === 'touchend' && !isZPage && touch && discreteSectionTouch?.moved) {
+          const deltaY = touch.clientY - discreteSectionTouch.y;
+          if (Math.abs(deltaY) >= 36) transitionMajorSection(deltaY < 0 ? 1 : -1);
+        }
+        if (touch) discreteSectionTouch = null;
+        const zTouch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
+        if (zTouch) endZEndpointGesture(`touch:${zTouch.identifier}`);
         if (isZPage && zReleasePointerActive) {
           zReleasePointerActive = false;
           scheduleZReleaseSettle();
@@ -2194,25 +2207,39 @@
     }, { passive: true });
   });
   window.addEventListener('wheel', (event) => {
+    if (!isZPage) {
+      // Consume every wheel delta so precision-trackpad sub-threshold events
+      // cannot nudge the document into a partial section position.
+      event.preventDefault();
+      if (Math.abs(event.deltaY) >= 8) {
+        transitionMajorSection(event.deltaY > 0 ? 1 : -1);
+      }
+      return;
+    }
     cancelMajorSectionSettle({ stopNativeScroll: true });
     majorSectionPointerActive = false;
     if (isZPage) {
       cancelZReleaseSettle({ stopNativeScroll: true });
       if (zSectionOneLocked && event.deltaY < 0) zEndpointReverseIntent = true;
     }
-    if (!isZPage) scheduleMajorSectionSettle();
-  }, { passive: true });
+  }, { passive: false });
   window.addEventListener('keydown', (event) => {
     if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) return;
     if (event.target instanceof Element && event.target.closest('input, textarea, [contenteditable="true"]')) return;
+    if (!isZPage) {
+      event.preventDefault();
+      if (event.key === 'Home') transitionMajorSection(-majorSections.length);
+      else if (event.key === 'End') transitionMajorSection(majorSections.length);
+      else transitionMajorSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
+      return;
+    }
     majorSectionPointerActive = false;
     cancelMajorSectionSettle({ stopNativeScroll: true });
     if (isZPage) {
       cancelZReleaseSettle({ stopNativeScroll: true });
       if (zSectionOneLocked && ['ArrowUp', 'PageUp', 'Home'].includes(event.key)) zEndpointReverseIntent = true;
     }
-    if (!isZPage) scheduleMajorSectionSettle();
-  }, { passive: true });
+  }, { passive: false });
 
   conversation.addEventListener('pointerdown', () => {
     if (conversationState !== 'finished' && conversationState !== 'resetting') activateTemporaryUi('chat');
