@@ -1639,6 +1639,20 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   }
 }
 
+/* /x visibility-only controls: keep the particle field and temporary composer
+   surfaces mounted so their existing initialization, state, and handlers run. */
+body.s-page:not(.s-page--rpn) .s-page__logo-particle-field {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu, .s-page__composer-menu-panel, .s-page__send-utilities),
+body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu.is-open, .s-page__composer-menu-panel.is-open, .s-page__send-utilities.is-open) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
   .s-page__flow-media { transition: none; }
