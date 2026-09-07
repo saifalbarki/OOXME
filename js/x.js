@@ -169,6 +169,7 @@
     isZPage && groupIndex === 0 ? zFirstGroupCopy[language] : pageCopy[language].groups[groupIndex]
   );
   let keyboardFrame = 0;
+  let firstGroupBaselineFrame = 0;
   let composerPulseFrame = 0;
   let zContentRevealFrame = 0;
   let zContentTransitionTimer = 0;
@@ -1379,6 +1380,7 @@
       syncZFirstGroupTextGap();
       scheduleZSectionOneScroll();
       scheduleFlowSync();
+      scheduleFirstGroupBaseline();
       return;
     }
 
@@ -1460,6 +1462,7 @@
     scheduleFinalScrollBuffer();
     scheduleZSectionOneScroll();
     scheduleFlowSync();
+    scheduleFirstGroupBaseline();
   };
 
   const schedulePortraitSectionLayout = () => {
@@ -1661,8 +1664,68 @@
     return height;
   };
 
+  // Mirror /rpn's First Text Group source bounds: its live composer-menu width
+  // becomes the content-box width, with the same menu chrome and 8px panel
+  // inset removed before the title/body role styles are applied.
+  const syncFirstGroupTextGeometry = () => {
+    if (isZPage) return;
+    const menuRect = composerMenu.getBoundingClientRect();
+    const groupRect = firstGroup.getBoundingClientRect();
+    if (!menuRect.width || !groupRect.width) return;
+    const menuStyle = getComputedStyle(composerMenu);
+    const borderStart = Number.parseFloat(menuStyle.borderInlineStartWidth) || 0;
+    const borderEnd = Number.parseFloat(menuStyle.borderInlineEndWidth) || 0;
+    const paddingStart = Number.parseFloat(menuStyle.paddingInlineStart) || 0;
+    const paddingEnd = Number.parseFloat(menuStyle.paddingInlineEnd) || 0;
+    const rpnPanelInset = 8;
+    const textWidth = Math.max(0, menuRect.width - borderStart - borderEnd - paddingStart - paddingEnd - (rpnPanelInset * 2));
+    const sourceStart = borderStart + paddingStart + rpnPanelInset;
+    const sourceEnd = borderEnd + paddingEnd + rpnPanelInset;
+    const isRtl = document.documentElement.lang === 'ar';
+    const inlineOffset = isRtl
+      ? Math.max(0, groupRect.right - (groupRect.left + menuRect.width - sourceEnd))
+      : sourceStart;
+    firstGroup.style.setProperty('--s-x-first-group-text-width', `${textWidth.toFixed(3)}px`);
+    firstGroup.style.setProperty('--s-x-first-group-text-inline-offset', `${inlineOffset.toFixed(3)}px`);
+  };
+
+  // The original /x Composer used the layout viewport's bottom edge. Keep that
+  // reference, then compensate only for the browser's fractional rendered
+  // layout so the last visible edge of the First Text Group is exact.
+  const syncFirstGroupBaseline = () => {
+    firstGroupBaselineFrame = 0;
+    if (isZPage) return;
+    const description = firstGroup.querySelector('.s-page__group-description');
+    if (!description) return;
+    const pageStyle = getComputedStyle(page);
+    // The Top Bar is positioned by the same --s-x token, so its rendered top
+    // offset supplies the resolved X value without introducing another
+    // viewport-reference calculation.
+    const x = composer.getBoundingClientRect().top;
+    const keyboardOffset = Number.parseFloat(pageStyle.getPropertyValue('--s-keyboard-offset')) || 0;
+    const portrait = window.matchMedia('(orientation: portrait)').matches;
+    const baseline = (x * (portrait ? 1 : .5)) + keyboardOffset;
+    const targetBottom = document.documentElement.clientHeight - baseline;
+    const currentBottom = description.getBoundingClientRect().bottom;
+    const difference = currentBottom - targetBottom;
+    const correction = Number.parseFloat(firstGroup.style.getPropertyValue('--s-first-group-baseline-correction')) || 0;
+
+    firstGroup.setAttribute('data-s-first-group-baseline', targetBottom.toFixed(3));
+    firstGroup.setAttribute('data-s-first-group-bottom', currentBottom.toFixed(3));
+    firstGroup.setAttribute('data-s-first-group-baseline-difference', difference.toFixed(3));
+    if (Math.abs(difference) <= .005) return;
+
+    firstGroup.style.setProperty('--s-first-group-baseline-correction', `${(correction + difference).toFixed(3)}px`);
+    firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
+  };
+
+  const scheduleFirstGroupBaseline = () => {
+    if (!firstGroupBaselineFrame) firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
+  };
+
   const stabilizeLocalizedGeometry = () => {
     localizedGeometryFrame = 0;
+    syncFirstGroupTextGeometry();
     groupElements.forEach((elements, groupIndex) => {
       const englishGroup = getGroupCopy('en', groupIndex);
       const arabicGroup = getGroupCopy('ar', groupIndex);
@@ -1678,6 +1741,7 @@
     });
     scheduleFlowSync();
     schedulePortraitSectionLayout();
+    scheduleFirstGroupBaseline();
   };
 
   const scheduleLocalizedGeometry = () => {

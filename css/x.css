@@ -1647,7 +1647,59 @@ body.s-page:not(.s-page--rpn) {
 
 body.s-page:not(.s-page--rpn) [data-s-first-group] {
   justify-content: flex-end;
-  padding-bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline));
+  padding-bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-first-group-baseline-correction, 0px));
+}
+
+/* /x First Text Group: /rpn's live Composer-menu-derived content bounds and
+   its two approved typography roles. */
+body.s-page:not(.s-page--rpn) [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
+  box-sizing: border-box;
+  width: var(--s-x-first-group-text-width, calc(100% - 34px));
+  margin-inline-start: var(--s-x-first-group-text-inline-offset, 17px);
+  margin-inline-end: 0;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-title {
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+  text-rendering: auto;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-description {
+  margin-top: calc(var(--s-x) * .5);
+  color: #A6A6A6;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  direction: ltr;
+  text-align: left;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-description {
+  direction: rtl;
+  text-align: right;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-title {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-description {
+  color: #666666;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__logo-particle-field {
@@ -1729,6 +1781,26 @@ body.s-page:not(.s-page--rpn) .s-page__x-top-bar-line {
   transform-box: fill-box;
   transform-origin: center;
   transition: transform .24s cubic-bezier(.22, .61, .36, 1);
+}
+
+/* Exact /rpn two-line menu-control state treatment, scoped to /x's existing
+   submit control so its own submit/menu handlers remain the source of state. */
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, .14) !important;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active {
+  background: rgba(0, 0, 0, .055) !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active .s-page__x-top-bar-line--top {
+  transform: translateY(4px) rotate(45deg);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active .s-page__x-top-bar-line--bottom {
+  transform: translateY(-4px) rotate(-45deg);
 }
 
 /* Keep /x's invisible temporary surfaces reachable beneath the top bar. */
