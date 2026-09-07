@@ -511,6 +511,17 @@ html[dir="rtl"] .s-page--rpn .s-page__composer-menu-item {
   text-align: inherit;
 }
 
+/* Reuse /rpn's First Text Group title role for every menu option without
+   changing the menu's independent spacing, alignment, or hit geometry. */
+.s-page--rpn .s-page__composer-menu-item {
+  color: var(--s-rpn-type-1-color);
+  font-family: var(--s-rpn-type-font-family);
+  font-size: var(--s-rpn-type-1-size);
+  font-style: normal;
+  font-weight: var(--s-rpn-type-1-weight);
+  line-height: var(--s-rpn-type-1-line-height);
+}
+
 .s-page--rpn .s-page__rpn-menu-lock {
   display: block;
   flex: 0 0 auto;
@@ -552,6 +563,10 @@ html[dir="rtl"] .s-page--rpn .s-page__composer-menu-item {
   transition-delay: 0s;
 }
 
+.s-page--rpn .s-page__send-utility:not(.s-page__send-utility--status) {
+  transition-duration: .48s, .48s, .48s;
+}
+
 .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility {
   opacity: 1;
   filter: blur(0);
@@ -563,11 +578,11 @@ html[dir="rtl"] .s-page--rpn .s-page__composer-menu-item {
 }
 
 .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
-  transition-delay: .46s;
+  transition-delay: .36s;
 }
 
 .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
-  transition-delay: .64s;
+  transition-delay: .50s;
 }
 
 html[dir="rtl"] .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(1) {
@@ -575,7 +590,7 @@ html[dir="rtl"] .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utili
 }
 
 html[dir="rtl"] .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
-  transition-delay: .28s;
+  transition-delay: .18s;
 }
 
 @media (prefers-reduced-motion: reduce) {

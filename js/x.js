@@ -57,7 +57,7 @@
   const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const isZPage = page?.classList.contains('s-page--z') ?? false;
-  if (isZPage && 'scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   if (!isZPage) document.documentElement.classList.add('s-x-discrete-sections');
   const zHeroCompositorLayers = isZPage
     ? [
@@ -175,6 +175,7 @@
   let keyboardFrame = 0;
   let firstGroupBaselineFrame = 0;
   let firstGroupBaselineLocked = false;
+  let sectionTwoBaselineCorrectionLocked = false;
   let nextImageTextGapFrame = 0;
   let composerPulseFrame = 0;
   let zContentRevealFrame = 0;
@@ -188,7 +189,9 @@
   const menuItemFlashTimers = new Map();
   const sendUtilityPulseFrames = new Map();
   const marqueeItemPulseFrames = new Map();
+  const sectionFiveMarqueeFrames = new Map();
   const squareLogoPulseFrames = new Map();
+  const imagePulseFrames = new Map();
   const pendingReplyTimers = new Set();
   let addRotated = false;
   let initializationReady = false;
@@ -243,8 +246,6 @@
   let zSecondaryNavAlignmentFrame = 0;
   let zSecondaryNavIndicatorReadyFrame = 0;
   let imageCopyRevealTimer = 0;
-  const metricCountFrames = new Map();
-  const metricCountTimers = new Map();
   let flowVisibleCount = 0;
   let flowTargetCount = 0;
   let lastFlowScrollY = window.scrollY;
@@ -452,10 +453,10 @@
   };
 
   const createZFaceController = () => {
-    const face = addButton.querySelector('[data-s-z-face]');
-    const shell = face?.querySelector('.s-page__z-face-shell');
-    const eyes = face?.querySelector('.s-page__z-face-eyes');
-    const eyeMotion = face?.querySelector('.s-page__z-face-eye-motion');
+    const face = addButton.querySelector(isZPage ? '[data-s-z-face]' : '[data-s-x-face]');
+    const shell = face?.querySelector(isZPage ? '.s-page__z-face-shell' : '.s-page__x-face-shell');
+    const eyes = face?.querySelector(isZPage ? '.s-page__z-face-eyes' : '.s-page__x-face-eyes');
+    const eyeMotion = face?.querySelector(isZPage ? '.s-page__z-face-eye-motion' : '.s-page__x-face-eye-motion');
     if (!face || !shell || !eyes || !eyeMotion) return null;
     // The eye centers sit at 3.75/9.25 with a 1.85 radius in a 13-unit viewBox.
     // These limits retain a visible inner margin under every exclusive reaction.
@@ -618,8 +619,9 @@
     return { begin, move, end, setApply, rejectApply };
   };
 
+  zFaceController = createZFaceController();
+
   if (isZPage) {
-    zFaceController = createZFaceController();
     let heroTapStart = null;
     const pulseZHero = () => {
       pulsePageSurface(zHeroImage);
@@ -865,6 +867,44 @@
     marqueeItemPulseFrames.set(image, frame);
   };
 
+  const setSectionFiveStripActive = (marquee, isActive) => {
+    if (!marquee?.matches('[data-s-section-5-strip]')) return;
+    const pendingFrame = sectionFiveMarqueeFrames.get(marquee);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    sectionFiveMarqueeFrames.delete(marquee);
+    marquee.classList.remove('is-marquee-starting', 'is-marquee-normal');
+    marquee.querySelector('.s-page__marquee-track')?.style.removeProperty('transform');
+    if (!isActive) return;
+    if (!marquee.classList.contains('is-marquee-ready')) {
+      marquee.dataset.sSectionFiveStartPending = 'true';
+      return;
+    }
+
+    delete marquee.dataset.sSectionFiveStartPending;
+    marquee.classList.add('is-marquee-starting');
+    const duration = 1800;
+    const finalTravel = .1;
+    const initialVelocity = .3;
+    const normalVelocity = (duration / 1000) * (.5 / 42);
+    const cubicA = (-2 * finalTravel) + initialVelocity + normalVelocity;
+    const cubicB = (3 * finalTravel) - (2 * initialVelocity) - normalVelocity;
+    const startedAt = performance.now();
+    const render = (timestamp) => {
+      const elapsed = Math.min(1, (timestamp - startedAt) / duration);
+      const travel = (cubicA * elapsed ** 3) + (cubicB * elapsed ** 2) + (initialVelocity * elapsed);
+      marquee.querySelector('.s-page__marquee-track')?.style.setProperty('transform', `translateX(${(-travel * 100).toFixed(4)}%)`);
+      if (elapsed < 1) {
+        sectionFiveMarqueeFrames.set(marquee, window.requestAnimationFrame(render));
+        return;
+      }
+      sectionFiveMarqueeFrames.delete(marquee);
+      marquee.classList.remove('is-marquee-starting');
+      marquee.classList.add('is-marquee-normal');
+      marquee.querySelector('.s-page__marquee-track')?.style.removeProperty('transform');
+    };
+    sectionFiveMarqueeFrames.set(marquee, window.requestAnimationFrame(render));
+  };
+
   document.querySelectorAll('.s-page__marquee').forEach((marquee) => {
     marquee.addEventListener('pointerdown', (event) => {
       const image = event.target.closest('.s-page__marquee img');
@@ -884,7 +924,10 @@
         image.addEventListener('error', resolve, { once: true });
       });
     };
-    Promise.all(images.map(settleImage)).then(() => marquee.classList.add('is-marquee-ready'));
+    Promise.all(images.map(settleImage)).then(() => {
+      marquee.classList.add('is-marquee-ready');
+      if (marquee.dataset.sSectionFiveStartPending === 'true') setSectionFiveStripActive(marquee, true);
+    });
   });
 
   const pulseSquareLogo = (logo) => {
@@ -897,6 +940,26 @@
     });
     squareLogoPulseFrames.set(logo, frame);
   };
+
+  const prepareSectionSixLogoStrip = () => {
+    if (!squareLogoStage || squareLogoStage.dataset.sLogoStripReady === 'true') return;
+    const logos = Array.from(squareLogoStage.querySelectorAll('.s-page__square-logo'));
+    if (!logos.length) return;
+    const track = document.createElement('div');
+    const firstSet = document.createElement('div');
+    const duplicateSet = document.createElement('div');
+    track.className = 's-page__logo-strip-track';
+    firstSet.className = 's-page__logo-strip-set';
+    duplicateSet.className = 's-page__logo-strip-set';
+    duplicateSet.setAttribute('aria-hidden', 'true');
+    logos.forEach((logo) => firstSet.append(logo));
+    Array.from(firstSet.children).forEach((logo) => duplicateSet.append(logo.cloneNode(true)));
+    track.append(firstSet, duplicateSet);
+    squareLogoStage.append(track);
+    squareLogoStage.dataset.sLogoStripReady = 'true';
+  };
+
+  prepareSectionSixLogoStrip();
 
   squareLogoStage?.addEventListener('pointerdown', (event) => {
     const logo = event.target.closest('.s-page__square-logo');
@@ -914,7 +977,7 @@
     });
   });
 
-  [addButton, input, submitButton, utilitySmileButton].forEach((control) => {
+  [addButton, submitButton].forEach((control) => {
     control?.addEventListener('pointerdown', pulseComposer, { passive: true });
   });
   submitButton.addEventListener('pointerdown', (event) => event.preventDefault());
@@ -1049,47 +1112,11 @@
     imageCopy.setAttribute('aria-hidden', 'false');
   };
 
-  const cancelMetricCounts = () => {
-    metricCountTimers.forEach((timer) => window.clearTimeout(timer));
-    metricCountTimers.clear();
-    metricCountFrames.forEach((frame) => window.cancelAnimationFrame(frame));
-    metricCountFrames.clear();
-  };
-
-  const countMetric = (metric) => {
-    const value = metric.querySelector('[data-s-metric-value]');
-    const target = Number(value?.dataset.sMetricTarget);
-    if (!value || !Number.isFinite(target)) return;
-    value.textContent = '0+';
-    if (reducedMotion.matches) {
-      value.textContent = `${target}+`;
-      return;
-    }
-
-    const duration = 1000;
-    const startedAt = performance.now();
-    const render = (timestamp) => {
-      const progress = Math.min(1, (timestamp - startedAt) / duration);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      value.textContent = `${Math.round(target * eased)}+`;
-      if (progress < 1) {
-        metricCountFrames.set(metric, window.requestAnimationFrame(render));
-      } else {
-        metricCountFrames.delete(metric);
-      }
-    };
-    metricCountFrames.set(metric, window.requestAnimationFrame(render));
-  };
-
-  const setMetricCountsActive = (isActive) => {
-    cancelMetricCounts();
-    if (!isActive) return;
-    numberMetricItems.forEach((metric, index) => {
-      const timer = window.setTimeout(() => {
-        metricCountTimers.delete(metric);
-        countMetric(metric);
-      }, index * 180);
-      metricCountTimers.set(metric, timer);
+  const setMetricCountsActive = () => {
+    numberMetricItems.forEach((metric) => {
+      const value = metric.querySelector('[data-s-metric-value]');
+      const target = Number(value?.dataset.sMetricTarget);
+      if (value && Number.isFinite(target)) value.textContent = `${target}+`;
     });
   };
 
@@ -1099,6 +1126,7 @@
     item.setAttribute('aria-hidden', String(!isVisible));
     if (item === imageMedia) setImageCopyVisibility(isVisible);
     if (item === numbersMetrics) setMetricCountsActive(isVisible);
+    if (item.matches('[data-s-section-5-strip]')) setSectionFiveStripActive(item, isVisible);
     syncFlowGroupState(item.closest('[data-s-flow-group]'));
   };
 
@@ -1571,6 +1599,48 @@
     majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
   };
 
+  const pulseImageSurface = (frame) => {
+    const pending = imagePulseFrames.get(frame);
+    if (pending) window.cancelAnimationFrame(pending);
+    frame.classList.remove('is-pulsing');
+    imagePulseFrames.set(frame, window.requestAnimationFrame(() => {
+      imagePulseFrames.delete(frame);
+      frame.classList.add('is-pulsing');
+    }));
+  };
+
+  const imageInteractionFrames = Array.from(document.querySelectorAll('.s-page__image-interaction-card'));
+  imageInteractionFrames.forEach((frame) => {
+    let tapStart = null;
+    frame.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'mouse' || event.button === 0) {
+        tapStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+      }
+    }, { passive: true });
+    frame.addEventListener('pointerup', (event) => {
+      if (!tapStart || event.pointerId !== tapStart.id) return;
+      const moved = Math.hypot(event.clientX - tapStart.x, event.clientY - tapStart.y);
+      tapStart = null;
+      if (moved <= 8) pulseImageSurface(frame);
+    }, { passive: true });
+    frame.addEventListener('pointercancel', () => { tapStart = null; }, { passive: true });
+    frame.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-pulse') frame.classList.remove('is-pulsing');
+    });
+  });
+
+  document.querySelectorAll('[data-s-image-arrow-action]').forEach((arrow) => {
+    ['pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach((eventName) => {
+      arrow.addEventListener(eventName, (event) => event.stopPropagation(), { passive: true });
+    });
+    arrow.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (arrow.dataset.sImageArrowAction === 'next-section') transitionMajorSection(1);
+      else if (arrow.dataset.sImageArrowAction === 'rpn') window.location.assign('/rpn');
+    });
+  });
+
   const noteFlowScroll = () => {
     const now = performance.now();
     lastPageScrollTime = now;
@@ -1685,9 +1755,7 @@
     [firstGroup, sectionTwoTextGroup, nextImageTextGroup].filter(Boolean).forEach((group) => {
       const groupRect = group.getBoundingClientRect();
       if (!groupRect.width) return;
-      const inlineOffset = isRtl
-        ? Math.max(0, groupRect.right - (groupRect.left + menuRect.width - sourceEnd))
-        : sourceStart;
+      const inlineOffset = isRtl ? sourceEnd : sourceStart;
       const width = `${textWidth.toFixed(3)}px`;
       const offset = `${inlineOffset.toFixed(3)}px`;
       if (group === firstGroup) {
@@ -1702,6 +1770,23 @@
         }
       }
     });
+  };
+
+  // Section 2 keeps both localized copies mounted. Reserve the larger measured
+  // copy height so changing language changes glyphs and direction only, never
+  // the overlay box, image baseline, or section distribution.
+  const syncSectionTwoCopyGeometry = () => {
+    if (isZPage || !sectionTwoTextGroup) return;
+    const localizedCopies = Array.from(sectionTwoTextGroup.querySelectorAll('[lang]'));
+    if (!localizedCopies.length) return;
+    const originalDisplays = localizedCopies.map((copy) => copy.style.display);
+    let height = 0;
+    localizedCopies.forEach((activeCopy) => {
+      localizedCopies.forEach((copy) => { copy.style.display = copy === activeCopy ? 'block' : 'none'; });
+      height = Math.max(height, activeCopy.getBoundingClientRect().height);
+    });
+    localizedCopies.forEach((copy, index) => { copy.style.display = originalDisplays[index]; });
+    if (height) sectionTwoTextGroup.style.height = `${Math.ceil(height)}px`;
   };
 
   // The original /x Composer used the layout viewport's bottom edge. Keep that
@@ -1729,14 +1814,19 @@
     firstGroup.setAttribute('data-s-first-group-bottom', currentBottom.toFixed(3));
     firstGroup.setAttribute('data-s-first-group-baseline-difference', difference.toFixed(3));
     if (Math.abs(difference) <= .005) {
-      page.style.setProperty('--s-section-2-bottom-baseline-correction', `${correction.toFixed(3)}px`);
+      if (!sectionTwoBaselineCorrectionLocked) {
+        page.style.setProperty('--s-section-2-bottom-baseline-correction', `${correction.toFixed(3)}px`);
+        sectionTwoBaselineCorrectionLocked = true;
+      }
       firstGroupBaselineLocked = true;
       return;
     }
 
     const nextCorrection = correction + difference;
     firstGroup.style.setProperty('--s-first-group-baseline-correction', `${nextCorrection.toFixed(3)}px`);
-    page.style.setProperty('--s-section-2-bottom-baseline-correction', `${nextCorrection.toFixed(3)}px`);
+    if (!sectionTwoBaselineCorrectionLocked) {
+      page.style.setProperty('--s-section-2-bottom-baseline-correction', `${nextCorrection.toFixed(3)}px`);
+    }
     firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
   };
 
@@ -1776,8 +1866,8 @@
 
   const stabilizeLocalizedGeometry = () => {
     localizedGeometryFrame = 0;
-    if (!isZPage) firstGroupBaselineLocked = false;
     syncFirstGroupTextGeometry();
+    syncSectionTwoCopyGeometry();
     groupElements.forEach((elements, groupIndex) => {
       const englishGroup = getGroupCopy('en', groupIndex);
       const arabicGroup = getGroupCopy('ar', groupIndex);
@@ -1839,6 +1929,8 @@
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
   document.fonts?.ready.then(() => {
     if (!isZPage) {
+      firstGroupBaselineLocked = false;
+      sectionTwoBaselineCorrectionLocked = false;
       scheduleLocalizedGeometry();
       schedulePortraitSectionLayout();
     }
@@ -2392,6 +2484,10 @@
     if (layoutWidthChanged || orientationChanged) {
       localizedGeometryWidth = nextWidth;
       localizedGeometryOrientation = nextOrientation;
+      if (!isZPage) {
+        firstGroupBaselineLocked = false;
+        sectionTwoBaselineCorrectionLocked = false;
+      }
       scheduleLocalizedGeometry();
       resetZSecondaryNavAlignment();
     } else if (!window.visualViewport) {
@@ -2407,6 +2503,10 @@
   window.addEventListener('orientationchange', () => {
     localizedGeometryWidth = document.documentElement.clientWidth;
     localizedGeometryOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
+    if (!isZPage) {
+      firstGroupBaselineLocked = false;
+      sectionTwoBaselineCorrectionLocked = false;
+    }
     scheduleLocalizedGeometry();
     resetZSecondaryNavAlignment();
     scheduleKeyboardOffset();
@@ -2516,6 +2616,11 @@
 
   const resetPageToInitialState = () => {
     cancelMajorSectionSettle({ stopNativeScroll: true });
+    window.clearTimeout(discreteSectionUnlockTimer);
+    discreteSectionUnlockTimer = 0;
+    discreteSectionInputLocked = false;
+    discreteSectionTouch = null;
+    majorSectionPointerActive = false;
     window.clearTimeout(portraitSectionLayoutTimer);
     portraitSectionLayoutTimer = 0;
     if (portraitSectionLayoutFrame) window.cancelAnimationFrame(portraitSectionLayoutFrame);
@@ -2536,8 +2641,12 @@
     sendUtilityPulseFrames.clear();
     marqueeItemPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     marqueeItemPulseFrames.clear();
+    sectionFiveMarqueeFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    sectionFiveMarqueeFrames.clear();
     squareLogoPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     squareLogoPulseFrames.clear();
+    imagePulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    imagePulseFrames.clear();
     secondaryNavPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     secondaryNavPulseFrames.clear();
     menuItemFlashTimers.forEach((timer) => window.clearTimeout(timer));
@@ -2591,10 +2700,15 @@
     if (isZPage) {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       initializeGroupOne();
-    } else if (!initializationReady) {
-      initializeGroupOne();
+    } else {
+      // A history restore can preserve both scroll position and the live DOM.
+      // /x deliberately treats every entry as a new visit instead.
+      resetPageToInitialState();
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      });
     }
-  }, { once: !isZPage });
+  });
   initializeGroupOne();
   noteInteraction();
 })();
