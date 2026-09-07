@@ -1641,9 +1641,119 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
 
 /* /x visibility-only controls: keep the particle field and temporary composer
    surfaces mounted so their existing initialization, state, and handlers run. */
+body.s-page:not(.s-page--rpn) {
+  --s-first-group-bottom-baseline: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
+}
+
+body.s-page:not(.s-page--rpn) [data-s-first-group] {
+  justify-content: flex-end;
+  padding-bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline));
+}
+
 body.s-page:not(.s-page--rpn) .s-page__logo-particle-field {
   opacity: 0 !important;
   visibility: hidden !important;
+}
+
+/* /x uses the approved /rpn Top Bar geometry while retaining its own controls. */
+body.s-page:not(.s-page--rpn) .s-page__composer {
+  top: var(--s-x);
+  bottom: auto;
+  left: var(--s-x);
+  width: calc(100% - (var(--s-x) * 2));
+  max-width: none;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  opacity: 1 !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__input-label {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__add {
+  grid-column: 1;
+  width: 32px;
+  height: 32px;
+  background: #080808;
+  color: #FFFFFF;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__add > span {
+  display: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__add.is-active,
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__add.is-active {
+  width: 32px;
+  height: 32px;
+  background: #080808 !important;
+  color: #FFFFFF;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-eyes {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translate(-50%, -50%);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-face-eyes {
+  fill: currentColor;
+  stroke: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__submit {
+  grid-column: 3;
+  background: transparent !important;
+  color: #FFFFFF;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__submit {
+  color: #111111;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__submit .s-page__submit-icon {
+  stroke-width: 2.12;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-line {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform .24s cubic-bezier(.22, .61, .36, 1);
+}
+
+/* Keep /x's invisible temporary surfaces reachable beneath the top bar. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu {
+  top: calc(100% + var(--s-x) + 1px);
+  right: 0;
+  bottom: auto;
+  left: 0;
+  width: 100%;
+  transform: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
+  transform: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities {
+  top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) * .5));
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  width: max-content;
+  flex-direction: row;
+  gap: calc(var(--s-x) * .5);
+  transform: translateX(-50%);
 }
 
 body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu, .s-page__composer-menu-panel, .s-page__send-utilities),
@@ -1651,6 +1761,18 @@ body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu.is-open, .s-page__compo
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+/* Opened /x surfaces remain invisible but retain their original controls. */
+body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu.is-open, .s-page__composer-menu-panel.is-open, .s-page__send-utilities.is-open) {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+@media (orientation: landscape) {
+  body.s-page:not(.s-page--rpn) {
+    --s-first-group-bottom-baseline: calc((var(--s-x) * .5) + var(--s-keyboard-offset, 0px));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
