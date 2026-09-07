@@ -1848,6 +1848,183 @@ body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
   opacity: 1 !important;
 }
 
+/* /x uses the current /rpn Composer menu system: its five locked entries,
+   physical menu alignment, and Theme/Language utility treatment. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
+  padding-inline-start: 14px;
+  padding-inline-end: 8.5px;
+  text-align: left;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
+  text-align: right;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__composer-menu-label {
+  text-align: inherit;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-menu-lock {
+  display: block;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  margin-inline-start: auto;
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-menu-lock-body {
+  fill: currentColor;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-menu-lock-shackle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The status indicator remains mounted for /x's existing logic, while the
+   approved menu exposes the two actionable /rpn utility circles. */
+body.s-page:not(.s-page--rpn) .s-page__send-utility--status {
+  display: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utility {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(-10px);
+  transition: opacity .56s cubic-bezier(.22, .61, .36, 1), filter .56s cubic-bezier(.22, .61, .36, 1), transform .56s cubic-bezier(.22, .61, .36, 1);
+  transition-delay: 0s;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
+  transition-delay: .46s;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
+  transition-delay: .64s;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
+  transition-delay: .64s;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
+  transition-delay: .46s;
+}
+
+/* The /x v4 pair uses the current /rpn image-section geometry while retaining
+   its own asset, copy, flow reveal, and section architecture. */
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__flow-text {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin-inline-start: var(--s-x-rpn-image-text-inline-offset, 17px);
+  margin-inline-end: 0;
+}
+
+@media (orientation: portrait) {
+  body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] {
+    translate: 0 var(--s-x-rpn-image-text-offset, 0px);
+  }
+}
+
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] :is(.s-page__group-title, .s-page__group-description) {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-title {
+  color: #FFFFFF;
+  font-size: 14px;
+  text-rendering: auto;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-description {
+  margin-top: calc(var(--s-x) * .5);
+  color: #A6A6A6;
+  font-size: 12px;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] :is(.s-page__group-title, .s-page__group-description) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-title {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-description {
+  color: #666666;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] + .s-page__flow-group--image {
+  margin-top: var(--s-x);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-frame {
+  width: 100%;
+  height: calc(var(--s-x) * 8);
+  aspect-ratio: auto;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy {
+  padding-top: var(--s-x);
+  padding-bottom: var(--s-x);
+  padding-inline: 0;
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-language {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  max-width: none;
+  margin-inline-start: var(--s-x-rpn-image-text-inline-offset, 17px);
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy p {
+  color: transparent;
+  background-image: linear-gradient(to right, #583B23 0%, #583B23 30%, #FFFFFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy p {
+  background-image: linear-gradient(to left, #583B23 0%, #583B23 30%, #FFFFFF 100%);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-main {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  line-height: 1.12;
+}
+
+@media (orientation: landscape) {
+  body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-frame {
+    height: auto;
+    aspect-ratio: 4 / 1;
+  }
+}
+
 @media (orientation: landscape) {
   body.s-page:not(.s-page--rpn) {
     --s-first-group-bottom-baseline: calc((var(--s-x) * .5) + var(--s-keyboard-offset, 0px));

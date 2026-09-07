@@ -25,6 +25,8 @@
   const squareLogoStage = document.querySelector('[data-s-square-logo-stage]');
   const consultationCta = document.querySelector('[data-s-consultation-cta]');
   const firstGroup = document.querySelector('[data-s-first-group]');
+  const nextImageTextGroup = document.querySelector('[data-s-copy-group="1"]');
+  const nextImageFrame = document.querySelector('.s-page__flow-group--image [data-s-image-frame]');
   const zSecondaryNav = document.querySelector('[data-s-z-secondary-nav]');
   const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
   const zSecondaryNavIndicator = document.querySelector('[data-s-z-secondary-nav-indicator]');
@@ -117,7 +119,7 @@
         ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.'],
         ['Let’s talk\nabout what’s next', 'A focused consultation to understand your business, identify the right direction, and define the next practical step.']
       ],
-      menu: ['The Brand management', 'The Gallery', 'The Consultation', 'The Dashboard', 'Other'],
+      menu: ['The Brand Management', 'The Consultation', 'The Gallery', 'The Store', 'Contact'],
       inputPlaceholder: 'Type...',
       ask: 'Ask ooxme',
       addContext: 'Add context',
@@ -141,7 +143,7 @@
         ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.'],
         ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول إلى الخطوة العملية التالية.']
       ],
-      menu: ['ادارة العلامة التجارية', 'المعرض', 'الاستشارة', 'لوحة التحكم', 'اخرى'],
+      menu: ['إدارة العلامة التجارية', 'الاستشارة', 'المعرض', 'المتجر', 'تواصل'],
       inputPlaceholder: 'اكتب...',
       ask: 'اسأل اوكسوم',
       addContext: 'اضف سياقًا',
@@ -170,6 +172,7 @@
   );
   let keyboardFrame = 0;
   let firstGroupBaselineFrame = 0;
+  let nextImageTextGapFrame = 0;
   let composerPulseFrame = 0;
   let zContentRevealFrame = 0;
   let zContentTransitionTimer = 0;
@@ -759,16 +762,22 @@
       composer.style.setProperty('--s-composer-menu-height', `${composerMenu.offsetHeight}px`);
       composerMenu.classList.add('is-open');
       composerMenu.setAttribute('aria-hidden', 'false');
-      composerMenuPanel?.classList.add('is-open');
-      composerMenuPanel?.setAttribute('aria-hidden', 'false');
+      if (!isZPage) setSendUtilitiesOpen(true);
+      if (isZPage) {
+        composerMenuPanel?.classList.add('is-open');
+        composerMenuPanel?.setAttribute('aria-hidden', 'false');
+      }
       return;
     }
 
     const menuWasOpen = composerMenu.classList.contains('is-open');
-    composerMenuPanel?.classList.remove('is-open');
-    composerMenuPanel?.setAttribute('aria-hidden', 'true');
+    if (isZPage) {
+      composerMenuPanel?.classList.remove('is-open');
+      composerMenuPanel?.setAttribute('aria-hidden', 'true');
+    }
     if (!menuWasOpen) {
       composerMenu.setAttribute('aria-hidden', 'true');
+      if (!isZPage) setSendUtilitiesOpen(false);
       return;
     }
 
@@ -776,6 +785,7 @@
       composerMenuCloseTimer = 0;
       composerMenu.classList.remove('is-open');
       composerMenu.setAttribute('aria-hidden', 'true');
+      if (!isZPage) setSendUtilitiesOpen(false);
     }, 60);
   };
 
@@ -1393,12 +1403,16 @@
     const compositionGeometry = portraitSectionCompositions.map(({ first, last, type }) => {
       const firstRect = first.getBoundingClientRect();
       const lastRect = last.getBoundingClientRect();
+      const firstVisualOffset = first === nextImageTextGroup
+        ? Number.parseFloat(first.style.getPropertyValue('--s-x-rpn-image-text-offset')) || 0
+        : 0;
+      const logicalFirstTop = firstRect.top - firstVisualOffset;
       const currentOffset = type === 'anchored'
         ? 0
         : Number.parseFloat(last.style.getPropertyValue('--s-portrait-bottom-up-offset')) || 0;
       const naturalRelativeBottom = type === 'anchored'
         ? (firstRect.height * .5) + (lastRect.height * .5)
-        : lastRect.bottom - firstRect.top - currentOffset;
+        : lastRect.bottom - logicalFirstTop - currentOffset;
       return {
         first,
         last,
@@ -1460,6 +1474,7 @@
     scheduleZSectionOneScroll();
     scheduleFlowSync();
     scheduleFirstGroupBaseline();
+    scheduleNextImageTextGap();
   };
 
   const schedulePortraitSectionLayout = () => {
@@ -1667,8 +1682,7 @@
   const syncFirstGroupTextGeometry = () => {
     if (isZPage) return;
     const menuRect = composerMenu.getBoundingClientRect();
-    const groupRect = firstGroup.getBoundingClientRect();
-    if (!menuRect.width || !groupRect.width) return;
+    if (!menuRect.width) return;
     const menuStyle = getComputedStyle(composerMenu);
     const borderStart = Number.parseFloat(menuStyle.borderInlineStartWidth) || 0;
     const borderEnd = Number.parseFloat(menuStyle.borderInlineEndWidth) || 0;
@@ -1679,11 +1693,24 @@
     const sourceStart = borderStart + paddingStart + rpnPanelInset;
     const sourceEnd = borderEnd + paddingEnd + rpnPanelInset;
     const isRtl = document.documentElement.lang === 'ar';
-    const inlineOffset = isRtl
-      ? Math.max(0, groupRect.right - (groupRect.left + menuRect.width - sourceEnd))
-      : sourceStart;
-    firstGroup.style.setProperty('--s-x-first-group-text-width', `${textWidth.toFixed(3)}px`);
-    firstGroup.style.setProperty('--s-x-first-group-text-inline-offset', `${inlineOffset.toFixed(3)}px`);
+    [firstGroup, nextImageTextGroup].filter(Boolean).forEach((group) => {
+      const groupRect = group.getBoundingClientRect();
+      if (!groupRect.width) return;
+      const inlineOffset = isRtl
+        ? Math.max(0, groupRect.right - (groupRect.left + menuRect.width - sourceEnd))
+        : sourceStart;
+      const width = `${textWidth.toFixed(3)}px`;
+      const offset = `${inlineOffset.toFixed(3)}px`;
+      if (group === firstGroup) {
+        group.style.setProperty('--s-x-first-group-text-width', width);
+        group.style.setProperty('--s-x-first-group-text-inline-offset', offset);
+      } else {
+        group.style.setProperty('--s-x-rpn-image-text-width', width);
+        group.style.setProperty('--s-x-rpn-image-text-inline-offset', offset);
+        nextImageFrame?.style.setProperty('--s-x-rpn-image-text-width', width);
+        nextImageFrame?.style.setProperty('--s-x-rpn-image-text-inline-offset', offset);
+      }
+    });
   };
 
   // The original /x Composer used the layout viewport's bottom edge. Keep that
@@ -1720,6 +1747,34 @@
     if (!firstGroupBaselineFrame) firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
   };
 
+  // Keep the second /x Text Group exactly one resolved X above its image, the
+  // current /rpn text-to-image relationship. Its visual offset is excluded
+  // from the existing portrait flow calculation above, preserving that flow.
+  const syncNextImageTextGap = () => {
+    nextImageTextGapFrame = 0;
+    if (isZPage || !nextImageTextGroup || !nextImageFrame) return;
+    if (!window.matchMedia('(orientation: portrait)').matches) {
+      nextImageTextGroup.style.removeProperty('--s-x-rpn-image-text-offset');
+      nextImageTextGroup.removeAttribute('data-s-x-rpn-image-text-gap');
+      return;
+    }
+    const description = nextImageTextGroup.querySelector('.s-page__group-description');
+    if (!description) return;
+    const x = composer.getBoundingClientRect().top;
+    const targetBottom = nextImageFrame.getBoundingClientRect().top - x;
+    const currentBottom = description.getBoundingClientRect().bottom;
+    const difference = targetBottom - currentBottom;
+    const offset = Number.parseFloat(nextImageTextGroup.style.getPropertyValue('--s-x-rpn-image-text-offset')) || 0;
+    nextImageTextGroup.setAttribute('data-s-x-rpn-image-text-gap', (nextImageFrame.getBoundingClientRect().top - currentBottom).toFixed(3));
+    if (Math.abs(difference) <= .005) return;
+    nextImageTextGroup.style.setProperty('--s-x-rpn-image-text-offset', `${(offset + difference).toFixed(3)}px`);
+    nextImageTextGapFrame = window.requestAnimationFrame(syncNextImageTextGap);
+  };
+
+  const scheduleNextImageTextGap = () => {
+    if (!nextImageTextGapFrame) nextImageTextGapFrame = window.requestAnimationFrame(syncNextImageTextGap);
+  };
+
   const stabilizeLocalizedGeometry = () => {
     localizedGeometryFrame = 0;
     syncFirstGroupTextGeometry();
@@ -1739,6 +1794,7 @@
     scheduleFlowSync();
     schedulePortraitSectionLayout();
     scheduleFirstGroupBaseline();
+    scheduleNextImageTextGap();
   };
 
   const scheduleLocalizedGeometry = () => {
@@ -2062,7 +2118,7 @@
     addButton.classList.toggle('is-rotated', addRotated);
     submitButton.classList.toggle('is-active', menuIsActive);
     setComposerMenuOpen(menuIsActive);
-    setSendUtilitiesOpen(next === 'utilities' || (isZPage && menuIsActive));
+    setSendUtilitiesOpen(next === 'utilities' || menuIsActive);
     setConversationVisibility(next === 'chat');
 
     if ((next === 'menu' || next === 'utilities') && document.activeElement === input) input.blur();
