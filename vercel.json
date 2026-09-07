@@ -11,6 +11,7 @@
     { "source": "/brand", "destination": "/brand.html" },
     { "source": "/x", "destination": "/x.html" },
     { "source": "/rpn", "destination": "/rpn.html" },
+    { "source": "/update", "destination": "/update.html" },
     { "source": "/os", "destination": "/api/os/index?route=dashboard" },
     { "source": "/os/", "destination": "/api/os/index?route=dashboard" },
     { "source": "/api/os/login", "destination": "/api/os/index?route=login" },
