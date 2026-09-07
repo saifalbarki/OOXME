@@ -1841,6 +1841,13 @@ body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu.is-open, .s-page__compo
   pointer-events: auto !important;
 }
 
+/* The two-line Top Bar control opens /x's primary Composer menu. The prior
+   visibility-only rule intentionally hid every revealed surface, including
+   this menu; restore only the menu's existing open presentation. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
+  opacity: 1 !important;
+}
+
 @media (orientation: landscape) {
   body.s-page:not(.s-page--rpn) {
     --s-first-group-bottom-baseline: calc((var(--s-x) * .5) + var(--s-keyboard-offset, 0px));

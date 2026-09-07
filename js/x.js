@@ -726,7 +726,7 @@
     resetZSecondaryNavAlignment();
     updateComposerInputLanguage();
     updateThemeToggleLabel();
-    if (persist) {
+    if (persist && isZPage) {
       try { localStorage.setItem('ooxme-language', language); } catch (_) {}
     }
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
@@ -742,12 +742,9 @@
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDayMode ? '#FFFFFF' : '#000000');
   };
 
-  let initialLanguage = 'en';
-  // /z always begins in English; its language control remains an explicit,
-  // session-local user action rather than a restored automatic preference.
-  if (!isZPage) {
-    try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
-  }
+  // /x always begins in English. Its language control remains a live,
+  // session-only choice and never reads a stored or cross-page preference.
+  const initialLanguage = 'en';
   applyLanguage(initialLanguage, { persist: false, emit: false });
   applyTheme('dark');
 
@@ -2022,11 +2019,13 @@
     event.stopPropagation();
     applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar');
   });
-  window.addEventListener('storage', (event) => {
-    if (event.key === 'ooxme-language' && event.newValue) {
-      applyLanguage(event.newValue, { persist: false });
-    }
-  });
+  if (isZPage) {
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'ooxme-language' && event.newValue) {
+        applyLanguage(event.newValue, { persist: false });
+      }
+    });
+  }
 
   const latinScriptPattern = /[A-Za-z]/u;
   const detectMessageLanguage = (message) => (arabicScriptPattern.test(message) ? 'ar' : 'en');
@@ -2061,7 +2060,7 @@
     const menuIsActive = next === 'menu';
     addRotated = menuIsActive && !isZPage;
     addButton.classList.toggle('is-rotated', addRotated);
-    if (isZPage) submitButton.classList.toggle('is-active', menuIsActive);
+    submitButton.classList.toggle('is-active', menuIsActive);
     setComposerMenuOpen(menuIsActive);
     setSendUtilitiesOpen(next === 'utilities' || (isZPage && menuIsActive));
     setConversationVisibility(next === 'chat');
@@ -2267,7 +2266,7 @@
     }
     if (!message) {
       if (conversationVisible) return;
-      activateTemporaryUi(activeTemporaryUi === 'utilities' ? 'none' : 'utilities');
+      activateTemporaryUi(activeTemporaryUi === 'menu' ? 'none' : 'menu');
       return;
     }
     if (conversationState !== 'active') return;
