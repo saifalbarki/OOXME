@@ -26,7 +26,7 @@
   const consultationCta = document.querySelector('[data-s-consultation-cta]');
   const firstGroup = document.querySelector('[data-s-first-group]');
   const nextImageTextGroup = document.querySelector('[data-s-copy-group="1"]');
-  const sectionTwoTextGroup = document.querySelector('[data-s-section-2-text]');
+  const sectionTwoTextGroups = Array.from(document.querySelectorAll('[data-s-section-2-text]'));
   const nextImageFrame = document.querySelector('.s-page__flow-group--image [data-s-image-frame]');
   const zSecondaryNav = document.querySelector('[data-s-z-secondary-nav]');
   const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
@@ -42,6 +42,7 @@
   const zApply = document.querySelector('[data-s-z-apply]');
   const zApplyButtons = Array.from(document.querySelectorAll('[data-s-z-apply] button'));
   const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
+  const getNavigableMajorSections = () => majorSections.filter((section) => getComputedStyle(section).display !== 'none');
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
     .filter((item) => item !== imageCopy && (item !== imageMedia || !page?.classList.contains('s-page--z')));
@@ -189,7 +190,6 @@
   const menuItemFlashTimers = new Map();
   const sendUtilityPulseFrames = new Map();
   const marqueeItemPulseFrames = new Map();
-  const sectionFiveMarqueeFrames = new Map();
   const squareLogoPulseFrames = new Map();
   const imagePulseFrames = new Map();
   const pendingReplyTimers = new Set();
@@ -867,44 +867,6 @@
     marqueeItemPulseFrames.set(image, frame);
   };
 
-  const setSectionFiveStripActive = (marquee, isActive) => {
-    if (!marquee?.matches('[data-s-section-5-strip]')) return;
-    const pendingFrame = sectionFiveMarqueeFrames.get(marquee);
-    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
-    sectionFiveMarqueeFrames.delete(marquee);
-    marquee.classList.remove('is-marquee-starting', 'is-marquee-normal');
-    marquee.querySelector('.s-page__marquee-track')?.style.removeProperty('transform');
-    if (!isActive) return;
-    if (!marquee.classList.contains('is-marquee-ready')) {
-      marquee.dataset.sSectionFiveStartPending = 'true';
-      return;
-    }
-
-    delete marquee.dataset.sSectionFiveStartPending;
-    marquee.classList.add('is-marquee-starting');
-    const duration = 1800;
-    const finalTravel = .1;
-    const initialVelocity = .3;
-    const normalVelocity = (duration / 1000) * (.5 / 42);
-    const cubicA = (-2 * finalTravel) + initialVelocity + normalVelocity;
-    const cubicB = (3 * finalTravel) - (2 * initialVelocity) - normalVelocity;
-    const startedAt = performance.now();
-    const render = (timestamp) => {
-      const elapsed = Math.min(1, (timestamp - startedAt) / duration);
-      const travel = (cubicA * elapsed ** 3) + (cubicB * elapsed ** 2) + (initialVelocity * elapsed);
-      marquee.querySelector('.s-page__marquee-track')?.style.setProperty('transform', `translateX(${(-travel * 100).toFixed(4)}%)`);
-      if (elapsed < 1) {
-        sectionFiveMarqueeFrames.set(marquee, window.requestAnimationFrame(render));
-        return;
-      }
-      sectionFiveMarqueeFrames.delete(marquee);
-      marquee.classList.remove('is-marquee-starting');
-      marquee.classList.add('is-marquee-normal');
-      marquee.querySelector('.s-page__marquee-track')?.style.removeProperty('transform');
-    };
-    sectionFiveMarqueeFrames.set(marquee, window.requestAnimationFrame(render));
-  };
-
   document.querySelectorAll('.s-page__marquee').forEach((marquee) => {
     marquee.addEventListener('pointerdown', (event) => {
       const image = event.target.closest('.s-page__marquee img');
@@ -924,10 +886,7 @@
         image.addEventListener('error', resolve, { once: true });
       });
     };
-    Promise.all(images.map(settleImage)).then(() => {
-      marquee.classList.add('is-marquee-ready');
-      if (marquee.dataset.sSectionFiveStartPending === 'true') setSectionFiveStripActive(marquee, true);
-    });
+    Promise.all(images.map(settleImage)).then(() => marquee.classList.add('is-marquee-ready'));
   });
 
   const pulseSquareLogo = (logo) => {
@@ -986,10 +945,11 @@
     control.addEventListener('pointerdown', (event) => event.stopPropagation());
     control.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
   });
-  // /z keeps the shared bar feedback for an empty-surface tap, without
-  // changing /x's established empty-area behavior or triggering any action.
+  // The /rpn Top Bar treats its unoccupied bar surface as a single pulse
+  // target. /x uses that same endpoint-only bar contract; /z retains its
+  // established behavior.
   composer.addEventListener('pointerdown', (event) => {
-    if (page.classList.contains('s-page--z') && event.target === composer) pulseComposer();
+    if (event.target === composer) pulseComposer();
   }, { passive: true });
   composerMenu.addEventListener('click', (event) => event.stopPropagation());
   composerMenuPanel?.addEventListener('click', (event) => event.stopPropagation());
@@ -1006,22 +966,13 @@
   addButton.addEventListener('click', (event) => {
     if (!initializationReady) return;
     event.stopPropagation();
-    if (isZPage) {
+    // /x matches /rpn: the left Top Bar endpoint is press feedback only.
+    // It must not open or close a page-specific temporary surface.
+    if (!isZPage) {
       window.clearTimeout(addFlashTimer);
       addButton.classList.add('is-active');
       addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
       return;
-    }
-    if (conversationVisible) {
-      window.clearTimeout(addFlashTimer);
-      addButton.classList.add('is-active');
-      addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
-      return;
-    }
-    if (activeTemporaryUi === 'menu') {
-      activateTemporaryUi('none');
-    } else {
-      activateTemporaryUi('menu');
     }
     window.clearTimeout(addFlashTimer);
     addButton.classList.add('is-active');
@@ -1126,7 +1077,6 @@
     item.setAttribute('aria-hidden', String(!isVisible));
     if (item === imageMedia) setImageCopyVisibility(isVisible);
     if (item === numbersMetrics) setMetricCountsActive(isVisible);
-    if (item.matches('[data-s-section-5-strip]')) setSectionFiveStripActive(item, isVisible);
     syncFlowGroupState(item.closest('[data-s-flow-group]'));
   };
 
@@ -1172,7 +1122,7 @@
     { first: document.querySelector('[data-s-copy-group="2"]'), last: document.querySelector('.s-page__flow-group--numbers') },
     { first: document.querySelector('[data-s-copy-group="3"]'), last: document.querySelector('.s-page__flow-group--strips') },
     { first: document.querySelector('[data-s-copy-group="4"]'), last: document.querySelector('.s-page__flow-group--logos') },
-    { first: document.querySelector('.s-page__flow-group--consultation'), last: consultationCta }
+    { first: document.querySelector('.s-page__flow-group--consultation'), last: document.querySelector('.s-page__flow-group--section-7-action') || consultationCta }
   ].filter(({ first, last }) => first && last);
 
   const resetPortraitSectionLayout = ({ preserveFinalSettleSpace = false } = {}) => {
@@ -1565,7 +1515,8 @@
 
   const getNearestMajorSectionIndex = () => {
     const referenceY = getMajorSectionReferenceY();
-    const sectionTops = majorSections.map((section) => section.getBoundingClientRect().top);
+    const navigableSections = getNavigableMajorSections();
+    const sectionTops = navigableSections.map((section) => section.getBoundingClientRect().top);
     return sectionTops.reduce((candidate, top, index) => {
       const distance = Math.abs(top - referenceY);
       return !candidate || distance < candidate.distance ? { index, distance } : candidate;
@@ -1574,13 +1525,14 @@
 
   const transitionMajorSection = (direction) => {
     if (isZPage || !direction || majorSectionSettleTarget !== null || discreteSectionInputLocked) return;
+    const navigableSections = getNavigableMajorSections();
     const current = getNearestMajorSectionIndex();
     if (!current) return;
-    const targetIndex = Math.max(0, Math.min(majorSections.length - 1, current.index + direction));
+    const targetIndex = Math.max(0, Math.min(navigableSections.length - 1, current.index + direction));
     if (targetIndex === current.index) return;
     const referenceY = getMajorSectionReferenceY();
     const scrollY = window.scrollY;
-    const targetRect = majorSections[targetIndex].getBoundingClientRect();
+    const targetRect = navigableSections[targetIndex].getBoundingClientRect();
     const target = Math.max(0, Math.min(
       document.documentElement.scrollHeight - window.innerHeight,
       scrollY + targetRect.top - referenceY
@@ -1752,7 +1704,7 @@
     const sourceStart = borderStart + paddingStart + rpnPanelInset;
     const sourceEnd = borderEnd + paddingEnd + rpnPanelInset;
     const isRtl = document.documentElement.lang === 'ar';
-    [firstGroup, sectionTwoTextGroup, nextImageTextGroup].filter(Boolean).forEach((group) => {
+    [firstGroup, ...sectionTwoTextGroups, nextImageTextGroup].filter(Boolean).forEach((group) => {
       const groupRect = group.getBoundingClientRect();
       if (!groupRect.width) return;
       const inlineOffset = isRtl ? sourceEnd : sourceStart;
@@ -1776,17 +1728,19 @@
   // copy height so changing language changes glyphs and direction only, never
   // the overlay box, image baseline, or section distribution.
   const syncSectionTwoCopyGeometry = () => {
-    if (isZPage || !sectionTwoTextGroup) return;
-    const localizedCopies = Array.from(sectionTwoTextGroup.querySelectorAll('[lang]'));
-    if (!localizedCopies.length) return;
-    const originalDisplays = localizedCopies.map((copy) => copy.style.display);
-    let height = 0;
-    localizedCopies.forEach((activeCopy) => {
-      localizedCopies.forEach((copy) => { copy.style.display = copy === activeCopy ? 'block' : 'none'; });
-      height = Math.max(height, activeCopy.getBoundingClientRect().height);
+    if (isZPage || !sectionTwoTextGroups.length) return;
+    sectionTwoTextGroups.forEach((textGroup) => {
+      const localizedCopies = Array.from(textGroup.querySelectorAll('[lang]'));
+      if (!localizedCopies.length) return;
+      const originalDisplays = localizedCopies.map((copy) => copy.style.display);
+      let height = 0;
+      localizedCopies.forEach((activeCopy) => {
+        localizedCopies.forEach((copy) => { copy.style.display = copy === activeCopy ? 'block' : 'none'; });
+        height = Math.max(height, activeCopy.getBoundingClientRect().height);
+      });
+      localizedCopies.forEach((copy, index) => { copy.style.display = originalDisplays[index]; });
+      if (height) textGroup.style.height = `${Math.ceil(height)}px`;
     });
-    localizedCopies.forEach((copy, index) => { copy.style.display = originalDisplays[index]; });
-    if (height) sectionTwoTextGroup.style.height = `${Math.ceil(height)}px`;
   };
 
   // The original /x Composer used the layout viewport's bottom edge. Keep that
@@ -2206,7 +2160,9 @@
     activeTemporaryUi = next;
 
     const menuIsActive = next === 'menu';
-    addRotated = menuIsActive && !isZPage;
+    // /rpn keeps the left endpoint independent from menu state. /x shares
+    // that state treatment; only /z retains its legacy plus rotation.
+    addRotated = menuIsActive && isZPage;
     addButton.classList.toggle('is-rotated', addRotated);
     submitButton.classList.toggle('is-active', menuIsActive);
     setComposerMenuOpen(menuIsActive);
@@ -2320,8 +2276,8 @@
     if (event.target instanceof Element && event.target.closest('input, textarea, [contenteditable="true"]')) return;
     if (!isZPage) {
       event.preventDefault();
-      if (event.key === 'Home') transitionMajorSection(-majorSections.length);
-      else if (event.key === 'End') transitionMajorSection(majorSections.length);
+      if (event.key === 'Home') transitionMajorSection(-getNavigableMajorSections().length);
+      else if (event.key === 'End') transitionMajorSection(getNavigableMajorSections().length);
       else transitionMajorSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
       return;
     }
@@ -2433,6 +2389,12 @@
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
     event.stopPropagation();
+    // /x's right Top Bar endpoint now uses /rpn's exact menu toggle instead
+    // of routing an empty bar interaction through the conversation flow.
+    if (!isZPage) {
+      activateTemporaryUi(activeTemporaryUi === 'menu' ? 'none' : 'menu');
+      return;
+    }
     const message = input.value.trim();
     if (isZPage && !message) {
       if (conversationVisible) return;
@@ -2641,8 +2603,6 @@
     sendUtilityPulseFrames.clear();
     marqueeItemPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     marqueeItemPulseFrames.clear();
-    sectionFiveMarqueeFrames.forEach((frame) => window.cancelAnimationFrame(frame));
-    sectionFiveMarqueeFrames.clear();
     squareLogoPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     squareLogoPulseFrames.clear();
     imagePulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));

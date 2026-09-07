@@ -170,6 +170,17 @@ body.s-page:not(.s-page--rpn) .s-page__major-section {
   overflow: clip;
 }
 
+/* These /x frames intentionally use the horizontal space beyond their
+   content column: Sections 2 and 3 need room for their full-card press
+   pulses, Section 4 owns the metric-card pulse, and Section 5 owns a 100vw
+   strip. Keep the shared frame geometry, but do not crop those surfaces. */
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--section-2,
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--section-3,
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--section-4,
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--section-5 {
+  overflow: visible;
+}
+
 html.s-x-discrete-sections {
   scroll-snap-type: y mandatory;
   scroll-padding-top: calc(var(--s-x) * 2);
@@ -272,6 +283,110 @@ body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame {
   margin-inline: auto;
 }
 
+/* The original Section 2 frame stays intact in landscape. Portrait folds the
+   same composition into the following (reindexed) section instead. */
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--portrait-relocated {
+  display: none;
+}
+
+/* Section 2 uses the lower image's exact overlay contract at every size. */
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay {
+  --s-section-3-overlay-inset: var(--s-x);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy {
+  padding: 0;
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-language {
+  position: relative;
+  width: calc(100% - (var(--s-section-3-overlay-inset) * 2));
+  height: 100%;
+  max-width: none;
+  margin-inline-start: var(--s-section-3-overlay-inset);
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-main {
+  position: absolute;
+  top: 50%;
+  inset-inline: 0;
+  color: transparent;
+  background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  transform: translateY(-50%);
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-main {
+  background-image: linear-gradient(to left, #583B23 0%, #FFFFFF 100%);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-supporting {
+  position: absolute;
+  top: auto;
+  inset-inline: 0;
+  bottom: var(--s-section-3-overlay-inset);
+  margin-top: 0 !important;
+  color: #A6A6A6;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+  transform: none;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-supporting {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-supporting {
+  color: #666666;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-selector-arrow {
+  top: auto;
+  inset-inline-end: var(--s-section-3-overlay-inset);
+  bottom: calc(
+    var(--s-section-3-overlay-inset)
+    - ((var(--s-image-arrow-visible-height) * 2) - (12px * 1.2)) / 2
+  );
+  transform: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-selector-arrow {
+  inset-inline: auto;
+  right: auto;
+  left: var(--s-section-3-overlay-inset);
+  transform: scaleX(-1);
+}
+
+@media (orientation: portrait) {
+  body.s-page:not(.s-page--rpn) .s-page__major-section--section-2-landscape-source {
+    display: none;
+  }
+
+  body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--portrait-relocated {
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(
+      (var(--s-x) * 2)
+      + var(--s-first-group-bottom-baseline)
+      + var(--s-section-2-bottom-baseline-correction, 0px)
+      + var(--s-rpn-image-block-size)
+      + var(--s-x)
+    );
+    display: block;
+  }
+}
+
 body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame > .s-page__image-group {
   transform: none;
   transform-origin: center;
@@ -317,8 +432,11 @@ body.s-page:not(.s-page--rpn) .s-page__image-selector-arrow svg {
 }
 
 html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__image-selector-arrow {
-  inset-inline-end: auto;
-  inset-inline-start: calc(var(--s-x-rpn-image-text-inline-offset, 17px) - (var(--s-image-arrow-visible-width) / 2));
+  /* The selector is physically mirrored from its English side. Logical inset
+     properties alone resolve back to the same physical edge in RTL. */
+  inset-inline: auto;
+  right: auto;
+  left: calc(var(--s-x-rpn-image-text-inline-offset, 17px) - (var(--s-image-arrow-visible-width) / 2));
   transform: translateY(-50%) scaleX(-1);
 }
 
@@ -339,6 +457,7 @@ body.s-page:not(.s-page--rpn) .s-page__group--section-3 {
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame {
+  --s-section-3-overlay-inset: var(--s-x);
   position: absolute;
   inset-inline: 0;
   bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
@@ -349,28 +468,81 @@ body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame {
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy {
-  padding-top: var(--s-x);
-  padding-bottom: var(--s-x);
-  padding-inline: 0;
+  padding: 0;
   overflow: visible;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-language {
-  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  position: relative;
+  width: calc(100% - (var(--s-section-3-overlay-inset) * 2));
+  height: 100%;
   max-width: none;
-  margin-inline-start: var(--s-x-rpn-image-text-inline-offset, 17px);
+  margin-inline-start: var(--s-section-3-overlay-inset);
   overflow: visible;
 }
 
-body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy p {
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
+  position: absolute;
+  top: 50%;
+  inset-inline: 0;
   color: transparent;
-  background-image: linear-gradient(to right, #583B23 0%, #583B23 30%, #FFFFFF 100%);
+  background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%);
   -webkit-background-clip: text;
   background-clip: text;
+  transform: translateY(-50%);
 }
 
-html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy p {
-  background-image: linear-gradient(to left, #583B23 0%, #583B23 30%, #FFFFFF 100%);
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
+  background-image: linear-gradient(to left, #583B23 0%, #FFFFFF 100%);
+}
+
+/* Section 3's supporting line uses the Section 2 description role exactly. */
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-supporting {
+  position: absolute;
+  top: auto;
+  inset-inline: 0;
+  bottom: var(--s-section-3-overlay-inset);
+  margin-top: 0 !important;
+  color: #A6A6A6;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+  transform: none;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-supporting {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-supporting {
+  color: #666666;
+}
+
+/* One shared inset controls every Section 3 overlay-to-image edge distance. */
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-selector-arrow {
+  top: auto;
+  inset-inline-end: var(--s-section-3-overlay-inset);
+  /* Center the 26px hit box on the 14.4px Discover line while retaining the
+     same shared image-edge inset for the line's baseline. */
+  bottom: calc(
+    var(--s-section-3-overlay-inset)
+    - ((var(--s-image-arrow-visible-height) * 2) - (12px * 1.2)) / 2
+  );
+  transform: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-selector-arrow {
+  inset-inline: auto;
+  right: auto;
+  left: var(--s-section-3-overlay-inset);
+  transform: scaleX(-1);
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
@@ -469,15 +641,21 @@ body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric 
 
 body.s-page:not(.s-page--rpn) .s-page__section-4-metric-box {
   position: relative;
+  isolation: isolate;
   width: 100%;
   height: var(--s-rpn-image-block-size);
-  border: 0;
+  border: 1px solid var(--s-glass-stroke);
   border-radius: var(--s-composer-radius);
-  background: linear-gradient(to top, rgb(88 59 35 / 100%) 0%, rgb(88 59 35 / 0%) 100%);
-  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  background: #0B0B0D;
+  box-shadow: none;
   overflow: hidden;
-  -webkit-backdrop-filter: blur(20px) saturate(125%);
-  backdrop-filter: blur(20px) saturate(125%);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-4-metric-box {
+  background: #F5F5F3;
+  color: #000000;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-4-metric-copy {
@@ -510,7 +688,7 @@ body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric-
   background-clip: initial;
   -webkit-text-fill-color: #FFFFFF;
   font-family: OOXMEScript, Arial, sans-serif;
-  font-size: clamp(20px, 3vw, 32px);
+  font-size: clamp(40px, 6vw, 64px);
   font-weight: 700;
   line-height: 1;
 }
@@ -529,9 +707,13 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-4-metric
   color: #000000;
 }
 
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric-value {
+  -webkit-text-fill-color: #000000;
+}
+
 /* Every Section 4 metric layer is static. */
 body.s-page:not(.s-page--rpn) .s-page__section-4-metrics,
-body.s-page:not(.s-page--rpn) .s-page__section-4-metrics :is(.s-page__number-metric, .s-page__section-4-metric-box, .s-page__section-4-metric-copy, .s-page__number-metric-value, .s-page__number-metric-label) {
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics :is(.s-page__number-metric, .s-page__section-4-metric-copy, .s-page__number-metric-value, .s-page__number-metric-label) {
   opacity: 1 !important;
   filter: none !important;
   transform: none !important;
@@ -547,6 +729,14 @@ body.s-page:not(.s-page--rpn) .s-page__section-4-metrics :is(.s-page__number-met
   body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame {
     height: auto;
     aspect-ratio: 4 / 1;
+  }
+
+  /* Section 2 shares Section 3's landscape image geometry exactly. */
+  body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 1;
+    margin-inline: 0;
   }
 }
 
@@ -739,6 +929,13 @@ html.s-route.is-day-mode .s-page__number-metric-label {
 
   .is-portrait-bottom-up {
     translate: 0 var(--s-portrait-bottom-up-offset, 0px);
+  }
+
+  /* Section 7's action occupies the fixed image-card baseline. It is not
+     movable flow media: the portrait compositor's bottom-up translate can
+     otherwise move it outside the final section frame. */
+  body.s-page--x .s-page__flow-group--section-7-action.is-portrait-bottom-up {
+    translate: none;
   }
 }
 
@@ -1065,17 +1262,6 @@ body.s-page:not(.s-page--rpn) .s-page__major-section--section-5 > .s-page__flow-
   margin: 0;
 }
 
-body.s-page:not(.s-page--rpn) .s-page__flow-group--section-5-text {
-  bottom: calc(
-    (var(--s-x) * 2)
-    + var(--s-first-group-bottom-baseline)
-    + var(--s-section-2-bottom-baseline-correction, 0px)
-    + var(--s-rpn-image-block-size)
-    + var(--s-x)
-  );
-  height: max-content;
-}
-
 body.s-page:not(.s-page--rpn) .s-page__flow-group--section-5-strip {
   bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
   height: var(--s-rpn-image-block-size);
@@ -1091,34 +1277,25 @@ body.s-page:not(.s-page--rpn) .s-page__marquee--section-5 {
 
 body.s-page:not(.s-page--rpn) .s-page__marquee--section-5 img {
   height: var(--s-rpn-image-block-size);
+  border-radius: 14px;
   object-fit: contain;
 }
 
-/* The startup transform is set by /x's entry controller. At 10% travel, the
-   normal 42-second loop resumes at its matching phase without a jump. */
+/* Section 5 uses the same duplicated, constant-speed loop as Section 6.
+   The existing readiness gate starts only after both identical sets have
+   decoded, avoiding a load-time reset while retaining the X-gap cadence. */
 body.s-page:not(.s-page--rpn) .s-page__marquee.s-page__marquee--section-5 .s-page__marquee-track {
+  animation: s-page-marquee-forward 52s linear infinite;
   animation-play-state: paused;
+  will-change: transform;
 }
 
-body.s-page:not(.s-page--rpn) .s-page__marquee--section-5.is-marquee-starting .s-page__marquee-track {
-  animation: none;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__marquee--section-5.is-marquee-normal .s-page__marquee-track {
-  animation: s-page-marquee-forward 42s linear infinite;
-  animation-delay: -8.4s;
+body.s-page:not(.s-page--rpn) .s-page__marquee.s-page__marquee--section-5.is-marquee-ready .s-page__marquee-track {
   animation-play-state: running;
 }
 
-/* Section 6 reuses the shared image frame for its logo container and the
-   Section 5 text/media distribution. */
-body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 > .s-page__flow-group {
-  position: absolute;
-  inset-inline: 0;
-  margin: 0;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__flow-group--section-6-text {
+/* Sections 5 and 6 share one text-group contract. */
+body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) {
   bottom: calc(
     (var(--s-x) * 2)
     + var(--s-first-group-bottom-baseline)
@@ -1127,6 +1304,54 @@ body.s-page:not(.s-page--rpn) .s-page__flow-group--section-6-text {
     + var(--s-x)
   );
   height: max-content;
+  display: grid;
+  justify-items: center;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-title {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin: 0;
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: center;
+}
+
+body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-description {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin: calc(var(--s-x) * .5) 0 0;
+  color: #A6A6A6;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: center;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) :is(.s-page__group-title, .s-page__group-description) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-title { color: #111111; }
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-description { color: #666666; }
+
+/* Section 6 reuses the shared image frame for its logo container and the
+   Section 5 text/media distribution. */
+body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-6, .s-page__major-section--final) > .s-page__flow-group {
+  position: absolute;
+  inset-inline: 0;
+  margin: 0;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__flow-group--section-6-logos {
@@ -1190,8 +1415,8 @@ body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-
 }
 
 body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo img {
-  width: 100%;
-  height: 60%;
+  width: 50%;
+  height: 50%;
   object-fit: contain;
 }
 
@@ -1283,6 +1508,49 @@ html.s-route.is-day-mode .s-page__consultation-cta:hover,
 html.s-route.is-day-mode .s-page__consultation-cta:focus-visible {
   background: rgba(255, 255, 255, .86);
   border-color: rgba(17, 17, 17, .2);
+}
+
+/* Section 6 and 7 text content is centered in the shared section frame. */
+body.s-page--x :is(.s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__flow-text {
+  position: relative;
+  display: grid;
+  width: 100%;
+  justify-items: center;
+  text-align: center;
+  transform: translateX(calc((100vw - 100%) / 2 - var(--s-x)));
+}
+
+html[dir="rtl"] body.s-page--x :is(.s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__flow-text {
+  transform: translateX(calc((100% - 100vw) / 2 + var(--s-x)));
+}
+
+body.s-page--x .s-page__flow-group--section-7-action {
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  height: var(--s-rpn-image-block-size);
+  place-items: center;
+}
+
+body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  /* The action slot's bottom is the shared rendered image-card baseline. */
+  align-self: end;
+  justify-self: center;
+  margin-top: 0;
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+}
+
+html[lang="ar"] body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  color: #111111;
 }
 
 .s-page__group-title {
@@ -2162,6 +2430,12 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   .s-page__major-section--final {
     height: var(--s-portrait-final-section-height, auto);
   }
+
+  body.s-page--x .s-page__major-section--final {
+    height: var(--s-section-frame-height, 100dvh);
+    min-height: var(--s-section-frame-height, 100dvh);
+    max-height: var(--s-section-frame-height, 100dvh);
+  }
 }
 
 @supports (-webkit-touch-callout: none) {
@@ -2275,6 +2549,12 @@ body.s-page:not(.s-page--rpn) .s-page__composer {
 
 body.s-page:not(.s-page--rpn) .s-page__input-label {
   opacity: 0;
+  pointer-events: none;
+}
+
+/* The /x Top Bar uses /rpn's full empty-bar hit area. The dormant composer
+   input stays out of that target so a center press reaches the shared bar. */
+body.s-page--x .s-page__composer-input {
   pointer-events: none;
 }
 
@@ -2579,15 +2859,15 @@ body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-lan
   overflow: visible;
 }
 
-body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy p {
+body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-main {
   color: transparent;
-  background-image: linear-gradient(to right, #583B23 0%, #583B23 30%, #FFFFFF 100%);
+  background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%);
   -webkit-background-clip: text;
   background-clip: text;
 }
 
-html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy p {
-  background-image: linear-gradient(to left, #583B23 0%, #583B23 30%, #FFFFFF 100%);
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-main {
+  background-image: linear-gradient(to left, #583B23 0%, #FFFFFF 100%);
 }
 
 body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-main {
