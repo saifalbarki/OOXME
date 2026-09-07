@@ -626,6 +626,7 @@ html[dir="rtl"] .s-page--rpn .s-page__secondary-nav-rail { direction: rtl; }
 .s-page--rpn .s-page__secondary-nav-item.is-active { display: flex; }
 .s-page--rpn .s-page__secondary-nav-item::before { position: absolute; z-index: -1; inset: 0; border-radius: var(--s-menu-active-radius); background: #000000; content: ""; pointer-events: none; }
 html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav-item::before { background: #000000; }
+html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav-item { color: #FFFFFF; }
 .s-page--rpn .s-page__secondary-nav-arrow { position: absolute; z-index: 2; top: 0; display: grid; width: 32px; height: 36px; margin: 0; padding: 0; place-items: center; border: 0; background: transparent; color: #FFFFFF; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .s-page--rpn .s-page__secondary-nav-arrow--left { left: 0; }
 .s-page--rpn .s-page__secondary-nav-arrow--right { right: 0; }
