@@ -274,6 +274,10 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-2-copy .
 
 body.s-page:not(.s-page--rpn) {
   --s-rpn-image-block-size: calc(var(--s-x) * 8);
+  --s-x-strip-duration: 52s;
+  --s-x-closed-notice-height: 36px;
+  --s-x-closed-notice-width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  --s-x-localized-text-group-height: 102px;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame {
@@ -292,6 +296,9 @@ body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--portrait-relocated
 /* Section 2 uses the lower image's exact overlay contract at every size. */
 body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay {
   --s-section-3-overlay-inset: var(--s-x);
+  /* The image itself retains its rounded clipping via .s-page__image-group;
+     only the Hero glyph bounds may extend beyond the frame's line box. */
+  overflow: visible;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy {
@@ -310,13 +317,23 @@ body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-
 
 body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-main {
   position: absolute;
-  top: 50%;
+  top: auto;
+  bottom: calc(
+    var(--s-section-3-overlay-inset)
+    + (12px * 1.2)
+    + var(--s-x)
+  );
   inset-inline: 0;
   color: transparent;
   background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  transform: translateY(-50%);
+  /* The shared Hero role defaults to a .98 line box, which is smaller than
+     the painted descenders of both approved overlay fonts. Keep this safe
+     line box at the overlay source so portrait and landscape match. */
+  line-height: 1.12;
+  overflow: visible;
+  transform: none;
 }
 
 html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-main {
@@ -465,6 +482,7 @@ body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame {
   height: var(--s-rpn-image-block-size);
   margin: 0;
   aspect-ratio: auto;
+  overflow: visible;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy {
@@ -483,13 +501,19 @@ body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy
 
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
   position: absolute;
-  top: 50%;
+  top: auto;
+  bottom: calc(
+    var(--s-section-3-overlay-inset)
+    + (12px * 1.2)
+    + var(--s-x)
+  );
   inset-inline: 0;
   color: transparent;
   background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  transform: translateY(-50%);
+  overflow: visible;
+  transform: none;
 }
 
 html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
@@ -546,8 +570,7 @@ html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  /* Match the upper approved overlay's glyph-safe Hero line box. */
   line-height: 1.12;
 }
 
@@ -584,7 +607,7 @@ body.s-page:not(.s-page--rpn) .s-page__group--section-4 > .s-page__flow-text {
 }
 
 body.s-page:not(.s-page--rpn) .s-page__group--section-4 .s-page__group-title {
-  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  width: var(--s-x-closed-notice-width);
   margin: 0;
   color: #FFFFFF;
   font-family: OOXMEScript, Arial, sans-serif;
@@ -1285,7 +1308,7 @@ body.s-page:not(.s-page--rpn) .s-page__marquee--section-5 img {
    The existing readiness gate starts only after both identical sets have
    decoded, avoiding a load-time reset while retaining the X-gap cadence. */
 body.s-page:not(.s-page--rpn) .s-page__marquee.s-page__marquee--section-5 .s-page__marquee-track {
-  animation: s-page-marquee-forward 52s linear infinite;
+  animation: s-page-marquee-forward var(--s-x-strip-duration) linear infinite;
   animation-play-state: paused;
   will-change: transform;
 }
@@ -1303,14 +1326,104 @@ body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__
     + var(--s-rpn-image-block-size)
     + var(--s-x)
   );
-  height: max-content;
+  height: var(--s-x-localized-text-group-height);
   display: grid;
+  align-items: end;
   justify-items: center;
   opacity: 1 !important;
   filter: none !important;
   transform: none !important;
   transition: none !important;
   animation: none !important;
+}
+
+/* Sections 5 and 6 reserve one shared X-spaced notice slot between their
+   text groups and moving media without changing the media baseline. */
+body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text) {
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-rpn-image-block-size)
+    + (var(--s-x) * 2)
+    + var(--s-x-closed-notice-height)
+  );
+}
+
+body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6) > .s-page__closed-notice {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-rpn-image-block-size)
+    + var(--s-x)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  height: var(--s-x-closed-notice-height);
+  margin-inline: auto;
+  padding: 0 var(--s-x);
+  overflow: hidden;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: rgba(255, 64, 64, .1);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  color: #FFFFFF;
+  font: 500 12px/1.2 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6) > .s-page__closed-notice {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice-copy--ar {
+  display: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__closed-notice-copy--en {
+  display: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__closed-notice-copy--ar {
+  display: block;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6) > .s-page__closed-notice {
+  background: rgba(255, 64, 64, .08);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock {
+  display: block;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  overflow: visible;
+  color: #FFFFFF;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock rect {
+  fill: currentColor;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock {
+  color: #000000;
 }
 
 body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-title {
@@ -1361,6 +1474,8 @@ body.s-page:not(.s-page--rpn) .s-page__flow-group--section-6-logos {
 }
 
 body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-stage {
+  --s-logo-grid-cell-size: calc(var(--s-rpn-image-block-size) / 8);
+  --s-logo-grid-period: calc(var(--s-logo-grid-cell-size) * 1.41421356);
   width: 100%;
   height: var(--s-rpn-image-block-size);
   aspect-ratio: auto;
@@ -1370,6 +1485,37 @@ body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-
   transform: none !important;
   transition: none !important;
   animation: none !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-stage::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent calc(var(--s-logo-grid-period) - 1px),
+      var(--s-glass-stroke) calc(var(--s-logo-grid-period) - 1px),
+      var(--s-glass-stroke) var(--s-logo-grid-period)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0,
+      transparent calc(var(--s-logo-grid-period) - 1px),
+      var(--s-glass-stroke) calc(var(--s-logo-grid-period) - 1px),
+      var(--s-glass-stroke) var(--s-logo-grid-period)
+    );
+  background-position: center;
+  background-size: var(--s-logo-grid-period) var(--s-logo-grid-period);
+  content: "";
+  opacity: .25;
+  pointer-events: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__logo-strip-track {
+  position: relative;
+  z-index: 1;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-guides {
@@ -1385,7 +1531,7 @@ body.s-page:not(.s-page--rpn) .s-page__logo-strip-set {
 }
 
 body.s-page:not(.s-page--rpn) .s-page__logo-strip-track {
-  animation: s-page-marquee-forward 52s linear infinite;
+  animation: s-page-marquee-forward var(--s-x-strip-duration) linear infinite;
   will-change: transform;
 }
 
@@ -1510,8 +1656,20 @@ html.s-route.is-day-mode .s-page__consultation-cta:focus-visible {
   border-color: rgba(17, 17, 17, .2);
 }
 
-/* Section 6 and 7 text content is centered in the shared section frame. */
-body.s-page--x :is(.s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__flow-text {
+/* Locked-section text content centers on the shared notice-box width. */
+body.s-page--x :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text) .s-page__flow-text {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: grid;
+  width: var(--s-x-closed-notice-width);
+  justify-items: center;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+/* The unlocked consultation copy retains its existing centered composition. */
+body.s-page--x .s-page__flow-group--section-7-text .s-page__flow-text {
   position: relative;
   display: grid;
   width: 100%;
@@ -1520,7 +1678,7 @@ body.s-page--x :is(.s-page__flow-group--section-6-text, .s-page__flow-group--sec
   transform: translateX(calc((100vw - 100%) / 2 - var(--s-x)));
 }
 
-html[dir="rtl"] body.s-page--x :is(.s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__flow-text {
+html[dir="rtl"] body.s-page--x .s-page__flow-group--section-7-text .s-page__flow-text {
   transform: translateX(calc((100% - 100vw) / 2 + var(--s-x)));
 }
 
@@ -1543,6 +1701,11 @@ body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
   font-weight: 500;
   line-height: 1.2;
   text-align: center;
+  box-sizing: border-box;
+  inline-size: var(--s-x-closed-notice-width);
+  block-size: var(--s-x-closed-notice-height);
+  min-block-size: var(--s-x-closed-notice-height);
+  padding-block: 0;
 }
 
 html[lang="ar"] body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {

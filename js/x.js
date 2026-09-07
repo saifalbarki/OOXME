@@ -122,7 +122,7 @@
         ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.'],
         ['Let’s talk\nabout what’s next', 'A focused consultation to understand your business, identify the right direction, and define the next practical step.']
       ],
-      menu: ['The Brand Management', 'The Consultation', 'The Gallery', 'The Store', 'Contact'],
+      menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
       inputPlaceholder: 'Type...',
       ask: 'Ask ooxme',
       addContext: 'Add context',
@@ -146,7 +146,7 @@
         ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.'],
         ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول إلى الخطوة العملية التالية.']
       ],
-      menu: ['إدارة العلامة التجارية', 'الاستشارة', 'المعرض', 'المتجر', 'تواصل'],
+      menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'],
       inputPlaceholder: 'اكتب...',
       ask: 'اسأل اوكسوم',
       addContext: 'اضف سياقًا',
@@ -167,8 +167,8 @@
     ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الإحالة لأوكسوم متاحة الآن للتقديم\nانضم إلينا واستفد من مزايا ومكافآت حصرية.']
   };
   const zMainMenuCopy = {
-    en: ['The Brand Management', 'The Consultation', 'The Gallery', 'The Store', 'Contact'],
-    ar: ['إدارة العلامة التجارية', 'الاستشارة', 'المعرض', 'المتجر', 'تواصل']
+    en: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
+    ar: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل']
   };
   const getGroupCopy = (language, groupIndex) => (
     isZPage && groupIndex === 0 ? zFirstGroupCopy[language] : pageCopy[language].groups[groupIndex]
@@ -964,19 +964,8 @@
   });
 
   addButton.addEventListener('click', (event) => {
-    if (!initializationReady) return;
     event.stopPropagation();
-    // /x matches /rpn: the left Top Bar endpoint is press feedback only.
-    // It must not open or close a page-specific temporary surface.
-    if (!isZPage) {
-      window.clearTimeout(addFlashTimer);
-      addButton.classList.add('is-active');
-      addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
-      return;
-    }
-    window.clearTimeout(addFlashTimer);
-    addButton.classList.add('is-active');
-    addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
+    window.location.assign('/x');
   });
 
   document.addEventListener('pointerdown', (event) => {
@@ -1869,7 +1858,7 @@
     }
     input.placeholder = copy.inputPlaceholder;
     inputLabel.textContent = copy.ask;
-    addButton.setAttribute('aria-label', copy.addContext);
+    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب إلى اوكسوم' : 'Go to OOXME');
     submitButton.setAttribute('aria-label', copy.submitQuestion);
     conversation.setAttribute('aria-label', copy.conversation);
     if (conversationFinal.classList.contains('is-visible')) {

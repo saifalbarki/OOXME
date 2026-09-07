@@ -53,8 +53,8 @@
     ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الإحالة لأوكسوم متاحة الآن للتقديم\nانضم إلينا واستفد من مزايا ومكافآت حصرية.']
   };
   const menuCopy = {
-    en: ['The Brand Management', 'The Consultation', 'The Gallery', 'The Store', 'Contact'],
-    ar: ['إدارة العلامة التجارية', 'الاستشارة', 'المعرض', 'المتجر', 'تواصل']
+    en: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
+    ar: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل']
   };
   const utilityCopy = {
     en: { add: 'Add context', submit: 'Submit question', previous: 'Previous section', next: 'Next section', nav: 'Section navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
@@ -260,7 +260,7 @@
     nav.setAttribute('aria-label', copy.nav);
     previousButton.setAttribute('aria-label', copy.previous);
     nextButton.setAttribute('aria-label', copy.next);
-    addButton.setAttribute('aria-label', copy.add);
+    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب إلى اوكسوم' : 'Go to OOXME');
     submitButton.setAttribute('aria-label', copy.submit);
     languageUtility.classList.toggle('is-active', language === 'en');
     languageUtility.setAttribute('aria-pressed', String(language === 'en'));
@@ -864,10 +864,9 @@
       menuFlashTimers.set(item, window.setTimeout(() => item.classList.remove('is-active'), 120));
     }, { passive: true });
   });
-  addButton.addEventListener('click', () => {
-    clearTimeout(addFlashTimer);
-    addButton.classList.add('is-active');
-    addFlashTimer = window.setTimeout(() => addButton.classList.remove('is-active'), 120);
+  addButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    window.location.assign('/x');
   });
   composer.addEventListener('submit', (event) => {
     event.preventDefault();
