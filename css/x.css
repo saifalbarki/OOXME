@@ -281,10 +281,10 @@ body.s-page:not(.s-page--rpn) {
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame {
-  width: min(100%, calc(100dvh - (var(--s-x) * 12)));
+  width: 100%;
   height: var(--s-rpn-image-block-size, calc(var(--s-x) * 8));
   aspect-ratio: auto;
-  margin-inline: auto;
+  margin-inline: 0;
 }
 
 /* The original Section 2 frame stays intact in landscape. Portrait folds the
