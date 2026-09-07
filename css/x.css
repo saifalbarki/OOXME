@@ -1514,7 +1514,11 @@ body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-
 }
 
 body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__logo-strip-track {
-  position: relative;
+  /* Do not let RTL static positioning place this max-content track beyond the
+     clipped stage. The marquee itself remains deliberately LTR. */
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 1;
 }
 
@@ -1528,6 +1532,10 @@ body.s-page:not(.s-page--rpn) .s-page__logo-strip-set {
   width: max-content;
   height: 100%;
   align-items: center;
+  /* A flex row follows the inherited page direction. Keep the duplicated
+     logo loop physically LTR so the unchanged -50% marquee translation
+     starts with visible content in both English and Arabic. */
+  direction: ltr;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__logo-strip-track {
