@@ -316,12 +316,14 @@ body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-main {
+  --s-image-hero-glyph-padding: 4px;
   position: absolute;
   top: auto;
   bottom: calc(
     var(--s-section-3-overlay-inset)
     + (12px * 1.2)
     + var(--s-x)
+    - var(--s-image-hero-glyph-padding)
   );
   inset-inline: 0;
   color: transparent;
@@ -332,6 +334,8 @@ body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-
      the painted descenders of both approved overlay fonts. Keep this safe
      line box at the overlay source so portrait and landscape match. */
   line-height: 1.12;
+  box-sizing: content-box;
+  padding-block: var(--s-image-hero-glyph-padding);
   overflow: visible;
   transform: none;
 }
@@ -500,12 +504,14 @@ body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
+  --s-image-hero-glyph-padding: 4px;
   position: absolute;
   top: auto;
   bottom: calc(
     var(--s-section-3-overlay-inset)
     + (12px * 1.2)
     + var(--s-x)
+    - var(--s-image-hero-glyph-padding)
   );
   inset-inline: 0;
   color: transparent;
@@ -572,6 +578,15 @@ html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
   /* Match the upper approved overlay's glyph-safe Hero line box. */
   line-height: 1.12;
+  box-sizing: content-box;
+  padding-block: var(--s-image-hero-glyph-padding);
+}
+
+/* The upper Discover line remains an inline destination without changing the
+   overlay container's non-interactive behavior. */
+body.s-page:not(.s-page--rpn) [data-s-image-copy-action="update"] {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame > .s-page__image-group {

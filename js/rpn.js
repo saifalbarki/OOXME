@@ -50,7 +50,7 @@
   const heroLayers = [hero, heroMedia, heroCopy, title, summary, nav];
   const firstGroupCopy = {
     en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive advantages and rewards'],
-    ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الإحالة لأوكسوم متاحة الآن للتقديم\nانضم إلينا واستفد من مزايا ومكافآت حصرية.']
+    ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الاحالة لاوكسوم متاحة الان للتقديم\nانضم الينا واستفد من مزايا ومكافآت حصرية.']
   };
   const menuCopy = {
     en: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
@@ -58,7 +58,7 @@
   };
   const utilityCopy = {
     en: { add: 'Add context', submit: 'Submit question', previous: 'Previous section', next: 'Next section', nav: 'Section navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
-    ar: { add: 'اضف سياقًا', submit: 'ارسال السؤال', previous: 'القسم السابق', next: 'القسم التالي', nav: 'التنقل بين الأقسام', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
+    ar: { add: 'اضف سياقًا', submit: 'ارسال السؤال', previous: 'القسم السابق', next: 'القسم التالي', nav: 'التنقل بين الاقسام', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
   };
 
   const endpointTolerance = .25;
@@ -260,7 +260,7 @@
     nav.setAttribute('aria-label', copy.nav);
     previousButton.setAttribute('aria-label', copy.previous);
     nextButton.setAttribute('aria-label', copy.next);
-    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب إلى اوكسوم' : 'Go to OOXME');
+    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME');
     submitButton.setAttribute('aria-label', copy.submit);
     languageUtility.classList.toggle('is-active', language === 'en');
     languageUtility.setAttribute('aria-pressed', String(language === 'en'));

@@ -1,0 +1,109 @@
+/* /update keeps the shared /x Section 1 frame. Only its safe-area content
+   becomes scrollable so the fixed Master Panel and Top Bar do not move. */
+body.s-page--update {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+body.s-page--update .s-page__content { height: 100%; overflow: hidden; }
+
+body.s-page--update [data-s-first-group].s-page__update-layout {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+}
+
+body.s-page--update .s-page__update-scroll {
+  position: absolute;
+  top: calc(var(--s-x) * 5);
+  bottom: var(--s-first-group-bottom-baseline);
+  width: var(--s-x-first-group-text-width, calc(100% - 34px));
+  margin-inline-start: var(--s-x-first-group-text-inline-offset, 17px);
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  scrollbar-width: none;
+}
+
+body.s-page--update .s-page__update-stack {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 100%;
+}
+
+body.s-page--update .s-page__update-scroll::-webkit-scrollbar { display: none; }
+
+body.s-page--update .s-page__update-title {
+  width: 100%;
+  height: auto !important;
+  margin: 0;
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: start;
+}
+
+body.s-page--update .s-page__update-bullets {
+  display: grid;
+  gap: var(--s-x);
+  margin-top: calc(var(--s-x) * 1.5);
+}
+
+body.s-page--update .s-page__update-bullet {
+  display: grid;
+  grid-template-columns: 1em minmax(0, 1fr);
+  column-gap: calc(var(--s-x) * .5);
+  align-items: start;
+  direction: ltr;
+}
+
+body.s-page--update .s-page__update-marker,
+body.s-page--update .s-page__update-localized h2,
+body.s-page--update .s-page__update-localized p,
+body.s-page--update .s-page__update-version { margin: 0; }
+
+body.s-page--update .s-page__update-marker,
+body.s-page--update .s-page__update-localized h2 {
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+body.s-page--update .s-page__update-marker { text-align: center; }
+
+body.s-page--update .s-page__update-localized p,
+body.s-page--update .s-page__update-version {
+  color: #A6A6A6;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+body.s-page--update .s-page__update-localized p { margin-top: calc(var(--s-x) * .5); }
+body.s-page--update .s-page__update-localized--ar { display: none; }
+body.s-page--update .s-page__update-version { margin-top: var(--s-x); }
+body.s-page--update .s-page__update-localized a { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
+
+html[lang="ar"] body.s-page--update .s-page__update-title,
+html[lang="ar"] body.s-page--update .s-page__update-marker,
+html[lang="ar"] body.s-page--update .s-page__update-localized h2,
+html[lang="ar"] body.s-page--update .s-page__update-localized p,
+html[lang="ar"] body.s-page--update .s-page__update-version { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
+
+html[lang="ar"] body.s-page--update .s-page__update-localized--en { display: none; }
+html[lang="ar"] body.s-page--update .s-page__update-localized--ar { display: block; }
+html[lang="ar"] body.s-page--update .s-page__update-bullet { grid-template-columns: minmax(0, 1fr) 1em; }
+html[lang="ar"] body.s-page--update .s-page__update-bullet > :last-child { grid-column: 1; grid-row: 1; }
+html[lang="ar"] body.s-page--update .s-page__update-marker { grid-column: 2; grid-row: 1; }
+html[lang="ar"] body.s-page--update .s-page__update-version { text-align: right; }
+
+html.s-route.is-day-mode body.s-page--update .s-page__update-title,
+html.s-route.is-day-mode body.s-page--update .s-page__update-marker,
+html.s-route.is-day-mode body.s-page--update .s-page__update-localized h2 { color: #111111; }
+html.s-route.is-day-mode body.s-page--update .s-page__update-localized p,
+html.s-route.is-day-mode body.s-page--update .s-page__update-version { color: #666666; }

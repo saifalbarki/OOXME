@@ -140,11 +140,11 @@
     ar: {
       groups: [
         ['مرحبــا\nعميلنا القادم', 'ادارة العلامات التجارية الواحد والوحيد في العراق\nخدمة بريميوم لتطوير الاعمال'],
-        ['إعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
-        ['الأرقام تتحدث\nعن العمل', 'نتائج حقيقية تلخص ما حققناه مع أعمال وعلامات مختلفة.'],
+        ['اعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
+        ['الارقام تتحدث\nعن العمل', 'نتائج حقيقية تلخص ما حققناه مع اعمال وعلامات مختلفة.'],
         ['تصاميم ملفتة\nلمشاريع مميزة', 'نصمم بأسلوب استثنائي، دقيق، ونظيف للغاية بما يخدم أهدافكم ويعكس قيمة مشاريعكم.'],
         ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.'],
-        ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول إلى الخطوة العملية التالية.']
+        ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول الى الخطوة العملية التالية.']
       ],
       menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'],
       inputPlaceholder: 'اكتب...',
@@ -164,7 +164,7 @@
   };
   const zFirstGroupCopy = {
     en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive advantages and rewards'],
-    ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الإحالة لأوكسوم متاحة الآن للتقديم\nانضم إلينا واستفد من مزايا ومكافآت حصرية.']
+    ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الاحالة لاوكسوم متاحة الان للتقديم\nانضم الينا واستفد من مزايا ومكافآت حصرية.']
   };
   const zMainMenuCopy = {
     en: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
@@ -1577,8 +1577,16 @@
     arrow.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      if (arrow.dataset.sImageArrowAction === 'next-section') transitionMajorSection(1);
+      if (arrow.dataset.sImageArrowAction === 'update') window.location.assign('/update');
+      else if (arrow.dataset.sImageArrowAction === 'next-section') transitionMajorSection(1);
       else if (arrow.dataset.sImageArrowAction === 'rpn') window.location.assign('/rpn');
+    });
+  });
+  document.querySelectorAll('[data-s-image-copy-action="update"]').forEach((copy) => {
+    copy.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.assign('/update');
     });
   });
 
@@ -1858,7 +1866,7 @@
     }
     input.placeholder = copy.inputPlaceholder;
     inputLabel.textContent = copy.ask;
-    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب إلى اوكسوم' : 'Go to OOXME');
+    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME');
     submitButton.setAttribute('aria-label', copy.submitQuestion);
     conversation.setAttribute('aria-label', copy.conversation);
     if (conversationFinal.classList.contains('is-visible')) {
