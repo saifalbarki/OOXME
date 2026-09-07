@@ -2694,6 +2694,20 @@ html[lang="ar"] body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__gr
   text-align: right;
 }
 
+/* /x Section 1 keeps its existing width and vertical baseline while the full
+   Text Group is centered in the frame in both writing directions. */
+body.s-page.s-page--x [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
+  position: relative;
+  left: 50%;
+  margin-inline: 0;
+  translate: -50% 0;
+  text-align: center;
+}
+
+html[lang="ar"] body.s-page.s-page--x [data-s-first-group] > .s-page__group-description {
+  text-align: center;
+}
+
 html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-title {
   color: #111111;
 }
