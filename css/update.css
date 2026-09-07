@@ -15,7 +15,7 @@ body.s-page--update [data-s-first-group].s-page__update-layout {
 
 body.s-page--update .s-page__update-scroll {
   position: absolute;
-  top: calc(var(--s-x) * 5);
+  top: calc(var(--s-x) * 4);
   bottom: var(--s-first-group-bottom-baseline);
   width: var(--s-x-first-group-text-width, calc(100% - 34px));
   margin-inline-start: var(--s-x-first-group-text-inline-offset, 17px);
@@ -27,7 +27,7 @@ body.s-page--update .s-page__update-scroll {
 body.s-page--update .s-page__update-stack {
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
   min-height: 100%;
 }
 
