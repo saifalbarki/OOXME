@@ -169,7 +169,10 @@
     ];
     stages.forEach((stage) => {
       stage.element.lang = language;
-      stage.element.dir = language === 'ar' ? 'rtl' : 'ltr';
+      // Text 2 uses the shared cursor anchor: its run remains LTR while the
+      // output alone carries RTL. This keeps its empty prelude on the same
+      // physical typing edge as every non-empty frame.
+      stage.element.dir = stage.element === textTwo ? 'ltr' : (language === 'ar' ? 'rtl' : 'ltr');
       stage.output.lang = language;
       stage.output.dir = language === 'ar' ? 'rtl' : 'ltr';
       stage.output.textContent = '';
