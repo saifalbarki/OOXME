@@ -1,0 +1,58 @@
+/* Standalone Section 1 adapter. Shared /x primitives remain the visual source;
+   these selectors only map its Section 1 modifier contract to this new route. */
+body.s-page.s-page--brand-management [data-s-first-group] > .s-page__group-title {
+  position: relative;
+  align-self: center;
+  margin-inline: 0;
+  text-align: center;
+}
+
+body.s-page--brand-management [data-s-first-group] > .s-page__group-description,
+body.s-page--brand-management .s-page__oxo-face {
+  display: none;
+}
+
+body.s-page--brand-management [data-s-first-typewriter] {
+  display: grid;
+  min-block-size: 1.2em;
+  place-items: center;
+  direction: ltr;
+}
+
+body.s-page--brand-management .s-page__first-typewriter-run {
+  position: relative;
+  display: block;
+  inline-size: max-content;
+  max-inline-size: 100%;
+}
+
+body.s-page--brand-management [data-s-first-typewriter-output] {
+  display: block;
+  max-inline-size: 100%;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+body.s-page--brand-management [data-s-first-typewriter-cursor] {
+  position: absolute;
+  --s-first-typewriter-cursor-gap: .25em;
+  inset-inline-start: calc(100% + var(--s-first-typewriter-cursor-gap));
+  inset-block-start: 50%;
+  width: 2px;
+  height: 1.05em;
+  background: #0A84FF;
+  translate: 0 -50%;
+}
+
+body.s-page--brand-management .s-page__first-typewriter-run:has(> [data-s-first-typewriter-output][dir="rtl"]) [data-s-first-typewriter-cursor] {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + var(--s-first-typewriter-cursor-gap));
+}
+
+body.s-page--brand-management [data-s-first-typewriter].is-typewriter-prelude [data-s-first-typewriter-cursor] {
+  animation: s-page-first-typewriter-cursor .5s steps(1, end) 2;
+}
+
+body.s-page--brand-management .s-page__composer-input {
+  pointer-events: none;
+}

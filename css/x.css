@@ -778,10 +778,6 @@ body.s-page:not(.s-page--rpn) .s-page__section-4-metrics :is(.s-page__number-met
   }
 }
 
-body.s-page:not(.s-page--rpn) .s-page__section-divider {
-  display: none;
-}
-
 .s-page__group--showcase {
   min-height: auto;
   padding-top: calc(var(--s-x) * 2);
@@ -800,25 +796,6 @@ body.s-page:not(.s-page--rpn) .s-page__section-divider {
 
 .s-page__flow-group.s-page__flow-group--text {
   margin-top: calc(var(--s-x) * 4);
-}
-
-.s-page__section-divider {
-  width: 100%;
-  height: 1px;
-  margin: calc(var(--s-x) * 4) 0;
-  background: rgba(255, 255, 255, .17);
-}
-
-.s-page__section-divider + .s-page__flow-group {
-  margin-top: 0;
-}
-
-.s-page__section-divider + .s-page__major-section > .s-page__flow-group:first-child {
-  margin-top: 0;
-}
-
-html.s-route.is-day-mode .s-page__section-divider {
-  background: rgba(0, 0, 0, .14);
 }
 
 .s-page__flow-group--logos {
@@ -1365,7 +1342,7 @@ body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__
   );
 }
 
-body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6) > .s-page__closed-notice {
+body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6, .s-page__major-section--final) > .s-page__closed-notice {
   position: absolute;
   z-index: 2;
   inset-inline: 0;
@@ -1396,7 +1373,7 @@ body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__ma
   backdrop-filter: blur(20px) saturate(125%);
 }
 
-html[lang="ar"] body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6) > .s-page__closed-notice {
+html[lang="ar"] body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6, .s-page__major-section--final) > .s-page__closed-notice {
   font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
 }
 
@@ -1412,8 +1389,36 @@ html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__closed-notice-copy--ar {
   display: block;
 }
 
-html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6) > .s-page__closed-notice {
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6, .s-page__major-section--final) > .s-page__closed-notice {
   background: rgba(255, 64, 64, .08);
+}
+
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--final > .s-page__closed-notice.s-page__closed-notice--section-7 {
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-x-closed-notice-height)
+    + var(--s-x)
+  );
+  height: 52px;
+  background: rgba(10, 132, 255, .14);
+}
+
+html.s-route.is-day-mode body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--final > .s-page__closed-notice.s-page__closed-notice--section-7 {
+  background: rgba(10, 132, 255, .12);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice.is-locked-shaking {
+  animation: s-page-locked-notice-shake .34s cubic-bezier(.22, .61, .36, 1);
+}
+
+@keyframes s-page-locked-notice-shake {
+  0%, 100% { transform: translateX(0); }
+  22% { transform: translateX(-5px); }
+  45% { transform: translateX(4px); }
+  68% { transform: translateX(-2px); }
+  84% { transform: translateX(1px); }
 }
 
 body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock {
@@ -2694,14 +2699,149 @@ html[lang="ar"] body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__gr
   text-align: right;
 }
 
-/* /x Section 1 keeps its existing width and vertical baseline while the full
-   Text Group is centered in the frame in both writing directions. */
-body.s-page.s-page--x [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
+/* /x Section 1 keeps its existing width and vertical baseline while the
+   heading is centered by the flex cross axis, independent of document RTL. */
+body.s-page.s-page--x [data-s-first-group] > .s-page__group-title {
   position: relative;
-  left: 50%;
+  align-self: center;
   margin-inline: 0;
-  translate: -50% 0;
   text-align: center;
+}
+
+body.s-page.s-page--x [data-s-first-group] > .s-page__group-description {
+  display: none;
+}
+
+/* The text run is the only centered object. The cursor is painted outside the
+   run so its width can never alter the visible Arabic or English text center. */
+body.s-page.s-page--x [data-s-first-typewriter] {
+  display: grid;
+  min-block-size: 1.2em;
+  place-items: center;
+  direction: ltr;
+}
+
+body.s-page.s-page--x .s-page__first-typewriter-run {
+  position: relative;
+  display: block;
+  inline-size: max-content;
+  max-inline-size: 100%;
+}
+
+body.s-page.s-page--x [data-s-first-typewriter-output] {
+  display: block;
+  max-inline-size: 100%;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+body.s-page.s-page--x [data-s-first-typewriter-cursor] {
+  position: absolute;
+  /* Absolutely offset from the text run: the visual space never contributes
+     to the run's intrinsic width or to the heading's centered geometry. */
+  --s-first-typewriter-cursor-gap: .25em;
+  inset-inline-start: calc(100% + var(--s-first-typewriter-cursor-gap));
+  inset-block-start: 50%;
+  width: 2px;
+  height: 1.05em;
+  background: #0A84FF;
+  translate: 0 -50%;
+}
+
+/* The run itself stays LTR for direction-independent centering. Only an RTL
+   output reverses the cursor's absolute visual anchor to its typing edge. */
+body.s-page.s-page--x .s-page__first-typewriter-run:has(> [data-s-first-typewriter-output][dir="rtl"]) [data-s-first-typewriter-cursor] {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + var(--s-first-typewriter-cursor-gap));
+}
+
+body.s-page.s-page--x [data-s-first-typewriter].is-typewriter-prelude [data-s-first-typewriter-cursor] {
+  animation: s-page-first-typewriter-cursor .5s steps(1, end) 2;
+}
+
+@keyframes s-page-first-typewriter-cursor {
+  50% { opacity: 0; }
+}
+
+body.s-page.s-page--x .s-page__oxo-face {
+  /* The 13-unit Top Bar icon is mapped across the face width, then its full
+     eye-and-ripple system is vertically squashed into this upward-looking disc. */
+  --s-oxo-source-size: var(--s-oxo-face-inline-size, calc(100vw - (var(--s-x) * 2)));
+  --s-oxo-perspective: .42;
+  --s-oxo-eye-width: calc(var(--s-oxo-source-size) * 3.7 / 13);
+  --s-oxo-eye-height: calc(var(--s-oxo-eye-width) * var(--s-oxo-perspective));
+  --s-oxo-eye-separation: calc(var(--s-oxo-source-size) * 5.5 / 13);
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: var(--s-oxo-source-size);
+  height: calc(var(--s-oxo-source-size) * var(--s-oxo-perspective));
+  margin-inline: 0;
+  left: var(--s-oxo-face-inline-offset, 0px);
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline));
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+  isolation: isolate;
+  transform: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* The OXO experiment remains preserved in full above; Section 1 currently
+   presents its existing text-group composition instead. */
+body.s-page.s-page--x .s-page__oxo-face {
+  display: none;
+}
+
+body.s-page.s-page--x .s-page__oxo-eye {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  width: var(--s-oxo-eye-width);
+  height: var(--s-oxo-eye-height);
+  border: 1px solid rgba(255, 255, 255, .58);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .78);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .4), 0 0 4px rgba(255, 255, 255, .22);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+  backdrop-filter: blur(8px) saturate(125%);
+  transform: translate(-50%, -50%);
+}
+
+/* Mirrors the 3.75/9.25 centers and 1.85 radius of the Top Bar OXO icon. */
+body.s-page.s-page--x .s-page__oxo-eye--left { left: calc(50% - (var(--s-oxo-eye-separation) / 2)); }
+body.s-page.s-page--x .s-page__oxo-eye--right { left: calc(50% + (var(--s-oxo-eye-separation) / 2)); }
+
+body.s-page.s-page--x .s-page__oxo-ring {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: var(--s-oxo-eye-width);
+  height: var(--s-oxo-eye-height);
+  border: 1px solid rgba(255, 255, 255, .52);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(255, 255, 255, .24);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(.2);
+  animation: s-page-oxo-ring-expand 5.4s cubic-bezier(.22, .61, .36, 1) infinite;
+}
+
+body.s-page.s-page--x .s-page__oxo-ring { animation-delay: 0s; }
+
+@keyframes s-page-oxo-ring-expand {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); }
+  10% { opacity: .46; }
+  62% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); }
 }
 
 html[lang="ar"] body.s-page.s-page--x [data-s-first-group] > .s-page__group-description {
@@ -2960,7 +3100,7 @@ body.s-page:not(.s-page--rpn) .s-page__send-utility {
 }
 
 body.s-page:not(.s-page--rpn) .s-page__send-utility:not(.s-page__send-utility--status) {
-  transition-duration: .48s, .48s, .48s;
+  transition-duration: .28s, .28s, .28s;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility {
@@ -2991,12 +3131,6 @@ body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__flow-text {
   width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
   margin-inline-start: var(--s-x-rpn-image-text-inline-offset, 17px);
   margin-inline-end: 0;
-}
-
-@media (orientation: portrait) {
-  body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] {
-    translate: 0 var(--s-x-rpn-image-text-offset, 0px);
-  }
 }
 
 body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] :is(.s-page__group-title, .s-page__group-description) {
@@ -3035,54 +3169,6 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .
   color: #666666;
 }
 
-body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] + .s-page__flow-group--image {
-  margin-top: var(--s-x);
-}
-
-body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-frame {
-  width: 100%;
-  height: calc(var(--s-x) * 8);
-  aspect-ratio: auto;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy {
-  padding-top: var(--s-x);
-  padding-bottom: var(--s-x);
-  padding-inline: 0;
-  overflow: visible;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-language {
-  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
-  max-width: none;
-  margin-inline-start: var(--s-x-rpn-image-text-inline-offset, 17px);
-  overflow: visible;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-main {
-  color: transparent;
-  background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-main {
-  background-image: linear-gradient(to left, #583B23 0%, #FFFFFF 100%);
-}
-
-body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-main {
-  padding-top: 5px;
-  padding-bottom: 5px;
-  line-height: 1.12;
-}
-
-@media (orientation: landscape) {
-  body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-frame {
-    height: auto;
-    aspect-ratio: 4 / 1;
-  }
-}
-
 @media (orientation: landscape) {
   body.s-page:not(.s-page--rpn) {
     --s-first-group-bottom-baseline: calc((var(--s-x) * .5) + var(--s-keyboard-offset, 0px));
@@ -3102,6 +3188,7 @@ body.s-page:not(.s-page--rpn) .s-page__flow-group--image .s-page__image-copy-mai
   .s-page__typing-character,
   .s-page__typing-word { opacity: 1; clip-path: none; animation: none !important; }
   .s-page__conversation-bubble.is-entering { animation: none; }
+  body.s-page.s-page--x .s-page__oxo-ring { animation: none; opacity: .24; }
   .s-page__conversation-bubble.is-shifting { transition: none; }
   .s-page__conversation-bubble.is-exiting { animation: none; }
   .s-page__conversation { transition: none; }

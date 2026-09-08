@@ -1,5 +1,6 @@
 const http = require('http');
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { configured, valid, credentialsValid, sessionCookie, clearCookie } = require('./api/_lib/os-auth');
 const { login, dashboard } = require('./api/_lib/os-page');
@@ -9,7 +10,7 @@ const accountApi = require('./api/accounts/index');
 const osApi = require('./api/os/index');
 
 const root = __dirname;
-const pageRoutes = { '/': 'index.html', '/brands': 'studio.html', '/gallery': 'selected-works.html', '/brand': 'brand-management-new.html', '/consultation': 'consultation.html', '/x': 'x.html', '/rpn': 'rpn.html', '/update': 'update.html', '/update/': 'update.html' };
+const pageRoutes = { '/': 'index.html', '/brands': 'studio.html', '/gallery': 'selected-works.html', '/brand': 'brand-management-new.html', '/brand-management': 'brand-management.html', '/consultation': 'consultation.html', '/x': 'x.html', '/rpn': 'rpn.html', '/update': 'update.html', '/update/': 'update.html' };
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon', '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2' };
 const send = (response, status, headers, body = '') => { response.writeHead(status, headers); response.end(body); return true; };
 const readBody = (request) => new Promise((resolve, reject) => { let raw = ''; request.on('data', chunk => { raw += chunk; if (raw.length > 10_000) request.destroy(); }); request.on('end', () => { try { resolve(JSON.parse(raw || '{}')); } catch (error) { reject(error); } }); request.on('error', reject); });
@@ -75,7 +76,7 @@ const server = http.createServer((request, response) => {
   fs.readFile(target, (error, content) => {
     if (error) { response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); response.end('Not found'); return; }
     const isHtml = path.extname(target).toLowerCase() === '.html';
-    const isStandalonePreview = ['x.html', 'rpn.html', 'update.html'].includes(path.basename(target).toLowerCase());
+    const isStandalonePreview = ['x.html', 'rpn.html', 'update.html', 'brand-management.html'].includes(path.basename(target).toLowerCase());
     const sharedTypography = '<script src="js/arabic-typography.js" defer></script>';
     const sharedNumericTypography = '<script src="js/numeric-typography.js" defer></script>';
     const pageWithTypography = isHtml && !isStandalonePreview && !content.includes(sharedTypography) ? content.toString('utf8').replace('</head>', sharedTypography + '</head>') : content;
@@ -86,4 +87,12 @@ const server = http.createServer((request, response) => {
   }).catch(() => send(response, 400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, '{"error":"invalid_request"}'));
 });
 const port = Number(process.env.PORT || 3000);
-server.listen(port, () => console.log(`OOXME static preview: http://localhost:${port}`));
+const activeLanIpv4 = () => Object.values(os.networkInterfaces())
+  .flat()
+  .find((address) => address && address.family === 'IPv4' && !address.internal)?.address;
+
+server.listen(port, '0.0.0.0', () => {
+  const lanAddress = activeLanIpv4();
+  console.log(`OOXME static preview: http://localhost:${port}`);
+  if (lanAddress) console.log(`OOXME LAN preview: http://${lanAddress}:${port}`);
+});
