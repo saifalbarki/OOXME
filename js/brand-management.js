@@ -109,18 +109,27 @@
     const lineRects = Array.from(range.getClientRects());
     const lineRect = lineRects.at(-1);
     const runRect = cursor.parentElement?.getBoundingClientRect();
-    if (!lineRect || !runRect) return;
+    const outputRect = stageOutput.getBoundingClientRect();
+    if (!runRect || !outputRect.width) return;
     const cursorStyle = getComputedStyle(cursor);
     const gap = (Number.parseFloat(cursorStyle.getPropertyValue('--s-first-typewriter-cursor-gap')) || 0) * (Number.parseFloat(cursorStyle.fontSize) || 0);
     const isRtl = stageOutput.dir === 'rtl';
+    // An empty description has no Range rect. Its logical zero-character edge
+    // is the same edge that the first typed glyph expands from.
+    const typingRect = (lineRect && lineRect.width && lineRect.height) ? lineRect : {
+      left: isRtl ? outputRect.right : outputRect.left,
+      right: isRtl ? outputRect.right : outputRect.left,
+      top: outputRect.top,
+      height: outputRect.height
+    };
     const cursorX = isRtl
-      ? lineRect.left - runRect.left - gap - cursor.getBoundingClientRect().width
-      : lineRect.right - runRect.left + gap;
+      ? typingRect.left - runRect.left - gap - cursor.getBoundingClientRect().width
+      : typingRect.right - runRect.left + gap;
     cursor.style.insetInlineStart = 'auto';
     cursor.style.insetInlineEnd = 'auto';
     cursor.style.insetBlockStart = 'auto';
     cursor.style.left = `${cursorX.toFixed(3)}px`;
-    cursor.style.top = `${(lineRect.top - runRect.top + (lineRect.height / 2)).toFixed(3)}px`;
+    cursor.style.top = `${(typingRect.top - runRect.top + (typingRect.height / 2)).toFixed(3)}px`;
   };
 
   const startSectionTwoHero = (force = false) => {
@@ -169,10 +178,7 @@
     ];
     stages.forEach((stage) => {
       stage.element.lang = language;
-      // Text 2 uses the shared cursor anchor: its run remains LTR while the
-      // output alone carries RTL. This keeps its empty prelude on the same
-      // physical typing edge as every non-empty frame.
-      stage.element.dir = stage.element === textTwo ? 'ltr' : (language === 'ar' ? 'rtl' : 'ltr');
+      stage.element.dir = language === 'ar' ? 'rtl' : 'ltr';
       stage.output.lang = language;
       stage.output.dir = language === 'ar' ? 'rtl' : 'ltr';
       stage.output.textContent = '';
@@ -197,6 +203,7 @@
         : 52;
       let characterIndex = 0;
       element.classList.add('is-cursor-visible', 'is-typewriter-prelude');
+      if (isDescription) syncDescriptionCursor(stageOutput, descriptionCursor);
       let stageStartedAt = 0;
       const typeCharacter = () => {
         if (isDescription) {
