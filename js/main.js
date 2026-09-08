@@ -1685,16 +1685,7 @@
     arrow.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      if (arrow.dataset.sImageArrowAction === 'update') window.location.assign('/update');
-      else if (arrow.dataset.sImageArrowAction === 'next-section') transitionMajorSection(1);
-      else if (arrow.dataset.sImageArrowAction === 'rpn') window.location.assign('/rpn');
-    });
-  });
-  document.querySelectorAll('[data-s-image-copy-action="update"]').forEach((copy) => {
-    copy.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      window.location.assign('/update');
+      if (arrow.dataset.sImageArrowAction === 'next-section') transitionMajorSection(1);
     });
   });
 
