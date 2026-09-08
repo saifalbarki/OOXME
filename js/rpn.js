@@ -347,7 +347,11 @@
     const outgoingIndex = panels.findIndex((panel, index) => panel.classList.contains(panelClasses[index][0]) && panel.classList.contains(panelClasses[index][1]));
     panels.forEach((panel) => panel.classList.remove('is-rpn-panel-exiting'));
     if (!attached) {
-      panels.forEach((panel, index) => panel.classList.remove(...panelClasses[index]));
+      panels.forEach((panel, index) => {
+        panel.classList.remove(...panelClasses[index], 'is-rpn-card-layer', 'is-rpn-card-active');
+        panel.style.removeProperty('--s-rpn-card-stack-index');
+        panel.style.removeProperty('z-index');
+      });
       return;
     }
     const target = panels[activeIndex];
@@ -355,6 +359,13 @@
     const reveal = () => {
       panels.forEach((panel, index) => panel.classList.remove(...panelClasses[index]));
       target.classList.add(attachedClass);
+      panels.forEach((panel, index) => {
+        const stackIndex = (index - activeIndex + panels.length) % panels.length;
+        panel.classList.toggle('is-rpn-card-layer', stackIndex > 0);
+        panel.classList.toggle('is-rpn-card-active', stackIndex === 0);
+        panel.style.setProperty('--s-rpn-card-stack-index', String(stackIndex));
+        panel.style.zIndex = String(panels.length - stackIndex);
+      });
       contentRevealFrame = requestAnimationFrame(() => {
         contentRevealFrame = 0;
         if (panels[activeIndex] !== target) return;
@@ -732,9 +743,12 @@
     const dx = event.clientX - swipeStart.x;
     const dy = event.clientY - swipeStart.y;
     swipeStart = null;
-    if (Math.abs(dx) < 36 || Math.abs(dx) <= Math.abs(dy) * 1.25) return;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 36) return;
     lastSwipeAt = performance.now();
-    const forward = root.dir === 'rtl' ? dx > 0 : dx < 0;
+    const horizontal = Math.abs(dx) >= Math.abs(dy);
+    const forward = horizontal
+      ? (root.dir === 'rtl' ? dx > 0 : dx < 0)
+      : dy < 0;
     setActiveSection(activeIndex + (forward ? 1 : -1));
     pulseSurface(nav);
   };

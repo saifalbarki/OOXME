@@ -730,3 +730,81 @@ html.s-route.is-day-mode .s-page--rpn {
 .s-page--rpn .s-page__secondary-nav.is-rpn-measuring .s-page__rpn-apply-actions { margin-top: var(--s-x); }
 .s-page--rpn .s-page__secondary-nav.is-rpn-measuring .s-page__rpn-description-date { position: relative; top: 0; right: auto; bottom: auto; left: auto; }
 @media (orientation: landscape) { .s-page--rpn .s-page__secondary-nav-rail { display: block; } .s-page--rpn .s-page__secondary-nav-item { width: 100%; } }
+
+/* The selector remains the approved active glass card. The three inactive
+   panels reuse that exact material as settled layers behind it. */
+.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready {
+  --s-rpn-card-stack-step: calc(var(--s-x) * .5);
+  overflow: visible;
+  background: transparent;
+}
+
+.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready::before {
+  z-index: 4;
+  inset: 0;
+  border: 1px solid var(--s-composer-stroke);
+  border-radius: inherit;
+  background: var(--s-composer-surface);
+  box-shadow: var(--s-composer-shadow);
+  content: "";
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
+}
+
+.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready .s-page__secondary-nav-rail {
+  position: relative;
+  z-index: 5;
+}
+
+.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready .s-page__rpn-content-slot {
+  z-index: auto;
+  overflow: visible;
+}
+
+.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-layer {
+  position: absolute;
+  top: calc((var(--s-menu-inset) + 36px + 6px) * -1);
+  right: auto;
+  left: calc(var(--s-menu-inset) * -1);
+  box-sizing: border-box;
+  width: calc(100% + (var(--s-menu-inset) * 2));
+  height: var(--s-rpn-content-box-height);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--s-composer-stroke);
+  border-radius: var(--s-menu-radius);
+  background: var(--s-composer-surface);
+  box-shadow: var(--s-composer-shadow);
+  opacity: 1;
+  visibility: visible;
+  filter: none;
+  pointer-events: none;
+  transform: translate3d(0, calc(var(--s-rpn-card-stack-index) * var(--s-rpn-card-stack-step)), 0);
+  transition: transform .32s cubic-bezier(.22, .61, .36, 1), opacity .22s ease;
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
+}
+
+.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-layer > * {
+  opacity: 0;
+}
+
+.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-active {
+  z-index: 5 !important;
+}
