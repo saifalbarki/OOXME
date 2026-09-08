@@ -4,24 +4,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
-  "functions": { "api/**/*.js": { "maxDuration": 30 } },
   "rewrites": [
-    { "source": "/brands", "destination": "/brands.html" },
-    { "source": "/gallery", "destination": "/gallery.html" },
-    { "source": "/brand", "destination": "/brand.html" },
-    { "source": "/x", "destination": "/x.html" },
+    { "source": "/bm", "destination": "/bm.html" },
     { "source": "/rpn", "destination": "/rpn.html" },
-    { "source": "/update", "destination": "/update.html" },
-    { "source": "/os", "destination": "/api/os/index?route=dashboard" },
-    { "source": "/os/", "destination": "/api/os/index?route=dashboard" },
-    { "source": "/api/os/login", "destination": "/api/os/index?route=login" },
-    { "source": "/api/os/logout", "destination": "/api/os/index?route=logout" },
-    { "source": "/api/os/accounts", "destination": "/api/os/index?route=accounts" },
-    { "source": "/api/os/tasks", "destination": "/api/os/index?route=tasks" },
-    { "source": "/api/os/promotions", "destination": "/api/os/index?route=promotions" },
-    { "source": "/api/os/notifications", "destination": "/api/os/index?route=notifications" },
-    { "source": "/api/accounts/login", "destination": "/api/accounts/index?route=login" },
-    { "source": "/api/accounts/session", "destination": "/api/accounts/index?route=session" }
-    ,{ "source": "/api/accounts/profile", "destination": "/api/accounts/index?route=profile" }
+    { "source": "/update", "destination": "/update.html" }
   ]
 }

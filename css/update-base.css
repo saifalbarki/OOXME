@@ -1,0 +1,3208 @@
+@font-face {
+  font-family: OOXMESFPro;
+  src: url('../assets/fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
+  font-weight: 100 599;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: OOXMESFPro;
+  src: url('../assets/fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
+  font-weight: 600 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: OOXMEScript;
+  src: url('../assets/fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
+  font-weight: 100 599;
+  font-display: swap;
+  unicode-range: U+0000-05FF, U+0700-074F, U+0780-086F, U+0900-FB4F, U+FE00-FE6F, U+FF00-10FFFF;
+}
+
+@font-face {
+  font-family: OOXMEScript;
+  src: url('../assets/fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
+  font-weight: 600 900;
+  font-display: swap;
+  unicode-range: U+0000-05FF, U+0700-074F, U+0780-086F, U+0900-FB4F, U+FE00-FE6F, U+FF00-10FFFF;
+}
+
+@font-face {
+  font-family: OOXMETosh;
+  src: url('../assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+  size-adjust: 80%;
+  ascent-override: 93.75%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF;
+}
+
+@font-face {
+  font-family: OOXMEPlayfair;
+  src: url('../assets/fonts/PlayfairDisplay-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+html.s-route {
+  --s-x: max(18px, calc((100vw - 660px) / 4));
+  --s-composer-radius: 28px;
+  --s-composer-bottom: calc((var(--s-x) * 2) + var(--s-keyboard-offset, 0px));
+  --s-glass-stroke: rgba(255, 255, 255, .17);
+  min-height: 100%;
+  overflow-x: hidden;
+  background: #000000;
+  scrollbar-color: rgba(255, 255, 255, .28) transparent;
+}
+
+html.s-route,
+html.s-route body.s-page {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  touch-action: manipulation;
+}
+
+body.s-page {
+  position: relative;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  background: #000000;
+  color: var(--color-paper);
+  font-family: OOXMEScript, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="ar"] body.s-page,
+html[lang="ar"] .s-page__group-title,
+html[lang="ar"] .s-page__group-description,
+html[lang="ar"] .s-page__conversation-final-copy,
+html[lang="ar"] .s-page__composer-menu-item,
+html[lang="ar"] .s-page__composer-input {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+.s-page__conversation-bubble[lang="ar"],
+.s-page__conversation-final-copy[lang="ar"] {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode,
+html.s-route.is-day-mode body.s-page {
+  --s-glass-stroke: rgba(17, 17, 17, .09);
+  background: #FFFFFF;
+}
+
+html.s-route.is-day-mode body.s-page {
+  color: #000000;
+}
+
+html.s-x-initializing .s-page__composer,
+html.s-x-initializing .s-page__composer :is(button, input) {
+  transition: none !important;
+}
+
+html.s-x-initializing .s-page__composer {
+  transform: none !important;
+  animation: none !important;
+}
+
+html.s-x-initializing .s-page__add,
+html.s-x-initializing .s-page__add:active {
+  background: transparent !important;
+  transform: none !important;
+}
+
+html.s-x-initializing .s-page__add > span {
+  transform: rotate(0deg) !important;
+  transition: none !important;
+}
+
+html.s-x-initializing .s-page__submit,
+html.s-x-initializing .s-page__submit:active {
+  background: #080808 !important;
+  transform: none !important;
+}
+
+.s-page *,
+.s-page *::before,
+.s-page *::after {
+  box-sizing: border-box;
+}
+
+.s-page__content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
+  padding-inline: var(--s-x);
+  padding-top: calc(var(--s-x) * 2);
+  padding-bottom: calc(156px + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
+}
+
+.s-page__group {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0;
+}
+
+.s-page__major-section {
+  position: relative;
+}
+
+/* /x sections share the first section's complete viewport frame. Individual
+   content keeps its own internal composition inside that consistent frame. */
+body.s-page:not(.s-page--rpn) .s-page__major-section {
+  width: 100%;
+  height: var(--s-section-frame-height, 100dvh);
+  min-height: var(--s-section-frame-height, 100dvh);
+  max-height: var(--s-section-frame-height, 100dvh);
+  overflow: clip;
+}
+
+/* These /x frames intentionally use the horizontal space beyond their
+   content column: Sections 2 and 3 need room for their full-card press
+   pulses, Section 4 owns the metric-card pulse, and Section 5 owns a 100vw
+   strip. Keep the shared frame geometry, but do not crop those surfaces. */
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--section-2,
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--section-3,
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--section-4,
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--section-5 {
+  overflow: visible;
+}
+
+html.s-x-discrete-sections {
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: calc(var(--s-x) * 2);
+}
+
+html.s-x-discrete-sections body.s-page:not(.s-page--rpn) .s-page__major-section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* The first two /x frames remain contiguous snap targets. Isolation creates a
+   full-frame transition boundary without adding scrollable space between them. */
+body.s-page:not(.s-page--rpn) .s-page__major-section--transition-frame {
+  isolation: isolate;
+}
+
+/* Section 1 and Section 2 share this one internal frame contract. It prevents
+   a legacy 100vh child from extending into the adjacent 100dvh snap frame. */
+body.s-page:not(.s-page--rpn) .s-page__major-section--transition-frame > .s-page__group {
+  height: var(--s-section-frame-height, 100dvh);
+  min-height: var(--s-section-frame-height, 100dvh);
+  max-height: var(--s-section-frame-height, 100dvh);
+}
+
+/* Section 2 reuses the Section 3 image frame treatment, but its approved
+   one-image composition remains square in every viewport. */
+body.s-page:not(.s-page--rpn) .s-page__group--section-2-image {
+  justify-content: flex-end;
+  padding-bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy {
+  position: absolute;
+  z-index: 2;
+  inset-inline-start: var(--s-x-rpn-image-text-inline-offset, 17px);
+  bottom: calc(var(--s-x) * .75);
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin-inline-start: 0;
+  margin-inline-end: 0;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-copy {
+  inset-inline-start: auto;
+  inset-inline-end: var(--s-x-rpn-image-text-inline-offset, 17px);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy-language--ar {
+  display: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-copy-language--en {
+  display: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-copy-language--ar {
+  display: block;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy :is(.s-page__group-title, .s-page__group-description) {
+  width: 100%;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy .s-page__group-title {
+  color: #FFFFFF;
+  font-size: 14px;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-copy .s-page__group-description {
+  margin-top: calc(var(--s-x) * .5);
+  color: #A6A6A6;
+  font-size: 12px;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__section-2-copy :is(.s-page__group-title, .s-page__group-description) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-2-copy .s-page__group-title {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-2-copy .s-page__group-description {
+  color: #666666;
+}
+
+body.s-page:not(.s-page--rpn) {
+  --s-rpn-image-block-size: calc(var(--s-x) * 8);
+  --s-x-strip-duration: 52s;
+  --s-x-closed-notice-height: 36px;
+  --s-x-closed-notice-width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  --s-x-localized-text-group-height: 102px;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame {
+  width: 100%;
+  height: var(--s-rpn-image-block-size, calc(var(--s-x) * 8));
+  aspect-ratio: auto;
+  margin-inline: 0;
+}
+
+/* The original Section 2 frame stays intact in landscape. Portrait folds the
+   same composition into the following (reindexed) section instead. */
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--portrait-relocated {
+  display: none;
+}
+
+/* Section 2 uses the lower image's exact overlay contract at every size. */
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay {
+  --s-section-3-overlay-inset: var(--s-x);
+  /* The image itself retains its rounded clipping via .s-page__image-group;
+     only the Hero glyph bounds may extend beyond the frame's line box. */
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy {
+  padding: 0;
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-language {
+  position: relative;
+  width: calc(100% - (var(--s-section-3-overlay-inset) * 2));
+  height: 100%;
+  max-width: none;
+  margin-inline-start: var(--s-section-3-overlay-inset);
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-main {
+  --s-image-hero-glyph-padding: 4px;
+  position: absolute;
+  top: auto;
+  bottom: calc(
+    var(--s-section-3-overlay-inset)
+    + (12px * 1.2)
+    + var(--s-x)
+    - var(--s-image-hero-glyph-padding)
+  );
+  inset-inline: 0;
+  color: transparent;
+  background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  /* The shared Hero role defaults to a .98 line box, which is smaller than
+     the painted descenders of both approved overlay fonts. Keep this safe
+     line box at the overlay source so portrait and landscape match. */
+  line-height: 1.12;
+  box-sizing: content-box;
+  padding-block: var(--s-image-hero-glyph-padding);
+  overflow: visible;
+  transform: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-main {
+  background-image: linear-gradient(to left, #583B23 0%, #FFFFFF 100%);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-supporting {
+  position: absolute;
+  top: auto;
+  inset-inline: 0;
+  bottom: var(--s-section-3-overlay-inset);
+  margin-top: 0 !important;
+  color: #A6A6A6;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+  transform: none;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-supporting {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-supporting {
+  color: #666666;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-selector-arrow {
+  top: auto;
+  inset-inline-end: var(--s-section-3-overlay-inset);
+  bottom: calc(
+    var(--s-section-3-overlay-inset)
+    - ((var(--s-image-arrow-visible-height) * 2) - (12px * 1.2)) / 2
+  );
+  transform: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--shared-overlay .s-page__image-selector-arrow {
+  inset-inline: auto;
+  right: auto;
+  left: var(--s-section-3-overlay-inset);
+  transform: scaleX(-1);
+}
+
+@media (orientation: portrait) {
+  body.s-page:not(.s-page--rpn) .s-page__major-section--section-2-landscape-source {
+    display: none;
+  }
+
+  body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame--portrait-relocated {
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(
+      (var(--s-x) * 2)
+      + var(--s-first-group-bottom-baseline)
+      + var(--s-section-2-bottom-baseline-correction, 0px)
+      + var(--s-rpn-image-block-size)
+      + var(--s-x)
+    );
+    display: block;
+  }
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame > .s-page__image-group {
+  transform: none;
+  transform-origin: center;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame > .s-page__image-group {
+  transform: scaleX(-1);
+}
+
+/* The image arrow is the current /rpn selector chevron. It is visual only and
+   uses the same resolved inset as the image copy on the opposite inline side. */
+body.s-page:not(.s-page--rpn) .s-page__image-selector-arrow {
+  --s-image-arrow-visible-width: 13.7px;
+  --s-image-arrow-visible-height: 13px;
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  inset-inline-end: calc(var(--s-x-rpn-image-text-inline-offset, 17px) - (var(--s-image-arrow-visible-width) / 2));
+  display: grid;
+  width: calc(var(--s-image-arrow-visible-width) * 2);
+  height: calc(var(--s-image-arrow-visible-height) * 2);
+  margin: 0;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: #FFFFFF;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform: translateY(-50%);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__image-selector-arrow svg {
+  display: block;
+  width: 13.7px;
+  height: 13px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__image-selector-arrow {
+  /* The selector is physically mirrored from its English side. Logical inset
+     properties alone resolve back to the same physical edge in RTL. */
+  inset-inline: auto;
+  right: auto;
+  left: calc(var(--s-x-rpn-image-text-inline-offset, 17px) - (var(--s-image-arrow-visible-width) / 2));
+  transform: translateY(-50%) scaleX(-1);
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__image-selector-arrow {
+  color: #FFFFFF;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, .72));
+}
+
+/* Exact /rpn full-image press feedback. */
+body.s-page:not(.s-page--rpn) .s-page__image-interaction-card.is-pulsing {
+  animation: s-page-composer-pulse .18s ease-out;
+}
+
+/* Section 3 uses the same one-frame contract and settled image baseline as
+   Section 2. Its image treatment itself follows the current /rpn source. */
+body.s-page:not(.s-page--rpn) .s-page__group--section-3 {
+  position: relative;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame {
+  --s-section-3-overlay-inset: var(--s-x);
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+  width: 100%;
+  height: var(--s-rpn-image-block-size);
+  margin: 0;
+  aspect-ratio: auto;
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy {
+  padding: 0;
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-language {
+  position: relative;
+  width: calc(100% - (var(--s-section-3-overlay-inset) * 2));
+  height: 100%;
+  max-width: none;
+  margin-inline-start: var(--s-section-3-overlay-inset);
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
+  --s-image-hero-glyph-padding: 4px;
+  position: absolute;
+  top: auto;
+  bottom: calc(
+    var(--s-section-3-overlay-inset)
+    + (12px * 1.2)
+    + var(--s-x)
+    - var(--s-image-hero-glyph-padding)
+  );
+  inset-inline: 0;
+  color: transparent;
+  background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  overflow: visible;
+  transform: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
+  background-image: linear-gradient(to left, #583B23 0%, #FFFFFF 100%);
+}
+
+/* Section 3's supporting line uses the Section 2 description role exactly. */
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-supporting {
+  position: absolute;
+  top: auto;
+  inset-inline: 0;
+  bottom: var(--s-section-3-overlay-inset);
+  margin-top: 0 !important;
+  color: #A6A6A6;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+  transform: none;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-supporting {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-supporting {
+  color: #666666;
+}
+
+/* One shared inset controls every Section 3 overlay-to-image edge distance. */
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-selector-arrow {
+  top: auto;
+  inset-inline-end: var(--s-section-3-overlay-inset);
+  /* Center the 26px hit box on the 14.4px Discover line while retaining the
+     same shared image-edge inset for the line's baseline. */
+  bottom: calc(
+    var(--s-section-3-overlay-inset)
+    - ((var(--s-image-arrow-visible-height) * 2) - (12px * 1.2)) / 2
+  );
+  transform: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-selector-arrow {
+  inset-inline: auto;
+  right: auto;
+  left: var(--s-section-3-overlay-inset);
+  transform: scaleX(-1);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-copy-main {
+  /* Match the upper approved overlay's glyph-safe Hero line box. */
+  line-height: 1.12;
+  box-sizing: content-box;
+  padding-block: var(--s-image-hero-glyph-padding);
+}
+
+/* The upper Discover line remains an inline destination without changing the
+   overlay container's non-interactive behavior. */
+body.s-page:not(.s-page--rpn) [data-s-image-copy-action="update"] {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame > .s-page__image-group {
+  transform: scaleX(-1) !important;
+}
+
+/* Section 4 shares the same viewport frame as Sections 1–3. Its copy uses
+   the First Text Group roles; the metric row settles on the shared image edge. */
+body.s-page:not(.s-page--rpn) .s-page__group--section-4 {
+  position: relative;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__group--section-4 > .s-page__flow-text {
+  position: absolute;
+  inset-inline: 0;
+  top: auto;
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-rpn-image-block-size)
+    + var(--s-x)
+  );
+  height: max-content;
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__group--section-4 .s-page__group-title {
+  width: var(--s-x-closed-notice-width);
+  margin: 0;
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: center;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__group--section-4 .s-page__group-description {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin: calc(var(--s-x) * .5) 0 0;
+  color: #A6A6A6;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: center;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__group--section-4 :is(.s-page__group-title, .s-page__group-description, .s-page__number-metric-label) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__group--section-4 .s-page__group-title {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__group--section-4 .s-page__group-description {
+  color: #666666;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  height: var(--s-rpn-image-block-size);
+  align-items: start;
+  gap: var(--s-x);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric {
+  display: block;
+  height: var(--s-rpn-image-block-size);
+  min-width: 0;
+  margin: 0;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-4-metric-box {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: var(--s-rpn-image-block-size);
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: #0B0B0D;
+  box-shadow: none;
+  overflow: hidden;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-4-metric-box {
+  background: #F5F5F3;
+  color: #000000;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-4-metric-copy {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding-inline: var(--s-x-rpn-image-text-inline-offset, 17px);
+  padding-bottom: var(--s-x-rpn-image-text-inline-offset, 17px);
+  align-content: end;
+  justify-items: center;
+  gap: 2px;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric-value,
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric-label {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric-value {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #FFFFFF !important;
+  background: none !important;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric-label {
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-4-metrics :is(.s-page__number-metric-value, .s-page__number-metric-label) {
+  color: #000000;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-4-metrics .s-page__number-metric-value {
+  -webkit-text-fill-color: #000000;
+}
+
+/* Every Section 4 metric layer is static. */
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics,
+body.s-page:not(.s-page--rpn) .s-page__section-4-metrics :is(.s-page__number-metric, .s-page__section-4-metric-copy, .s-page__number-metric-value, .s-page__number-metric-label) {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+@media (orientation: landscape) {
+  body.s-page:not(.s-page--rpn) {
+    --s-rpn-image-block-size: calc((100vw - (var(--s-x) * 2)) / 4);
+  }
+
+  body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame {
+    height: auto;
+    aspect-ratio: 4 / 1;
+  }
+
+  /* Section 2 shares Section 3's landscape image geometry exactly. */
+  body.s-page:not(.s-page--rpn) .s-page__section-2-image-frame {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 1;
+    margin-inline: 0;
+  }
+}
+
+.s-page__group--showcase {
+  min-height: auto;
+  padding-top: calc(var(--s-x) * 2);
+  padding-bottom: calc(var(--s-x) * 2);
+}
+
+.s-page__flow-group {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.s-page__flow-group + .s-page__flow-group {
+  margin-top: calc(var(--s-x) * 2);
+}
+
+.s-page__flow-group.s-page__flow-group--text {
+  margin-top: calc(var(--s-x) * 4);
+}
+
+.s-page__flow-group--logos {
+  margin-bottom: calc(var(--s-x) * 2);
+}
+
+.s-page__flow-text {
+  width: 100%;
+}
+
+.s-page__numbers-metrics {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  flex-direction: column;
+  gap: calc(var(--s-x) * 2);
+}
+
+.s-page__number-metric {
+  opacity: 0;
+  filter: blur(14px);
+  transform: translateY(8px);
+  transition: opacity var(--s-flow-duration, 1000ms) cubic-bezier(.22, .61, .36, 1), filter var(--s-flow-duration, 1000ms) cubic-bezier(.22, .61, .36, 1), transform var(--s-flow-duration, 1000ms) cubic-bezier(.22, .61, .36, 1);
+  transition-delay: .36s;
+}
+
+.s-page__number-metric:nth-child(2) {
+  transition-delay: .18s;
+}
+
+.s-page__number-metric:nth-child(3) {
+  transition-delay: 0s;
+}
+
+.s-page__numbers-metrics.is-visible .s-page__number-metric {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+  transition-delay: 0s;
+}
+
+.s-page__numbers-metrics.is-visible .s-page__number-metric:nth-child(2) {
+  transition-delay: .18s;
+}
+
+.s-page__numbers-metrics.is-visible .s-page__number-metric:nth-child(3) {
+  transition-delay: .36s;
+}
+
+.s-page__number-metric-value,
+.s-page__number-metric-label {
+  margin: 0;
+  text-align: center;
+}
+
+.s-page__number-metric-value {
+  background: linear-gradient(90deg, #FFFFFF 0%, #AF917B 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: clamp(84px, 20vw, 128px);
+  font-weight: 700;
+  line-height: .95;
+}
+
+html.s-route.is-day-mode .s-page__number-metric-value {
+  background-image: linear-gradient(90deg, #000000 0%, #AF917B 100%);
+}
+
+.s-page__number-metric-label {
+  margin-top: calc(var(--s-x) * .5);
+  color: #A6A6A6;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.s-page__number-metric-label--ar {
+  display: none;
+}
+
+html[lang="ar"] .s-page__number-metric-value,
+html[lang="ar"] .s-page__number-metric-label {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html[dir="rtl"] .s-page__number-metric-label--en {
+  display: none;
+}
+
+html[dir="rtl"] .s-page__number-metric-label--ar {
+  display: inline;
+}
+
+html.s-route.is-day-mode .s-page__number-metric-label {
+  color: #666666;
+}
+
+@media (orientation: landscape) {
+  .s-page__numbers-metrics {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .s-page__number-metric {
+    flex: 1 1 0;
+  }
+}
+
+.s-page__logo-particle-field {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: min(44vw, 220px);
+  aspect-ratio: 1500 / 2019;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.s-page__logo-particle-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (orientation: portrait) {
+  body.s-page:not(.s-page--rpn) .s-page__major-section {
+    --s-section-frame-height: var(--s-portrait-section-height, 100dvh);
+  }
+
+  .s-page__major-section {
+    height: var(--s-portrait-section-height, 100dvh);
+  }
+
+  .s-page__logo-particle-field.is-portrait-composed {
+    top: auto;
+    transform: translateX(-50%);
+  }
+
+  .is-portrait-bottom-up {
+    translate: 0 var(--s-portrait-bottom-up-offset, 0px);
+  }
+
+  /* Section 7's action occupies the fixed image-card baseline. It is not
+     movable flow media: the portrait compositor's bottom-up translate can
+     otherwise move it outside the final section frame. */
+  body.s-page--x .s-page__flow-group--section-7-action.is-portrait-bottom-up {
+    translate: none;
+  }
+}
+
+.s-page__image-frame {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  margin: 0;
+  border-radius: var(--s-composer-radius);
+  overflow: hidden;
+}
+
+.s-page__image-group {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  object-fit: cover;
+  object-position: center;
+}
+
+.s-page__image-copy {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--s-x) * 2);
+  pointer-events: none;
+}
+
+.s-page__image-copy-language {
+  display: flex;
+  width: min(78%, 360px);
+  flex-direction: column;
+  gap: 0;
+  text-align: left;
+}
+
+.s-page__image-copy-language--ar {
+  display: none;
+  direction: rtl;
+  text-align: right;
+}
+
+html[dir="rtl"] .s-page__image-copy-language--en {
+  display: none;
+}
+
+html[dir="rtl"] .s-page__image-copy-language--ar {
+  display: flex;
+}
+
+.s-page__image-copy p {
+  margin: 0;
+}
+
+.s-page__image-copy-main {
+  color: #ffffff;
+  font-family: OOXMEPlayfair, "Playfair Display", Georgia, serif;
+  font-size: clamp(30px, 7vw, 54px);
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -.035em;
+  line-height: .98;
+}
+
+.s-page__image-copy-supporting {
+  color: rgba(255, 255, 255, .9);
+  font-family: OOXMEEnglish, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: normal;
+  line-height: 1;
+}
+
+.s-page__image-copy-main + .s-page__image-copy-supporting {
+  margin-top: calc(var(--s-x) * .55) !important;
+}
+
+.s-page__image-copy-supporting + .s-page__image-copy-supporting {
+  margin-top: calc(var(--s-x) * .25) !important;
+}
+
+.s-page__image-copy-language--ar .s-page__image-copy-main,
+.s-page__image-copy-language--ar .s-page__image-copy-supporting {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+.s-page__image-copy-language--ar .s-page__image-copy-main {
+  font-style: normal;
+}
+
+.s-page__marquee {
+  position: relative;
+  width: calc(100% + (var(--s-x) * 2));
+  margin-right: calc(var(--s-x) * -1);
+  margin-left: calc(var(--s-x) * -1);
+  overflow: hidden;
+  direction: ltr;
+  text-align: left;
+}
+
+.s-page__flow-media {
+  --s-flow-duration: 1000ms;
+  opacity: 0;
+  filter: blur(14px);
+  visibility: hidden;
+  transition: opacity var(--s-flow-duration) cubic-bezier(.22, .61, .36, 1), filter var(--s-flow-duration) cubic-bezier(.22, .61, .36, 1), visibility 0s linear var(--s-flow-duration);
+}
+
+.s-page__flow-media.is-visible {
+  opacity: 1;
+  filter: blur(0);
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.s-page__square-logo-stage {
+  --s-square-logo-size: 6%;
+  --s-square-logo-grid-step: 18%;
+  --s-square-logo-grid-double-step: calc(var(--s-square-logo-grid-step) + var(--s-square-logo-grid-step));
+  --s-square-logo-motion-duration: 880ms;
+  --s-square-logo-last-delay: 820ms;
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: #0B0B0D;
+  color: #FFFFFF;
+}
+
+html.s-route.is-day-mode .s-page__square-logo-stage {
+  background: #F5F5F3;
+  color: #000000;
+}
+
+.s-page__square-logo-guides {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.s-page__square-logo-guides line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: .75;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 720ms cubic-bezier(.22, .61, .36, 1), opacity 520ms ease;
+}
+
+.s-page__square-logo-stage.is-visible .s-page__square-logo-guides line {
+  opacity: .13;
+  stroke-dashoffset: 0;
+  transition-delay: calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration) + 20ms);
+  animation: s-page-square-logo-guide-solidify 0s linear calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration) + 760ms) forwards;
+}
+
+@keyframes s-page-square-logo-guide-solidify {
+  to { stroke-dasharray: none; }
+}
+
+.s-page__square-logo {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: var(--s-square-logo-size);
+  height: var(--s-square-logo-size);
+  min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translate(-50%, -50%) scale(.72);
+  transform-origin: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: top var(--s-square-logo-motion-duration) cubic-bezier(.22, .61, .36, 1), left var(--s-square-logo-motion-duration) cubic-bezier(.22, .61, .36, 1), opacity 620ms ease, filter 760ms cubic-bezier(.22, .61, .36, 1), transform var(--s-square-logo-motion-duration) cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page__square-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  filter: brightness(0) invert(1);
+  transform: scale(1);
+  transform-origin: center;
+}
+
+html.s-route.is-day-mode .s-page__square-logo img {
+  filter: brightness(0) invert(0);
+}
+
+.s-page__square-logo--center {
+  z-index: 2;
+  filter: blur(8px);
+  transform: translate(-50%, -50%) scale(.84);
+  transition: opacity 560ms ease, filter 680ms cubic-bezier(.22, .61, .36, 1), transform 680ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page__square-logo-stage.is-visible .s-page__square-logo--center {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate(-50%, -50%) scale(1);
+  transition-delay: 80ms;
+}
+
+.s-page__square-logo-stage.is-visible .s-page__square-logo--surrounding {
+  top: var(--s-logo-y);
+  left: var(--s-logo-x);
+  opacity: 1;
+  filter: blur(0);
+  transform: translate(-50%, -50%) scale(1);
+  transition-delay: var(--s-logo-delay);
+}
+
+.s-page__square-logo:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 4px;
+}
+
+.s-page__square-logo.is-pulsing img {
+  animation: s-page-square-logo-pulse .34s cubic-bezier(.22, .61, .36, 1);
+}
+
+@keyframes s-page-square-logo-pulse {
+  0%, 100% { transform: scale(1); }
+  48% { transform: scale(.88); }
+}
+
+.s-page__marquee--hijab {
+  margin-top: 0;
+}
+
+.s-page__marquee--albasri {
+  margin-top: var(--s-x);
+}
+
+.s-page__marquee-track,
+.s-page__marquee-set {
+  display: flex;
+  width: max-content;
+  direction: ltr;
+}
+
+.s-page__marquee-track {
+  animation: s-page-marquee-forward 42s linear infinite;
+  animation-play-state: paused;
+  will-change: transform;
+}
+
+.s-page__marquee.is-marquee-ready .s-page__marquee-track {
+  animation-play-state: running;
+}
+
+.s-page__marquee--albasri .s-page__marquee-track {
+  animation-name: s-page-marquee-reverse;
+  animation-duration: 48s;
+}
+
+.s-page__marquee-set {
+  flex: 0 0 auto;
+  gap: var(--s-x);
+  padding-right: var(--s-x);
+}
+
+.s-page__marquee img {
+  position: relative;
+  display: block;
+  height: clamp(210px, 34vw, 300px);
+  width: auto;
+  max-width: none;
+  flex: 0 0 auto;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  object-fit: contain;
+  transform-origin: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.s-page__marquee img.is-pulsing {
+  z-index: 1;
+  animation: s-page-marquee-item-pulse .34s cubic-bezier(.22, .61, .36, 1);
+}
+
+/* Section 5 uses one image-section-height strip, locked to the same bottom
+   baseline and text-to-media distribution as Section 4. */
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-5 > .s-page__flow-group {
+  position: absolute;
+  inset-inline: 0;
+  margin: 0;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__flow-group--section-5-strip {
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+  height: var(--s-rpn-image-block-size);
+  translate: none !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__marquee--section-5 {
+  width: 100vw;
+  height: var(--s-rpn-image-block-size);
+  margin: 0;
+  margin-inline-start: calc(50% - 50vw);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__marquee--section-5 img {
+  height: var(--s-rpn-image-block-size);
+  border-radius: 14px;
+  object-fit: contain;
+}
+
+/* Section 5 uses the same duplicated, constant-speed loop as Section 6.
+   The existing readiness gate starts only after both identical sets have
+   decoded, avoiding a load-time reset while retaining the X-gap cadence. */
+body.s-page:not(.s-page--rpn) .s-page__marquee.s-page__marquee--section-5 .s-page__marquee-track {
+  animation: s-page-marquee-forward var(--s-x-strip-duration) linear infinite;
+  animation-play-state: paused;
+  will-change: transform;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__marquee.s-page__marquee--section-5.is-marquee-ready .s-page__marquee-track {
+  animation-play-state: running;
+}
+
+/* Sections 5 and 6 share one text-group contract. */
+body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) {
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-rpn-image-block-size)
+    + var(--s-x)
+  );
+  height: var(--s-x-localized-text-group-height);
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Sections 5 and 6 reserve one shared X-spaced notice slot between their
+   text groups and moving media without changing the media baseline. */
+body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text) {
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-rpn-image-block-size)
+    + (var(--s-x) * 2)
+    + var(--s-x-closed-notice-height)
+  );
+}
+
+body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6, .s-page__major-section--final) > .s-page__closed-notice {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-rpn-image-block-size)
+    + var(--s-x)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  height: var(--s-x-closed-notice-height);
+  margin-inline: auto;
+  padding: 0 var(--s-x);
+  overflow: hidden;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: rgba(255, 64, 64, .1);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  color: #FFFFFF;
+  font: 500 12px/1.2 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6, .s-page__major-section--final) > .s-page__closed-notice {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice-copy--ar {
+  display: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__closed-notice-copy--en {
+  display: none;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__closed-notice-copy--ar {
+  display: block;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-5, .s-page__major-section--section-6, .s-page__major-section--final) > .s-page__closed-notice {
+  background: rgba(255, 64, 64, .08);
+}
+
+body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--final > .s-page__closed-notice.s-page__closed-notice--section-7 {
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-x-closed-notice-height)
+    + var(--s-x)
+  );
+  height: 52px;
+  background: rgba(10, 132, 255, .14);
+}
+
+html.s-route.is-day-mode body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--final > .s-page__closed-notice.s-page__closed-notice--section-7 {
+  background: rgba(10, 132, 255, .12);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice.is-locked-shaking {
+  animation: s-page-locked-notice-shake .34s cubic-bezier(.22, .61, .36, 1);
+}
+
+@keyframes s-page-locked-notice-shake {
+  0%, 100% { transform: translateX(0); }
+  22% { transform: translateX(-5px); }
+  45% { transform: translateX(4px); }
+  68% { transform: translateX(-2px); }
+  84% { transform: translateX(1px); }
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock {
+  display: block;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  overflow: visible;
+  color: #FFFFFF;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock rect {
+  fill: currentColor;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__closed-notice-lock {
+  color: #000000;
+}
+
+body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-title {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin: 0;
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: center;
+}
+
+body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-description {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin: calc(var(--s-x) * .5) 0 0;
+  color: #A6A6A6;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: center;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) :is(.s-page__group-title, .s-page__group-description) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-title { color: #111111; }
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-description { color: #666666; }
+
+/* Section 6 reuses the shared image frame for its logo container and the
+   Section 5 text/media distribution. */
+body.s-page:not(.s-page--rpn) :is(.s-page__major-section--section-6, .s-page__major-section--final) > .s-page__flow-group {
+  position: absolute;
+  inset-inline: 0;
+  margin: 0;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__flow-group--section-6-logos {
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+  height: var(--s-rpn-image-block-size);
+  translate: none !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-stage {
+  --s-logo-grid-cell-size: calc(var(--s-rpn-image-block-size) / 8);
+  --s-logo-grid-period: calc(var(--s-logo-grid-cell-size) * 1.41421356);
+  width: 100%;
+  height: var(--s-rpn-image-block-size);
+  aspect-ratio: auto;
+  margin: 0;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-stage::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent calc(var(--s-logo-grid-period) - 1px),
+      var(--s-glass-stroke) calc(var(--s-logo-grid-period) - 1px),
+      var(--s-glass-stroke) var(--s-logo-grid-period)
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent 0,
+      transparent calc(var(--s-logo-grid-period) - 1px),
+      var(--s-glass-stroke) calc(var(--s-logo-grid-period) - 1px),
+      var(--s-glass-stroke) var(--s-logo-grid-period)
+    );
+  background-position: center;
+  background-size: var(--s-logo-grid-period) var(--s-logo-grid-period);
+  content: "";
+  opacity: .25;
+  pointer-events: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__logo-strip-track {
+  /* Do not let RTL static positioning place this max-content track beyond the
+     clipped stage. The marquee itself remains deliberately LTR. */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-guides {
+  display: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__logo-strip-track,
+body.s-page:not(.s-page--rpn) .s-page__logo-strip-set {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  align-items: center;
+  /* A flex row follows the inherited page direction. Keep the duplicated
+     logo loop physically LTR so the unchanged -50% marquee translation
+     starts with visible content in both English and Arabic. */
+  direction: ltr;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__logo-strip-track {
+  animation: s-page-marquee-forward var(--s-x-strip-duration) linear infinite;
+  will-change: transform;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__logo-strip-set {
+  flex: 0 0 auto;
+  gap: var(--s-x);
+  padding-inline-end: var(--s-x);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo {
+  position: relative;
+  top: auto;
+  left: auto;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: calc(var(--s-rpn-image-block-size) * .72);
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo img {
+  width: 50%;
+  height: 50%;
+  object-fit: contain;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__logo-strip-set[aria-hidden="true"] {
+  pointer-events: none;
+}
+
+@keyframes s-page-marquee-forward {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes s-page-marquee-reverse {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes s-page-marquee-item-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  48% { transform: scale(.965); filter: brightness(1.18); }
+}
+
+.s-page__section--future {
+  display: none;
+}
+
+.s-page__group-title,
+.s-page__group-description {
+  margin: 0;
+  text-align: start;
+  text-wrap: wrap;
+}
+
+.s-page__consultation-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin-top: calc(var(--s-x) * 2);
+  padding: 12px 20px;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: rgba(255, 255, 255, .12);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  color: #FFFFFF;
+  font: 600 15px/1.2 OOXMEScript, Arial, sans-serif;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.s-page__flow-group--consultation .s-page__flow-text {
+  display: flex;
+  width: calc(100vw - (var(--s-x) * 2));
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.s-page__flow-group--consultation .s-page__group-title,
+.s-page__flow-group--consultation .s-page__group-description {
+  width: 100%;
+}
+
+.s-page__flow-group--consultation .s-page__consultation-cta {
+  align-self: center;
+}
+
+.s-page__consultation-cta:hover,
+.s-page__consultation-cta:focus-visible {
+  background: rgba(255, 255, 255, .2);
+  border-color: rgba(255, 255, 255, .34);
+}
+
+.s-page__consultation-cta:active {
+  transform: scale(.98);
+}
+
+html[lang="ar"] .s-page__consultation-cta {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode .s-page__consultation-cta {
+  background: rgba(255, 255, 255, .62);
+  color: #111111;
+}
+
+html.s-route.is-day-mode .s-page__consultation-cta:hover,
+html.s-route.is-day-mode .s-page__consultation-cta:focus-visible {
+  background: rgba(255, 255, 255, .86);
+  border-color: rgba(17, 17, 17, .2);
+}
+
+/* Locked-section text content centers on the shared notice-box width. */
+body.s-page--x :is(.s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text) .s-page__flow-text {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  display: grid;
+  width: var(--s-x-closed-notice-width);
+  justify-items: center;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+/* The unlocked consultation copy retains its existing centered composition. */
+body.s-page--x .s-page__flow-group--section-7-text .s-page__flow-text {
+  position: relative;
+  display: grid;
+  width: 100%;
+  justify-items: center;
+  text-align: center;
+  transform: translateX(calc((100vw - 100%) / 2 - var(--s-x)));
+}
+
+html[dir="rtl"] body.s-page--x .s-page__flow-group--section-7-text .s-page__flow-text {
+  transform: translateX(calc((100% - 100vw) / 2 + var(--s-x)));
+}
+
+body.s-page--x .s-page__flow-group--section-7-action {
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  height: var(--s-rpn-image-block-size);
+  place-items: center;
+}
+
+body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  /* The action slot's bottom is the shared rendered image-card baseline. */
+  align-self: end;
+  justify-self: center;
+  margin-top: 0;
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  box-sizing: border-box;
+  inline-size: var(--s-x-closed-notice-width);
+  block-size: var(--s-x-closed-notice-height);
+  min-block-size: var(--s-x-closed-notice-height);
+  padding-block: 0;
+}
+
+html[lang="ar"] body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  color: #111111;
+}
+
+.s-page__group-title {
+  width: calc(100vw - (var(--s-x) * 2));
+  max-width: none;
+  box-sizing: border-box;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+
+.s-page__group-title--statement {
+  max-width: none;
+  font-weight: 700;
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+
+.s-page__group-description {
+  width: calc(100vw - (var(--s-x) * 2));
+  max-width: none;
+  box-sizing: border-box;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #A6A6A6;
+  margin-top: var(--s-x);
+}
+
+html.s-route.is-day-mode .s-page__group-description {
+  color: #666666;
+}
+
+[data-s-reveal] {
+  opacity: 0;
+  filter: blur(8px);
+  clip-path: inset(0 100% 0 0);
+}
+
+[data-s-reveal].is-typing {
+  animation: none;
+}
+
+[data-s-reveal].is-visible {
+  opacity: 1;
+  filter: blur(0);
+  clip-path: inset(0 0 0 0);
+}
+
+html[dir="rtl"] [data-s-reveal] {
+  clip-path: inset(0 0 0 100%);
+}
+
+[data-s-reveal].is-fading {
+  opacity: 0;
+  filter: none;
+  clip-path: inset(0 0 0 0);
+  transition: opacity .32s ease;
+}
+
+.s-page__group [data-s-reveal] {
+  opacity: 1;
+  filter: none;
+  clip-path: none;
+  transition: none;
+}
+
+.s-page__group [data-s-reveal].is-typing {
+  animation: none;
+}
+
+html[dir="rtl"] .s-page__group [data-s-reveal] {
+  clip-path: none;
+}
+
+.s-page__reveal-line {
+  display: block;
+  opacity: 0;
+  filter: blur(8px);
+  clip-path: inset(0 100% 0 0);
+  transition: opacity .48s cubic-bezier(.22, .61, .36, 1), filter .48s cubic-bezier(.22, .61, .36, 1), clip-path .48s cubic-bezier(.22, .61, .36, 1);
+  transition-delay: var(--s-reveal-delay, 0ms);
+}
+
+.s-page__group.is-visible .s-page__reveal-line {
+  opacity: 1;
+  filter: blur(0);
+  clip-path: inset(0 0 0 0);
+}
+
+html[dir="rtl"] .s-page__reveal-line {
+  clip-path: inset(0 0 0 100%);
+}
+
+.s-page__group [data-s-reveal].is-fading {
+  opacity: 0;
+  filter: none;
+  clip-path: inset(0 0 0 0);
+  transition: opacity .32s ease;
+}
+
+.s-page.is-chat-active .s-page__group [data-s-reveal] {
+  opacity: 0;
+  transition: opacity .24s ease;
+}
+
+.s-page__typing-character {
+  opacity: 0;
+}
+
+.s-page__typing-word {
+  display: inline-block;
+  opacity: 0;
+  clip-path: inset(0 0 0 100%);
+  letter-spacing: normal;
+}
+
+.s-page__typing-character.is-revealed,
+.s-page__typing-word.is-revealed {
+  opacity: 1;
+}
+
+.s-page__typing-word.is-revealed {
+  animation: s-page-arabic-word-reveal var(--s-arabic-word-reveal-duration, 150ms) linear both;
+}
+
+@keyframes s-page-arabic-word-reveal {
+  from { clip-path: inset(0 0 0 100%); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.s-page__conversation {
+  --s-chat-gap: calc(var(--s-x) * .5);
+  position: fixed;
+  z-index: 15;
+  top: var(--s-x);
+  left: max(calc(var(--s-x) * 2), calc((100% - 660px) / 2));
+  width: min(calc(100% - (var(--s-x) * 4)), 660px);
+  max-width: 100%;
+  bottom: calc(var(--s-composer-bottom) + 48px + (var(--s-x) * 2));
+  display: flex;
+  min-height: 0;
+  direction: ltr;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--s-chat-gap);
+  overflow: visible;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 320ms ease;
+}
+
+.s-page__conversation.is-chat-hidden {
+  opacity: 0;
+}
+
+.s-page.is-chat-active .s-page__conversation {
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+
+.s-page__conversation-bubble {
+  flex: 0 0 auto;
+  width: fit-content;
+  max-width: min(78vw, 520px);
+  min-height: 32px;
+  margin: 0;
+  padding: 6px 15px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 22px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .1), 0 1px 2px rgba(0, 0, 0, .05);
+  font: 500 14px/1.2 OOXMEScript, Arial, sans-serif;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  -webkit-backdrop-filter: blur(18px) saturate(115%);
+  backdrop-filter: blur(18px) saturate(115%);
+}
+
+.s-page__conversation-bubble[lang="ar"] {
+  max-width: 100%;
+  direction: rtl;
+  text-align: right;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  letter-spacing: normal;
+}
+
+.s-page__conversation-bubble[lang="en"] {
+  font-family: OOXMEScript, Arial, sans-serif;
+}
+
+.s-page__conversation-bubble[dir="rtl"] {
+  text-align: right;
+}
+
+.s-page__conversation-bubble[dir="ltr"] {
+  text-align: left;
+}
+
+.s-page__conversation-bubble[dir="auto"] {
+  text-align: start;
+}
+
+.s-page__conversation-bubble.is-entering {
+  animation: s-page-conversation-enter 240ms cubic-bezier(.22, .61, .36, 1) both;
+}
+
+.s-page__conversation-bubble.is-shifting {
+  transition: transform 240ms cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page__conversation-bubble.is-exiting {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  animation: s-page-conversation-exit 240ms cubic-bezier(.22, .61, .36, 1) both;
+}
+
+.s-page__conversation-bubble--user {
+  align-self: end;
+  border-bottom-right-radius: 8px;
+  background: #1C1C1E;
+  color: #FFFFFF;
+}
+
+html.s-route.is-day-mode .s-page__conversation-bubble--user {
+  background: #111111;
+}
+
+.s-page__conversation-bubble--ooxme {
+  align-self: flex-start;
+  border-color: var(--s-glass-stroke);
+  border-radius: 28px;
+  border-bottom-left-radius: 8px;
+  background: rgba(255, 255, 255, .16);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  color: #0b0b0b;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+}
+
+html.s-route.is-day-mode .s-page__conversation-bubble--ooxme {
+  background: rgba(255, 255, 255, .42);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012);
+}
+
+.s-page__conversation-final {
+  position: fixed;
+  z-index: 18;
+  inset: 0;
+  display: grid;
+  padding: calc(var(--s-x) * 2);
+  place-items: center;
+  background: rgba(0, 0, 0, .58);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 320ms ease, visibility 0s linear 320ms;
+  -webkit-backdrop-filter: blur(14px) saturate(105%);
+  backdrop-filter: blur(14px) saturate(105%);
+}
+
+html.s-route.is-day-mode .s-page__conversation-final {
+  background: rgba(255, 255, 255, .78);
+}
+
+.s-page__conversation-final.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.s-page__conversation-final-copy {
+  width: min(100%, 580px);
+  margin: 0;
+  color: #FFFFFF;
+  font: 500 clamp(18px, 2.2vw, 25px)/1.42 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+  white-space: pre-line;
+}
+
+html.s-route.is-day-mode .s-page__conversation-final-copy {
+  color: #111111;
+}
+
+@keyframes s-page-conversation-enter {
+  from { opacity: 0; transform: translateY(12px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes s-page-conversation-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-12px); }
+}
+
+.s-page__composer {
+  --s-composer-surface: rgba(255, 255, 255, .16);
+  --s-composer-stroke: var(--s-glass-stroke);
+  --s-composer-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  --s-composer-backdrop: blur(20px) saturate(125%);
+  --s-composer-menu-width: 220px;
+  --s-composer-menu-height: 222px;
+  --s-composer-height: 48px;
+  --s-control-stagger: .06s;
+  position: fixed;
+  z-index: 20;
+  left: max(calc(var(--s-x) * 2), calc((100% - 660px) / 2));
+  bottom: var(--s-composer-bottom);
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  direction: ltr;
+  align-items: center;
+  width: min(calc(100% - (var(--s-x) * 4)), 660px);
+  max-width: 100%;
+  height: var(--s-composer-height);
+  min-height: var(--s-composer-height);
+  margin: 0;
+  padding: 2px;
+  border: 1px solid transparent;
+  border-radius: var(--s-composer-radius);
+  background: transparent;
+  box-shadow: none;
+  color: #0b0b0b;
+  transform: none;
+  transition: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.s-page__composer::before {
+  position: absolute;
+  z-index: -1;
+  inset: -1px;
+  border: 1px solid var(--s-composer-stroke);
+  border-radius: inherit;
+  background: var(--s-composer-surface);
+  box-shadow: var(--s-composer-shadow);
+  content: "";
+  pointer-events: none;
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
+}
+
+.s-page__input-label {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+html.s-route.is-day-mode .s-page__composer {
+  --s-composer-surface: rgba(255, 255, 255, .42);
+  --s-composer-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012);
+}
+
+.s-page__composer-input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 40px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: #0b0b0b;
+  font: 500 14px/1.2 OOXMEScript, Arial, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+  caret-color: #0b0b0b;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.s-page__composer-input::placeholder {
+  color: rgba(11, 11, 11, .52);
+  opacity: 1;
+}
+
+html.s-route .s-page__composer-input.is-english-input {
+  font-family: OOXMESFPro, Arial, sans-serif;
+  direction: ltr;
+  text-align: left;
+}
+
+html.s-route .s-page__composer-input.is-arabic-input {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+/* The composer stays physically LTR; only its empty Arabic text starts at the arrow edge. */
+html[lang="ar"] .s-page__composer-input:placeholder-shown {
+  direction: rtl;
+  text-align: right;
+}
+
+.s-page__composer-menu {
+  --s-menu-radius: 28px;
+  --s-menu-inset: 8px;
+  --s-menu-active-radius: 20px;
+  position: absolute;
+  bottom: calc(100% + (var(--s-x) * 2));
+  left: 16.5px;
+  display: flex;
+  width: var(--s-composer-menu-width);
+  margin: 0;
+  padding: var(--s-menu-inset);
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--s-composer-stroke);
+  border-radius: var(--s-menu-radius);
+  background: var(--s-composer-surface);
+  box-shadow: var(--s-composer-shadow);
+  color: #000000;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  visibility: hidden;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
+}
+
+.s-page__composer-menu-panel {
+  --s-composer-menu-panel-inset: calc((var(--s-composer-height) - 32px) / 2);
+  --s-composer-menu-panel-vertical-inset: calc(var(--s-composer-menu-panel-inset) - 1px);
+  position: absolute;
+  bottom: calc(100% + (var(--s-x) * 2) + var(--s-composer-menu-height) + (var(--s-x) * .5));
+  left: 16.5px;
+  display: flex;
+  width: var(--s-composer-menu-width);
+  height: var(--s-composer-height);
+  margin: 0;
+  padding: 0;
+  align-items: center;
+  border: 1px solid var(--s-composer-stroke);
+  border-radius: var(--s-composer-radius);
+  background: var(--s-composer-surface);
+  box-shadow: var(--s-composer-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  visibility: hidden;
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
+}
+
+.s-page__composer-menu-panel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  visibility: visible;
+  transition-delay: var(--s-control-stagger), var(--s-control-stagger), 0s;
+}
+
+.s-page__composer-menu-panel .s-page__composer-menu-panel-control {
+  position: absolute;
+  top: var(--s-composer-menu-panel-vertical-inset);
+  bottom: var(--s-composer-menu-panel-vertical-inset);
+  left: var(--s-composer-menu-panel-inset);
+  transform: none;
+}
+
+.s-page__composer-menu-panel-smile {
+  display: block;
+  width: 13px;
+  height: 13px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+html[dir="rtl"] .s-page__composer-menu {
+  direction: rtl;
+}
+
+.s-page__composer-menu.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.s-page__composer-menu-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  margin: 0;
+  padding: 0 8px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: 400 16px/1.2 OOXMEScript, Arial, sans-serif;
+  letter-spacing: normal;
+  text-align: center;
+  appearance: none;
+  cursor: pointer;
+  z-index: 0;
+}
+
+.s-page__composer-menu-item.is-active {
+  background: transparent;
+}
+
+.s-page__composer-menu-item::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: var(--s-menu-active-radius);
+  background: rgba(255, 255, 255, .14);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+
+.s-page__composer-menu-item.is-active::before {
+  opacity: 1;
+}
+
+.s-page__composer-menu-item:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+
+html.s-route.is-day-mode .s-page__composer-menu {
+  color: #000000;
+}
+
+html.s-route.is-day-mode .s-page__composer-menu-item::before {
+  background: rgba(0, 0, 0, .055);
+}
+
+.s-page__icon-button,
+.s-page__submit {
+  position: relative;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  place-items: center;
+  justify-self: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #111;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .18s ease, transform .18s ease, opacity .18s ease;
+}
+
+.s-page__submit {
+  width: 32px;
+  height: 32px;
+  background: #080808;
+  color: #fff;
+}
+
+html.s-route.is-day-mode .s-page__submit {
+  background: #080808;
+  color: #FFFFFF;
+}
+
+html.s-route.is-day-mode.s-x-initializing .s-page__submit {
+  background: #080808 !important;
+  color: #FFFFFF !important;
+}
+
+.s-page__add > span,
+.s-page__add > span::after {
+  width: 13px;
+  height: 1.7px;
+  border-radius: 1.5px;
+  background: currentColor;
+}
+
+.s-page__add > span {
+  --s-control-rotation-duration: .24s;
+  --s-control-rotation-easing: cubic-bezier(.22, .61, .36, 1);
+  transform: rotate(0deg);
+  transition: transform var(--s-control-rotation-duration) var(--s-control-rotation-easing);
+}
+
+.s-page__add.is-active {
+  background: rgba(255, 255, 255, .14);
+  transition: background-color .18s ease;
+}
+
+html.s-route.is-day-mode .s-page__add.is-active {
+  background: rgba(0, 0, 0, .055);
+}
+
+.s-page__add.is-rotated > span {
+  transform: rotate(45deg);
+}
+
+.s-page__add > span::after {
+  content: "";
+  display: block;
+  transform: rotate(90deg);
+}
+
+.s-page__submit-icon {
+  display: block;
+  width: 13.7px;
+  height: 13px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: rotate(0deg);
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.s-page__send-utilities {
+  position: absolute;
+  right: 8px;
+  bottom: calc(100% + (var(--s-x) * 2));
+  display: flex;
+  gap: calc(var(--s-x) * .5);
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s linear .24s;
+}
+
+.s-page__send-utilities.is-open {
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.s-page__send-utility {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--s-composer-stroke);
+  border-radius: 50%;
+  background: var(--s-composer-surface);
+  box-shadow: var(--s-composer-shadow);
+  -webkit-backdrop-filter: var(--s-composer-backdrop);
+  backdrop-filter: var(--s-composer-backdrop);
+  cursor: pointer;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  /* The button itself is the pulse surface; its indicator inherits this motion. */
+  transform-box: border-box;
+  transform-origin: 50% 50%;
+  opacity: 0;
+  transform: translateY(6px) scale(.97);
+  transition: opacity .18s ease, transform .18s ease;
+  transition-delay: 0s;
+}
+
+.s-page__send-utility:active {
+  background: var(--s-composer-surface);
+}
+
+.s-page__send-utility:nth-child(2) {
+  transition-delay: var(--s-control-stagger);
+}
+
+.s-page__send-utility:nth-child(3) {
+  transition-delay: .12s;
+}
+
+.s-page__send-utilities.is-open .s-page__send-utility {
+  opacity: 1;
+  transform: none;
+  transition-delay: var(--s-control-stagger);
+}
+
+.s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
+  transition-delay: var(--s-control-stagger);
+}
+
+.s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
+  transition-delay: 0s;
+}
+
+.s-page__send-utility-inner {
+  display: block;
+  width: 13px;
+  height: 13px;
+  border: 1.7px solid #111111;
+  border-radius: 50%;
+  background: transparent;
+  transition: background-color .18s ease, border-color .18s ease;
+  /* State only: this element never owns the utility tap pulse. */
+  transform: none;
+  animation: none;
+}
+
+.s-page__send-utility.is-active .s-page__send-utility-inner {
+  border-color: #111111;
+  background: #111111;
+}
+
+.s-page__send-utility--status .s-page__send-utility-inner {
+  border-color: #E23B3B;
+  background: #E23B3B;
+}
+
+html.s-route.is-day-mode .s-page__send-utility-inner {
+  border-color: #111111;
+}
+
+html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-inner {
+  border-color: #111111;
+  background: #111111;
+}
+
+html.s-route:not(.is-day-mode) .s-page__conversation-bubble--ooxme,
+html.s-route:not(.is-day-mode) .s-page__composer-menu,
+html.s-route:not(.is-day-mode) .s-page__composer-input,
+html.s-route:not(.is-day-mode) .s-page__icon-button {
+  color: #FFFFFF;
+}
+
+html.s-route:not(.is-day-mode) .s-page__composer-input {
+  caret-color: #FFFFFF;
+}
+
+html.s-route:not(.is-day-mode) .s-page__composer-input::placeholder {
+  color: rgba(255, 255, 255, .58);
+}
+
+html.s-route:not(.is-day-mode) .s-page__send-utility-inner {
+  border-color: #FFFFFF;
+}
+
+html.s-route:not(.is-day-mode) .s-page__send-utility.is-active .s-page__send-utility-inner {
+  border-color: #FFFFFF;
+  background: #FFFFFF;
+}
+
+html.s-route.is-day-mode .s-page__send-utility--status .s-page__send-utility-inner,
+html.s-route:not(.is-day-mode) .s-page__send-utility--status .s-page__send-utility-inner {
+  border-color: #E23B3B;
+  background: #E23B3B;
+}
+
+.s-page__icon-button:focus-visible,
+.s-page__submit:focus-visible {
+  outline: 2px solid #0b0b0b;
+  outline-offset: 2px;
+}
+
+.s-page__composer :is(button, input):active {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.s-page__composer .s-page__icon-button:active {
+  background: transparent;
+  transform: none;
+}
+
+.s-page__composer .s-page__submit:active {
+  background: #080808;
+  transform: none;
+}
+
+html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
+  background: #080808;
+  color: #FFFFFF;
+}
+
+.s-page__composer.is-pulsing {
+  animation: s-page-composer-pulse .18s ease-out;
+}
+
+.s-page__composer-menu.is-pulsing {
+  animation: s-page-composer-menu-pulse .18s ease-out;
+}
+
+.s-page__send-utility.is-pulsing {
+  animation: s-page-send-utility-pulse .18s ease-out;
+}
+
+@keyframes s-page-composer-pulse {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(1.015); }
+}
+
+@keyframes s-page-composer-menu-pulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(0) scale(1.015); }
+}
+
+@keyframes s-page-send-utility-pulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  45% { transform: translateY(0) scale(1.09); }
+}
+
+.s-page__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (hover: hover) {
+  .s-page__icon-button:hover { background: rgba(0, 0, 0, .065); }
+  .s-page__submit:hover { background: #242424; }
+}
+
+.s-page__icon-button:active,
+.s-page__submit:active {
+  transform: scale(.94);
+}
+
+@media (max-width: 600px) {
+  .s-page__content {
+    padding-inline: var(--s-x);
+    padding-bottom: calc(136px + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
+  }
+
+  .s-page__content { padding-top: calc(var(--s-x) * 2); }
+
+  .s-page__composer {
+    bottom: var(--s-composer-bottom);
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    width: min(calc(100% - (var(--s-x) * 4)), 660px);
+    max-width: 100%;
+    height: 48px;
+    min-height: 48px;
+    padding: 2px;
+  }
+
+  .s-page__submit {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (orientation: landscape) {
+  html.s-route {
+    --s-x: max(16px, calc(env(safe-area-inset-bottom) + 12px));
+    --s-composer-bottom: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
+  }
+}
+
+@media (orientation: portrait) {
+  .s-page__content {
+    padding-bottom: var(--s-portrait-final-settle-space, 0px);
+  }
+
+  .s-page__major-section--final {
+    height: var(--s-portrait-final-section-height, auto);
+  }
+
+  body.s-page--x .s-page__major-section--final {
+    height: var(--s-section-frame-height, 100dvh);
+    min-height: var(--s-section-frame-height, 100dvh);
+    max-height: var(--s-section-frame-height, 100dvh);
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  @media (pointer: coarse) {
+    .s-page__composer-input {
+      width: calc(100% / .875);
+      font-size: 16px;
+      transform: scale(.875);
+      transform-origin: left center;
+    }
+
+    .s-page__composer-input.is-arabic-input {
+      transform-origin: right center;
+    }
+  }
+}
+
+/* /x visibility-only controls: keep the particle field and temporary composer
+   surfaces mounted so their existing initialization, state, and handlers run. */
+body.s-page:not(.s-page--rpn) {
+  --s-first-group-bottom-baseline: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
+}
+
+body.s-page:not(.s-page--rpn) [data-s-first-group] {
+  justify-content: flex-end;
+  padding-bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-first-group-baseline-correction, 0px));
+}
+
+/* /x First Text Group: /rpn's live Composer-menu-derived content bounds and
+   its two approved typography roles. */
+body.s-page:not(.s-page--rpn) [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
+  box-sizing: border-box;
+  width: var(--s-x-first-group-text-width, calc(100% - 34px));
+  margin-inline-start: var(--s-x-first-group-text-inline-offset, 17px);
+  margin-inline-end: 0;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-title {
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+  text-rendering: auto;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-description {
+  margin-top: calc(var(--s-x) * .5);
+  color: #A6A6A6;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  direction: ltr;
+  text-align: left;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) [data-s-first-group] > :is(.s-page__group-title, .s-page__group-description) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-description {
+  direction: rtl;
+  text-align: right;
+}
+
+/* /x Section 1 keeps its existing width and vertical baseline while the
+   heading is centered by the flex cross axis, independent of document RTL. */
+body.s-page.s-page--x [data-s-first-group] > .s-page__group-title {
+  position: relative;
+  align-self: center;
+  margin-inline: 0;
+  text-align: center;
+}
+
+body.s-page.s-page--x [data-s-first-group] > .s-page__group-description {
+  display: none;
+}
+
+/* The text run is the only centered object. The cursor is painted outside the
+   run so its width can never alter the visible Arabic or English text center. */
+body.s-page.s-page--x [data-s-first-typewriter] {
+  display: grid;
+  min-block-size: 1.2em;
+  place-items: center;
+  direction: ltr;
+}
+
+body.s-page.s-page--x .s-page__first-typewriter-run {
+  position: relative;
+  display: block;
+  inline-size: max-content;
+  max-inline-size: 100%;
+}
+
+body.s-page.s-page--x [data-s-first-typewriter-output] {
+  display: block;
+  max-inline-size: 100%;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+body.s-page.s-page--x [data-s-first-typewriter-cursor] {
+  position: absolute;
+  /* Absolutely offset from the text run: the visual space never contributes
+     to the run's intrinsic width or to the heading's centered geometry. */
+  --s-first-typewriter-cursor-gap: .25em;
+  inset-inline-start: calc(100% + var(--s-first-typewriter-cursor-gap));
+  inset-block-start: 50%;
+  width: 2px;
+  height: 1.05em;
+  background: #0A84FF;
+  translate: 0 -50%;
+}
+
+/* The run itself stays LTR for direction-independent centering. Only an RTL
+   output reverses the cursor's absolute visual anchor to its typing edge. */
+body.s-page.s-page--x .s-page__first-typewriter-run:has(> [data-s-first-typewriter-output][dir="rtl"]) [data-s-first-typewriter-cursor] {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + var(--s-first-typewriter-cursor-gap));
+}
+
+body.s-page.s-page--x [data-s-first-typewriter].is-typewriter-prelude [data-s-first-typewriter-cursor] {
+  animation: s-page-first-typewriter-cursor .5s steps(1, end) 2;
+}
+
+@keyframes s-page-first-typewriter-cursor {
+  50% { opacity: 0; }
+}
+
+body.s-page.s-page--x .s-page__oxo-face {
+  /* The 13-unit Top Bar icon is mapped across the face width, then its full
+     eye-and-ripple system is vertically squashed into this upward-looking disc. */
+  --s-oxo-source-size: var(--s-oxo-face-inline-size, calc(100vw - (var(--s-x) * 2)));
+  --s-oxo-perspective: .42;
+  --s-oxo-eye-width: calc(var(--s-oxo-source-size) * 3.7 / 13);
+  --s-oxo-eye-height: calc(var(--s-oxo-eye-width) * var(--s-oxo-perspective));
+  --s-oxo-eye-separation: calc(var(--s-oxo-source-size) * 5.5 / 13);
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: var(--s-oxo-source-size);
+  height: calc(var(--s-oxo-source-size) * var(--s-oxo-perspective));
+  margin-inline: 0;
+  left: var(--s-oxo-face-inline-offset, 0px);
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline));
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07);
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+  isolation: isolate;
+  transform: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* The OXO experiment remains preserved in full above; Section 1 currently
+   presents its existing text-group composition instead. */
+body.s-page.s-page--x .s-page__oxo-face {
+  display: none;
+}
+
+body.s-page.s-page--x .s-page__oxo-eye {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  width: var(--s-oxo-eye-width);
+  height: var(--s-oxo-eye-height);
+  border: 1px solid rgba(255, 255, 255, .58);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .78);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .4), 0 0 4px rgba(255, 255, 255, .22);
+  -webkit-backdrop-filter: blur(8px) saturate(125%);
+  backdrop-filter: blur(8px) saturate(125%);
+  transform: translate(-50%, -50%);
+}
+
+/* Mirrors the 3.75/9.25 centers and 1.85 radius of the Top Bar OXO icon. */
+body.s-page.s-page--x .s-page__oxo-eye--left { left: calc(50% - (var(--s-oxo-eye-separation) / 2)); }
+body.s-page.s-page--x .s-page__oxo-eye--right { left: calc(50% + (var(--s-oxo-eye-separation) / 2)); }
+
+body.s-page.s-page--x .s-page__oxo-ring {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: var(--s-oxo-eye-width);
+  height: var(--s-oxo-eye-height);
+  border: 1px solid rgba(255, 255, 255, .52);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(255, 255, 255, .24);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(.2);
+  animation: s-page-oxo-ring-expand 5.4s cubic-bezier(.22, .61, .36, 1) infinite;
+}
+
+body.s-page.s-page--x .s-page__oxo-ring { animation-delay: 0s; }
+
+@keyframes s-page-oxo-ring-expand {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.2); }
+  10% { opacity: .46; }
+  62% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); }
+}
+
+html[lang="ar"] body.s-page.s-page--x [data-s-first-group] > .s-page__group-description {
+  text-align: center;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-title {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-first-group] > .s-page__group-description {
+  color: #666666;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__logo-particle-field {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* /x section content always presents at its finished visual state. The logo
+   stage retains its own appearance animation; marquees and counters keep their
+   content-driven motion independently of these ordinary-element rules. */
+body.s-page:not(.s-page--rpn) [data-s-reveal],
+body.s-page:not(.s-page--rpn) .s-page__reveal-line,
+body.s-page:not(.s-page--rpn) .s-page__flow-media,
+body.s-page:not(.s-page--rpn) .s-page__number-metric {
+  opacity: 1 !important;
+  filter: none !important;
+  clip-path: none !important;
+  visibility: visible !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* /x uses the approved /rpn Top Bar geometry while retaining its own controls. */
+body.s-page:not(.s-page--rpn) .s-page__composer {
+  top: var(--s-x);
+  bottom: auto;
+  left: var(--s-x);
+  width: calc(100% - (var(--s-x) * 2));
+  max-width: none;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  opacity: 1 !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__input-label {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The /x Top Bar uses /rpn's full empty-bar hit area. The dormant composer
+   input stays out of that target so a center press reaches the shared bar. */
+body.s-page--x .s-page__composer-input {
+  pointer-events: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__add {
+  grid-column: 1;
+  width: 32px;
+  height: 32px;
+  background: #080808;
+  color: #FFFFFF;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__add > span {
+  display: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__add.is-active,
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__add.is-active {
+  width: 32px;
+  height: 32px;
+  background: #080808 !important;
+  color: #FFFFFF;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-eyes {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform: translate(-50%, -50%);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-face-eyes {
+  fill: currentColor;
+  stroke: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__submit {
+  grid-column: 3;
+  background: transparent !important;
+  color: #FFFFFF;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__submit {
+  color: #111111;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__submit .s-page__submit-icon {
+  stroke-width: 2.12;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-line {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform .24s cubic-bezier(.22, .61, .36, 1);
+}
+
+/* Exact /rpn two-line menu-control state treatment, scoped to /x's existing
+   submit control so its own submit/menu handlers remain the source of state. */
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, .14) !important;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active {
+  background: rgba(0, 0, 0, .055) !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active .s-page__x-top-bar-line--top {
+  transform: translateY(4px) rotate(45deg);
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active .s-page__x-top-bar-line--bottom {
+  transform: translateY(-4px) rotate(-45deg);
+}
+
+/* Keep /x's invisible temporary surfaces reachable beneath the top bar. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu {
+  top: calc(100% + var(--s-x) + 1px);
+  right: 0;
+  bottom: auto;
+  left: 0;
+  width: 100%;
+  transform: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
+  transform: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities {
+  top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) * .5));
+  right: auto;
+  bottom: auto;
+  left: 50%;
+  width: max-content;
+  flex-direction: row;
+  gap: calc(var(--s-x) * .5);
+  transform: translateX(-50%);
+}
+
+body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu, .s-page__composer-menu-panel, .s-page__send-utilities),
+body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu.is-open, .s-page__composer-menu-panel.is-open, .s-page__send-utilities.is-open) {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Opened /x surfaces remain invisible but retain their original controls. */
+body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu.is-open, .s-page__composer-menu-panel.is-open, .s-page__send-utilities.is-open) {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* The two-line Top Bar control opens /x's primary Composer menu. The prior
+   visibility-only rule intentionally hid every revealed surface, including
+   this menu; restore only the menu's existing open presentation. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
+  opacity: 1 !important;
+}
+
+/* /x uses the current /rpn Composer menu system: its five locked entries,
+   physical menu alignment, and Theme/Language utility treatment. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
+  padding-inline-start: 14px;
+  padding-inline-end: 8.5px;
+  text-align: left;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
+  text-align: right;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__composer-menu-label {
+  text-align: inherit;
+}
+
+/* /x menu labels use the First Text Group title role exactly; the menu's
+   existing alignment and control geometry remain owned by the rules above. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
+  color: #111111;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-menu-lock {
+  display: block;
+  flex: 0 0 auto;
+  width: 13px;
+  height: 13px;
+  margin-inline-start: auto;
+  overflow: visible;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-menu-lock-body {
+  fill: currentColor;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__x-menu-lock-shackle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.12;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The status indicator remains mounted for /x's existing logic, while the
+   approved menu exposes the two actionable /rpn utility circles. */
+body.s-page:not(.s-page--rpn) .s-page__send-utility--status {
+  display: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utility {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(-10px);
+  transition: opacity .56s cubic-bezier(.22, .61, .36, 1), filter .56s cubic-bezier(.22, .61, .36, 1), transform .56s cubic-bezier(.22, .61, .36, 1);
+  transition-delay: 0s;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utility:not(.s-page__send-utility--status) {
+  transition-duration: .28s, .28s, .28s;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
+  transition-delay: .36s;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
+  transition-delay: .50s;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
+  transition-delay: .50s;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
+  transition-delay: .36s;
+}
+
+/* The /x v4 pair uses the current /rpn image-section geometry while retaining
+   its own asset, copy, flow reveal, and section architecture. */
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__flow-text {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin-inline-start: var(--s-x-rpn-image-text-inline-offset, 17px);
+  margin-inline-end: 0;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] :is(.s-page__group-title, .s-page__group-description) {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-align: start;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-title {
+  color: #FFFFFF;
+  font-size: 14px;
+  text-rendering: auto;
+}
+
+body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-description {
+  margin-top: calc(var(--s-x) * .5);
+  color: #A6A6A6;
+  font-size: 12px;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="ar"] body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] :is(.s-page__group-title, .s-page__group-description) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-title {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-description {
+  color: #666666;
+}
+
+@media (orientation: landscape) {
+  body.s-page:not(.s-page--rpn) {
+    --s-first-group-bottom-baseline: calc((var(--s-x) * .5) + var(--s-keyboard-offset, 0px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
+  .s-page__flow-media { transition: none; }
+  .s-page__number-metric { transition: none; }
+  .s-page__square-logo-guides line { transition: none; }
+  .s-page__square-logo-stage.is-visible .s-page__square-logo-guides line { stroke-dasharray: none; animation: none; }
+  .s-page__square-logo { transition: none; }
+  .s-page__square-logo.is-pulsing img { animation: none; }
+  .s-page__marquee-track { animation: none; }
+  .s-page__marquee img.is-pulsing { animation: none; }
+  .s-page__typing-character,
+  .s-page__typing-word { opacity: 1; clip-path: none; animation: none !important; }
+  .s-page__conversation-bubble.is-entering { animation: none; }
+  body.s-page.s-page--x .s-page__oxo-ring { animation: none; opacity: .24; }
+  .s-page__conversation-bubble.is-shifting { transition: none; }
+  .s-page__conversation-bubble.is-exiting { animation: none; }
+  .s-page__conversation { transition: none; }
+  .s-page__conversation-final { transition: none; }
+  .s-page__composer,
+  .s-page__icon-button,
+  .s-page__submit,
+  .s-page__composer-menu,
+  .s-page__composer-menu-panel { transition: none; }
+  .s-page__send-utilities { transition: none; }
+  .s-page__send-utility { transition: none; }
+  .s-page__send-utility-inner { transition: none; }
+  .s-page__add > span { transition: none; }
+  .s-page__composer.is-pulsing { animation: none; }
+  .s-page__composer-menu.is-pulsing { animation: none; }
+  .s-page__send-utility.is-pulsing { animation: none; }
+}

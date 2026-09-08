@@ -1,3 +1,5 @@
+@import url('./rpn-base.css');
+
 /* /rpn keeps the /x system intact; only the shared composer is re-anchored. */
 .s-page--rpn {
   --s-rpn-type-font-family: OOXMEScript, Arial, sans-serif;

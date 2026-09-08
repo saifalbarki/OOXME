@@ -880,7 +880,7 @@
   });
   addButton.addEventListener('click', (event) => {
     event.stopPropagation();
-    window.location.assign('/x');
+    window.location.assign('/');
   });
   composer.addEventListener('submit', (event) => {
     event.preventDefault();

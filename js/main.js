@@ -1,1322 +1,2775 @@
-const track = document.querySelector('[data-master-track]');
-const HOMEPAGE_NAVIGATION_LOCKED = true;
-const experience = document.querySelector('.master-panel-experience');
-const root = document.documentElement;
-const setStableViewportHeight = () => root.style.setProperty('--ooxme-stable-viewport-height', `${window.innerHeight}px`);
-setStableViewportHeight();
-window.addEventListener('orientationchange', () => window.setTimeout(setStableViewportHeight, 160));
-document.querySelectorAll('[data-progress]').forEach((progress) => {
-  const value = Math.min(100, Math.max(0, Number(progress.dataset.progress) || 0));
-  const segmentCount = 30;
-  const completedSegments = Math.round((value / 100) * segmentCount);
-  progress.setAttribute('aria-valuenow', String(value));
-  progress.replaceChildren(...Array.from({ length: segmentCount }, (_, index) => {
-    const segment = document.createElement('i');
-    segment.classList.toggle('is-complete', index < completedSegments);
-    return segment;
+(() => {
+  'use strict';
+
+  const page = document.querySelector('.s-page');
+  const content = document.querySelector('.s-page__content');
+  const composer = document.querySelector('[data-s-composer]');
+  const composerMenu = document.querySelector('[data-s-composer-menu]');
+  const composerMenuPanel = document.querySelector('[data-s-composer-menu-panel]');
+  const sendUtilities = document.querySelector('[data-s-send-utilities]');
+  const sendStatusUtility = document.querySelector('[data-s-utility="status"]');
+  const sendThemeUtility = document.querySelector('[data-s-utility="theme"]');
+  const sendLanguageUtility = document.querySelector('[data-s-utility="language"]');
+  const addButton = document.querySelector('.s-page__add');
+  const input = document.querySelector('.s-page__composer-input');
+  const submitButton = composer?.querySelector('button[type="submit"]');
+  const logoParticleField = document.querySelector('[data-s-logo-particles]');
+  const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
+  const zHeroImage = document.querySelector('.s-page__z-hero-image');
+  const imageFrame = document.querySelector('[data-s-image-frame]');
+  const imageCopy = document.querySelector('[data-s-image-copy]');
+  const imageMedia = imageFrame?.querySelector('[data-s-flow-item]');
+  const numbersMetrics = document.querySelector('[data-s-numbers-metrics]');
+  const metricsMajorSection = numbersMetrics?.closest('[data-s-major-section]');
+  const numberMetricItems = Array.from(document.querySelectorAll('[data-s-number-metric]'));
+  const squareLogoStage = document.querySelector('[data-s-square-logo-stage]');
+  const consultationCta = document.querySelector('[data-s-consultation-cta]');
+  const firstGroup = document.querySelector('[data-s-first-group]');
+  const firstTypewriterTitle = document.querySelector('[data-s-first-typewriter]');
+  const firstTypewriterOutput = document.querySelector('[data-s-first-typewriter-output]');
+  const nextImageTextGroup = document.querySelector('[data-s-copy-group="1"]');
+  const sectionTwoTextGroups = Array.from(document.querySelectorAll('[data-s-section-2-text]'));
+  const zSecondaryNav = document.querySelector('[data-s-z-secondary-nav]');
+  const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
+  const zSecondaryNavIndicator = document.querySelector('[data-s-z-secondary-nav-indicator]');
+  const zSecondaryNavItems = Array.from(document.querySelectorAll('[data-s-z-secondary-nav-item]'));
+  const zSecondaryNavPrevious = document.querySelector('[data-s-z-secondary-nav-previous]');
+  const zSecondaryNavNext = document.querySelector('[data-s-z-secondary-nav-next]');
+  const zContentSlot = document.querySelector('[data-s-z-content-slot]');
+  const zDescription = document.querySelector('[data-s-z-description]');
+  const zDescriptionDate = zDescription?.querySelector('.s-page__z-description-date');
+  const zRequirements = document.querySelector('[data-s-z-requirements]');
+  const zRewards = document.querySelector('[data-s-z-rewards]');
+  const zApply = document.querySelector('[data-s-z-apply]');
+  const zApplyButtons = Array.from(document.querySelectorAll('[data-s-z-apply] button'));
+  const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
+  const getNavigableMajorSections = () => majorSections.filter((section) => getComputedStyle(section).display !== 'none');
+  const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
+  const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
+    .filter((item) => item !== imageCopy && (item !== imageMedia || !page?.classList.contains('s-page--z')));
+  const localizedGroups = Array.from(document.querySelectorAll('[data-s-copy-group]'))
+    .sort((first, second) => Number(first.dataset.sCopyGroup) - Number(second.dataset.sCopyGroup));
+  const conversation = document.querySelector('[data-s-conversation]');
+  const conversationFinal = document.querySelector('[data-s-conversation-final]');
+  const conversationFinalCopy = document.querySelector('[data-s-conversation-final-copy]');
+  const sections = Array.from(document.querySelectorAll('[data-s-section]')).map((element) => ({
+    element,
+    groups: Array.from(element.querySelectorAll('[data-s-group]'))
   }));
-});
-const searchInput = document.querySelector('[data-search-input]');
-const applyLanguage = (next) => {
-  language = next;
-  root.lang = next;
-  root.dir = next === 'ar' ? 'rtl' : 'ltr';
-  document.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[next]; });
-  searchInput.placeholder = searchInput.dataset[`${next}Placeholder`];
-  document.querySelectorAll('[data-home-search-input]').forEach((input) => { input.placeholder = input.dataset[`${next}Placeholder`]; });
-  document.querySelectorAll('[data-home-account-input], [data-employee-dashboard-edit-input]').forEach((input) => { input.placeholder = input.dataset[`${next}Placeholder`]; });
-  document.querySelectorAll('[data-language-toggle]').forEach((button) => button.setAttribute('aria-label', next === 'ar' ? 'التبديل إلى الإنجليزية' : 'Switch to Arabic'));
-  try { localStorage.setItem('ooxme-language', next); } catch (_) {}
-  window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: next } }));
-};
-let language = 'en';
-try { language = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
-applyLanguage(language);
-document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => applyLanguage(root.lang === 'ar' ? 'en' : 'ar')));
-window.addEventListener('storage', (event) => { if (event.key === 'ooxme-language') applyLanguage(event.newValue === 'ar' ? 'ar' : 'en'); });
-const searchOverlay = document.querySelector('[data-search-overlay]');
-const searchSuggestion = document.querySelector('[data-search-suggestion]');
-let searchCloseTimer;
-const searchOverlayCloseDuration = 1450;
-const resizeSearchInput = () => {
-  searchInput.style.height = '24px';
-  searchInput.style.height = `${searchInput.scrollHeight}px`;
-  searchOverlay.querySelector('.search-overlay-field').style.height = `${Math.max(48, searchInput.scrollHeight + 24)}px`;
-};
-const updateSearchState = () => {
-  const query = searchInput.value.trim();
-  searchOverlay.classList.toggle('is-typing', Boolean(query));
-  searchSuggestion.hidden = !query;
-  if (query) searchSuggestion.textContent = root.lang === 'ar' ? `اقتراح: «${query}»` : `Search for “${query}”`;
-  resizeSearchInput();
-};
-const setSearchOpen = (open) => {
-  window.clearTimeout(searchCloseTimer);
-  if (open) {
-    searchOverlay.hidden = false;
-    updateSearchState();
-    window.requestAnimationFrame(() => searchOverlay.classList.add('is-open'));
-    return;
-  }
-  searchOverlay.classList.remove('is-open');
-  searchCloseTimer = window.setTimeout(() => { searchOverlay.hidden = true; }, searchOverlayCloseDuration);
-};
-document.querySelectorAll('[data-search-toggle]').forEach((button) => button.addEventListener('click', (event) => {
-  event.stopPropagation();
-  setSearchOpen(searchOverlay.hidden);
-}));
-searchOverlay.addEventListener('click', () => setSearchOpen(false));
-searchOverlay.querySelectorAll('a, label, [data-search-suggestion]').forEach((element) => element.addEventListener('click', (event) => event.stopPropagation()));
-searchInput.addEventListener('input', updateSearchState);
-const requestedPanel = new URLSearchParams(window.location.search).get('panel');
-const dashboardPanelId = requestedPanel === 'client-dashboard' ? 'client-dashboard' : 'employee-dashboard';
-const isClientDashboard = dashboardPanelId === 'client-dashboard';
-document.body.dataset.dashboardAudience = dashboardPanelId === 'client-dashboard' ? 'client' : 'employee';
-const applyClientDashboardCopy = (next = language) => {
-  if (!isClientDashboard) return;
-  document.querySelectorAll('[data-client-en][data-client-ar]').forEach((element) => { element.textContent = element.dataset[`client${next === 'ar' ? 'Ar' : 'En'}`]; });
-};
-applyClientDashboardCopy();
-window.addEventListener('ooxme-language-change', (event) => applyClientDashboardCopy(event.detail?.language));
-const panelIds = ['intro', dashboardPanelId];
-const originalPanels = [...track.querySelectorAll('.master-panel-screen')];
-originalPanels.forEach((panel, index) => { panel.dataset.panelId = panelIds[index]; });
-const panels = [...document.querySelectorAll('.master-panel-screen')];
-track.style.height = `var(--ooxme-stable-viewport-height)`;
-const requestedPanelId = /^\d+$/.test(requestedPanel || '') ? panelIds[Number(requestedPanel)] : requestedPanel;
-const requestedPanelIndex = HOMEPAGE_NAVIGATION_LOCKED && requestedPanelId !== dashboardPanelId
-  ? 0
-  : panels.findIndex((panel) => panel.dataset.panelId === requestedPanelId);
-let panelIndex = 0;
-let panelTransitionTimer;
-const revealPanel = (index) => {
-  panels.forEach((panel, panelNumber) => panel.classList.toggle('is-active', panelNumber === index));
-};
-const moveTo = (next) => {
-  if (HOMEPAGE_NAVIGATION_LOCKED) return;
-  const target = Math.max(0, Math.min(panels.length - 1, next));
-  if (target === panelIndex) return;
-  panelIndex = target;
-  panels.forEach((panel) => panel.classList.remove('is-active'));
-  track.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-panelIndex}))`;
-  window.clearTimeout(panelTransitionTimer);
-  panelTransitionTimer = window.setTimeout(() => revealPanel(panelIndex), 620);
-};
-revealPanel(panelIndex);
-const setupEmployeeDashboardPanels = () => {
-  if (requestedPanelId !== dashboardPanelId || !experience || !window.OOXMEMasterPanelDrag) return;
-  const employeePanel = document.querySelector('.employee-dashboard-panel');
-  const employeeNavigation = employeePanel?.querySelector('[data-employee-dashboard-contextual]');
-  if (!employeePanel || !employeeNavigation) return;
+  const groups = sections.flatMap((section) => section.groups);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const isZPage = page?.classList.contains('s-page--z') ?? false;
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  if (!isZPage) document.documentElement.classList.add('s-x-discrete-sections');
+  const zHeroCompositorLayers = isZPage
+    ? [
+      zHeroImage,
+      imageMedia,
+      imageCopy,
+      firstGroup?.querySelector('.s-page__group-title'),
+      firstGroup?.querySelector('.s-page__group-description'),
+      zSecondaryNav
+    ].filter(Boolean)
+    : [];
 
-  const employeeTrack = document.createElement('div');
-  employeeTrack.className = 'master-panel-track employee-dashboard-track';
-  employeeTrack.style.height = 'calc(var(--ooxme-stable-viewport-height) * 2)';
+  // This controller is shared by the full /x composition and the focused /z
+  // composition. Optional later-section affordances are deliberately guarded so
+  // a page may include only its relevant sections without creating a parallel UI.
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zSecondaryNavIndicator || !zContentSlot || !zDescription || !zRequirements || !zRewards || !zApply || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
 
-  const emptyPanel = document.createElement('section');
-  emptyPanel.className = 'master-panel-screen employee-dashboard-panel employee-dashboard-empty-panel';
-  const emptyMasterPanel = document.createElement('div');
-  emptyMasterPanel.className = 'master-panel';
-  const emptyCard = document.createElement('div');
-  emptyCard.className = 'employee-dashboard-empty-card';
-  const selectorProxy = document.createElement('div');
-  selectorProxy.className = 'homepage-account-selector studio-selector employee-dashboard-top-selector employee-dashboard-panel-two-selector';
-  selectorProxy.dataset.employeeDashboardSelector = '';
-  selectorProxy.dataset.active = 'progress';
-  selectorProxy.setAttribute('role', 'tablist');
-  selectorProxy.setAttribute('aria-label', 'Employee dashboard view');
-  selectorProxy.innerHTML = '<span class="homepage-account-selector-indicator" aria-hidden="true"></span><button type="button" data-employee-dashboard-state-option="progress" role="tab" aria-selected="true"><span data-en="Progress" data-ar="التقدم">Progress</span></button><button type="button" data-employee-dashboard-state-option="details" role="tab" aria-selected="false"><span data-en="Details" data-ar="التفاصيل">Details</span></button>';
-  const timeline = document.createElement('div');
-  timeline.className = 'employee-dashboard-timeline employee-dashboard-panel-two-timeline';
-  timeline.setAttribute('aria-label', 'Employee task timeline');
-  timeline.innerHTML = '<span class="employee-dashboard-timeline-line" aria-hidden="true"></span><div class="employee-dashboard-task-viewport"><div class="employee-dashboard-task-track"></div></div>';
-  const demoTasks = [
-    { en: { title: 'Campaign Launch', description: 'Prepare and launch the approved monthly campaign.' }, ar: { title: 'إطلاق الحملة', description: 'إعداد وإطلاق الحملة الشهرية المعتمدة.' } },
-    { en: { title: 'Content Planning', description: 'Prepare and approve the monthly content direction.' }, ar: { title: 'تخطيط المحتوى', description: 'إعداد واعتماد توجه المحتوى الشهري.' } },
-    { en: { title: 'Photography Session', description: 'Complete the scheduled brand photography session.' }, ar: { title: 'جلسة التصوير', description: 'تنفيذ جلسة تصوير العلامة التجارية المجدولة.' } },
-    { en: { title: 'Performance Review', description: 'Review campaign, content, and engagement performance.' }, ar: { title: 'مراجعة الأداء', description: 'مراجعة أداء الحملة والمحتوى والتفاعل.' } },
-    { en: { title: 'Client Feedback', description: 'Review and apply the latest client feedback.' }, ar: { title: 'ملاحظات العميل', description: 'مراجعة أحدث ملاحظات العميل وتطبيقها.' } }
+  const maximumVisibleConversationMessages = 3;
+  const replyDelayMs = 1000;
+  const finalRevealDelayMs = 1600;
+  const finalMessageDurationMs = 10000;
+  const finalFadeOutDurationMs = 320;
+  const metricCountDurationMs = 900;
+  const flowBaselineDurationMs = 1000;
+  const flowMinimumDurationMs = 520;
+  const flowThresholdHysteresisPx = 8;
+  const englishReplies = [
+    'Sorry, we don’t reply to messages for free.',
+    'Hmm... it seems you didn’t read the previous message.',
+    'Yes. Still the same answer.',
+    'Are you seriously trying again?',
+    'We have a better idea. Call us.',
+    'Let’s make this easier - tap the + button.',
+    '看来你还是没明白我们的意思。',
+    'Please stop. You’re becoming very committed to this.',
+    'One more message and we may have to alert the branding department.',
+    'Your account has been dramatically, completely, and absolutely... suspended.'
   ];
-  const panelTwoLabels = {
-    en: { view: 'Employee dashboard view', timeline: 'Employee task timeline', details: 'Task details', home: 'Home', progress: 'Progress', detailsOption: 'Details' },
-    ar: { view: 'عرض لوحة الموظف', timeline: 'الخط الزمني لمهام الموظف', details: 'تفاصيل المهمة', home: 'الرئيسية', progress: 'التقدم', detailsOption: 'التفاصيل' }
-  };
-  const taskTrack = timeline.querySelector('.employee-dashboard-task-track');
-  taskTrack.innerHTML = demoTasks.map((task) => `<article class="employee-dashboard-task"><span class="employee-dashboard-task-dot" aria-hidden="true"></span><div class="employee-dashboard-task-copy"><strong data-task-title data-en="${task.en.title}" data-ar="${task.ar.title}">${task.en.title}</strong><p data-task-description data-en="${task.en.description}" data-ar="${task.ar.description}">${task.en.description}</p><div class="employee-dashboard-task-blocks" aria-hidden="true"><i class="is-in-progress" data-en="Status" data-ar="الحالة">Status</i><i class="is-days-left" data-en="Time" data-ar="الوقت">Time</i><i class="is-upload-started" data-en="Files" data-ar="الملفات">Files</i></div></div></article>`).join('');
-  const taskViewport = timeline.querySelector('.employee-dashboard-task-viewport');
-  const taskItems = [...taskTrack.querySelectorAll('.employee-dashboard-task')];
-  const landscapeTaskQuery = window.matchMedia('(min-aspect-ratio: 4 / 3)');
-  let activeTaskIndex = 0;
-  let taskGesture = null;
-  const taskDetailMeta = [
-    { en: { start: '10 Sep 2026', delivery: '15 Sep 2026', remaining: '2–3 Days Left' }, ar: { start: '10 سبتمبر 2026', delivery: '15 سبتمبر 2026', remaining: 'متبقي 2–3 أيام' } },
-    { en: { start: '01 Sep 2026', delivery: '05 Sep 2026', remaining: '2–3 Days Left' }, ar: { start: '01 سبتمبر 2026', delivery: '05 سبتمبر 2026', remaining: 'متبقي 2–3 أيام' } },
-    { en: { start: '06 Sep 2026', delivery: '08 Sep 2026', remaining: 'On Track' }, ar: { start: '06 سبتمبر 2026', delivery: '08 سبتمبر 2026', remaining: 'في الموعد' } },
-    { en: { start: '20 Sep 2026', delivery: '25 Sep 2026', remaining: 'On Track' }, ar: { start: '20 سبتمبر 2026', delivery: '25 سبتمبر 2026', remaining: 'في الموعد' } },
-    { en: { start: '26 Sep 2026', delivery: '30 Sep 2026', remaining: '1 Day Left' }, ar: { start: '26 سبتمبر 2026', delivery: '30 سبتمبر 2026', remaining: 'متبقي يوم واحد' } }
+  const arabicReplies = [
+    'عذرًا، نحن لا نرد على الرسائل مجانًا.',
+    'همم... يبدو انك لم تقرأ الرسالة السابقة.',
+    'نعم. ما زالت الاجابة نفسها.',
+    'احقًا تحاول مرة اخرى؟',
+    'لدينا فكرة افضل. اتصل بنا.',
+    'لنجعل الامر اسهل - اضغط زر +.',
+    'يبدو انك ما زلت لا تفهم ما نقصده.',
+    'من فضلك توقف. التزامك بالامر بدأ يصبح لافتًا.',
+    'رسالة اخرى وقد نضطر - مازحين طبعًا - الى تنبيه قسم العلامة التجارية.',
+    'تم تعليق حسابك بصورة درامية، وكاملة، ومطلقة... مزحة فقط.'
   ];
-  const detailsView = document.createElement('section');
-  detailsView.className = 'employee-dashboard-task-details';
-  detailsView.setAttribute('aria-label', panelTwoLabels.en.details);
-  detailsView.hidden = true;
-  detailsView.innerHTML = '<section class="employee-dashboard-task-details-section employee-dashboard-task-details-overview employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-task-detail-title></strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><p data-task-detail-description></p></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-updates employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Progress Updates" data-ar="تحديثات التقدم">Progress Updates</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-update-list"><p><span data-en="Monthly direction reviewed and approved." data-ar="تمت مراجعة التوجه الشهري واعتماده.">Monthly direction reviewed and approved.</span><time data-en="Today, 09:30" data-ar="اليوم، 09:30">Today, 09:30</time></p><p><span data-en="Production brief prepared for the next step." data-ar="تم إعداد موجز الإنتاج للخطوة التالية.">Production brief prepared for the next step.</span><time data-en="Yesterday, 16:10" data-ar="أمس، 16:10">Yesterday, 16:10</time></p><p><span data-en="Task owner confirmed the delivery plan." data-ar="أكد مسؤول المهمة خطة التسليم.">Task owner confirmed the delivery plan.</span><time data-en="28 Aug 2026, 11:45" data-ar="28 أغسطس 2026، 11:45">28 Aug 2026, 11:45</time></p></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-timeline employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Timeline" data-ar="الجدول الزمني">Timeline</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-detail-boxes"><span><small data-en="Start Date" data-ar="تاريخ البدء">Start Date</small><b data-task-detail-start></b></span><span><small data-en="Delivery Date" data-ar="تاريخ التسليم">Delivery Date</small><b data-task-detail-delivery></b></span><span><small data-en="Time Remaining" data-ar="الوقت المتبقي">Time Remaining</small><b data-task-detail-remaining></b></span></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-files employee-dashboard-task-details-disclosure homepage-notification" data-task-details-disclosure><button type="button" class="homepage-notification-summary" data-task-details-toggle aria-expanded="false"><span><strong data-en="Files" data-ar="الملفات">Files</strong></span></button><div class="homepage-notification-details" data-task-details-content aria-hidden="true"><div class="employee-dashboard-task-detail-boxes"><span><small data-en="Required Files" data-ar="الملفات المطلوبة">Required Files</small><b>3</b></span><span><small data-en="Uploaded Files" data-ar="الملفات المرفوعة">Uploaded Files</small><b>1</b></span><span><small data-en="Remaining Files" data-ar="الملفات المتبقية">Remaining Files</small><b>2</b></span></div></div></section><section class="employee-dashboard-task-details-section employee-dashboard-task-details-actions"><h2 data-en="Actions" data-ar="الإجراءات">Actions</h2><div><button type="button" data-en="Start Task" data-ar="بدء المهمة">Start Task</button><button type="button" data-en="Add Update" data-ar="إضافة تحديث">Add Update</button><button type="button" data-employee-dashboard-upload-files-action data-en="Upload Files" data-ar="رفع الملفات">Upload Files</button></div></section>';
-  if (isClientDashboard) {
-    const [startTask, , uploadFiles] = detailsView.querySelectorAll('.employee-dashboard-task-details-actions button');
-    Object.assign(startTask.dataset, { en: 'Add Request', ar: 'إضافة طلب' });
-    Object.assign(uploadFiles.dataset, { en: 'Download Files', ar: 'تحميل الملفات' });
-  }
-  if (!isClientDashboard) {
-    detailsView.querySelectorAll('.employee-dashboard-task-update-list p').forEach((update) => {
-      const copy = update.querySelector('span');
-      const time = update.querySelector('time');
-      if (!copy || !time) return;
-      const by = document.createElement('small');
-      by.className = 'employee-dashboard-task-update-by';
-      by.dataset.en = 'By Employee';
-      by.dataset.ar = 'بواسطة الموظف';
-      by.textContent = by.dataset[language === 'ar' ? 'ar' : 'en'];
-      copy.classList.add('employee-dashboard-task-update-copy');
-      update.replaceChildren(copy, by, time);
-    });
-  }
-  const renderTaskDetails = () => {
-    const task = taskItems[activeTaskIndex];
-    const meta = taskDetailMeta[activeTaskIndex] || taskDetailMeta[0];
-    const copy = language === 'ar' ? 'ar' : 'en';
-    if (!task) return;
-    detailsView.querySelector('[data-task-detail-title]').textContent = demoTasks[activeTaskIndex]?.[copy]?.title || '';
-    detailsView.querySelector('[data-task-detail-description]').textContent = demoTasks[activeTaskIndex]?.[copy]?.description || '';
-    detailsView.querySelector('[data-task-detail-start]').textContent = meta[copy].start;
-    detailsView.querySelector('[data-task-detail-delivery]').textContent = meta[copy].delivery;
-    detailsView.querySelector('[data-task-detail-remaining]').textContent = meta[copy].remaining;
+  const finalMessages = {
+    en: 'Alright, we’re joking.\nThe ooxme conversation experience is still under development. Until it’s ready, reach us through our official channels and we’ll take it from there.',
+    ar: 'حسنًا، نحن نمزح.\nتجربة المحادثة لدى اوكسوم ما تزال قيد التطوير. وحتى تصبح جاهزة، تواصل معنا عبر قنواتنا الرسمية، وسنتولى الامر من هناك.'
   };
-  const localizePanelTwo = (next = language) => {
-    const copy = next === 'ar' ? 'ar' : 'en';
-    const labels = panelTwoLabels[copy];
-    emptyPanel.setAttribute('dir', copy === 'ar' ? 'rtl' : 'ltr');
-    selectorProxy.setAttribute('aria-label', labels.view);
-    timeline.setAttribute('aria-label', labels.timeline);
-    detailsView.setAttribute('aria-label', labels.details);
-    emptyPanel.querySelectorAll('[data-employee-dashboard-panel-two-input]').forEach((input) => { input.placeholder = input.dataset[`${copy}Placeholder`]; });
-    const startTaskSelect = emptyPanel.querySelector('[data-employee-dashboard-start-task-select]');
-    if (startTaskSelect) {
-      const selectedTask = startTaskSelect.value || String(activeTaskIndex);
-      startTaskSelect.replaceChildren(...demoTasks.map((task, index) => {
-        const option = document.createElement('option');
-        option.value = String(index);
-        option.textContent = task[language === 'ar' ? 'ar' : 'en'].title;
-        return option;
-      }));
-      startTaskSelect.value = selectedTask;
+  const pageCopy = {
+    en: {
+      groups: [
+        ['Welcome\nOur Next Client'],
+        ['Re-engineered\nBuilt for New Terrain', 'Discover Ooxme v4.0 system, designed for engineering, architectural, construction, contracting .. etc'],
+        ['The numbers speak\nfor the work', 'Real results that summarize what we’ve achieved across different businesses and brands.'],
+        ['Striking Designs\nFor Distinctive Projects', 'We design with an exceptional, precise, and remarkably clean approach that serves your goals and reflects the value of your projects.'],
+        ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.'],
+        ['Let’s talk\nabout what’s next', 'A focused consultation to understand your business, identify the right direction, and define the next practical step.']
+      ],
+      menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
+      inputPlaceholder: 'Type...',
+      ask: 'Ask ooxme',
+      addContext: 'Add context',
+      submitQuestion: 'Submit question',
+      conversation: 'Conversation',
+      utilities: {
+        label: 'Page utilities',
+        switchToArabic: 'Switch to Arabic',
+        switchToEnglish: 'Switch to English',
+        switchToDay: 'Switch to Day Mode',
+        switchToDark: 'Switch to Dark Mode'
+      },
+      consultationCta: 'Book a Consultation'
+    },
+    ar: {
+      groups: [
+        ['مرحبــا\nعميلنا القادم'],
+        ['اعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
+        ['الارقام تتحدث\nعن العمل', 'نتائج حقيقية تلخص ما حققناه مع اعمال وعلامات مختلفة.'],
+        ['تصاميم ملفتة\nلمشاريع مميزة', 'نصمم بأسلوب استثنائي، دقيق، ونظيف للغاية بما يخدم أهدافكم ويعكس قيمة مشاريعكم.'],
+        ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.'],
+        ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول الى الخطوة العملية التالية.']
+      ],
+      menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'],
+      inputPlaceholder: 'اكتب...',
+      ask: 'اسأل اوكسوم',
+      addContext: 'اضف سياقًا',
+      submitQuestion: 'ارسال السؤال',
+      conversation: 'المحادثة',
+      utilities: {
+        label: 'ادوات الصفحة',
+        switchToArabic: 'التبديل الى العربية',
+        switchToEnglish: 'التبديل الى الانجليزية',
+        switchToDay: 'التبديل الى الوضع النهاري',
+        switchToDark: 'التبديل الى الوضع الداكن'
+      },
+      consultationCta: 'احجز استشارة'
     }
-    navigationProxy?.querySelector('[data-employee-dashboard-home]')?.setAttribute('aria-label', labels.home);
-    navigationProxy?.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.setAttribute('aria-label', button.dataset.employeeDashboardContext === 'details' ? labels.detailsOption : labels.progress));
-    emptyPanel.querySelectorAll('[data-en][data-ar]').forEach((element) => { element.textContent = element.dataset[copy]; });
-    renderTaskDetails();
   };
-  window.addEventListener('ooxme-language-change', (event) => localizePanelTwo(event.detail?.language));
-  const detailsDisclosureItems = [...detailsView.querySelectorAll('[data-task-details-disclosure]')];
-  const setDetailsDisclosure = (section, expanded) => {
-    if (expanded) {
-      detailsDisclosureItems.forEach((item) => {
-        if (item === section) return;
-        item.classList.remove('is-expanded');
-        item.querySelector('[data-task-details-toggle]')?.setAttribute('aria-expanded', 'false');
-        item.querySelector('[data-task-details-content]')?.setAttribute('aria-hidden', 'true');
+  const zFirstGroupCopy = {
+    en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive advantages and rewards'],
+    ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الاحالة لاوكسوم متاحة الان للتقديم\nانضم الينا واستفد من مزايا ومكافآت حصرية.']
+  };
+  const zMainMenuCopy = {
+    en: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
+    ar: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل']
+  };
+  const getGroupCopy = (language, groupIndex) => (
+    isZPage && groupIndex === 0 ? zFirstGroupCopy[language] : pageCopy[language].groups[groupIndex]
+  );
+  const firstTypewriterPhrases = {
+    en: ['Welcome', 'To OOXME', "Iraq's one and only brand management"],
+    ar: ['مرحبـــا', 'فيـ اوكسوم', 'ادارة العلامة التجارية الواحد والوحيد في العراق']
+  };
+  let firstTypewriterTimer = 0;
+  let firstTypewriterRun = 0;
+  const startFirstTypewriter = () => {
+    if (isZPage || !firstTypewriterTitle || !firstTypewriterOutput) return;
+    window.clearTimeout(firstTypewriterTimer);
+    firstTypewriterRun += 1;
+    const run = firstTypewriterRun;
+    const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+    const phrases = firstTypewriterPhrases[language];
+    let phraseIndex = 0;
+    firstTypewriterTitle.lang = language;
+    firstTypewriterTitle.dir = 'ltr';
+    firstTypewriterOutput.lang = language;
+    firstTypewriterOutput.dir = language === 'ar' ? 'rtl' : 'ltr';
+    firstTypewriterOutput.textContent = '';
+    firstTypewriterTitle.classList.add('is-typewriter-prelude');
+
+    const schedule = (callback, delay) => {
+      firstTypewriterTimer = window.setTimeout(() => {
+        if (run === firstTypewriterRun) callback();
+      }, delay);
+    };
+
+    const typePhrase = () => {
+      const phrase = phrases[phraseIndex];
+      let characterIndex = 0;
+      firstTypewriterTitle.classList.remove('is-typewriter-prelude');
+      const typeCharacter = () => {
+        characterIndex += 1;
+        firstTypewriterOutput.textContent = phrase.slice(0, characterIndex);
+        if (characterIndex < phrase.length) return schedule(typeCharacter, 52);
+        schedule(erasePhrase, 520);
+      };
+      schedule(typeCharacter, 52);
+    };
+
+    const erasePhrase = () => {
+      const eraseCharacter = () => {
+        const current = firstTypewriterOutput.textContent;
+        firstTypewriterOutput.textContent = current.slice(0, -1);
+        if (current.length > 1) return schedule(eraseCharacter, 32);
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        schedule(typePhrase, 180);
+      };
+      schedule(eraseCharacter, 32);
+    };
+
+    // The cursor blinks exactly twice before the first phrase begins.
+    schedule(typePhrase, 1000);
+  };
+  let keyboardFrame = 0;
+  let firstGroupBaselineFrame = 0;
+  let firstGroupBaselineLocked = false;
+  let sectionTwoBaselineCorrectionLocked = false;
+  let composerPulseFrame = 0;
+  let zContentRevealFrame = 0;
+  let zContentTransitionTimer = 0;
+  let zActiveContentIndex = 0;
+  let zFaceController = null;
+  const secondaryNavPulseFrames = new Map();
+  let composerMenuPulseFrame = 0;
+  let composerMenuCloseTimer = 0;
+  let addFlashTimer = 0;
+  const menuItemFlashTimers = new Map();
+  const sendUtilityPulseFrames = new Map();
+  const marqueeItemPulseFrames = new Map();
+  const squareLogoPulseFrames = new Map();
+  const imagePulseFrames = new Map();
+  const lockedNoticeShakeFrames = new Map();
+  const pendingReplyTimers = new Set();
+  let addRotated = false;
+  let initializationReady = false;
+  let initializationRun = 0;
+  let lastKeyboardOverlap = 0;
+  let replyIndex = 0;
+  let conversationState = 'active';
+  let finalVisibleTimer = 0;
+  let finalResetTimer = 0;
+  let pendingFinalRevealTimer = 0;
+  let localizedGeometryFrame = 0;
+  let portraitSectionLayoutFrame = 0;
+  let portraitSectionLayoutTimer = 0;
+  let finalScrollBufferFrame = 0;
+  let majorSectionSettleTimer = 0;
+  let majorSectionSettleFrame = 0;
+  let majorSectionSettleReleaseFrame = 0;
+  let majorSectionSettleTarget = null;
+  let majorSectionSettleOwnsScroll = false;
+  let majorSectionPointerActive = false;
+  let majorSectionSettleStableFrames = 0;
+  let discreteSectionTouch = null;
+  let discreteSectionInputLocked = false;
+  let discreteSectionUnlockTimer = 0;
+  let flowFrame = 0;
+  let metricCountFrame = 0;
+  let metricsSectionActive = false;
+  let zSectionOneScrollFrame = 0;
+  let zSectionOneLocked = false;
+  let zSectionOneCompositionReady = false;
+  let zSectionOneOriginalImageBottom = 0;
+  let zSectionOneStateOneImageBottom = 0;
+  let zSectionOneContentBoxHeight = 0;
+  let zSectionOneTransitionDistance = 0;
+  const zEndpointCaptureTolerancePx = .25;
+  // Keep the endpoint immune to passive Safari rebound, but do not make a
+  // deliberate reverse drag feel like it has to overcome a second threshold.
+  const zEndpointReverseIntentDistancePx = 3;
+  const zReleaseSettleDelayMs = 1000;
+  const zReleaseSettleStartGraceMs = 120;
+  let zEndpointLockScrollY = 0;
+  let zEndpointPointerId = null;
+  let zEndpointPointerStartY = 0;
+  let zEndpointReverseIntent = false;
+  let zReleaseSettleTimer = 0;
+  let zReleaseSettleFrame = 0;
+  let zReleaseSettleTarget = null;
+  let zReleaseSettleLastScrollY = 0;
+  let zReleaseSettleStableFrames = 0;
+  let zReleaseSettleStartedAt = 0;
+  let zReleasePointerActive = false;
+  let zHeroGeometryFrozen = false;
+  let zSecondaryNavOverflowFrame = 0;
+  let zSecondaryNavAlignmentFrame = 0;
+  let zSecondaryNavIndicatorReadyFrame = 0;
+  let imageCopyRevealTimer = 0;
+  let flowVisibleCount = 0;
+  let flowTargetCount = 0;
+  let lastFlowScrollY = window.scrollY;
+  let lastFlowScrollTime = performance.now();
+  let lastPageScrollTime = performance.now();
+  let flowScrollVelocity = 0;
+  let localizedGeometryWidth = document.documentElement.clientWidth;
+  let localizedGeometryOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
+  let pauseLogoParticleForScroll = () => {};
+  const flowCrossed = flowItems.map(() => false);
+  let conversationVisible = true;
+  let activeTemporaryUi = 'none';
+  const composerControls = Array.from(composer.querySelectorAll('button, input'));
+  const inputLabel = composer.querySelector('.s-page__visually-hidden');
+  const composerMenuItems = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-item'));
+  const menuLabels = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-label'));
+  let applyPageCopy = null;
+  let manualThemeOverride = false;
+  const arabicScriptPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
+
+  const zPanels = [zDescription, zRequirements, zRewards, zApply];
+  const zPanelClasses = [['is-z-description-attached', 'is-z-description-revealed'], ['is-z-requirements-attached', 'is-z-requirements-revealed'], ['is-z-rewards-attached', 'is-z-rewards-revealed'], ['is-z-apply-attached', 'is-z-apply-revealed']];
+
+  const syncZContentBoxHorizontalGeometry = () => {
+    if (!isZPage) return;
+    const menuRect = composerMenu.getBoundingClientRect();
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-left', `${menuRect.left.toFixed(3)}px`);
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-width', `${menuRect.width.toFixed(3)}px`);
+  };
+
+  const syncZApplyButtonGeometry = () => {
+    if (!isZPage || !zSecondaryNav.classList.contains('is-z-transition-ready')) return;
+    const selector = zSecondaryNavItems[zActiveContentIndex];
+    if (!selector) return;
+    const boxRect = zSecondaryNav.getBoundingClientRect();
+    const selectorRect = selector.getBoundingClientRect();
+    const selectorInset = selectorRect.top - boxRect.top;
+    zSecondaryNav.style.setProperty('--s-z-active-selector-width', `${selectorRect.width.toFixed(3)}px`);
+    zSecondaryNav.setAttribute('data-s-z-selector-top-inset', selectorInset.toFixed(3));
+
+  };
+
+  const syncZContentBoxHeight = () => {
+    if (!isZPage) return;
+    // The box height is part of the scroll travel and therefore immutable once
+    // a transition has begun. Re-measuring mid-travel would move the endpoint.
+    if (zSectionOneCompositionReady && window.scrollY > .5) return;
+    zSecondaryNav.classList.add('is-z-measuring');
+    let largestContentHeight = 0;
+    let largestPanelIndex = 0;
+    zPanels.forEach((panel, index) => {
+      panel.classList.add('is-z-measuring-panel');
+      const localizedCopies = Array.from(panel.children).filter((copy) => copy.hasAttribute('lang'));
+      const originalDisplays = localizedCopies.map((copy) => copy.style.display);
+      let panelHeight = 0;
+      localizedCopies.forEach((activeCopy) => {
+        localizedCopies.forEach((copy) => { copy.style.display = copy === activeCopy ? (panel === zApply ? 'flex' : 'block') : 'none'; });
+        panelHeight = Math.max(panelHeight, Math.ceil(panel.scrollHeight));
+      });
+      localizedCopies.forEach((copy, copyIndex) => { copy.style.display = originalDisplays[copyIndex]; });
+      panel.setAttribute('data-s-z-natural-height', `${panelHeight}`);
+      if (panelHeight > largestContentHeight) {
+        largestContentHeight = panelHeight;
+        largestPanelIndex = index;
+      }
+      panel.classList.remove('is-z-measuring-panel');
+    });
+    zSecondaryNav.classList.remove('is-z-measuring');
+    zSecondaryNav.setAttribute('data-s-z-largest-panel', ['Description', 'Requirements', 'Rewards', 'Apply'][largestPanelIndex]);
+    zSecondaryNav.setAttribute('data-s-z-largest-content-height', `${largestContentHeight}`);
+    const boxStyle = getComputedStyle(zSecondaryNav);
+    const boxChromeHeight = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth']
+      .reduce((total, property) => total + (Number.parseFloat(boxStyle[property]) || 0), 0);
+    const boxRowGap = Number.parseFloat(boxStyle.rowGap) || 0;
+    const contentBoxHeight = Math.ceil((zSecondaryNavRail.offsetHeight || 36) + boxRowGap + largestContentHeight + boxChromeHeight);
+    zSecondaryNav.style.setProperty('--s-z-content-box-height', `${contentBoxHeight}px`);
+
+  };
+
+  // The Description title is the concrete inner-text boundary of the unified
+  // box. Reuse its live border-box geometry instead of approximating an inset.
+  const syncZUnifiedTextAlignment = () => {
+    if (!isZPage) return;
+    const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+    const source = zDescription.querySelector(`.s-page__z-description-copy[lang="${language}"] h2`);
+    if (!source) return;
+    const sourceRect = source.getBoundingClientRect();
+    const firstGroupRect = firstGroup.getBoundingClientRect();
+    const imageRect = zHeroImage.getBoundingClientRect();
+    if (!sourceRect.width || !firstGroupRect.width || !imageRect.width) return;
+    const isRtl = language === 'ar';
+    const firstOffset = isRtl
+      ? firstGroupRect.right - sourceRect.right
+      : sourceRect.left - firstGroupRect.left;
+    const imageOffset = isRtl
+      ? imageRect.right - sourceRect.right
+      : sourceRect.left - imageRect.left;
+    firstGroup.style.setProperty('--s-z-content-text-width', `${sourceRect.width.toFixed(3)}px`);
+    firstGroup.style.setProperty('--s-z-content-text-inline-offset', `${firstOffset.toFixed(3)}px`);
+    imageCopy.style.setProperty('--s-z-content-text-width', `${sourceRect.width.toFixed(3)}px`);
+    imageCopy.style.setProperty('--s-z-content-text-inline-offset', `${imageOffset.toFixed(3)}px`);
+    firstGroup.setAttribute('data-s-z-content-text-left', sourceRect.left.toFixed(3));
+    firstGroup.setAttribute('data-s-z-content-text-right', sourceRect.right.toFixed(3));
+    imageCopy.setAttribute('data-s-z-content-text-left', sourceRect.left.toFixed(3));
+    imageCopy.setAttribute('data-s-z-content-text-right', sourceRect.right.toFixed(3));
+  };
+
+  const syncZStateOneCompositionGeometry = () => {
+    if (!isZPage || zSectionOneLocked) return;
+    if (zSectionOneCompositionReady && window.scrollY > .5) return;
+    const x = composer.getBoundingClientRect().left || 18;
+    const imageRect = zHeroImage.getBoundingClientRect();
+    // Remove the dormant 6px entrance transform before measuring the box.
+    // Otherwise its transformed rect makes the State 1 gap six pixels short.
+    zSecondaryNav.classList.add('is-z-transition-ready');
+    const boxRect = zSecondaryNav.getBoundingClientRect();
+    const desiredBoxTop = imageRect.bottom + x;
+    const resolvedTop = zSecondaryNav.offsetTop + desiredBoxTop - boxRect.top;
+    zSecondaryNav.style.setProperty('--s-z-secondary-nav-state-one-top', `${resolvedTop.toFixed(3)}px`);
+
+    const positionedBoxRect = zSecondaryNav.getBoundingClientRect();
+    zSectionOneOriginalImageBottom = imageRect.bottom + window.scrollY;
+    zSectionOneStateOneImageBottom = imageRect.bottom;
+    zSectionOneContentBoxHeight = positionedBoxRect.height;
+    // The rendered State 1 geometry is the only movement authority. The page's
+    // dynamic viewport-sized scroll surface below makes this exact distance the
+    // native scroll maximum, including while mobile browser chrome changes.
+    const measuredTravel = positionedBoxRect.bottom - imageRect.bottom;
+    zSectionOneTransitionDistance = Math.max(1, Math.round(measuredTravel));
+    page.style.setProperty('--s-z-transition-distance', `${zSectionOneTransitionDistance}px`);
+    zSectionOneCompositionReady = true;
+    firstGroup.setAttribute('data-s-z-state-one-text-image-gap', (imageRect.top - firstGroup.querySelector('.s-page__group-description').getBoundingClientRect().bottom).toFixed(3));
+    firstGroup.setAttribute('data-s-z-state-one-image-box-gap', (positionedBoxRect.top - imageRect.bottom).toFixed(3));
+    firstGroup.setAttribute('data-s-z-original-image-baseline', zSectionOneOriginalImageBottom.toFixed(3));
+    firstGroup.setAttribute('data-s-z-state-one-image-bottom', zSectionOneStateOneImageBottom.toFixed(3));
+    syncZActiveContent(true);
+  };
+
+  const resetZSecondaryNavAlignment = () => {
+    if (!isZPage) return;
+    if (zSecondaryNavAlignmentFrame) window.cancelAnimationFrame(zSecondaryNavAlignmentFrame);
+    zSecondaryNavAlignmentFrame = window.requestAnimationFrame(() => {
+      zSecondaryNavAlignmentFrame = 0;
+      syncZContentBoxHorizontalGeometry();
+      syncZContentBoxHeight();
+      syncZStateOneCompositionGeometry();
+      syncZUnifiedTextAlignment();
+      syncZApplyButtonGeometry();
+    });
+  };
+
+  const syncZActiveContent = (attached = zSectionOneLocked) => {
+    if (!isZPage) return;
+    if (zContentRevealFrame) window.cancelAnimationFrame(zContentRevealFrame);
+    if (zContentTransitionTimer) window.clearTimeout(zContentTransitionTimer);
+    zContentRevealFrame = 0;
+    zContentTransitionTimer = 0;
+    const outgoingIndex = zPanels.findIndex((panel, index) => panel.classList.contains(zPanelClasses[index][0]) && panel.classList.contains(zPanelClasses[index][1]));
+    zPanels.forEach((panel) => panel.classList.remove('is-z-panel-exiting'));
+    if (!attached || ![0, 1, 2, 3].includes(zActiveContentIndex)) {
+      zPanels.forEach((panel, index) => panel.classList.remove(...zPanelClasses[index]));
+      return;
+    }
+    const target = zPanels[zActiveContentIndex];
+    const [attachedClass, revealedClass] = zPanelClasses[zActiveContentIndex];
+    const revealTarget = () => {
+      zPanels.forEach((panel, index) => panel.classList.remove(...zPanelClasses[index]));
+      target.classList.add(attachedClass);
+      if (target === zDescription) syncZApplyButtonGeometry();
+      zContentRevealFrame = window.requestAnimationFrame(() => {
+        zContentRevealFrame = 0;
+        if (!zSecondaryNav.classList.contains('is-z-transition-ready') || zPanels[zActiveContentIndex] !== target) return;
+        target.classList.add(revealedClass);
+        if (target === zDescription) {
+          syncZApplyButtonGeometry();
+          // The reveal class changes opacity/transform on this frame. Re-run
+          // once after styles have committed so the final text edge is used.
+          window.requestAnimationFrame(() => syncZApplyButtonGeometry());
+        }
+      });
+    };
+    if (outgoingIndex !== -1 && zPanels[outgoingIndex] !== target) {
+      const outgoing = zPanels[outgoingIndex];
+      outgoing.classList.remove(zPanelClasses[outgoingIndex][1]);
+      outgoing.classList.add('is-z-panel-exiting');
+      zContentTransitionTimer = window.setTimeout(() => {
+        zContentTransitionTimer = 0;
+        outgoing.classList.remove('is-z-panel-exiting');
+        revealTarget();
+      }, 180);
+      return;
+    }
+    revealTarget();
+  };
+
+  const pulsePageSurface = (element) => {
+    if (!element) return;
+    const pendingFrame = secondaryNavPulseFrames.get(element);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    element.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      secondaryNavPulseFrames.delete(element);
+      element.classList.add('is-pulsing');
+    });
+    secondaryNavPulseFrames.set(element, frame);
+  };
+
+  const createZFaceController = () => {
+    const face = addButton.querySelector(isZPage ? '[data-s-z-face]' : '[data-s-x-face]');
+    const shell = face?.querySelector(isZPage ? '.s-page__z-face-shell' : '.s-page__x-face-shell');
+    const eyes = face?.querySelector(isZPage ? '.s-page__z-face-eyes' : '.s-page__x-face-eyes');
+    const eyeMotion = face?.querySelector(isZPage ? '.s-page__z-face-eye-motion' : '.s-page__x-face-eye-motion');
+    if (!face || !shell || !eyes || !eyeMotion) return null;
+    // The eye centers sit at 3.75/9.25 with a 1.85 radius in a 13-unit viewBox.
+    // These limits retain a visible inner margin under every exclusive reaction.
+    const gazeLimit = 1.1;
+    const dragThreshold = 6;
+    let pointer = null;
+    let dragging = false;
+    let tapping = false;
+    let settling = false;
+    let applyActive = false;
+    let reaction = null;
+    let reactionStartedAt = 0;
+    let tapTimer = 0;
+    let settleTimer = 0;
+    let reactionTimer = 0;
+    let animationFrame = 0;
+    let previousTime = 0;
+    let targetGaze = { x: 0, y: 0 };
+    let currentGaze = { x: 0, y: 0 };
+
+    const clearTimer = (timer) => {
+      if (timer) window.clearTimeout(timer);
+      return 0;
+    };
+    const setGaze = (x, y, normalize = true) => {
+      const magnitude = Math.hypot(x, y);
+      const scale = normalize && magnitude > 0 ? gazeLimit / Math.max(gazeLimit, magnitude) : 1;
+      targetGaze = {
+        x: Math.max(-gazeLimit, Math.min(gazeLimit, x * scale)),
+        y: Math.max(-gazeLimit, Math.min(gazeLimit, y * scale))
+      };
+    };
+    // A direct interaction is intentionally first: it temporarily wins over a
+    // section reaction, while the reaction itself remains a single timed state.
+    const getState = () => (dragging ? 'drag' : tapping ? 'tap' : reaction || (applyActive ? 'apply' : (settling ? 'settle' : 'idle')));
+    const render = () => {
+      const state = getState();
+      face.dataset.faceState = state;
+    };
+    const lerp = (from, to, amount) => from + ((to - from) * amount);
+    const tick = (time) => {
+      const delta = Math.min(48, Math.max(1, time - (previousTime || time)));
+      previousTime = time;
+      const state = getState();
+      const phase = time / 1000;
+      const gazeEasing = 1 - Math.exp(-delta / (state === 'drag' ? 38 : 72));
+      const gazeTarget = (state === 'tap' || state === 'drag') ? targetGaze : { x: 0, y: 0 };
+      currentGaze.x = lerp(currentGaze.x, gazeTarget.x, gazeEasing);
+      currentGaze.y = lerp(currentGaze.y, gazeTarget.y, gazeEasing);
+      const reactionElapsed = reaction ? Math.max(0, time - reactionStartedAt) : 0;
+      const enteringApply = state === 'apply-enter';
+      const leavingApply = state === 'apply-exit';
+      const bounce = enteringApply ? Math.sin(Math.min(1, reactionElapsed / 420) * Math.PI * 2) * .62 : 0;
+      const shake = leavingApply ? Math.sin(Math.min(1, reactionElapsed / 340) * Math.PI * 4) * .68 : 0;
+      const happyEyes = state === 'apply' || enteringApply;
+      const blinkPhase = ((phase + .7) % 5.6) / 5.6;
+      // Preserve the natural idle cadence while shortening only the close/open window.
+      const blink = state === 'idle' ? 1 - (.84 * Math.exp(-Math.pow((blinkPhase - .72) / .022, 2))) : 1;
+      // Reactions are exclusive and zero-mean; eye bounds stay inside the fixed circle.
+      shell.setAttribute('transform', `translate(${shake.toFixed(3)} ${bounce.toFixed(3)})`);
+      eyes.setAttribute('transform', `translate(${currentGaze.x.toFixed(3)} ${currentGaze.y.toFixed(3)})`);
+      // Apply's happy expression is a small lift only: eye geometry remains constant.
+      const eyeLift = happyEyes ? -.22 : 0;
+      const eyeTransform = state === 'idle'
+        ? `translate(0 6.5) scale(1 ${blink.toFixed(3)}) translate(0 -6.5)`
+        : `translate(0 ${eyeLift.toFixed(3)})`;
+      eyeMotion.setAttribute('transform', eyeTransform);
+      render();
+      animationFrame = window.requestAnimationFrame(tick);
+    };
+    const centerGaze = () => setGaze(0, 0, false);
+    const gazeAtPoint = (clientX, clientY) => {
+      const rect = addButton.getBoundingClientRect();
+      setGaze(clientX - (rect.left + rect.width / 2), clientY - (rect.top + rect.height / 2));
+    };
+    const begin = (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      if (pointer) return;
+      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      dragging = false;
+    };
+    const move = (event) => {
+      if (!pointer || event.pointerId !== pointer.id) return;
+      const dx = event.clientX - pointer.x;
+      const dy = event.clientY - pointer.y;
+      if (!dragging && Math.hypot(dx, dy) < dragThreshold) return;
+      if (!dragging) {
+        dragging = true;
+        tapping = false;
+        settling = false;
+        tapTimer = clearTimer(tapTimer);
+        settleTimer = clearTimer(settleTimer);
+      }
+      setGaze(dx, dy);
+      render();
+    };
+    const end = (event, cancelled = false) => {
+      if (!pointer || event.pointerId !== pointer.id) return;
+      const wasDragging = dragging;
+      pointer = null;
+      dragging = false;
+      if (wasDragging) {
+        tapping = false;
+        settling = true;
+        centerGaze();
+        render();
+        settleTimer = clearTimer(settleTimer);
+        settleTimer = window.setTimeout(() => {
+          settling = false;
+          render();
+        }, 480);
+        return;
+      }
+      if (cancelled) {
+        centerGaze();
+        render();
+        return;
+      }
+      tapping = true;
+      settling = false;
+      gazeAtPoint(event.clientX, event.clientY);
+      render();
+      tapTimer = clearTimer(tapTimer);
+      tapTimer = window.setTimeout(() => {
+        tapping = false;
+        centerGaze();
+        render();
+      }, 380);
+    };
+    const rejectApply = () => {
+      applyActive = false;
+      reaction = 'apply-exit';
+      reactionStartedAt = performance.now();
+      reactionTimer = clearTimer(reactionTimer);
+      centerGaze();
+      reactionTimer = window.setTimeout(() => {
+        reaction = null;
+        centerGaze();
+        render();
+      }, 360);
+    };
+    const setApply = (active) => {
+      if (active && !applyActive) {
+        applyActive = true;
+        reaction = 'apply-enter';
+        reactionStartedAt = performance.now();
+        reactionTimer = clearTimer(reactionTimer);
+        if (!dragging && !tapping) centerGaze();
+        reactionTimer = window.setTimeout(() => {
+          reaction = null;
+          render();
+        }, 420);
+      } else if (!active && applyActive) {
+        rejectApply();
+      }
+      render();
+    };
+    render();
+    animationFrame = window.requestAnimationFrame(tick);
+    return { begin, move, end, setApply, rejectApply };
+  };
+
+  zFaceController = createZFaceController();
+
+  if (isZPage) {
+    let heroTapStart = null;
+    const pulseZHero = () => {
+      pulsePageSurface(zHeroImage);
+    };
+    zHeroImage.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      heroTapStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    }, { passive: true });
+    zHeroImage.addEventListener('pointerup', (event) => {
+      if (!heroTapStart || event.pointerId !== heroTapStart.pointerId) return;
+      const moved = Math.hypot(event.clientX - heroTapStart.x, event.clientY - heroTapStart.y);
+      heroTapStart = null;
+      if (moved <= 8) pulseZHero();
+    }, { passive: true });
+    zHeroImage.addEventListener('pointercancel', () => { heroTapStart = null; }, { passive: true });
+    zHeroImage.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-pulse') zHeroImage.classList.remove('is-pulsing');
+    });
+    let swipeStart = null;
+    let zLastHorizontalSwipeAt = -Infinity;
+    const suppressSwipeClick = () => { zLastHorizontalSwipeAt = performance.now(); };
+    const consumeSwipeClickSuppression = () => (
+      performance.now() - zLastHorizontalSwipeAt < 250
+    );
+    const setZActiveSection = (index) => {
+      zActiveContentIndex = (index + zSecondaryNavItems.length) % zSecondaryNavItems.length;
+      zSecondaryNavItems.forEach((item, itemIndex) => {
+        const active = itemIndex === zActiveContentIndex;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-pressed', String(active));
+      });
+      syncZActiveContent(zSecondaryNav.classList.contains('is-z-transition-ready'));
+      syncZApplyButtonGeometry();
+      zFaceController?.setApply(zActiveContentIndex === 3);
+    };
+    const beginSwipe = (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      swipeStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+    };
+    const finishSwipe = (event) => {
+      if (!swipeStart || event.pointerId !== swipeStart.pointerId) return;
+      const deltaX = event.clientX - swipeStart.x;
+      const deltaY = event.clientY - swipeStart.y;
+      swipeStart = null;
+      if (Math.abs(deltaX) < 36 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+      suppressSwipeClick();
+      const movesForward = document.documentElement.dir === 'rtl' ? deltaX > 0 : deltaX < 0;
+      setZActiveSection(zActiveContentIndex + (movesForward ? 1 : -1));
+      pulsePageSurface(zSecondaryNav);
+    };
+    [zSecondaryNavRail, zContentSlot].forEach((target) => {
+      target.addEventListener('pointerdown', beginSwipe, { passive: true });
+      target.addEventListener('pointerup', finishSwipe, { passive: true });
+      target.addEventListener('pointercancel', () => { swipeStart = null; }, { passive: true });
+    });
+    zSecondaryNavItems.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        if (consumeSwipeClickSuppression()) return;
+        setZActiveSection(index);
+        pulsePageSurface(zSecondaryNav);
+      });
+    });
+    [[zSecondaryNavPrevious, -1], [zSecondaryNavNext, 1]].forEach(([button, step]) => {
+      button?.addEventListener('click', () => {
+        if (consumeSwipeClickSuppression()) return;
+        setZActiveSection(zActiveContentIndex + step);
+        pulsePageSurface(zSecondaryNav);
+      });
+    });
+    zApplyButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        if (consumeSwipeClickSuppression()) return;
+        pulsePageSurface(zSecondaryNav);
+        const destination = button.getAttribute('data-s-z-apply-destination');
+        if (destination) window.setTimeout(() => { window.location.assign(destination); }, 180);
+      });
+    });
+    zSecondaryNav.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-menu-pulse') zSecondaryNav.classList.remove('is-pulsing');
+    });
+    resetZSecondaryNavAlignment();
+  }
+
+  const updateComposerInputLanguage = () => {
+    const hasTypedText = input.value.trim().length > 0;
+    const language = hasTypedText
+      ? arabicScriptPattern.test(input.value) ? 'ar' : 'en'
+      : document.documentElement.lang === 'ar' ? 'ar' : 'en';
+    const isArabic = language === 'ar';
+    input.classList.toggle('is-arabic-input', isArabic);
+    input.classList.toggle('is-english-input', !isArabic);
+    input.lang = language;
+    input.dir = isArabic ? 'rtl' : 'ltr';
+  };
+
+  const updateThemeToggleLabel = () => {
+    const copy = pageCopy[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
+    sendThemeUtility.setAttribute('aria-label', document.documentElement.classList.contains('is-day-mode')
+      ? copy.utilities.switchToDark
+      : copy.utilities.switchToDay);
+  };
+
+  const applyLanguage = (next, { persist = true, emit = true } = {}) => {
+    const language = next === 'ar' ? 'ar' : 'en';
+    const copy = pageCopy[language];
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    sendLanguageUtility.classList.toggle('is-active', language === 'en');
+    sendLanguageUtility.setAttribute('aria-pressed', String(language === 'en'));
+    sendLanguageUtility.setAttribute('aria-label', language === 'en' ? copy.utilities.switchToArabic : copy.utilities.switchToEnglish);
+    applyPageCopy?.(language);
+    resetZSecondaryNavAlignment();
+    updateComposerInputLanguage();
+    updateThemeToggleLabel();
+    if (persist && isZPage) {
+      try { localStorage.setItem('ooxme-language', language); } catch (_) {}
+    }
+    if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
+  };
+
+  const applyTheme = (next, { manual = false } = {}) => {
+    if (manual) manualThemeOverride = true;
+    const isDayMode = next === 'day';
+    document.documentElement.classList.toggle('is-day-mode', isDayMode);
+    sendThemeUtility.classList.toggle('is-active', !isDayMode);
+    sendThemeUtility.setAttribute('aria-pressed', String(!isDayMode));
+    updateThemeToggleLabel();
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDayMode ? '#FFFFFF' : '#000000');
+  };
+
+  // /x always begins in English. Its language control remains a live,
+  // session-only choice and never reads a stored or cross-page preference.
+  const initialLanguage = 'en';
+  applyLanguage(initialLanguage, { persist: false, emit: false });
+  applyTheme('dark');
+
+  const isTemporaryUiInteraction = (target) => (
+    composer.contains(target) || conversation.contains(target)
+  );
+
+  const setComposerMenuOpen = (isOpen) => {
+    window.clearTimeout(composerMenuCloseTimer);
+    composerMenuCloseTimer = 0;
+    if (isOpen) {
+      composer.style.setProperty('--s-composer-menu-height', `${composerMenu.offsetHeight}px`);
+      composerMenu.classList.add('is-open');
+      composerMenu.setAttribute('aria-hidden', 'false');
+      if (!isZPage) setSendUtilitiesOpen(true);
+      if (isZPage) {
+        composerMenuPanel?.classList.add('is-open');
+        composerMenuPanel?.setAttribute('aria-hidden', 'false');
+      }
+      return;
+    }
+
+    const menuWasOpen = composerMenu.classList.contains('is-open');
+    if (isZPage) {
+      composerMenuPanel?.classList.remove('is-open');
+      composerMenuPanel?.setAttribute('aria-hidden', 'true');
+    }
+    if (!menuWasOpen) {
+      composerMenu.setAttribute('aria-hidden', 'true');
+      if (!isZPage) setSendUtilitiesOpen(false);
+      return;
+    }
+
+    composerMenuCloseTimer = window.setTimeout(() => {
+      composerMenuCloseTimer = 0;
+      composerMenu.classList.remove('is-open');
+      composerMenu.setAttribute('aria-hidden', 'true');
+      if (!isZPage) setSendUtilitiesOpen(false);
+    }, 60);
+  };
+
+  const setSendUtilitiesOpen = (isOpen) => {
+    sendUtilities.classList.toggle('is-open', isOpen);
+    sendUtilities.setAttribute('aria-hidden', String(!isOpen));
+  };
+
+  const setSendUtilityAvailability = (isAvailable) => {
+    [sendStatusUtility, sendThemeUtility, sendLanguageUtility].filter(Boolean).forEach((control) => {
+      control.disabled = !isAvailable;
+    });
+  };
+
+  const resetAddButton = () => {
+    window.clearTimeout(addFlashTimer);
+    addRotated = false;
+    addButton.classList.remove('is-rotated', 'is-active');
+    if (isZPage) submitButton.classList.remove('is-active');
+    setComposerMenuOpen(false);
+    setSendUtilitiesOpen(false);
+    if (activeTemporaryUi === 'menu' || activeTemporaryUi === 'utilities') activeTemporaryUi = 'none';
+  };
+
+  const pulseComposer = () => {
+    if (!initializationReady) return;
+    if (composerPulseFrame) window.cancelAnimationFrame(composerPulseFrame);
+    composer.classList.remove('is-pulsing');
+    composerPulseFrame = window.requestAnimationFrame(() => {
+      composerPulseFrame = 0;
+      composer.classList.add('is-pulsing');
+    });
+  };
+
+  composer.addEventListener('animationend', (event) => {
+    if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing');
+  });
+
+  const pulseComposerMenu = () => {
+    if (!initializationReady) return;
+    if (composerMenuPulseFrame) window.cancelAnimationFrame(composerMenuPulseFrame);
+    composerMenu.classList.remove('is-pulsing');
+    composerMenuPulseFrame = window.requestAnimationFrame(() => {
+      composerMenuPulseFrame = 0;
+      composerMenu.classList.add('is-pulsing');
+    });
+  };
+
+  composerMenu.addEventListener('animationend', (event) => {
+    if (event.animationName === 's-page-composer-menu-pulse') composerMenu.classList.remove('is-pulsing');
+  });
+
+  const pulseSendUtility = (control) => {
+    const pendingFrame = sendUtilityPulseFrames.get(control);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    control.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      sendUtilityPulseFrames.delete(control);
+      control.classList.add('is-pulsing');
+    });
+    sendUtilityPulseFrames.set(control, frame);
+  };
+
+  const pulseMarqueeItem = (image) => {
+    const pendingFrame = marqueeItemPulseFrames.get(image);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    image.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      marqueeItemPulseFrames.delete(image);
+      image.classList.add('is-pulsing');
+    });
+    marqueeItemPulseFrames.set(image, frame);
+  };
+
+  document.querySelectorAll('.s-page__marquee').forEach((marquee) => {
+    marquee.addEventListener('pointerdown', (event) => {
+      const image = event.target.closest('.s-page__marquee img');
+      if (image && marquee.contains(image)) pulseMarqueeItem(image);
+    }, { passive: true });
+    marquee.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-marquee-item-pulse' && event.target.matches('.s-page__marquee img')) {
+        event.target.classList.remove('is-pulsing');
+      }
+    });
+
+    const images = Array.from(marquee.querySelectorAll('img'));
+    const settleImage = (image) => {
+      if (image.complete) return image.decode?.().catch(() => {}) || Promise.resolve();
+      return new Promise((resolve) => {
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      });
+    };
+    Promise.all(images.map(settleImage)).then(() => marquee.classList.add('is-marquee-ready'));
+  });
+
+  const pulseSquareLogo = (logo) => {
+    const pendingFrame = squareLogoPulseFrames.get(logo);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    logo.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      squareLogoPulseFrames.delete(logo);
+      logo.classList.add('is-pulsing');
+    });
+    squareLogoPulseFrames.set(logo, frame);
+  };
+
+  const prepareSectionSixLogoStrip = () => {
+    if (!squareLogoStage || squareLogoStage.dataset.sLogoStripReady === 'true') return;
+    const logos = Array.from(squareLogoStage.querySelectorAll('.s-page__square-logo'));
+    if (!logos.length) return;
+    const track = document.createElement('div');
+    const firstSet = document.createElement('div');
+    const duplicateSet = document.createElement('div');
+    track.className = 's-page__logo-strip-track';
+    firstSet.className = 's-page__logo-strip-set';
+    duplicateSet.className = 's-page__logo-strip-set';
+    duplicateSet.setAttribute('aria-hidden', 'true');
+    logos.forEach((logo) => firstSet.append(logo));
+    Array.from(firstSet.children).forEach((logo) => duplicateSet.append(logo.cloneNode(true)));
+    track.append(firstSet, duplicateSet);
+    squareLogoStage.append(track);
+    squareLogoStage.dataset.sLogoStripReady = 'true';
+  };
+
+  prepareSectionSixLogoStrip();
+
+  squareLogoStage?.addEventListener('pointerdown', (event) => {
+    const logo = event.target.closest('.s-page__square-logo');
+    if (logo && squareLogoStage.contains(logo)) pulseSquareLogo(logo);
+  }, { passive: true });
+  squareLogoStage?.addEventListener('animationend', (event) => {
+    if (event.animationName !== 's-page-square-logo-pulse') return;
+    event.target.closest('.s-page__square-logo')?.classList.remove('is-pulsing');
+  });
+
+  [sendStatusUtility, sendThemeUtility, sendLanguageUtility].filter(Boolean).forEach((control) => {
+    control.addEventListener('pointerdown', () => pulseSendUtility(control), { passive: true });
+    control.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-menu-pulse') control.classList.remove('is-pulsing');
+    });
+  });
+
+  [addButton, submitButton].forEach((control) => {
+    control?.addEventListener('pointerdown', pulseComposer, { passive: true });
+  });
+  submitButton.addEventListener('pointerdown', (event) => event.preventDefault());
+
+  [addButton, composerMenu, composerMenuPanel, sendUtilities].filter(Boolean).forEach((control) => {
+    control.addEventListener('pointerdown', (event) => event.stopPropagation());
+    control.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
+  });
+  // The /rpn Top Bar treats its unoccupied bar surface as a single pulse
+  // target. /x uses that same endpoint-only bar contract; /z retains its
+  // established behavior.
+  composer.addEventListener('pointerdown', (event) => {
+    if (event.target === composer) pulseComposer();
+  }, { passive: true });
+  composerMenu.addEventListener('click', (event) => event.stopPropagation());
+  composerMenuPanel?.addEventListener('click', (event) => event.stopPropagation());
+  sendUtilities.addEventListener('click', (event) => event.stopPropagation());
+  composerMenuItems.forEach((item, index) => {
+    item.addEventListener('pointerdown', () => {
+      pulseComposerMenu();
+      window.clearTimeout(menuItemFlashTimers.get(item));
+      item.classList.add('is-active');
+      menuItemFlashTimers.set(item, window.setTimeout(() => item.classList.remove('is-active'), 120));
+    }, { passive: true });
+    if (index === 0) {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        activateTemporaryUi('none');
+        window.location.assign('/bm');
       });
     }
-    section.classList.toggle('is-expanded', expanded);
-    const toggle = section.querySelector('[data-task-details-toggle]');
-    const content = section.querySelector('[data-task-details-content]');
-    toggle?.setAttribute('aria-expanded', String(expanded));
-    content?.setAttribute('aria-hidden', String(!expanded));
-  };
-  detailsDisclosureItems.forEach((section) => {
-    const toggle = section.querySelector('[data-task-details-toggle]');
-    toggle?.addEventListener('click', () => setDetailsDisclosure(section, !section.classList.contains('is-expanded')));
-    setDetailsDisclosure(section, false);
   });
-  const timelineLine = timeline.querySelector('.employee-dashboard-timeline-line');
-  const updateTimelineLineFade = () => {
-    if (!timelineLine) return;
-    const timelineRect = timeline.getBoundingClientRect();
-    const cardRect = timeline.closest('.employee-dashboard-empty-card')?.getBoundingClientRect();
-    const xValue = cardRect ? (timelineRect.left - cardRect.left) / 2 : 0;
-    const lineHeight = timelineLine.getBoundingClientRect().height;
-    const fadeSize = xValue * 2;
-    timelineLine.style.setProperty('--timeline-line-top-fade-start', '0px');
-    timelineLine.style.setProperty('--timeline-line-top-fade-end', `${fadeSize}px`);
-    timelineLine.style.setProperty('--timeline-line-bottom-fade-start', `${Math.max(0, lineHeight - fadeSize)}px`);
-    timelineLine.style.setProperty('--timeline-line-bottom-fade-end', `${lineHeight}px`);
+
+  addButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+    activateTemporaryUi('none');
+  });
+
+  document.addEventListener('pointerdown', (event) => {
+    if (isTemporaryUiInteraction(event.target)) return;
+    activateTemporaryUi('none');
+    if (document.activeElement === input) input.blur();
+  }, { passive: true });
+  const updateKeyboardOffset = () => {
+    if (!window.visualViewport) return;
+    const layoutHeight = Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight || 0));
+    const keyboardOverlap = document.activeElement === input
+      ? Math.max(0, layoutHeight - window.visualViewport.height - window.visualViewport.offsetTop)
+      : 0;
+    if (Math.abs(keyboardOverlap - lastKeyboardOverlap) >= .01) {
+      page.style.setProperty('--s-keyboard-offset', `${keyboardOverlap.toFixed(2)}px`);
+      syncConversationInputBounds();
+      scheduleStablePortraitSectionLayout();
+    }
+    lastKeyboardOverlap = keyboardOverlap;
   };
-  const setTaskFocus = (nextIndex, animate = true) => {
-    activeTaskIndex = Math.max(0, Math.min(taskItems.length - 1, nextIndex));
-    const visibleRadius = landscapeTaskQuery.matches ? 1 : 2;
-    taskItems.forEach((task, index) => {
-      task.classList.toggle('is-active', index === activeTaskIndex);
-      task.classList.toggle('is-focus-hidden', Math.abs(index - activeTaskIndex) > visibleRadius);
+
+  const scheduleKeyboardOffset = () => {
+    if (keyboardFrame) return;
+    keyboardFrame = window.requestAnimationFrame(() => {
+      keyboardFrame = 0;
+      updateKeyboardOffset();
     });
-    const activeTask = taskItems[activeTaskIndex];
-    if (!activeTask) return;
-    const offset = ((taskViewport.clientHeight - activeTask.offsetHeight) / 2) - activeTask.offsetTop;
-    taskTrack.style.transition = animate ? '' : 'none';
-    taskTrack.style.transform = `translate3d(0, ${offset}px, 0)`;
-    requestAnimationFrame(updateTimelineLineFade);
-    if (!animate) requestAnimationFrame(() => { taskTrack.style.transition = ''; });
   };
-  taskTrack.addEventListener('transitionend', updateTimelineLineFade);
-  const finishTaskGesture = (event, cancelled = false) => {
-    if (!taskGesture || event.pointerId !== taskGesture.pointerId) return;
-    const travel = event.clientY - taskGesture.startY;
-    taskGesture = null;
-    timeline.releasePointerCapture?.(event.pointerId);
-    if (!cancelled && Math.abs(travel) >= 30) setTaskFocus(activeTaskIndex + (travel < 0 ? 1 : -1));
-    else setTaskFocus(activeTaskIndex);
+
+  const syncConversationInputBounds = () => {
+    const conversationRect = conversation.getBoundingClientRect();
+    const inputFieldRect = input.parentElement.getBoundingClientRect();
+    conversation.style.paddingLeft = `${Math.max(0, inputFieldRect.left - conversationRect.left)}px`;
+    conversation.style.paddingRight = `${Math.max(0, conversationRect.right - inputFieldRect.right)}px`;
   };
-  timeline.addEventListener('pointerdown', (event) => {
-    if (panelTwoState !== 'progress' || event.button !== 0 || taskGesture) return;
-    const currentTransform = getComputedStyle(taskTrack).transform;
-    const transformMatch = currentTransform.match(/matrix3?\(([^)]+)\)/);
-    const transformValues = transformMatch ? transformMatch[1].split(',').map(Number) : [];
-    const currentOffset = transformValues.length === 16 ? transformValues[13] : (transformValues.length === 6 ? transformValues[5] : 0);
-    taskGesture = { pointerId: event.pointerId, startY: event.clientY, startOffset: currentOffset };
-    taskTrack.style.transition = 'none';
-    timeline.setPointerCapture?.(event.pointerId);
+
+  const groupElements = localizedGroups.map((group) => Array.from(group.querySelectorAll('[data-s-reveal]')));
+  const firstGroupObserver = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        entry.target.classList.toggle('is-visible', entry.isIntersecting);
+      });
+    }, { threshold: 0.15 })
+    : null;
+
+  const getFlowDuration = (item) => {
+    if (reducedMotion.matches) return 0;
+    const minimumDuration = item.dataset.sFlowKind === 'text'
+      ? 720
+      : flowMinimumDurationMs;
+    return Math.round(Math.max(
+      minimumDuration,
+      flowBaselineDurationMs - Math.min(flowBaselineDurationMs - minimumDuration, flowScrollVelocity * 180)
+    ));
+  };
+
+  const getVisibleFlowDuration = (item, rect) => (
+    rect.bottom >= window.innerHeight * -.25 && rect.top <= window.innerHeight * 1.25
+      ? getFlowDuration(item)
+      : 0
+  );
+
+  const syncFlowGroupState = (group) => {
+    const hasVisibleItem = Array.from(group.querySelectorAll('[data-s-flow-item]'))
+      .some((item) => item.classList.contains('is-visible'));
+    group.classList.toggle('is-visible', hasVisibleItem);
+    group.setAttribute('aria-hidden', String(!hasVisibleItem));
+  };
+
+  const setImageCopyVisibility = (isVisible) => {
+    window.clearTimeout(imageCopyRevealTimer);
+    imageCopyRevealTimer = 0;
+    if (isZPage) {
+      imageCopy.classList.toggle('is-visible', isVisible);
+      imageCopy.setAttribute('aria-hidden', String(!isVisible));
+      return;
+    }
+    if (!isVisible) {
+      imageCopy.classList.remove('is-visible');
+      imageCopy.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    imageCopy.classList.add('is-visible');
+    imageCopy.setAttribute('aria-hidden', 'false');
+  };
+
+  const cancelMetricCount = () => {
+    if (metricCountFrame) window.cancelAnimationFrame(metricCountFrame);
+    metricCountFrame = 0;
+  };
+
+  const setMetricCountsActive = (isActive) => {
+    cancelMetricCount();
+    metricsSectionActive = isActive;
+    const values = numberMetricItems
+      .map((metric) => {
+        const value = metric.querySelector('[data-s-metric-value]');
+        const target = Number(value?.dataset.sMetricTarget);
+        return value && Number.isFinite(target) ? { value, target } : null;
+      })
+      .filter(Boolean);
+
+    if (!isActive) {
+      values.forEach(({ value }) => { value.textContent = '0+'; });
+      return;
+    }
+    if (reducedMotion.matches) {
+      values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
+      return;
+    }
+
+    values.forEach(({ value }) => { value.textContent = '0+'; });
+    const startedAt = performance.now();
+    const step = (now) => {
+      const progress = Math.min(1, (now - startedAt) / metricCountDurationMs);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      values.forEach(({ value, target }) => {
+        value.textContent = `${Math.round(target * easedProgress)}+`;
+      });
+      if (progress < 1) metricCountFrame = window.requestAnimationFrame(step);
+      else metricCountFrame = 0;
+    };
+    metricCountFrame = window.requestAnimationFrame(step);
+  };
+
+  const setFlowItemVisibility = (item, isVisible, duration) => {
+    item.style.setProperty('--s-flow-duration', `${duration}ms`);
+    item.classList.toggle('is-visible', isVisible);
+    item.setAttribute('aria-hidden', String(!isVisible));
+    if (item === imageMedia) setImageCopyVisibility(isVisible);
+    syncFlowGroupState(item.closest('[data-s-flow-group]'));
+  };
+
+  const syncFlowTarget = () => {
+    flowFrame = 0;
+    const composerTop = composer.getBoundingClientRect().top;
+    const itemRects = flowItems.map((item) => item.getBoundingClientRect());
+    itemRects.forEach((itemRect, index) => {
+      flowCrossed[index] = flowCrossed[index]
+        ? itemRect.top <= composerTop + flowThresholdHysteresisPx
+        : itemRect.top <= composerTop;
+    });
+    let crossedCount = 0;
+    while (crossedCount < flowCrossed.length && flowCrossed[crossedCount]) crossedCount += 1;
+    flowTargetCount = crossedCount > 0
+      ? Math.min(flowItems.length, crossedCount + 1)
+      : 0;
+
+    // Geometry is read above as one batch. Apply every required visibility change
+    // in this same frame so fast scrolling cannot leave lower sections queued behind.
+    if (flowVisibleCount < flowTargetCount) {
+      for (let index = flowVisibleCount; index < flowTargetCount; index += 1) {
+        setFlowItemVisibility(flowItems[index], true, getVisibleFlowDuration(flowItems[index], itemRects[index]));
+      }
+    } else if (flowVisibleCount > flowTargetCount) {
+      for (let index = flowVisibleCount - 1; index >= flowTargetCount; index -= 1) {
+        setFlowItemVisibility(flowItems[index], false, getVisibleFlowDuration(flowItems[index], itemRects[index]));
+      }
+    }
+    flowVisibleCount = flowTargetCount;
+    flowScrollVelocity *= .72;
+  };
+
+  const scheduleFlowSync = () => {
+    if (flowFrame) return;
+    flowFrame = window.requestAnimationFrame(syncFlowTarget);
+  };
+
+  // Each composition keeps its first Text Group untouched; only its final item gains free space.
+  const portraitSectionCompositions = [
+    { first: firstGroup, last: isZPage ? zHeroImage : logoParticleField, type: 'anchored' },
+    { first: document.querySelector('[data-s-copy-group="3"]'), last: document.querySelector('.s-page__flow-group--strips') },
+    { first: document.querySelector('[data-s-copy-group="4"]'), last: document.querySelector('.s-page__flow-group--logos') },
+    { first: document.querySelector('.s-page__flow-group--consultation'), last: document.querySelector('.s-page__flow-group--section-7-action') || consultationCta }
+  ].filter(({ first, last }) => first && last);
+
+  const resetPortraitSectionLayout = ({ preserveFinalSettleSpace = false } = {}) => {
+    document.documentElement.style.removeProperty('--s-portrait-measured-x');
+    document.documentElement.removeAttribute('data-s-portrait-composer-top');
+    document.documentElement.removeAttribute('data-s-portrait-viewport-height');
+    document.documentElement.removeAttribute('data-s-portrait-section-top');
+    document.documentElement.removeAttribute('data-s-portrait-reference-y');
+    document.documentElement.style.removeProperty('--s-portrait-section-height');
+    document.documentElement.style.removeProperty('--s-portrait-final-section-height');
+    if (!preserveFinalSettleSpace) document.documentElement.style.removeProperty('--s-portrait-final-settle-space');
+    majorSections.forEach((section) => {
+      section.style.removeProperty('height');
+      section.removeAttribute('data-s-portrait-overflow');
+    });
+    portraitSectionCompositions.forEach(({ first, last, type }) => {
+      last.style.removeProperty('--s-portrait-bottom-up-offset');
+      last.classList.remove('is-portrait-bottom-up');
+      first.removeAttribute('data-s-portrait-final-gap');
+      first.removeAttribute('data-s-portrait-final-y');
+      first.removeAttribute('data-s-portrait-reference-delta');
+      first.removeAttribute('data-s-portrait-live-gap');
+      first.removeAttribute('data-s-portrait-layout');
+      if (type === 'anchored') {
+        last.style.removeProperty('bottom');
+        last.classList.remove('is-portrait-composed');
+      }
+    });
+  };
+
+  const syncFinalScrollBuffer = () => {
+    finalScrollBufferFrame = 0;
+    if (!isZPage) {
+      document.documentElement.style.removeProperty('--s-portrait-final-settle-space');
+      return;
+    }
+    if (!window.matchMedia('(orientation: portrait)').matches) {
+      document.documentElement.style.removeProperty('--s-portrait-final-settle-space');
+      return;
+    }
+
+    // Read the complete final geometry before the single buffer write. The padding
+    // is exactly the missing range, so it makes the target reachable without adding
+    // a scrollable blank area beyond the settled final composition.
+    const existingBuffer = Number.parseFloat(
+      document.documentElement.style.getPropertyValue('--s-portrait-final-settle-space')
+    ) || 0;
+    const scrollY = window.scrollY;
+    const viewportHeight = window.innerHeight;
+    const referenceY = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const finalSectionTop = majorSections[majorSections.length - 1].getBoundingClientRect().top;
+    const contentBottom = content.getBoundingClientRect().bottom;
+    const finalTarget = scrollY + finalSectionTop - referenceY;
+    const maxScrollWithoutBuffer = scrollY + contentBottom - existingBuffer - viewportHeight;
+    const requiredBuffer = Math.max(0, finalTarget - maxScrollWithoutBuffer + 1);
+    if (Math.abs(requiredBuffer - existingBuffer) > .25) {
+      document.documentElement.style.setProperty('--s-portrait-final-settle-space', `${requiredBuffer}px`);
+    }
+  };
+
+  const scheduleFinalScrollBuffer = () => {
+    if (finalScrollBufferFrame) return;
+    finalScrollBufferFrame = window.requestAnimationFrame(syncFinalScrollBuffer);
+  };
+
+  const syncZFirstGroupTextGap = () => {
+    if (!isZPage) return;
+    const title = firstGroup.querySelector('.s-page__group-title');
+    const description = firstGroup.querySelector('.s-page__group-description');
+    if (!title || !description || !zHeroImage) return;
+    const imageRect = zHeroImage.getBoundingClientRect();
+    const titleRect = title.getBoundingClientRect();
+    const descriptionRect = description.getBoundingClientRect();
+    const x = composer.getBoundingClientRect().left || 18;
+    const currentShift = Number.parseFloat(firstGroup.style.getPropertyValue('--s-z-first-group-shift')) || 0;
+    const naturalDescriptionBottom = descriptionRect.bottom - currentShift;
+    const shift = imageRect.top - naturalDescriptionBottom - x;
+    if (!firstGroup.hasAttribute('data-s-z-original-y')) {
+      firstGroup.setAttribute('data-s-z-original-y', (titleRect.top - currentShift).toFixed(3));
+    }
+    firstGroup.style.setProperty('--s-z-first-group-shift', `${shift.toFixed(3)}px`);
+    firstGroup.setAttribute('data-s-z-final-y', (titleRect.top + shift).toFixed(3));
+    firstGroup.setAttribute('data-s-z-text-image-gap', x.toFixed(3));
+  };
+
+  // /z uses one normalized progress value for its two-state composition. The
+  // travel equals the box height plus X, so the box's final bottom edge lands
+  // exactly on the image's original first-view baseline.
+  const syncZSectionOneScroll = () => {
+    zSectionOneScrollFrame = 0;
+    if (!isZPage || !zHeroImage) return;
+
+    const scrollY = window.scrollY;
+    if (!zSectionOneCompositionReady) {
+      syncZContentBoxHorizontalGeometry();
+      syncZContentBoxHeight();
+      syncZStateOneCompositionGeometry();
+      syncZApplyButtonGeometry();
+    }
+    if (!zSectionOneCompositionReady || zSectionOneTransitionDistance <= 0) return;
+
+    const rawProgress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
+    const nativeScrollLimit = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const reachableEndpoint = Math.min(zSectionOneTransitionDistance, nativeScrollLimit);
+    const hasReachedEndpoint = nativeScrollLimit > zEndpointCaptureTolerancePx
+      && scrollY >= reachableEndpoint - zEndpointCaptureTolerancePx;
+    let progress = rawProgress;
+    if (zSectionOneLocked) {
+      progress = 1;
+      const hasMovedAwayFromEndpoint = scrollY <= zEndpointLockScrollY - zEndpointReverseIntentDistancePx;
+      if (zEndpointReverseIntent && hasMovedAwayFromEndpoint) {
+        zSectionOneLocked = false;
+        zEndpointReverseIntent = false;
+        progress = rawProgress;
+        zFaceController?.rejectApply();
+      }
+    } else if (hasReachedEndpoint) {
+      zSectionOneLocked = true;
+      zEndpointLockScrollY = scrollY;
+      zEndpointReverseIntent = false;
+      progress = 1;
+      zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
+    }
+    const remainingBlur = (1 - progress) * 12;
+    firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
+    zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
+    zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
+    zSecondaryNav.classList.toggle('is-z-content-interactive', progress > .05);
+
+    firstGroup.setAttribute('data-s-z-text-scroll-progress', progress.toFixed(4));
+    zSecondaryNav.setAttribute('data-s-z-composition-progress', progress.toFixed(4));
+  };
+
+  const scheduleZSectionOneScroll = () => {
+    if (!isZPage || zSectionOneScrollFrame) return;
+    zSectionOneScrollFrame = window.requestAnimationFrame(syncZSectionOneScroll);
+  };
+
+  const beginZEndpointGesture = (pointerId, clientY) => {
+    if (!isZPage || !zSectionOneLocked) return;
+    zEndpointPointerId = pointerId;
+    zEndpointPointerStartY = clientY;
+    zEndpointReverseIntent = false;
+  };
+
+  const updateZEndpointGesture = (pointerId, clientY) => {
+    if (!zSectionOneLocked || pointerId !== zEndpointPointerId) return;
+    zEndpointReverseIntent = clientY - zEndpointPointerStartY >= zEndpointReverseIntentDistancePx;
+  };
+
+  const endZEndpointGesture = (pointerId) => {
+    if (pointerId !== zEndpointPointerId) return;
+    if (zEndpointReverseIntent && zSectionOneLocked) syncZSectionOneScroll();
+    zEndpointPointerId = null;
+    zEndpointPointerStartY = 0;
+    zEndpointReverseIntent = false;
+  };
+
+  const cancelZReleaseSettle = ({ stopNativeScroll = false } = {}) => {
+    if (zReleaseSettleTimer) window.clearTimeout(zReleaseSettleTimer);
+    if (zReleaseSettleFrame) window.cancelAnimationFrame(zReleaseSettleFrame);
+    const wasSettling = zReleaseSettleTarget !== null;
+    zReleaseSettleTimer = 0;
+    zReleaseSettleFrame = 0;
+    zReleaseSettleTarget = null;
+    zReleaseSettleLastScrollY = 0;
+    zReleaseSettleStableFrames = 0;
+    zReleaseSettleStartedAt = 0;
+    if (stopNativeScroll && wasSettling) {
+      window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
+    }
+  };
+
+  const watchZReleaseSettle = () => {
+    zReleaseSettleFrame = 0;
+    if (zReleaseSettleTarget === null) return;
+    const target = zReleaseSettleTarget;
+    const scrollY = window.scrollY;
+    if (Math.abs(scrollY - zReleaseSettleLastScrollY) <= .01) {
+      zReleaseSettleStableFrames += 1;
+    } else {
+      zReleaseSettleStableFrames = 0;
+    }
+    zReleaseSettleLastScrollY = scrollY;
+    const reachedTarget = Math.abs(scrollY - target) <= zEndpointCaptureTolerancePx;
+    const stoppedAtNativeLimit = zReleaseSettleStableFrames >= 3
+      && performance.now() - zReleaseSettleStartedAt >= zReleaseSettleStartGraceMs;
+    if (reachedTarget || stoppedAtNativeLimit) {
+      if (target > 0) {
+        if (!zSectionOneLocked) {
+          zSectionOneLocked = true;
+          zEndpointLockScrollY = scrollY;
+          zEndpointReverseIntent = false;
+          zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
+        }
+      } else if (scrollY > zEndpointCaptureTolerancePx) {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      }
+      zReleaseSettleTarget = null;
+      zReleaseSettleStableFrames = 0;
+      zReleaseSettleStartedAt = 0;
+      syncZSectionOneScroll();
+      return;
+    }
+    zReleaseSettleFrame = window.requestAnimationFrame(watchZReleaseSettle);
+  };
+
+  const scheduleZReleaseSettle = () => {
+    if (
+      !isZPage
+      || zReleasePointerActive
+      || zReleaseSettleTarget !== null
+      || !zSectionOneCompositionReady
+      || zSectionOneLocked
+    ) return;
+    if (zReleaseSettleTimer) window.clearTimeout(zReleaseSettleTimer);
+    zReleaseSettleTimer = window.setTimeout(() => {
+      zReleaseSettleTimer = 0;
+      if (zReleasePointerActive || zReleaseSettleTarget !== null || zSectionOneLocked) return;
+      const target = window.scrollY < zSectionOneTransitionDistance / 2
+        ? 0
+        : zSectionOneTransitionDistance;
+      if (Math.abs(window.scrollY - target) <= zEndpointCaptureTolerancePx) {
+        if (target > 0) syncZSectionOneScroll();
+        return;
+      }
+      zReleaseSettleTarget = target;
+      zReleaseSettleLastScrollY = window.scrollY;
+      zReleaseSettleStableFrames = 0;
+      zReleaseSettleStartedAt = performance.now();
+      window.scrollTo({
+        top: target,
+        left: 0,
+        behavior: reducedMotion.matches ? 'auto' : 'smooth'
+      });
+      zReleaseSettleFrame = window.requestAnimationFrame(watchZReleaseSettle);
+    }, zReleaseSettleDelayMs);
+  };
+
+  const syncPortraitSectionLayout = () => {
+    portraitSectionLayoutFrame = 0;
+    const isPortrait = window.matchMedia('(orientation: portrait)').matches;
+    if (!isPortrait) {
+      syncConversationInputBounds();
+      resetPortraitSectionLayout();
+      syncZFirstGroupTextGap();
+      scheduleZSectionOneScroll();
+      scheduleFlowSync();
+      scheduleFirstGroupBaseline();
+      return;
+    }
+
+    const rootStyle = getComputedStyle(document.documentElement);
+    const contentStyle = getComputedStyle(content);
+    const x = Number.parseFloat(rootStyle.getPropertyValue('--s-x')) || 18;
+    const viewportHeight = document.documentElement.clientHeight;
+    const composerRect = composer.getBoundingClientRect();
+    const conversationRect = conversation.getBoundingClientRect();
+    const inputFieldRect = input.parentElement.getBoundingClientRect();
+    const sectionViewportTop = Number.parseFloat(contentStyle.paddingTop) || 0;
+    const desiredRelativeBottom = conversationRect.bottom - sectionViewportTop;
+    const compositionGeometry = portraitSectionCompositions.map(({ first, last, type }) => {
+      const firstRect = first.getBoundingClientRect();
+      const lastRect = last.getBoundingClientRect();
+      const currentOffset = type === 'anchored'
+        ? 0
+        : Number.parseFloat(last.style.getPropertyValue('--s-portrait-bottom-up-offset')) || 0;
+      const naturalRelativeBottom = type === 'anchored'
+        ? (firstRect.height * .5) + (lastRect.height * .5)
+        : lastRect.bottom - firstRect.top - currentOffset;
+      return {
+        first,
+        last,
+        type,
+        firstHeight: firstRect.height,
+        naturalRelativeBottom,
+        majorSection: first.closest('[data-s-major-section]')
+      };
+    });
+
+    // All geometry reads are complete. From here to the next frame, only write.
+    conversation.style.paddingLeft = `${Math.max(0, inputFieldRect.left - conversationRect.left)}px`;
+    conversation.style.paddingRight = `${Math.max(0, conversationRect.right - inputFieldRect.right)}px`;
+    document.documentElement.style.setProperty('--s-portrait-section-height', `${viewportHeight}px`);
+    document.documentElement.style.setProperty('--s-portrait-final-section-height', `${desiredRelativeBottom}px`);
+    document.documentElement.style.setProperty('--s-portrait-measured-x', `${x}px`);
+    document.documentElement.setAttribute('data-s-portrait-composer-top', composerRect.top.toFixed(3));
+    document.documentElement.setAttribute('data-s-portrait-viewport-height', `${viewportHeight}`);
+    document.documentElement.setAttribute('data-s-portrait-section-top', sectionViewportTop.toFixed(3));
+    document.documentElement.setAttribute('data-s-portrait-reference-y', conversationRect.bottom.toFixed(3));
+
+    compositionGeometry.forEach(({ first, last, type, firstHeight, naturalRelativeBottom, majorSection }) => {
+      majorSection.style.removeProperty('height');
+      majorSection.removeAttribute('data-s-portrait-overflow');
+      if (type === 'anchored') {
+        if (!(isZPage && zSectionOneLocked && last === zHeroImage)) {
+          last.style.setProperty('bottom', `${firstHeight - desiredRelativeBottom}px`);
+          last.classList.add('is-portrait-composed');
+        }
+      } else {
+        last.style.setProperty('--s-portrait-bottom-up-offset', `${desiredRelativeBottom - naturalRelativeBottom}px`);
+        last.classList.add('is-portrait-bottom-up');
+      }
+
+      first.setAttribute('data-s-portrait-layout', 'composed');
+      first.setAttribute('data-s-portrait-final-gap', (composerRect.top - conversationRect.bottom).toFixed(3));
+      first.setAttribute('data-s-portrait-final-y', conversationRect.bottom.toFixed(3));
+      first.setAttribute('data-s-portrait-reference-delta', '0.000');
+      if (first === firstGroup) first.setAttribute('data-s-portrait-live-gap', '0.000');
+    });
+
+    syncZFirstGroupTextGap();
+    scheduleFinalScrollBuffer();
+    scheduleZSectionOneScroll();
+    scheduleFlowSync();
+    scheduleFirstGroupBaseline();
+  };
+
+  const schedulePortraitSectionLayout = () => {
+    window.clearTimeout(portraitSectionLayoutTimer);
+    portraitSectionLayoutTimer = 0;
+    if (portraitSectionLayoutFrame) return;
+    portraitSectionLayoutFrame = window.requestAnimationFrame(syncPortraitSectionLayout);
+  };
+
+  const scheduleStablePortraitSectionLayout = () => {
+    window.clearTimeout(portraitSectionLayoutTimer);
+    portraitSectionLayoutTimer = window.setTimeout(() => {
+      portraitSectionLayoutTimer = 0;
+      if (performance.now() - lastPageScrollTime < 160) {
+        scheduleStablePortraitSectionLayout();
+        return;
+      }
+      schedulePortraitSectionLayout();
+    }, 180);
+  };
+
+  const getMajorSectionReferenceY = () => (
+    Number.parseFloat(getComputedStyle(content).paddingTop) || 0
+  );
+
+  const cancelMajorSectionSettle = ({ stopNativeScroll = false } = {}) => {
+    window.clearTimeout(majorSectionSettleTimer);
+    majorSectionSettleTimer = 0;
+    if (majorSectionSettleFrame) window.cancelAnimationFrame(majorSectionSettleFrame);
+    if (majorSectionSettleReleaseFrame) window.cancelAnimationFrame(majorSectionSettleReleaseFrame);
+    majorSectionSettleFrame = 0;
+    majorSectionSettleReleaseFrame = 0;
+    const wasSettling = majorSectionSettleTarget !== null;
+    majorSectionSettleTarget = null;
+    majorSectionSettleStableFrames = 0;
+    majorSectionSettleOwnsScroll = false;
+    // Cancelling the watcher alone leaves a native `scrollTo({ behavior: 'smooth' })`
+    // in flight. Freeze it at the live position before returning control to the user.
+    if (stopNativeScroll && wasSettling) window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
+  };
+
+  const finishMajorSectionSettle = () => {
+    if (majorSectionSettleFrame) window.cancelAnimationFrame(majorSectionSettleFrame);
+    majorSectionSettleFrame = 0;
+    syncMetricCountsWithActiveSection();
+    majorSectionSettleTarget = null;
+    majorSectionSettleStableFrames = 0;
+    // Keep ownership through the browser's final smooth-scroll event. Releasing on
+    // the following frame prevents that event from arming a redundant settle timer.
+    majorSectionSettleReleaseFrame = window.requestAnimationFrame(() => {
+      majorSectionSettleReleaseFrame = 0;
+      majorSectionSettleOwnsScroll = false;
+    });
+  };
+
+  const watchMajorSectionSettle = () => {
+    majorSectionSettleFrame = 0;
+    if (majorSectionSettleTarget === null) return;
+    if (Math.abs(window.scrollY - majorSectionSettleTarget) <= 1) {
+      majorSectionSettleStableFrames += 1;
+      if (majorSectionSettleStableFrames >= 2) {
+        finishMajorSectionSettle();
+        return;
+      }
+    } else {
+      majorSectionSettleStableFrames = 0;
+    }
+    majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
+  };
+
+  const getNearestMajorSectionIndex = () => {
+    const referenceY = getMajorSectionReferenceY();
+    const navigableSections = getNavigableMajorSections();
+    const sectionTops = navigableSections.map((section) => section.getBoundingClientRect().top);
+    return sectionTops.reduce((candidate, top, index) => {
+      const distance = Math.abs(top - referenceY);
+      return !candidate || distance < candidate.distance ? { index, distance } : candidate;
+    }, null);
+  };
+
+  const syncMetricCountsWithActiveSection = () => {
+    const current = getNearestMajorSectionIndex();
+    const activeSection = current ? getNavigableMajorSections()[current.index] : null;
+    const isMetricsSection = activeSection === metricsMajorSection;
+    if (isMetricsSection !== metricsSectionActive) setMetricCountsActive(isMetricsSection);
+  };
+
+  const transitionToMajorSection = (targetIndex) => {
+    if (isZPage || majorSectionSettleTarget !== null || discreteSectionInputLocked) return;
+    const navigableSections = getNavigableMajorSections();
+    const current = getNearestMajorSectionIndex();
+    if (!current) return;
+    const boundedTargetIndex = Math.max(0, Math.min(navigableSections.length - 1, targetIndex));
+    if (boundedTargetIndex === current.index) return;
+    if (navigableSections[boundedTargetIndex] !== metricsMajorSection && metricsSectionActive) {
+      setMetricCountsActive(false);
+    }
+    const referenceY = getMajorSectionReferenceY();
+    const scrollY = window.scrollY;
+    const targetRect = navigableSections[boundedTargetIndex].getBoundingClientRect();
+    const target = Math.max(0, Math.min(
+      document.documentElement.scrollHeight - window.innerHeight,
+      scrollY + targetRect.top - referenceY
+    ));
+    if (Math.abs(target - scrollY) <= 1) return;
+
+    cancelMajorSectionSettle();
+    majorSectionSettleTarget = target;
+    majorSectionSettleOwnsScroll = true;
+    discreteSectionInputLocked = true;
+    window.clearTimeout(discreteSectionUnlockTimer);
+    // Absorb wheel/trackpad momentum after one deliberate gesture so it cannot
+    // spill into a second section transition.
+    discreteSectionUnlockTimer = window.setTimeout(() => { discreteSectionInputLocked = false; }, 800);
+    window.scrollTo({ top: target, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
+  };
+
+  const transitionMajorSection = (direction) => {
+    if (isZPage || !direction) return;
+    const current = getNearestMajorSectionIndex();
+    if (!current) return;
+    transitionToMajorSection(current.index + direction);
+  };
+
+  const pulseImageSurface = (frame) => {
+    const pending = imagePulseFrames.get(frame);
+    if (pending) window.cancelAnimationFrame(pending);
+    frame.classList.remove('is-pulsing');
+    imagePulseFrames.set(frame, window.requestAnimationFrame(() => {
+      imagePulseFrames.delete(frame);
+      frame.classList.add('is-pulsing');
+    }));
+  };
+
+  const imageInteractionFrames = Array.from(document.querySelectorAll('.s-page__image-interaction-card'));
+  imageInteractionFrames.forEach((frame) => {
+    let tapStart = null;
+    frame.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'mouse' || event.button === 0) {
+        tapStart = { x: event.clientX, y: event.clientY, id: event.pointerId };
+      }
+    }, { passive: true });
+    frame.addEventListener('pointerup', (event) => {
+      if (!tapStart || event.pointerId !== tapStart.id) return;
+      const moved = Math.hypot(event.clientX - tapStart.x, event.clientY - tapStart.y);
+      tapStart = null;
+      if (moved <= 8) pulseImageSurface(frame);
+    }, { passive: true });
+    frame.addEventListener('pointercancel', () => { tapStart = null; }, { passive: true });
+    frame.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-pulse') frame.classList.remove('is-pulsing');
+    });
+  });
+
+  document.querySelectorAll('[data-s-image-arrow-action]').forEach((arrow) => {
+    ['pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach((eventName) => {
+      arrow.addEventListener(eventName, (event) => event.stopPropagation(), { passive: true });
+    });
+    arrow.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (arrow.dataset.sImageArrowAction === 'update') window.location.assign('/update');
+      else if (arrow.dataset.sImageArrowAction === 'next-section') transitionMajorSection(1);
+      else if (arrow.dataset.sImageArrowAction === 'rpn') window.location.assign('/rpn');
+    });
+  });
+  document.querySelectorAll('[data-s-image-copy-action="update"]').forEach((copy) => {
+    copy.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      window.location.assign('/update');
+    });
+  });
+
+  const triggerLockedNoticeShake = (notice) => {
+    const pending = lockedNoticeShakeFrames.get(notice);
+    if (pending) window.cancelAnimationFrame(pending);
+    notice.classList.remove('is-locked-shaking');
+    lockedNoticeShakeFrames.set(notice, window.requestAnimationFrame(() => {
+      lockedNoticeShakeFrames.delete(notice);
+      notice.classList.add('is-locked-shaking');
+    }));
+  };
+
+  document.querySelectorAll('.s-page__closed-notice:not(.s-page__closed-notice--section-7)').forEach((notice) => {
+    [notice, notice.nextElementSibling].filter(Boolean).forEach((target) => {
+      target.addEventListener('pointerdown', () => triggerLockedNoticeShake(notice), { passive: true });
+    });
+    notice.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-locked-notice-shake') notice.classList.remove('is-locked-shaking');
+    });
+  });
+
+  const noteFlowScroll = () => {
+    const now = performance.now();
+    lastPageScrollTime = now;
+    const nextScrollY = window.scrollY;
+    const elapsed = Math.max(1, now - lastFlowScrollTime);
+    const instantaneousVelocity = Math.abs(nextScrollY - lastFlowScrollY) / elapsed;
+    flowScrollVelocity = (flowScrollVelocity * .35) + (instantaneousVelocity * .65);
+    lastFlowScrollY = nextScrollY;
+    lastFlowScrollTime = now;
+    pauseLogoParticleForScroll();
+    if (isZPage) {
+      // Scroll can dispatch several times before the next paint. One write pass
+      // per frame keeps opacity/filter updates in lockstep with the rendered
+      // scroll position instead of repeatedly invalidating the same frame.
+      scheduleZSectionOneScroll();
+      scheduleZReleaseSettle();
+    }
+    if (portraitSectionLayoutTimer) scheduleStablePortraitSectionLayout();
+    scheduleFlowSync();
+  };
+
+  const resetFlowRevealState = () => {
+    window.clearTimeout(imageCopyRevealTimer);
+    setMetricCountsActive(false);
+    if (flowFrame) window.cancelAnimationFrame(flowFrame);
+    flowFrame = 0;
+    flowVisibleCount = 0;
+    flowTargetCount = 0;
+    flowScrollVelocity = 0;
+    lastFlowScrollY = 0;
+    lastFlowScrollTime = performance.now();
+    flowCrossed.fill(false);
+    flowItems.forEach((item) => {
+      item.classList.remove('is-visible');
+      item.setAttribute('aria-hidden', 'true');
+      item.style.removeProperty('--s-flow-duration');
+    });
+    setImageCopyVisibility(false);
+    flowGroups.forEach((group) => {
+      group.classList.remove('is-visible');
+      group.setAttribute('aria-hidden', 'true');
+    });
+  };
+
+  const setLocalizedText = (element, value) => {
+    const fragment = document.createDocumentFragment();
+    value.split('\n').forEach((line, index) => {
+      const lineElement = document.createElement('span');
+      lineElement.className = 's-page__reveal-line';
+      lineElement.textContent = line;
+      fragment.appendChild(lineElement);
+    });
+    element.replaceChildren(fragment);
+  };
+
+  const setRevealLineDelays = () => {
+    groups.forEach((group) => {
+      group.querySelectorAll('.s-page__reveal-line').forEach((line, index) => {
+        line.style.setProperty('--s-reveal-delay', `${index * 110}ms`);
+      });
+    });
+  };
+
+  const measureLocalizedTextHeight = (element, value, language) => {
+    const width = element.getBoundingClientRect().width;
+    if (!width) return 0;
+    const probe = element.cloneNode(false);
+    probe.removeAttribute('id');
+    probe.removeAttribute('data-s-reveal');
+    probe.lang = language;
+    probe.dir = language === 'ar' ? 'rtl' : 'ltr';
+    probe.style.position = 'fixed';
+    probe.style.inset = '0 auto auto -10000px';
+    probe.style.width = `${width}px`;
+    probe.style.maxWidth = 'none';
+    probe.style.height = 'auto';
+    probe.style.minHeight = '0';
+    probe.style.margin = '0';
+    probe.style.opacity = '1';
+    probe.style.filter = 'none';
+    probe.style.clipPath = 'none';
+    probe.style.visibility = 'hidden';
+    probe.style.pointerEvents = 'none';
+    probe.style.transition = 'none';
+    probe.style.fontFamily = language === 'ar'
+      ? 'OOXMETosh, OOXMEScript, Arial, sans-serif'
+      : 'OOXMEScript, OOXMEEnglish, Arial, sans-serif';
+    setLocalizedText(probe, value);
+    document.body.appendChild(probe);
+    const height = probe.getBoundingClientRect().height;
+    probe.remove();
+    return height;
+  };
+
+  // Mirror /rpn's First Text Group source bounds: its live composer-menu width
+  // becomes the content-box width, with the same menu chrome and 8px panel
+  // inset removed before the title/body role styles are applied.
+  const syncFirstGroupTextGeometry = () => {
+    if (isZPage) return;
+    const menuRect = composerMenu.getBoundingClientRect();
+    if (!menuRect.width) return;
+    const menuStyle = getComputedStyle(composerMenu);
+    const borderStart = Number.parseFloat(menuStyle.borderInlineStartWidth) || 0;
+    const borderEnd = Number.parseFloat(menuStyle.borderInlineEndWidth) || 0;
+    const paddingStart = Number.parseFloat(menuStyle.paddingInlineStart) || 0;
+    const paddingEnd = Number.parseFloat(menuStyle.paddingInlineEnd) || 0;
+    const rpnPanelInset = 8;
+    const textWidth = Math.max(0, menuRect.width - borderStart - borderEnd - paddingStart - paddingEnd - (rpnPanelInset * 2));
+    const sourceStart = borderStart + paddingStart + rpnPanelInset;
+    const sourceEnd = borderEnd + paddingEnd + rpnPanelInset;
+    const isRtl = document.documentElement.lang === 'ar';
+    [firstGroup, ...sectionTwoTextGroups, nextImageTextGroup].filter(Boolean).forEach((group) => {
+      const groupRect = group.getBoundingClientRect();
+      if (!groupRect.width) return;
+      const inlineOffset = isRtl ? sourceEnd : sourceStart;
+      const width = `${textWidth.toFixed(3)}px`;
+      const offset = `${inlineOffset.toFixed(3)}px`;
+      if (group === firstGroup) {
+        group.style.setProperty('--s-x-first-group-text-width', width);
+        group.style.setProperty('--s-x-first-group-text-inline-offset', offset);
+      } else {
+        group.style.setProperty('--s-x-rpn-image-text-width', width);
+        group.style.setProperty('--s-x-rpn-image-text-inline-offset', offset);
+      }
+    });
+  };
+
+  // Section 2 keeps both localized copies mounted. Reserve the larger measured
+  // copy height so changing language changes glyphs and direction only, never
+  // the overlay box, image baseline, or section distribution.
+  const syncSectionTwoCopyGeometry = () => {
+    if (isZPage || !sectionTwoTextGroups.length) return;
+    sectionTwoTextGroups.forEach((textGroup) => {
+      const localizedCopies = Array.from(textGroup.querySelectorAll('[lang]'));
+      if (!localizedCopies.length) return;
+      const originalDisplays = localizedCopies.map((copy) => copy.style.display);
+      let height = 0;
+      localizedCopies.forEach((activeCopy) => {
+        localizedCopies.forEach((copy) => { copy.style.display = copy === activeCopy ? 'block' : 'none'; });
+        height = Math.max(height, activeCopy.getBoundingClientRect().height);
+      });
+      localizedCopies.forEach((copy, index) => { copy.style.display = originalDisplays[index]; });
+      if (height) textGroup.style.height = `${Math.ceil(height)}px`;
+    });
+  };
+
+  // The original /x Composer used the layout viewport's bottom edge. Keep that
+  // reference, then compensate only for the browser's fractional rendered
+  // layout so the last visible edge of the First Text Group is exact.
+  const syncFirstGroupBaseline = () => {
+    firstGroupBaselineFrame = 0;
+    if (isZPage || firstGroupBaselineLocked) return;
+    const title = firstGroup.querySelector('.s-page__group-title');
+    const baselineElement = title;
+    if (!baselineElement || getComputedStyle(baselineElement).display === 'none') return;
+    const pageStyle = getComputedStyle(page);
+    // The Top Bar is positioned by the same --s-x token, so its rendered top
+    // offset supplies the resolved X value without introducing another
+    // viewport-reference calculation.
+    const x = composer.getBoundingClientRect().top;
+    const keyboardOffset = Number.parseFloat(pageStyle.getPropertyValue('--s-keyboard-offset')) || 0;
+    const portrait = window.matchMedia('(orientation: portrait)').matches;
+    const baseline = (x * (portrait ? 1 : .5)) + keyboardOffset;
+    const targetBottom = document.documentElement.clientHeight - baseline;
+    const currentBottom = baselineElement.getBoundingClientRect().bottom;
+    const difference = currentBottom - targetBottom;
+    const correction = Number.parseFloat(firstGroup.style.getPropertyValue('--s-first-group-baseline-correction')) || 0;
+
+    firstGroup.setAttribute('data-s-first-group-baseline', targetBottom.toFixed(3));
+    firstGroup.setAttribute('data-s-first-group-bottom', currentBottom.toFixed(3));
+    firstGroup.setAttribute('data-s-first-group-baseline-difference', difference.toFixed(3));
+    if (Math.abs(difference) <= .005) {
+      if (!sectionTwoBaselineCorrectionLocked) {
+        page.style.setProperty('--s-section-2-bottom-baseline-correction', `${correction.toFixed(3)}px`);
+        sectionTwoBaselineCorrectionLocked = true;
+      }
+      firstGroupBaselineLocked = true;
+      return;
+    }
+
+    const nextCorrection = correction + difference;
+    firstGroup.style.setProperty('--s-first-group-baseline-correction', `${nextCorrection.toFixed(3)}px`);
+    if (!sectionTwoBaselineCorrectionLocked) {
+      page.style.setProperty('--s-section-2-bottom-baseline-correction', `${nextCorrection.toFixed(3)}px`);
+    }
+    firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
+  };
+
+  const scheduleFirstGroupBaseline = () => {
+    if (!firstGroupBaselineLocked && !firstGroupBaselineFrame) {
+      firstGroupBaselineFrame = window.requestAnimationFrame(syncFirstGroupBaseline);
+    }
+  };
+
+  const stabilizeLocalizedGeometry = () => {
+    localizedGeometryFrame = 0;
+    syncFirstGroupTextGeometry();
+    syncSectionTwoCopyGeometry();
+    groupElements.forEach((elements, groupIndex) => {
+      const englishGroup = getGroupCopy('en', groupIndex);
+      const arabicGroup = getGroupCopy('ar', groupIndex);
+      if (!englishGroup || !arabicGroup) return;
+      elements.forEach((element, elementIndex) => {
+        element.style.height = '';
+        if (!isZPage && groupIndex === 0 && elementIndex === 0 && firstTypewriterTitle) return;
+        const height = Math.max(
+          measureLocalizedTextHeight(element, englishGroup[elementIndex], 'en'),
+          measureLocalizedTextHeight(element, arabicGroup[elementIndex], 'ar')
+        );
+        if (height) element.style.height = `${Math.ceil(height)}px`;
+      });
+    });
+    scheduleFlowSync();
+    schedulePortraitSectionLayout();
+    scheduleFirstGroupBaseline();
+  };
+
+  const scheduleLocalizedGeometry = () => {
+    if (localizedGeometryFrame) window.cancelAnimationFrame(localizedGeometryFrame);
+    localizedGeometryFrame = window.requestAnimationFrame(stabilizeLocalizedGeometry);
+  };
+
+  applyPageCopy = (language) => {
+    const copy = pageCopy[language];
+    groupElements.forEach((elements, groupIndex) => {
+      const localizedGroup = getGroupCopy(language, groupIndex);
+      if (!localizedGroup) return;
+      elements.forEach((element, elementIndex) => {
+        if (!isZPage && groupIndex === 0 && elementIndex === 0 && firstTypewriterTitle) return;
+        setLocalizedText(element, localizedGroup[elementIndex]);
+      });
+    });
+    startFirstTypewriter();
+    const menuCopy = isZPage ? zMainMenuCopy[language] : copy.menu;
+    menuLabels.forEach((label, index) => { label.textContent = menuCopy[index]; });
+    if (zSecondaryNav) {
+      zSecondaryNav.setAttribute('aria-label', language === 'ar' ? 'التنقل بين الأقسام' : 'Section navigation');
+      zSecondaryNavPrevious?.setAttribute('aria-label', language === 'ar' ? 'القسم السابق' : 'Previous section');
+      zSecondaryNavNext?.setAttribute('aria-label', language === 'ar' ? 'القسم التالي' : 'Next section');
+    }
+    if (consultationCta) {
+      consultationCta.textContent = copy.consultationCta;
+      consultationCta.lang = language;
+      consultationCta.dir = language === 'ar' ? 'rtl' : 'ltr';
+    }
+    input.placeholder = copy.inputPlaceholder;
+    inputLabel.textContent = copy.ask;
+    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME');
+    submitButton.setAttribute('aria-label', copy.submitQuestion);
+    conversation.setAttribute('aria-label', copy.conversation);
+    if (conversationFinal.classList.contains('is-visible')) {
+      conversationFinalCopy.lang = language;
+      conversationFinalCopy.dir = language === 'ar' ? 'rtl' : 'ltr';
+      conversationFinalCopy.textContent = finalMessages[language];
+    }
+    setRevealLineDelays();
+    scheduleLocalizedGeometry();
+  };
+  applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
+  document.fonts?.ready.then(() => {
+    if (!isZPage) {
+      firstGroupBaselineLocked = false;
+      sectionTwoBaselineCorrectionLocked = false;
+      scheduleLocalizedGeometry();
+      schedulePortraitSectionLayout();
+    }
+  });
+  if (isZPage) firstGroup.classList.add('is-visible');
+  else if (firstGroupObserver) firstGroupObserver.observe(firstGroup);
+  else firstGroup.classList.add('is-visible');
+  if (isZPage) {
+    imageMedia.classList.add('is-visible');
+    setImageCopyVisibility(true);
+  }
+  flowGroups.forEach((group) => group.setAttribute('aria-hidden', 'true'));
+  scheduleFlowSync();
+  schedulePortraitSectionLayout();
+  window.addEventListener('load', () => {
+    if (!isZPage) {
+      schedulePortraitSectionLayout();
+    }
+  }, { once: true });
+
+  const setupLogoParticleField = () => {
+    const particleRenderScale = 3;
+    const context = logoParticleCanvas.getContext('2d', { alpha: true });
+    if (!context) return;
+
+    const maskCanvas = document.createElement('canvas');
+    const particleCanvas = document.createElement('canvas');
+    const maskContext = maskCanvas.getContext('2d', { alpha: true });
+    const particleContext = particleCanvas.getContext('2d', { alpha: true });
+    if (!maskContext || !particleContext) return;
+
+    const configureCanvasContexts = () => {
+      [context, maskContext, particleContext].forEach((canvasContext) => {
+        canvasContext.filter = 'none';
+        canvasContext.imageSmoothingEnabled = true;
+        canvasContext.imageSmoothingQuality = 'high';
+        canvasContext.shadowBlur = 0;
+      });
+    };
+
+    const logoMaskImage = new Image();
+    const pointer = { x: 0, y: 0, strength: 0 };
+    let particles = [];
+    let width = 0;
+    let height = 0;
+    let renderedFrame = 0;
+    let scrollResumeTimer = 0;
+    let isInViewport = false;
+    let isReady = false;
+    let particleBuildStartedAt = null;
+
+    const random = (minimum, maximum) => minimum + Math.random() * (maximum - minimum);
+    const stopRendering = () => {
+      if (!renderedFrame) return;
+      window.cancelAnimationFrame(renderedFrame);
+      renderedFrame = 0;
+    };
+
+    const activatePointer = (event) => {
+      const rect = logoParticleCanvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      pointer.x = ((event.clientX - rect.left) / rect.width) * width;
+      pointer.y = ((event.clientY - rect.top) / rect.height) * height;
+      pointer.strength = 1;
+      startRendering();
+    };
+
+    const render = (timestamp) => {
+      renderedFrame = 0;
+      if (!isReady || !isInViewport || document.hidden) return;
+
+      const time = timestamp * .001;
+      const particleColor = document.documentElement.classList.contains('is-day-mode') ? [0, 0, 0] : [255, 255, 255];
+      const interactionColor = [175, 145, 123];
+      particleBuildStartedAt ??= timestamp;
+      const fieldBuildProgress = Math.min(1, (timestamp - particleBuildStartedAt) / 2600);
+      pointer.strength *= .945;
+
+      particleContext.clearRect(0, 0, width, height);
+      particles.forEach((particle) => {
+        const distance = Math.hypot(particle.x - pointer.x, particle.y - pointer.y);
+        const influence = pointer.strength > .004
+          ? Math.max(0, 1 - distance / (148 * particle.pixelRatio)) * pointer.strength
+          : 0;
+        const twinkle = .82 + ((Math.sin((time * particle.speed) + particle.phase) + 1) * .09);
+        const visibilityWave = (Math.sin((time * particle.visibilitySpeed) + particle.visibilityPhase) + 1) * .5;
+        const minimumVisibility = .12 + (particle.edgeWeight * .72);
+        const visibility = minimumVisibility + ((1 - minimumVisibility) * Math.pow(visibilityWave, 1.3));
+        const lineBuildProgress = Math.max(0, Math.min(1, (fieldBuildProgress - particle.buildDelay) / .3));
+        const buildEase = lineBuildProgress * lineBuildProgress * (3 - (2 * lineBuildProgress));
+        const alpha = Math.min(1, (twinkle * visibility) + (influence * 1.05)) * buildEase;
+        const radius = Math.max(.5, Math.round((particle.radius * (1 + influence * 1.25)) * 2) / 2);
+        const localMotion = influence * particle.pixelRatio * 4.2;
+        const interactionMix = Math.min(1, influence * 1.15);
+        const red = Math.round(particleColor[0] + ((interactionColor[0] - particleColor[0]) * interactionMix));
+        const green = Math.round(particleColor[1] + ((interactionColor[1] - particleColor[1]) * interactionMix));
+        const blue = Math.round(particleColor[2] + ((interactionColor[2] - particleColor[2]) * interactionMix));
+        const x = Math.round(particle.x + (Math.sin((time * particle.drift) + particle.phase) * localMotion));
+        const y = Math.round(particle.y + (Math.cos((time * particle.drift * .8) + particle.phase) * localMotion));
+
+        particleContext.beginPath();
+        particleContext.fillStyle = `rgba(${red}, ${green}, ${blue}, ${alpha.toFixed(3)})`;
+        particleContext.arc(x, y, radius, 0, Math.PI * 2);
+        particleContext.fill();
+      });
+
+      context.clearRect(0, 0, width, height);
+      context.globalCompositeOperation = 'source-over';
+      context.drawImage(particleCanvas, 0, 0);
+      context.globalCompositeOperation = 'destination-in';
+      context.drawImage(maskCanvas, 0, 0);
+      context.globalCompositeOperation = 'source-over';
+
+      if (!reducedMotion.matches) startRendering();
+    };
+
+    const startRendering = () => {
+      if (!isReady || !isInViewport || document.hidden || renderedFrame) return;
+      renderedFrame = window.requestAnimationFrame(render);
+    };
+
+    pauseLogoParticleForScroll = () => {
+      stopRendering();
+      window.clearTimeout(scrollResumeTimer);
+      scrollResumeTimer = window.setTimeout(startRendering, 120);
+    };
+
+    const resizeCanvas = () => {
+      if (!logoMaskImage.naturalWidth) return;
+      const rect = logoParticleCanvas.getBoundingClientRect();
+      const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 4) * particleRenderScale;
+      const nextWidth = Math.max(1, Math.round(rect.width * pixelRatio));
+      const nextHeight = Math.max(1, Math.round(rect.height * pixelRatio));
+      if (nextWidth === width && nextHeight === height && particles.length) return;
+
+      width = nextWidth;
+      height = nextHeight;
+      [logoParticleCanvas, maskCanvas, particleCanvas].forEach((canvas) => {
+        canvas.width = width;
+        canvas.height = height;
+      });
+      configureCanvasContexts();
+      maskContext.clearRect(0, 0, width, height);
+      maskContext.drawImage(logoMaskImage, 0, 0, width, height);
+      // The trademark is separate from the OOXME mark; exclude it before sampling and clipping.
+      maskContext.clearRect(Math.floor(width * .855), 0, Math.ceil(width * .145), Math.ceil(height * .072));
+      const maskPixels = maskContext.getImageData(0, 0, width, height).data;
+      const isPhoneViewport = window.matchMedia('(max-width: 600px)').matches;
+      const particleCount = isPhoneViewport
+        ? Math.min(1320, Math.max(1100, Math.round((rect.width * rect.height) / 54)))
+        : Math.min(880, Math.max(640, Math.round((rect.width * rect.height) / 87.5)));
+      const edgeParticleCount = Math.round(particleCount * .6);
+      const particleTargetCount = particleCount + edgeParticleCount;
+      const particleRadius = isPhoneViewport ? [.56, .76] : [.46, .62];
+      const alphaAt = (x, y) => {
+        if (x < 0 || x >= width || y < 0 || y >= height) return 0;
+        return maskPixels[((Math.floor(y) * width + Math.floor(x)) * 4) + 3];
+      };
+      const edgeWeightAt = (x, y) => {
+        const edgeSearchRange = Math.max(6, Math.round(13 * pixelRatio));
+        const directions = [[1, 0], [-1, 0], [0, 1], [0, -1], [.707, .707], [-.707, .707], [.707, -.707], [-.707, -.707]];
+        let nearestEdge = edgeSearchRange;
+        directions.forEach(([dx, dy]) => {
+          for (let distance = 1; distance <= edgeSearchRange; distance += 1) {
+            if (alphaAt(x + (dx * distance), y + (dy * distance)) < 160) {
+              nearestEdge = Math.min(nearestEdge, distance);
+              break;
+            }
+          }
+        });
+        return 1 - (nearestEdge / edgeSearchRange);
+      };
+      particles = [];
+      particleBuildStartedAt = null;
+      let attempts = 0;
+      while (particles.length < particleTargetCount && attempts < particleTargetCount * 520) {
+        attempts += 1;
+        const x = Math.floor(Math.random() * width);
+        const y = Math.floor(Math.random() * height);
+        if (maskPixels[((y * width + x) * 4) + 3] < 160) continue;
+        const edgeWeight = edgeWeightAt(x, y);
+        const edgeDensity = Math.pow(edgeWeight, .58);
+        const isEdgeReinforcement = particles.length >= particleCount;
+        if (isEdgeReinforcement) {
+          if (Math.random() > (.12 + (edgeDensity * .88))) continue;
+        } else if (Math.random() > (.22 + (edgeDensity * .78))) continue;
+        particles.push({
+          x,
+          y,
+          pixelRatio,
+          radius: random(...particleRadius) * pixelRatio,
+          edgeWeight,
+          phase: random(0, Math.PI * 2),
+          speed: random(3.4, 7.2),
+          drift: random(.22, .6),
+          buildDelay: random(0, .7),
+          visibilityPhase: random(0, Math.PI * 2),
+          visibilitySpeed: random(1.2, 2.8)
+        });
+      }
+      isReady = true;
+      startRendering();
+    };
+
+    logoParticleCanvas.addEventListener('pointermove', activatePointer, { passive: true });
+    logoParticleCanvas.addEventListener('pointerdown', (event) => {
+      event.stopPropagation();
+      activatePointer(event);
+    }, { passive: true });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stopRendering();
+      else startRendering();
+    });
+    new MutationObserver(startRendering).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    if ('ResizeObserver' in window) new ResizeObserver(resizeCanvas).observe(logoParticleField);
+    else window.addEventListener('resize', resizeCanvas, { passive: true });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        isInViewport = entries.some((entry) => entry.isIntersecting);
+        if (isInViewport) startRendering();
+        else stopRendering();
+      }, { threshold: .01 }).observe(logoParticleField);
+    } else {
+      isInViewport = true;
+    }
+    logoMaskImage.addEventListener('load', resizeCanvas, { once: true });
+    logoMaskImage.src = 'assets/logo/OX-001-LOGO-black.png';
+  };
+  if (logoParticleField && logoParticleCanvas) setupLogoParticleField();
+
+  sendThemeUtility.addEventListener('click', (event) => {
     event.stopPropagation();
-  }, true);
-  timeline.addEventListener('pointermove', (event) => {
-    if (panelTwoState !== 'progress' || !taskGesture || event.pointerId !== taskGesture.pointerId) return;
-    event.preventDefault();
+    applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day', { manual: true });
+  });
+  sendLanguageUtility.addEventListener('click', (event) => {
     event.stopPropagation();
-    taskTrack.style.transform = `translate3d(0, ${taskGesture.startOffset + event.clientY - taskGesture.startY}px, 0)`;
+    applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar');
+  });
+  if (isZPage) {
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'ooxme-language' && event.newValue) {
+        applyLanguage(event.newValue, { persist: false });
+      }
+    });
+  }
+
+  const latinScriptPattern = /[A-Za-z]/u;
+  const detectMessageLanguage = (message) => (arabicScriptPattern.test(message) ? 'ar' : 'en');
+  const getMessageDirection = (message, language) => (
+    arabicScriptPattern.test(message) && latinScriptPattern.test(message)
+      ? 'auto'
+      : language === 'ar' ? 'rtl' : 'ltr'
+  );
+
+  const setConversationVisibility = (isVisible) => {
+    if (conversationVisible === isVisible) return;
+    conversationVisible = isVisible;
+    conversation.classList.toggle('is-chat-hidden', !isVisible);
+    conversation.setAttribute('aria-hidden', String(!isVisible));
+    syncPageTextForChat();
+  };
+
+  const syncPageTextForChat = () => {
+    const hasVisibleBubbles = !conversation.classList.contains('is-chat-hidden')
+      && Boolean(conversation.querySelector('.s-page__conversation-bubble:not(.is-exiting)'));
+    page.classList.toggle('is-chat-active', hasVisibleBubbles);
+    if (hasVisibleBubbles) setSendUtilitiesOpen(false);
+    setSendUtilityAvailability(!hasVisibleBubbles);
+  };
+
+  const activateTemporaryUi = (nextState) => {
+    const next = ['none', 'chat', 'menu', 'utilities'].includes(nextState)
+      ? nextState
+      : 'none';
+    activeTemporaryUi = next;
+
+    const menuIsActive = next === 'menu';
+    // /rpn keeps the left endpoint independent from menu state. /x shares
+    // that state treatment; only /z retains its legacy plus rotation.
+    addRotated = menuIsActive && isZPage;
+    addButton.classList.toggle('is-rotated', addRotated);
+    submitButton.classList.toggle('is-active', menuIsActive);
+    setComposerMenuOpen(menuIsActive);
+    setSendUtilitiesOpen(next === 'utilities' || menuIsActive);
+    setConversationVisibility(next === 'chat');
+
+    if ((next === 'menu' || next === 'utilities') && document.activeElement === input) input.blur();
+  };
+
+  const closeConversationWithoutReset = () => {
+    if (!conversationVisible) return;
+    setConversationVisibility(false);
+    if (activeTemporaryUi === 'chat') activeTemporaryUi = 'none';
+  };
+
+  document.addEventListener('click', (event) => {
+    if (isTemporaryUiInteraction(event.target)) return;
+    closeConversationWithoutReset();
+  }, { passive: true });
+  window.addEventListener('scroll', () => {
+    noteFlowScroll();
+    closeConversationWithoutReset();
+  }, { passive: true });
+
+  const beginMajorSectionInteraction = () => {
+    majorSectionPointerActive = true;
+    cancelMajorSectionSettle({ stopNativeScroll: true });
+  };
+  const endMajorSectionInteraction = () => {
+    majorSectionPointerActive = false;
+  };
+
+  document.addEventListener('pointerdown', (event) => {
+    beginMajorSectionInteraction();
+    if (event.pointerType !== 'touch') beginZEndpointGesture(event.pointerId, event.clientY);
+    if (isZPage) {
+      zReleasePointerActive = true;
+      cancelZReleaseSettle({ stopNativeScroll: true });
+    }
+    zFaceController?.begin(event);
+  }, { capture: true, passive: true });
+  document.addEventListener('touchstart', (event) => {
+    beginMajorSectionInteraction();
+    if (!isZPage && !event.target.closest('[data-s-composer], [data-s-conversation]')) {
+      const touch = event.changedTouches[0];
+      if (touch) discreteSectionTouch = { id: touch.identifier, y: touch.clientY, moved: false };
+    }
+    const touch = event.changedTouches[0];
+    if (touch) beginZEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
+  }, { capture: true, passive: true });
+  document.addEventListener('pointermove', (event) => {
+    if (event.pointerType !== 'touch') updateZEndpointGesture(event.pointerId, event.clientY);
+    zFaceController?.move(event);
+    if (event.pointerType === 'touch' || event.buttons !== 0) beginMajorSectionInteraction();
+  }, { capture: true, passive: true });
+  document.addEventListener('touchmove', (event) => {
+    beginMajorSectionInteraction();
+    const discreteTouch = Array.from(event.changedTouches).find((item) => item.identifier === discreteSectionTouch?.id);
+    if (!isZPage && discreteTouch && discreteTouch.clientY !== discreteSectionTouch.y) {
+      discreteSectionTouch.moved = true;
+      event.preventDefault();
+    }
+    const touch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
+    if (touch) updateZEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
   }, { capture: true, passive: false });
-  timeline.addEventListener('pointerup', (event) => finishTaskGesture(event), true);
-  timeline.addEventListener('pointercancel', (event) => finishTaskGesture(event, true), true);
-  timeline.addEventListener('wheel', (event) => {
-    if (panelTwoState !== 'progress' || Math.abs(event.deltaY) < 1) return;
-    event.preventDefault();
-    event.stopPropagation();
-    setTaskFocus(activeTaskIndex + (event.deltaY > 0 ? 1 : -1));
+  ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
+    document.addEventListener(eventName, (event) => {
+      endMajorSectionInteraction();
+      if (eventName.startsWith('pointer')) {
+        if (event.pointerType !== 'touch') {
+          endZEndpointGesture(event.pointerId);
+          zReleasePointerActive = false;
+          scheduleZReleaseSettle();
+        }
+        zFaceController?.end(event, eventName === 'pointercancel');
+      } else {
+        const touch = Array.from(event.changedTouches).find((item) => item.identifier === discreteSectionTouch?.id);
+        if (eventName === 'touchend' && !isZPage && touch && discreteSectionTouch?.moved) {
+          const deltaY = touch.clientY - discreteSectionTouch.y;
+          if (Math.abs(deltaY) >= 36) transitionMajorSection(deltaY < 0 ? 1 : -1);
+        }
+        if (touch) discreteSectionTouch = null;
+        const zTouch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
+        if (zTouch) endZEndpointGesture(`touch:${zTouch.identifier}`);
+        if (isZPage && zReleasePointerActive) {
+          zReleasePointerActive = false;
+          scheduleZReleaseSettle();
+        }
+      }
+    }, { passive: true });
+  });
+  window.addEventListener('wheel', (event) => {
+    if (!isZPage) {
+      // Consume every wheel delta so precision-trackpad sub-threshold events
+      // cannot nudge the document into a partial section position.
+      event.preventDefault();
+      if (Math.abs(event.deltaY) >= 8) {
+        transitionMajorSection(event.deltaY > 0 ? 1 : -1);
+      }
+      return;
+    }
+    cancelMajorSectionSettle({ stopNativeScroll: true });
+    majorSectionPointerActive = false;
+    if (isZPage) {
+      cancelZReleaseSettle({ stopNativeScroll: true });
+      if (zSectionOneLocked && event.deltaY < 0) zEndpointReverseIntent = true;
+    }
   }, { passive: false });
-  window.addEventListener('resize', () => setTaskFocus(activeTaskIndex, false));
-  landscapeTaskQuery.addEventListener?.('change', () => setTaskFocus(activeTaskIndex, false));
-  requestAnimationFrame(() => setTaskFocus(activeTaskIndex, false));
-  emptyCard.append(selectorProxy, timeline, detailsView);
-  const navigationProxy = employeeNavigation.cloneNode(true);
-  navigationProxy.classList.add('employee-dashboard-contextual-navigation-proxy');
-  navigationProxy.removeAttribute('data-employee-dashboard-contextual');
-  const contextPillProxy = navigationProxy.querySelector('[data-employee-dashboard-context-pill]');
-  const addUpdateCard = !isClientDashboard ? document.createElement('form') : null;
-  if (addUpdateCard) {
-    addUpdateCard.className = 'employee-dashboard-add-update-card';
-    addUpdateCard.hidden = true;
-    addUpdateCard.setAttribute('aria-label', 'Add update');
-    addUpdateCard.innerHTML = '<label><input type="text" data-employee-dashboard-panel-two-input data-employee-dashboard-add-update-input data-ooxme-ios-zoom-safe data-en-placeholder="Write an update" data-ar-placeholder="اكتب تحديثاً" placeholder="Write an update" aria-label="Write an update"></label><button type="button" data-en="Submit" data-ar="إرسال">Submit</button>';
-  }
-  const uploadFilesCard = !isClientDashboard ? document.createElement('form') : null;
-  if (uploadFilesCard) {
-    uploadFilesCard.className = 'employee-dashboard-upload-files-card';
-    uploadFilesCard.hidden = true;
-    uploadFilesCard.setAttribute('aria-label', 'Upload files');
-    uploadFilesCard.innerHTML = '<label><input type="text" data-employee-dashboard-panel-two-input data-employee-dashboard-upload-files-input data-ooxme-ios-zoom-safe data-en-placeholder="File Name" data-ar-placeholder="اسم الملف" placeholder="File Name" aria-label="File Name"></label><button type="button" data-employee-dashboard-upload-files-add data-en="Add File" data-ar="إضافة ملف">Add File</button><button type="button" data-en="Submit" data-ar="إرسال">Submit</button>';
-  }
-  const startTaskCard = !isClientDashboard ? document.createElement('form') : null;
-  if (startTaskCard) {
-    startTaskCard.className = 'employee-dashboard-start-task-card';
-    startTaskCard.hidden = true;
-    startTaskCard.setAttribute('aria-label', 'Start task');
-    startTaskCard.innerHTML = '<label><select data-employee-dashboard-start-task-select data-ooxme-ios-zoom-safe aria-label="Choose Task"></select></label><button type="button" data-en="Start" data-ar="بدء">Start</button>';
-  }
-  const panelTwoActionCards = [addUpdateCard, uploadFilesCard, startTaskCard].filter(Boolean);
-  const isPanelTwoActionOpen = () => panelTwoActionCards.some((card) => card.hidden === false);
-  const setPanelTwoActionCard = (activeCard, action = '') => {
-    const active = Boolean(activeCard);
-    emptyPanel.dataset.employeeDashboardPanelTwoAction = action;
-    emptyCard.hidden = active;
-    panelTwoActionCards.forEach((card) => { card.hidden = card !== activeCard; });
-  };
-  const setAddUpdateOpen = (open) => {
-    if (!addUpdateCard) return;
-    setPanelTwoActionCard(open ? addUpdateCard : null, open ? 'add-update' : '');
-  };
-  const setUploadFilesOpen = (open) => {
-    if (!uploadFilesCard) return;
-    setPanelTwoActionCard(open ? uploadFilesCard : null, open ? 'upload-files' : '');
-  };
-  const setStartTaskOpen = (open) => {
-    if (!startTaskCard) return;
-    if (open) startTaskCard.querySelector('[data-employee-dashboard-start-task-select]').value = String(activeTaskIndex);
-    setPanelTwoActionCard(open ? startTaskCard : null, open ? 'start-task' : '');
-  };
-  let panelTwoState = 'progress';
-  const setPanelTwoState = (next) => {
-    if (isPanelTwoActionOpen()) setPanelTwoActionCard(null);
-    panelTwoState = next === 'details' ? 'details' : 'progress';
-    const arrowState = panelTwoState === 'details' ? 'details' : 'work';
-    selectorProxy.dataset.active = panelTwoState;
-    selectorProxy.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.employeeDashboardStateOption === panelTwoState)));
-    emptyPanel.dataset.employeeDashboardState = panelTwoState;
-    contextPillProxy?.setAttribute('data-active', arrowState);
-    timeline.hidden = panelTwoState === 'details';
-    timeline.setAttribute('aria-hidden', String(panelTwoState === 'details'));
-    detailsView.hidden = panelTwoState !== 'details';
-    detailsView.setAttribute('aria-hidden', String(panelTwoState !== 'details'));
-    if (panelTwoState === 'details') {
-      detailsDisclosureItems.forEach((section) => setDetailsDisclosure(section, false));
-      renderTaskDetails();
+  window.addEventListener('keydown', (event) => {
+    if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) return;
+    if (event.target instanceof Element && event.target.closest('input, textarea, [contenteditable="true"]')) return;
+    if (!isZPage) {
+      event.preventDefault();
+      if (event.key === 'Home') transitionMajorSection(-getNavigableMajorSections().length);
+      else if (event.key === 'End') transitionMajorSection(getNavigableMajorSections().length);
+      else transitionMajorSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
+      return;
     }
-    navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => {
-      const isBack = button.dataset.employeeDashboardContext === 'work';
-      button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === arrowState));
-      button.disabled = panelTwoState === 'progress' ? isBack : !isBack;
-      button.setAttribute('aria-disabled', String(button.disabled));
+    majorSectionPointerActive = false;
+    cancelMajorSectionSettle({ stopNativeScroll: true });
+    if (isZPage) {
+      cancelZReleaseSettle({ stopNativeScroll: true });
+      if (zSectionOneLocked && ['ArrowUp', 'PageUp', 'Home'].includes(event.key)) zEndpointReverseIntent = true;
+    }
+  }, { passive: false });
+
+  conversation.addEventListener('pointerdown', () => {
+    if (conversationState !== 'finished' && conversationState !== 'resetting') activateTemporaryUi('chat');
+  }, { passive: true });
+
+  const setComposerInteractivity = (enabled) => {
+    composerControls.forEach((control) => { control.disabled = !enabled; });
+  };
+
+  const exitOldestConversationBubble = () => {
+    const visibleBubbles = Array.from(conversation.children).filter((bubble) => !bubble.classList.contains('is-exiting'));
+    if (visibleBubbles.length < maximumVisibleConversationMessages) return;
+    const oldestBubble = visibleBubbles[0];
+    const conversationRect = conversation.getBoundingClientRect();
+    const bubbleRect = oldestBubble.getBoundingClientRect();
+    oldestBubble.style.top = `${bubbleRect.top - conversationRect.top}px`;
+    oldestBubble.style.left = `${bubbleRect.left - conversationRect.left}px`;
+    oldestBubble.style.width = `${bubbleRect.width}px`;
+    oldestBubble.classList.add('is-exiting');
+    window.setTimeout(() => oldestBubble.remove(), reducedMotion.matches ? 0 : 240);
+  };
+
+  const animateConversationShift = (previousPositions) => {
+    if (reducedMotion.matches) return;
+    const shiftedBubbles = [];
+    previousPositions.forEach((previousTop, bubble) => {
+      if (!bubble.isConnected || bubble.classList.contains('is-entering') || bubble.classList.contains('is-exiting')) return;
+      const offset = previousTop - bubble.getBoundingClientRect().top;
+      if (Math.abs(offset) < 1) return;
+      bubble.classList.add('is-shifting');
+      bubble.style.transform = `translateY(${offset}px)`;
+      shiftedBubbles.push(bubble);
+    });
+    if (!shiftedBubbles.length) return;
+    void conversation.offsetHeight;
+    window.requestAnimationFrame(() => {
+      shiftedBubbles.forEach((bubble) => { bubble.style.transform = ''; });
+      window.setTimeout(() => shiftedBubbles.forEach((bubble) => bubble.classList.remove('is-shifting')), 260);
     });
   };
-  selectorProxy.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.addEventListener('click', () => setPanelTwoState(option.dataset.employeeDashboardStateOption)));
-  navigationProxy.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
+
+  const addConversationBubble = (message, speaker, language) => {
+    syncConversationInputBounds();
+    const previousPositions = new Map(
+      Array.from(conversation.children)
+        .filter((existingBubble) => !existingBubble.classList.contains('is-exiting'))
+        .map((existingBubble) => [existingBubble, existingBubble.getBoundingClientRect().top])
+    );
+    exitOldestConversationBubble();
+    const bubble = document.createElement('p');
+    bubble.className = `s-page__conversation-bubble s-page__conversation-bubble--${speaker} is-entering`;
+    bubble.lang = language;
+    bubble.dir = getMessageDirection(message, language);
+    bubble.textContent = message;
+    bubble.addEventListener('animationend', () => bubble.classList.remove('is-entering'), { once: true });
+    conversation.appendChild(bubble);
+    syncPageTextForChat();
+    animateConversationShift(previousPositions);
+  };
+
+  const resetConversationDemo = () => {
+    resetPageToInitialState();
+  };
+
+  const revealConversationFinal = (language) => {
+    window.clearTimeout(finalVisibleTimer);
+    window.clearTimeout(finalResetTimer);
+    activateTemporaryUi('none');
+    conversationState = 'finished';
+    resetAddButton();
+    setComposerInteractivity(false);
+    conversationFinalCopy.lang = language;
+    conversationFinalCopy.dir = language === 'ar' ? 'rtl' : 'ltr';
+    conversationFinalCopy.textContent = finalMessages[language];
+    conversationFinal.setAttribute('aria-hidden', 'false');
+    conversationFinal.classList.add('is-visible');
+    input.value = '';
+    updateComposerInputLanguage();
+    input.blur();
+    finalVisibleTimer = window.setTimeout(
+      resetConversationDemo,
+      finalMessageDurationMs
+    );
+  };
+
+  input.addEventListener('pointerdown', () => {
+    activateTemporaryUi('chat');
+  }, { passive: true });
+
+  input.addEventListener('focus', () => {
+    activateTemporaryUi('chat');
+  });
+
+  input.addEventListener('input', () => {
+    updateComposerInputLanguage();
+    activateTemporaryUi('chat');
+  });
+
+  composer.addEventListener('submit', (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (isPanelTwoActionOpen()) {
-      setPanelTwoActionCard(null);
+    // /x's right Top Bar endpoint now uses /rpn's exact menu toggle instead
+    // of routing an empty bar interaction through the conversation flow.
+    if (!isZPage) {
+      activateTemporaryUi(activeTemporaryUi === 'menu' ? 'none' : 'menu');
       return;
     }
-    setPanelTwoState(button.dataset.employeeDashboardContext === 'details' ? 'details' : 'progress');
-  }));
-  if (addUpdateCard) {
-    const [startTaskButton, addUpdateButton, uploadFilesButton] = detailsView.querySelectorAll('.employee-dashboard-task-details-actions button');
-    startTaskButton?.addEventListener('click', () => setStartTaskOpen(true));
-    addUpdateButton?.addEventListener('click', () => setAddUpdateOpen(true));
-    uploadFilesButton?.addEventListener('click', () => setUploadFilesOpen(true));
-  }
-  taskItems.forEach((task, index) => task.addEventListener('click', () => {
-    if (index === activeTaskIndex && panelTwoState === 'progress') setPanelTwoState('details');
-  }));
-  setPanelTwoState(panelTwoState);
-  emptyMasterPanel.append(emptyCard, ...panelTwoActionCards, navigationProxy);
-  emptyPanel.append(emptyMasterPanel);
-  emptyPanel.addEventListener('click', (event) => {
-    if (!isPanelTwoActionOpen()) return;
-    if (event.target.closest(':is(.employee-dashboard-add-update-card, .employee-dashboard-upload-files-card, .employee-dashboard-start-task-card, .employee-dashboard-task-details-actions, .employee-dashboard-contextual-navigation-proxy)')) return;
-    setPanelTwoActionCard(null);
-  });
-  localizePanelTwo(language);
+    const message = input.value.trim();
+    if (isZPage && !message) {
+      if (conversationVisible) return;
+      activateTemporaryUi(activeTemporaryUi === 'menu' ? 'none' : 'menu');
+      return;
+    }
+    if (!message) {
+      if (conversationVisible) return;
+      activateTemporaryUi(activeTemporaryUi === 'menu' ? 'none' : 'menu');
+      return;
+    }
+    if (conversationState !== 'active') return;
 
-  track.hidden = true;
-  employeeTrack.append(employeePanel, emptyPanel);
-  experience.append(employeeTrack);
+    const language = detectMessageLanguage(message);
+    const currentReplyIndex = replyIndex;
+    const replies = language === 'ar' ? arabicReplies : englishReplies;
+    activateTemporaryUi('chat');
+    addConversationBubble(message, 'user', language);
+    input.value = '';
+    updateComposerInputLanguage();
+    replyIndex += 1;
+    if (replyIndex >= englishReplies.length) conversationState = 'awaiting-final';
 
-  const employeePanels = [employeePanel, emptyPanel];
-  let employeePanelIndex = 0;
-  let employeePanelTransitionTimer;
-  const revealEmployeePanel = (index) => employeePanels.forEach((panel, panelNumber) => panel.classList.toggle('is-active', panelNumber === index));
-  const moveToEmployeePanel = (next) => {
-    const target = Math.max(0, Math.min(employeePanels.length - 1, next));
-    if (target === employeePanelIndex) return;
-    employeePanelIndex = target;
-    employeePanels.forEach((panel) => panel.classList.remove('is-active'));
-    employeeTrack.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * ${-employeePanelIndex}))`;
-    window.clearTimeout(employeePanelTransitionTimer);
-    employeePanelTransitionTimer = window.setTimeout(() => revealEmployeePanel(employeePanelIndex), 620);
-  };
-  revealEmployeePanel(employeePanelIndex);
-  window.OOXMEMasterPanelDrag.register({
-    experience,
-    track: employeeTrack,
-    panels: employeePanels,
-    getIndex: () => employeePanelIndex,
-    moveTo: moveToEmployeePanel,
-    wrapBottomTap: false
+    const replyTimer = window.setTimeout(() => {
+      pendingReplyTimers.delete(replyTimer);
+      addConversationBubble(replies[currentReplyIndex], 'ooxme', language);
+      if (currentReplyIndex === englishReplies.length - 1) {
+        pendingFinalRevealTimer = window.setTimeout(() => {
+          pendingFinalRevealTimer = 0;
+          revealConversationFinal(language);
+        }, finalRevealDelayMs);
+      }
+    }, replyDelayMs);
+    pendingReplyTimers.add(replyTimer);
   });
 
-};
-const mountAuthorizedHomepageDashboard = async () => {
-  if (requestedPanelId !== dashboardPanelId) return;
-  try {
-    const response = await fetch('/api/accounts/index?route=session', { credentials: 'same-origin' });
-    const session = await response.json().catch(() => ({}));
-    const expectedAccountType = isClientDashboard ? 'client' : 'employee';
-    if (!response.ok || session.accountType !== expectedAccountType) return;
-    const dashboardPanel = document.querySelector('.employee-dashboard-panel');
-    if (!dashboardPanel) return;
-    dashboardPanel.hidden = false;
-    dashboardPanel.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('homepage-dashboard-authorized');
-    track.style.height = `calc(var(--ooxme-stable-viewport-height) * ${panels.length})`;
-    panelIndex = 1;
-    track.style.transform = `translateY(calc(var(--ooxme-stable-viewport-height) * -1))`;
-    revealPanel(panelIndex);
-    setupEmployeeDashboardPanels();
-  } catch (_) {}
-};
-mountAuthorizedHomepageDashboard();
-const employeeDashboardPanelOne = document.querySelector('.employee-dashboard-panel:not(.employee-dashboard-empty-panel)');
-const employeeDashboardPanelOneSelector = employeeDashboardPanelOne?.querySelector('.employee-dashboard-panel-one-selector');
-const employeeDashboardPanelOneNavigation = employeeDashboardPanelOne?.querySelector('[data-employee-dashboard-contextual]');
-if (employeeDashboardPanelOne && employeeDashboardPanelOneSelector && employeeDashboardPanelOneNavigation) {
-  let employeeDashboardPanelOneState = 'current';
-  let employeeDashboardPanelOneSizingFrame;
-  const resetEmployeeDashboardPanelOneSizing = () => {
-    const infoCard = employeeDashboardPanelOne.querySelector('.employee-dashboard-info-card');
-    const avatar = employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar');
-    window.cancelAnimationFrame(employeeDashboardPanelOneSizingFrame);
-    infoCard?.style.removeProperty('--employee-dashboard-edit-extension');
-    infoCard?.style.removeProperty('height');
-    avatar?.style.removeProperty('--employee-dashboard-avatar-restore-offset');
-    avatar?.style.removeProperty('--employee-dashboard-avatar-portrait-offset');
-    avatar?.style.removeProperty('transform');
-    employeeDashboardPanelOne.removeAttribute('data-employee-dashboard-panel-one-landscape-columns');
-  };
-  const sizeEmployeeDashboardPanelOneEditCard = (preservedAvatarTop = null) => {
-    const infoCard = employeeDashboardPanelOne.querySelector('.employee-dashboard-info-card');
-    const avatar = employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar');
-    if (!infoCard || !avatar || employeeDashboardPanelOneState !== 'edit') {
-      infoCard?.style.removeProperty('--employee-dashboard-edit-extension');
-      infoCard?.style.removeProperty('height');
-      avatar?.style.removeProperty('--employee-dashboard-avatar-restore-offset');
-      avatar?.style.removeProperty('--employee-dashboard-avatar-portrait-offset');
-      avatar?.style.removeProperty('transform');
-      employeeDashboardPanelOne.removeAttribute('data-employee-dashboard-panel-one-landscape-columns');
-      return;
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      scheduleKeyboardOffset();
+    }, { passive: true });
+    window.visualViewport.addEventListener('scroll', scheduleKeyboardOffset, { passive: true });
+  }
+
+  const handleViewportGeometryChange = () => {
+    const nextWidth = document.documentElement.clientWidth;
+    const nextOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
+    const layoutWidthChanged = Math.abs(nextWidth - localizedGeometryWidth) > .5;
+    const orientationChanged = nextOrientation !== localizedGeometryOrientation;
+    if (layoutWidthChanged || orientationChanged) {
+      localizedGeometryWidth = nextWidth;
+      localizedGeometryOrientation = nextOrientation;
+      if (!isZPage) {
+        firstGroupBaselineLocked = false;
+        sectionTwoBaselineCorrectionLocked = false;
+      }
+      scheduleLocalizedGeometry();
+      resetZSecondaryNavAlignment();
+    } else if (!window.visualViewport) {
+      // Desktop height-only resizing is a genuine viewport resize. On mobile,
+      // height-only changes are browser chrome motion and must not reposition a
+      // revealed portrait composition while the page is moving.
+      scheduleStablePortraitSectionLayout();
     }
-    if (window.matchMedia('(min-aspect-ratio: 4 / 3)').matches) {
-      avatar.style.removeProperty('--employee-dashboard-avatar-portrait-offset');
-      avatar.style.removeProperty('--employee-dashboard-avatar-restore-offset');
-      infoCard.style.height = 'auto';
-      const previousAvatarTop = preservedAvatarTop ?? avatar.getBoundingClientRect().top;
-      infoCard.style.removeProperty('height');
-      employeeDashboardPanelOne.dataset.employeeDashboardPanelOneLandscapeColumns = 'true';
-      avatar.style.setProperty('--employee-dashboard-avatar-restore-offset', `${previousAvatarTop - avatar.getBoundingClientRect().top}px`);
-      return;
-    }
-    avatar.style.removeProperty('--employee-dashboard-avatar-restore-offset');
-    employeeDashboardPanelOne.removeAttribute('data-employee-dashboard-panel-one-landscape-columns');
-    infoCard.style.removeProperty('--employee-dashboard-edit-extension');
-    const cardBounds = infoCard.getBoundingClientRect();
-    const navigationBounds = employeeDashboardPanelOneNavigation.getBoundingClientRect();
-    const x = Number.parseFloat(getComputedStyle(infoCard).paddingTop) || 0;
-    infoCard.style.setProperty('--employee-dashboard-edit-extension', `${Math.max(0, navigationBounds.top - x - cardBounds.bottom)}px`);
-    const currentAvatarTop = avatar.getBoundingClientRect().top;
-    const targetAvatarTop = preservedAvatarTop ?? currentAvatarTop;
-    avatar.style.setProperty('--employee-dashboard-avatar-portrait-offset', `${targetAvatarTop - currentAvatarTop}px`);
+    scheduleKeyboardOffset();
   };
-  const setEmployeeDashboardPanelOneState = (next) => {
-    const targetState = next === 'edit' ? 'edit' : 'current';
-    const preservedAvatarTop = next === 'edit' && employeeDashboardPanelOneState !== 'edit'
-      ? employeeDashboardPanelOne.querySelector('.employee-dashboard-avatar')?.getBoundingClientRect().top ?? null
-      : null;
-    window.cancelAnimationFrame(employeeDashboardPanelOneSizingFrame);
-    if (targetState === 'current') resetEmployeeDashboardPanelOneSizing();
-    employeeDashboardPanelOneState = targetState;
-    const bottomState = employeeDashboardPanelOneState === 'edit' ? 'details' : 'work';
-    employeeDashboardPanelOne.dataset.employeeDashboardPanelOneState = employeeDashboardPanelOneState;
-    employeeDashboardPanelOneSelector.dataset.active = employeeDashboardPanelOneState;
-    employeeDashboardPanelOneSelector.querySelectorAll('[data-employee-dashboard-panel-one-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.employeeDashboardPanelOneOption === employeeDashboardPanelOneState)));
-    const pill = employeeDashboardPanelOneNavigation.querySelector('[data-employee-dashboard-context-pill]');
-    pill?.setAttribute('data-active', bottomState);
-    employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => {
-      const isBack = button.dataset.employeeDashboardContext === 'work';
-      button.setAttribute('aria-pressed', String(button.dataset.employeeDashboardContext === bottomState));
-      button.disabled = employeeDashboardPanelOneState === 'current' ? isBack : !isBack;
-      button.setAttribute('aria-disabled', String(button.disabled));
-    });
-    employeeDashboardPanelOneSizingFrame = window.requestAnimationFrame(() => {
-      if (employeeDashboardPanelOneState === targetState) sizeEmployeeDashboardPanelOneEditCard(preservedAvatarTop);
-    });
-  };
-  employeeDashboardPanelOneSelector.querySelectorAll('[data-employee-dashboard-panel-one-option]').forEach((option) => option.addEventListener('click', () => setEmployeeDashboardPanelOneState(option.dataset.employeeDashboardPanelOneOption)));
-  employeeDashboardPanelOneNavigation.querySelectorAll('[data-employee-dashboard-context]').forEach((button) => button.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setEmployeeDashboardPanelOneState(button.dataset.employeeDashboardContext === 'details' ? 'edit' : 'current');
-  }));
-  setEmployeeDashboardPanelOneState('current');
-  window.addEventListener('resize', () => {
-    if (document.activeElement?.matches('[data-employee-dashboard-edit-input], [data-employee-dashboard-add-update-input], [data-employee-dashboard-upload-files-input]')) return;
-    requestAnimationFrame(sizeEmployeeDashboardPanelOneEditCard);
-  });
-}
-document.querySelectorAll('[data-employee-dashboard-selector]:not(.employee-dashboard-panel-two-selector)').forEach((selector) => {
-  const panel = selector.closest('.employee-dashboard-panel');
-  const setState = (next) => {
-    const state = next === 'details' ? 'details' : 'progress';
-    selector.dataset.active = state;
-    panel?.setAttribute('data-employee-dashboard-state', state);
-    selector.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.employeeDashboardStateOption === state)));
-    panel?.querySelectorAll('[data-employee-dashboard-state]').forEach((statePanel) => { statePanel.hidden = statePanel.dataset.employeeDashboardState !== state; });
-  };
-  selector.querySelectorAll('[data-employee-dashboard-state-option]').forEach((option) => option.addEventListener('click', () => setState(option.dataset.employeeDashboardStateOption)));
-  setState('progress');
-});
-const homepageBottomNavigation = document.querySelector('.homepage-bottom-navigation');
-const homepageMenuTrigger = document.querySelector('[data-home-menu-trigger]');
-const homepageMenu = document.querySelector('[data-home-menu]');
-const ensureHomepageHomeOptions = () => {
-  if (!homepageMenu || homepageMenu.querySelector('[data-home-home-option]')) return;
-  homepageMenu.insertAdjacentHTML('beforeend', '<button class="homepage-home-nav-option" type="button" role="tab" data-home-home-option="en" aria-selected="true" aria-hidden="true" tabindex="-1"><span>English</span></button><button class="homepage-home-nav-option" type="button" role="tab" data-home-home-option="ar" aria-selected="false" aria-hidden="true" tabindex="-1"><span>العربية</span></button>');
-};
-const homepageNotifications = document.querySelector('[data-notifications]');
-const homepageSearch = document.querySelector('[data-home-search]');
-const homepageAccount = document.querySelector('[data-home-account]');
-const homepageServices = document.querySelector('[data-home-services]');
-const homepageLanguage = document.querySelector('[data-home-language]');
-const homepageLanguageSelector = document.querySelector('[data-home-language-selector]');
-const homepageNotificationDot = document.querySelector('[data-homepage-notification-dot]');
-const homepageSearchInput = document.querySelector('[data-home-search-input]');
-const homepageSearchSuggestions = document.querySelector('[data-home-search-suggestions]');
-const ensureHomepageNotificationsOptions = () => {
-  if (!homepageMenu || homepageMenu.querySelector('[data-home-notifications-nav-option]')) return;
-  homepageMenu.insertAdjacentHTML('beforeend', '<button class="homepage-notifications-nav-option" type="button" data-home-notifications-nav-option="notifications" aria-hidden="true" tabindex="-1"><span data-en="Notifications" data-ar="الإشعارات">Notifications</span></button><button class="homepage-notifications-nav-option" type="button" data-home-notifications-nav-option="contact" aria-hidden="true" tabindex="-1"><span data-en="Contact" data-ar="التواصل">Contact</span></button><button class="homepage-notifications-nav-handle" type="button" data-home-notifications-nav-handle aria-label="Open notifications" aria-hidden="true" tabindex="-1"></button>');
-};
-const ensureHomepageNotificationsPanelHandle = () => {
-  const panel = homepageNotifications?.querySelector('[data-notifications-panel]');
-  if (!panel || panel.querySelector('[data-home-notifications-panel-handle]')) return;
-  panel.insertAdjacentHTML('afterbegin', '<button class="homepage-notifications-panel-handle" type="button" data-home-notifications-panel-handle aria-label="Show all items"></button>');
-};
-const ensureHomepageLinkedInContact = () => {
-  const contact = homepageNotifications?.querySelector('.homepage-notifications-contact');
-  if (!contact || contact.querySelector('[data-home-linkedin-contact]')) return;
-  const label = root.lang === 'ar' ? 'لينكدإن' : 'LinkedIn';
-  contact.insertAdjacentHTML('beforeend', `<a class="homepage-contact-card" data-home-linkedin-contact href="https://www.linkedin.com/company/ooxme/" target="_blank" rel="noopener noreferrer"><span class="homepage-notification-summary"><strong data-en="LinkedIn" data-ar="لينكدإن">${label}</strong><img class="homepage-contact-icon" src="assets/icons/linkedin.png" alt="" /></span></a>`);
-};
-const syncHomepageNotificationsArrows = () => {
-  const arrow = root.lang === 'ar' ? 'assets/icons/New/ARROW LEFT 02.svg' : 'assets/icons/New/ARROW RIGHT 02.svg';
-  homepageNotifications?.querySelectorAll('.homepage-contact-icon').forEach((icon) => icon.src = arrow);
-};
-const normalizeSharedNotificationLayout = (container) => container?.querySelectorAll('[data-notification]').forEach((item) => {
-  const date = item.querySelector('.homepage-notification-summary time');
-  const details = item.querySelector('.homepage-notification-details');
-  if (date && details) details.append(date);
-});
-normalizeSharedNotificationLayout(homepageNotifications);
-homepageNotifications?.querySelectorAll('[data-notifications-option]').forEach((button) => button.addEventListener('click', () => {
-  if (homepageNotifications.dataset.notificationFlow === 'true') return;
-  const selector = homepageNotifications.querySelector('[data-notifications-selector]');
-  const panel = homepageNotifications.querySelector('[data-notifications-panel]');
-  const contact = homepageNotifications.querySelector('.homepage-notifications-contact');
-  const isContact = button.dataset.notificationsOption === 'contact';
-  selector.dataset.active = button.dataset.notificationsOption;
-  panel.dataset.active = button.dataset.notificationsOption;
-  contact?.setAttribute('aria-hidden', String(!isContact));
-  selector.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
-}));
-const employeeDashboardNavigation = document.querySelector('[data-employee-dashboard-navigation]');
-const employeeDashboardMenuTrigger = document.querySelector('[data-employee-dashboard-menu-trigger]');
-const employeeDashboardMenu = document.querySelector('[data-employee-dashboard-menu]');
-let homepageMenuInactivityTimer;
-let homepageMenuSelectionTimer;
-let homepageMenuCloseTimer;
-let homepageNotificationsCloseTimer;
-let homepageNotificationSelectionTimer;
-let homepageNotificationsMenuFlow = false;
-let homepageSearchCloseTimer;
-let homepageAccountCloseTimer;
-let homepageAccountInactivityTimer;
-let homepageServicesCloseTimer;
-let homepageLanguageCloseTimer;
-let homepageStudioOptionTimer;
-let homepageServicesOptionTimer;
-let employeeDashboardMenuTimer;
-const setEmployeeDashboardMenuOpen = (open) => {
-  if (!employeeDashboardNavigation || !employeeDashboardMenuTrigger) return;
-  window.clearTimeout(employeeDashboardMenuTimer);
-  const wasOpen = employeeDashboardNavigation.classList.contains('is-menu-open');
-  employeeDashboardNavigation.classList.toggle('is-menu-open', open);
-  employeeDashboardNavigation.classList.toggle('is-menu-closing', !open && wasOpen);
-  employeeDashboardMenuTrigger.setAttribute('aria-expanded', String(open));
-  employeeDashboardMenuTimer = window.setTimeout(() => {
-    if (open) setEmployeeDashboardMenuOpen(false);
-    else employeeDashboardNavigation.classList.remove('is-menu-closing');
-  }, open ? 5000 : 340);
-};
-employeeDashboardMenuTrigger?.addEventListener('click', () => setEmployeeDashboardMenuOpen(!employeeDashboardNavigation.classList.contains('is-menu-open')));
-employeeDashboardMenu?.querySelectorAll('button').forEach((button) => button.addEventListener('click', () => {
-  if (button.hasAttribute('data-employee-dashboard-menu-services')) return;
-  const buttons = [...employeeDashboardMenu.querySelectorAll('button')];
-  employeeDashboardMenu.querySelectorAll('button').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
-  employeeDashboardMenu.dataset.active = ['account', 'gallery', 'home', 'menu', 'services'][buttons.indexOf(button)];
-}));
-document.querySelector('[data-employee-dashboard-menu-notifications]')?.addEventListener('click', () => setHomepageNotificationsOpen(true));
-document.addEventListener('pointerdown', (event) => {
-  if (employeeDashboardNavigation?.classList.contains('is-menu-open') && !event.target.closest('[data-employee-dashboard-navigation]')) setEmployeeDashboardMenuOpen(false);
-});
-const resetHomepageMenuInactivityTimer = () => {
-  window.clearTimeout(homepageMenuInactivityTimer);
-  const notificationsFlowActive = homepageNotifications?.dataset.notificationFlow === 'true';
-  if (!homepageBottomNavigation?.classList.contains('is-menu-open') && !notificationsFlowActive) return;
-  homepageMenuInactivityTimer = window.setTimeout(() => {
-    if (homepageNotifications?.dataset.notificationFlow === 'true') setHomepageNotificationsOpen(false);
-    else setHomepageMenuOpen(false);
-  }, 5000);
-};
-let homepageStudioNavigationLocked = false;
-let homepageServicesNavigationLocked = false;
-const resetHomepageStudioOptions = () => {
-  window.clearTimeout(homepageStudioOptionTimer);
-  homepageStudioNavigationLocked = false;
-  homepageMenu?.classList.remove('is-studio-options');
-  homepageMenu?.removeAttribute('data-studio-active');
-  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
-  homepageMenu?.querySelectorAll('[data-home-studio-option]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'true');
-    button.setAttribute('tabindex', '-1');
-  });
-};
-const resetHomepageServicesOptions = () => {
-  window.clearTimeout(homepageServicesOptionTimer);
-  homepageServicesNavigationLocked = false;
-  homepageMenu?.classList.remove('is-services-options');
-  homepageMenu?.removeAttribute('data-services-active');
-  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
-  homepageMenu?.querySelectorAll('[data-home-services-option]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'true');
-    button.setAttribute('tabindex', '-1');
-  });
-};
-const resetHomepageAccountOptions = () => {
-  homepageMenu?.classList.remove('is-account-options');
-  homepageMenu?.removeAttribute('data-account-active');
-  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
-  homepageMenu?.querySelectorAll('[data-home-account-nav-option], [data-home-account-nav-handle]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'true');
-    button.setAttribute('tabindex', '-1');
-  });
-};
-const resetHomepageHomeOptions = () => {
-  homepageMenu?.classList.remove('is-home-options');
-  homepageMenu?.removeAttribute('data-home-active');
-  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
-  homepageMenu?.querySelectorAll('[data-home-home-option]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'true');
-    button.setAttribute('tabindex', '-1');
-  });
-};
-const resetHomepageNotificationsOptions = () => {
-  homepageMenu?.classList.remove('is-notifications-options');
-  homepageMenu?.removeAttribute('data-notifications-active');
-  homepageMenu?.setAttribute('aria-label', 'Homepage navigation');
-  homepageMenu?.querySelectorAll('[data-home-notifications-nav-option], [data-home-notifications-nav-handle]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'true');
-    button.setAttribute('tabindex', '-1');
-  });
-};
-const setHomepageMenuOpen = (open) => {
-  const wasOpen = homepageBottomNavigation?.classList.contains('is-menu-open');
-  if (!open) {
-    window.clearTimeout(homepageMenuSelectionTimer);
-    resetHomepageStudioOptions();
-    resetHomepageServicesOptions();
-    resetHomepageAccountOptions();
-    resetHomepageHomeOptions();
-    resetHomepageNotificationsOptions();
-    setHomepageMenuActive('home');
-  } else if (!wasOpen && !homepageMenu?.classList.contains('is-studio-options') && !homepageMenu?.classList.contains('is-services-options') && !homepageMenu?.classList.contains('is-account-options') && !homepageMenu?.classList.contains('is-home-options') && !homepageMenu?.classList.contains('is-notifications-options')) {
-    setHomepageMenuActive('home');
-  }
-  window.clearTimeout(homepageMenuCloseTimer);
-  if (open) {
-    homepageBottomNavigation?.classList.remove('is-menu-closing');
-    homepageBottomNavigation?.classList.add('is-menu-open');
-  } else if (homepageBottomNavigation?.classList.contains('is-menu-open')) {
-    homepageBottomNavigation.classList.remove('is-menu-open');
-    homepageBottomNavigation.classList.add('is-menu-closing');
-    homepageMenuCloseTimer = window.setTimeout(() => {
-      homepageBottomNavigation.classList.remove('is-menu-closing');
-      homepageMenuCloseTimer = undefined;
-    }, 340);
-  }
-  homepageMenuTrigger?.setAttribute('aria-expanded', String(open));
-  document.body.classList.toggle('homepage-navigation-open', open);
-  resetHomepageMenuInactivityTimer();
-};
-const setHomepageStudioOpen = (open) => {
-  if (!homepageMenu) return;
-  if (!open) {
-    resetHomepageStudioOptions();
-    return;
-  }
-  setHomepageMenuOpen(true);
-  homepageMenu.dataset.studioActive = 'clients';
-  homepageMenu.setAttribute('aria-label', 'Studio options');
-  homepageMenu.querySelectorAll('[data-home-studio-option]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'false');
-    button.setAttribute('tabindex', '0');
-  });
-  homepageMenu.classList.add('is-studio-options');
-  resetHomepageMenuInactivityTimer();
-};
-homepageMenu?.querySelectorAll('[data-home-studio-option]').forEach((button) => button.addEventListener('click', (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  if (!homepageMenu.classList.contains('is-studio-options') || homepageStudioNavigationLocked) return;
-  homepageStudioNavigationLocked = true;
-  window.clearTimeout(homepageMenuInactivityTimer);
-  homepageMenu.dataset.studioActive = button.dataset.homeStudioOption;
-  homepageStudioOptionTimer = window.setTimeout(() => {
-    if (button.dataset.homeStudioOption === 'clients') {
-      window.location.assign('/brands');
-      return;
+
+  window.addEventListener('resize', handleViewportGeometryChange, { passive: true });
+  window.addEventListener('orientationchange', () => {
+    localizedGeometryWidth = document.documentElement.clientWidth;
+    localizedGeometryOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
+    if (!isZPage) {
+      firstGroupBaselineLocked = false;
+      sectionTwoBaselineCorrectionLocked = false;
     }
-    if (button.dataset.homeStudioOption === 'selected-works') {
-      window.location.assign('/gallery');
-      return;
+    scheduleLocalizedGeometry();
+    resetZSecondaryNavAlignment();
+    scheduleKeyboardOffset();
+  }, { passive: true });
+
+  const prepareZHeroTransition = ({ freeze = false } = {}) => {
+    if (!isZPage || zHeroGeometryFrozen || window.scrollY > .5) return;
+    if (localizedGeometryFrame) window.cancelAnimationFrame(localizedGeometryFrame);
+    if (portraitSectionLayoutFrame) window.cancelAnimationFrame(portraitSectionLayoutFrame);
+    if (zSecondaryNavAlignmentFrame) window.cancelAnimationFrame(zSecondaryNavAlignmentFrame);
+    if (zSectionOneScrollFrame) window.cancelAnimationFrame(zSectionOneScrollFrame);
+    localizedGeometryFrame = 0;
+    portraitSectionLayoutFrame = 0;
+    zSecondaryNavAlignmentFrame = 0;
+    zSectionOneScrollFrame = 0;
+
+    stabilizeLocalizedGeometry();
+    if (portraitSectionLayoutFrame) window.cancelAnimationFrame(portraitSectionLayoutFrame);
+    portraitSectionLayoutFrame = 0;
+    syncPortraitSectionLayout();
+    if (zSectionOneScrollFrame) window.cancelAnimationFrame(zSectionOneScrollFrame);
+    zSectionOneScrollFrame = 0;
+
+    syncZContentBoxHorizontalGeometry();
+    syncZContentBoxHeight();
+    syncZStateOneCompositionGeometry();
+    syncZUnifiedTextAlignment();
+    syncZApplyButtonGeometry();
+    syncZSectionOneScroll();
+
+    // Safari otherwise defers backing-layer creation for this mixed
+    // transform/opacity/filter composition until its first scroll commit.
+    // Mark and flush only the layers used by the /z hero transition while the
+    // page is still at rest; later scroll frames only update their properties.
+    zHeroCompositorLayers.forEach((layer) => {
+      layer.classList.add('is-z-compositor-ready');
+      const style = getComputedStyle(layer);
+      void style.transform;
+      void style.opacity;
+      void style.filter;
+      void style.webkitBackdropFilter;
+      void layer.getBoundingClientRect();
+    });
+    document.documentElement.setAttribute('data-s-z-hero-geometry-ready', 'true');
+    if (freeze) {
+      zHeroGeometryFrozen = true;
+      document.documentElement.setAttribute('data-s-z-hero-assets-stable', 'true');
     }
-    homepageMenu.removeAttribute('data-studio-active');
-    homepageStudioNavigationLocked = false;
-    resetHomepageMenuInactivityTimer();
-  }, 500);
-}));
-const setHomepageServicesContextOpen = (open) => {
-  if (!homepageMenu) return;
-  if (!open) {
-    resetHomepageServicesOptions();
-    return;
-  }
-  setHomepageMenuOpen(true);
-  homepageMenu.dataset.servicesActive = 'consultation';
-  homepageMenu.setAttribute('aria-label', 'Services');
-  homepageMenu.querySelectorAll('[data-home-services-option]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'false');
-    button.setAttribute('tabindex', '0');
-  });
-  homepageMenu.classList.add('is-services-options');
-  resetHomepageMenuInactivityTimer();
-};
-homepageMenu?.querySelectorAll('[data-home-services-option]').forEach((button) => button.addEventListener('click', (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  if (!homepageMenu.classList.contains('is-services-options') || homepageServicesNavigationLocked) return;
-  homepageServicesNavigationLocked = true;
-  window.clearTimeout(homepageMenuInactivityTimer);
-  homepageMenu.dataset.servicesActive = button.dataset.homeServicesOption;
-  homepageServicesOptionTimer = window.setTimeout(() => {
-    window.location.assign(button.dataset.homeServicesOption === 'consultation' ? '/consultation' : '/brand');
-  }, 500);
-}));
-const syncHomepageAccountHandleWidth = () => {
-  const lineWidth = document.querySelector('.homepage-bottom-navigation .swipe-control-line')?.getBoundingClientRect().width;
-  if (!lineWidth) return;
-  const handleWidth = `${lineWidth * .2}px`;
-  homepageMenu?.querySelector('[data-home-account-nav-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
-  homepageMenu?.querySelector('[data-home-notifications-nav-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
-  homepageAccount?.querySelector('[data-home-account-panel-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
-  homepageNotifications?.querySelector('[data-home-notifications-panel-handle]')?.style.setProperty('--homepage-account-handle-width', handleWidth);
-};
-const setHomepageAccountOptionsOpen = (open) => {
-  if (!homepageMenu) return;
-  if (!open) {
-    resetHomepageAccountOptions();
-    return;
-  }
-  setHomepageMenuOpen(true);
-  resetHomepageHomeOptions();
-  homepageMenu.dataset.accountActive = 'employee';
-  homepageMenu.setAttribute('aria-label', 'Account options');
-  homepageMenu.querySelectorAll('[data-home-account-nav-option], [data-home-account-nav-handle]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'false');
-    button.setAttribute('tabindex', '0');
-  });
-  homepageMenu.classList.add('is-account-options');
-  syncHomepageAccountHandleWidth();
-  resetHomepageMenuInactivityTimer();
-};
-const setHomepageHomeOptionsOpen = (open) => {
-  if (!homepageMenu) return;
-  ensureHomepageHomeOptions();
-  if (!open) {
-    resetHomepageHomeOptions();
-    return;
-  }
-  setHomepageMenuOpen(true);
-  resetHomepageAccountOptions();
-  const activeLanguage = root.lang === 'ar' ? 'ar' : 'en';
-  homepageMenu.dataset.homeActive = activeLanguage;
-  homepageMenu.setAttribute('aria-label', 'Language options');
-  homepageMenu.querySelectorAll('[data-home-home-option]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'false');
-    button.setAttribute('tabindex', '0');
-    button.setAttribute('aria-selected', String(button.dataset.homeHomeOption === activeLanguage));
-  });
-  homepageMenu.classList.add('is-home-options');
-  resetHomepageMenuInactivityTimer();
-};
-const setHomepageNotificationsOptionsOpen = (open) => {
-  if (!homepageMenu) return;
-  ensureHomepageNotificationsOptions();
-  if (!open) {
-    resetHomepageNotificationsOptions();
-    return;
-  }
-  setHomepageMenuOpen(true);
-  resetHomepageHomeOptions();
-  homepageMenu.dataset.notificationsActive = 'notifications';
-  homepageMenu.setAttribute('aria-label', 'Notifications and contact options');
-  homepageMenu.querySelectorAll('[data-home-notifications-nav-option], [data-home-notifications-nav-handle]').forEach((button) => {
-    button.setAttribute('aria-hidden', 'false');
-    button.setAttribute('tabindex', '0');
-  });
-  homepageMenu.classList.add('is-notifications-options');
-  syncHomepageAccountHandleWidth();
-  resetHomepageMenuInactivityTimer();
-};
-window.addEventListener('resize', syncHomepageAccountHandleWidth);
-const closeHomepageStudioOutside = (event) => {
-  const target = event.target instanceof Element ? event.target : null;
-  if (!homepageMenu?.classList.contains('is-studio-options') || target?.closest('.homepage-bottom-navigation')) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  setHomepageMenuOpen(false);
-};
-document.addEventListener('pointerdown', closeHomepageStudioOutside, true);
-const setHomepageMenuActive = (active) => {
-  if (!homepageMenu) return;
-  homepageMenu.dataset.active = active;
-  document.querySelectorAll('.homepage-bottom-menu-button').forEach((button) => {
-    const selected = (active === 'account' && button.matches('[data-home-menu-account]')) || (active === 'gallery' && button.matches('[data-home-menu-gallery]')) || (active === 'home' && button.matches('[data-home-menu-home]')) || (active === 'menu' && button.matches('[data-home-menu-menu]')) || (active === 'services' && button.matches('[data-home-menu-services]'));
-    button.classList.toggle('is-active', selected);
-    button.setAttribute('aria-pressed', String(selected));
-  });
-};
-const homepageOverlayMotionTimers = new WeakMap();
-const prepareHomepageOverlayMotion = (overlay) => {
-  window.clearTimeout(homepageOverlayMotionTimers.get(overlay));
-  overlay.classList.add('is-animating');
-  homepageOverlayMotionTimers.set(overlay, window.setTimeout(() => overlay.classList.remove('is-animating'), 420));
-};
-const resetHomepageNotificationsState = () => {
-  if (!homepageNotifications) return;
-  const selector = homepageNotifications.querySelector('[data-notifications-selector]');
-  const panel = homepageNotifications.querySelector('[data-notifications-panel]');
-  selector?.setAttribute('data-active', 'notifications');
-  panel?.setAttribute('data-active', 'notifications');
-  selector?.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.notificationsOption === 'notifications')));
-  homepageNotifications.querySelector('.homepage-notifications-contact')?.setAttribute('aria-hidden', 'true');
-};
-const setHomepageNotificationsOpen = (open, mode = 'notifications', menuFlow = false) => {
-  if (!homepageNotifications) return;
-  window.clearTimeout(homepageNotificationsCloseTimer);
-  if (open) {
-    homepageNotificationsMenuFlow = menuFlow;
-    resetHomepageNotificationsState();
-    ensureHomepageNotificationsPanelHandle();
-    syncHomepageAccountHandleWidth();
-    ensureHomepageLinkedInContact();
-    syncHomepageNotificationsArrows();
-    const selectedMode = mode === 'contact' ? 'contact' : 'notifications';
-    const selector = homepageNotifications.querySelector('[data-notifications-selector]');
-    const panel = homepageNotifications.querySelector('[data-notifications-panel]');
-    selector?.setAttribute('data-active', selectedMode);
-    panel?.setAttribute('data-active', selectedMode);
-    panel?.setAttribute('data-notifications-stage', menuFlow ? 'compact' : 'expanded');
-    homepageNotifications.dataset.notificationFlow = String(menuFlow);
-    selector?.querySelectorAll('[data-notifications-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.notificationsOption === selectedMode)));
-    homepageNotifications.querySelector('.homepage-notifications-contact')?.setAttribute('aria-hidden', String(selectedMode !== 'contact'));
-    setHomepageStudioOpen(false);
-    setHomepageMenuOpen(false);
-    if (menuFlow) resetHomepageMenuInactivityTimer();
-    loadSharedNotifications();
-    homepageNotifications.hidden = false;
-    homepageNotifications.setAttribute('aria-hidden', 'false');
+  };
+
+  const initializeGroupOne = () => {
+    initializationRun += 1;
+    document.documentElement.classList.add('s-x-initializing');
+    initializationReady = false;
+    if (keyboardFrame) window.cancelAnimationFrame(keyboardFrame);
+    if (composerPulseFrame) window.cancelAnimationFrame(composerPulseFrame);
+    if (composerMenuPulseFrame) window.cancelAnimationFrame(composerMenuPulseFrame);
+    keyboardFrame = 0;
+    composerPulseFrame = 0;
+    composerMenuPulseFrame = 0;
+    if (isZPage) {
+      cancelZReleaseSettle({ stopNativeScroll: true });
+      zReleasePointerActive = false;
+      zSectionOneLocked = false;
+      zSectionOneCompositionReady = false;
+      zSectionOneContentBoxHeight = 0;
+      zSectionOneStateOneImageBottom = 0;
+      zSectionOneTransitionDistance = 0;
+      zEndpointLockScrollY = 0;
+      zEndpointPointerId = null;
+      zEndpointPointerStartY = 0;
+      zEndpointReverseIntent = false;
+      zHeroGeometryFrozen = false;
+      document.documentElement.removeAttribute('data-s-z-hero-assets-stable');
+      zSecondaryNav.classList.remove('is-z-content-interactive');
+      zSecondaryNav.classList.add('is-z-transition-ready');
+      zSecondaryNav.style.removeProperty('--s-z-secondary-nav-state-one-top');
+      zSecondaryNav.style.removeProperty('--s-z-composition-progress');
+      zSecondaryNav.style.removeProperty('--s-z-content-blur');
+      page.style.removeProperty('--s-z-final-scroll-reserve');
+      page.style.removeProperty('--s-z-transition-distance');
+      syncZActiveContent(false);
+      firstGroup.style.setProperty('--s-z-first-group-scroll-progress', '0');
+      prepareZHeroTransition();
+      const preparationRun = initializationRun;
+      const heroFontsReady = document.fonts?.ready || Promise.resolve();
+      const heroImageReady = imageMedia.complete && imageMedia.naturalWidth
+        ? Promise.resolve()
+        : (imageMedia.decode?.().catch(() => {}) || Promise.resolve());
+      Promise.all([heroFontsReady, heroImageReady]).then(() => {
+        if (initializationRun !== preparationRun || window.scrollY > .5) return;
+        prepareZHeroTransition({ freeze: true });
+      });
+    }
+    resetAddButton();
+    activateTemporaryUi('none');
+    composer.classList.remove('is-pulsing');
+    lastKeyboardOverlap = 0;
+    updateKeyboardOffset();
+    startFirstTypewriter();
+    initializationReady = true;
+    syncConversationInputBounds();
+    document.documentElement.classList.remove('s-x-initializing');
+  };
+
+  const inactivityResetDelayMs = 30000;
+  let inactivityResetTimer = 0;
+
+  const resetPageToInitialState = () => {
+    cancelMajorSectionSettle({ stopNativeScroll: true });
+    window.clearTimeout(discreteSectionUnlockTimer);
+    discreteSectionUnlockTimer = 0;
+    discreteSectionInputLocked = false;
+    discreteSectionTouch = null;
+    majorSectionPointerActive = false;
+    window.clearTimeout(portraitSectionLayoutTimer);
+    portraitSectionLayoutTimer = 0;
+    if (portraitSectionLayoutFrame) window.cancelAnimationFrame(portraitSectionLayoutFrame);
+    if (finalScrollBufferFrame) window.cancelAnimationFrame(finalScrollBufferFrame);
+    portraitSectionLayoutFrame = 0;
+    finalScrollBufferFrame = 0;
+    window.clearTimeout(inactivityResetTimer);
+    window.clearTimeout(finalVisibleTimer);
+    window.clearTimeout(finalResetTimer);
+    window.clearTimeout(pendingFinalRevealTimer);
+    inactivityResetTimer = 0;
+    finalVisibleTimer = 0;
+    finalResetTimer = 0;
+    pendingFinalRevealTimer = 0;
+    pendingReplyTimers.forEach((timer) => window.clearTimeout(timer));
+    pendingReplyTimers.clear();
+    sendUtilityPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    sendUtilityPulseFrames.clear();
+    marqueeItemPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    marqueeItemPulseFrames.clear();
+    squareLogoPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    squareLogoPulseFrames.clear();
+    imagePulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    imagePulseFrames.clear();
+    lockedNoticeShakeFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    lockedNoticeShakeFrames.clear();
+    document.querySelectorAll('.is-locked-shaking').forEach((notice) => notice.classList.remove('is-locked-shaking'));
+    secondaryNavPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    secondaryNavPulseFrames.clear();
+    menuItemFlashTimers.forEach((timer) => window.clearTimeout(timer));
+    menuItemFlashTimers.clear();
+    document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
+    composerMenu.querySelectorAll('.is-active').forEach((element) => element.classList.remove('is-active'));
+    groups.forEach((group) => group.classList.remove('is-visible'));
+    resetFlowRevealState();
+    conversation.replaceChildren();
+    conversationFinal.classList.remove('is-visible');
+    conversationFinal.setAttribute('aria-hidden', 'true');
+    conversationFinalCopy.textContent = '';
+    conversationFinalCopy.removeAttribute('lang');
+    conversationFinalCopy.removeAttribute('dir');
+    replyIndex = 0;
+    conversationState = 'active';
+    manualThemeOverride = false;
+    applyLanguage(initialLanguage, { persist: false, emit: false });
+    applyTheme('dark');
+    input.blur();
+    input.value = '';
+    updateComposerInputLanguage();
+    setComposerInteractivity(true);
+    activateTemporaryUi('none');
+    resetAddButton();
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    initializeGroupOne();
     window.requestAnimationFrame(() => {
-      document.body.classList.add('homepage-notifications-open');
-      homepageNotifications.classList.add('is-open');
+      firstGroup.classList.add('is-visible');
+      if (isZPage) {
+        imageMedia.classList.add('is-visible');
+        setImageCopyVisibility(true);
+      }
+      scheduleFlowSync();
     });
-    return;
-  }
-  const returnToOriginalBar = homepageNotificationsMenuFlow;
-  homepageNotificationsMenuFlow = false;
-  homepageNotifications.classList.remove('is-open');
-  document.body.classList.remove('homepage-notifications-open');
-  homepageNotifications.setAttribute('aria-hidden', 'true');
-  homepageNotifications.removeAttribute('data-notification-flow');
-  homepageNotifications.querySelector('[data-notifications-panel]')?.removeAttribute('data-notifications-stage');
-  homepageNotificationsCloseTimer = window.setTimeout(() => { homepageNotifications.hidden = true; }, 360);
-  setHomepageMenuOpen(returnToOriginalBar ? false : true);
-};
-const setHomepageNotificationsStage = (stage) => {
-  const panel = homepageNotifications?.querySelector('[data-notifications-panel]');
-  if (!panel || homepageNotifications?.dataset.notificationFlow !== 'true') return;
-  panel.setAttribute('data-notifications-stage', stage === 'expanded' ? 'expanded' : 'compact');
-};
-const homepageSearchEntries = [
-  { en: 'Reengineered', ar: 'إعادة هندسة' },
-  { en: 'Ooxme v4.0', ar: 'التحديث الرابع لأوكسوم' },
-  { en: 'Redesign Website', ar: 'إعادة تصميم الموقع' },
-  { en: 'The Client Profile', ar: 'ملف العميل' },
-  { en: 'The Gallery', ar: 'المعرض' },
-  { en: 'Notifications', ar: 'الإشعارات' },
-];
-const renderHomepageSearchSuggestions = () => {
-  if (!homepageSearchInput || !homepageSearchSuggestions) return;
-  const query = homepageSearchInput.value.trim().toLocaleLowerCase();
-  homepageSearchSuggestions.hidden = false;
-  const matches = homepageSearchEntries
-    .map((entry, index) => {
-      const label = entry[root.lang === 'ar' ? 'ar' : 'en'];
-      const normalized = label.toLocaleLowerCase();
-      const position = normalized.indexOf(query);
-      const overlap = [...query].filter((character) => normalized.includes(character)).length;
-      return { entry, index, score: position < 0 ? 100 - overlap : position };
-    })
-    .sort((a, b) => a.score - b.score || a.index - b.index)
-    .slice(0, 3);
-  homepageSearchSuggestions.innerHTML = matches.map(({ entry }) => `<button class="homepage-search-suggestion" type="button">${entry[root.lang === 'ar' ? 'ar' : 'en']}</button>`).join('');
-};
-const setHomepageSearchOpen = (open) => {
-  if (!homepageSearch) return;
-  window.clearTimeout(homepageSearchCloseTimer);
-  if (open) {
-    setHomepageStudioOpen(false);
-    setHomepageMenuOpen(false);
-    homepageSearch.hidden = false;
-    homepageSearch.setAttribute('aria-hidden', 'false');
-    prepareHomepageOverlayMotion(homepageSearch);
-    window.requestAnimationFrame(() => {
-      document.body.classList.add('homepage-search-open');
-      homepageSearch.classList.add('is-open');
-      renderHomepageSearchSuggestions();
-    });
-    return;
-  }
-  prepareHomepageOverlayMotion(homepageSearch);
-  homepageSearch.classList.remove('is-open');
-  document.body.classList.remove('homepage-search-open');
-  homepageSearch.setAttribute('aria-hidden', 'true');
-  homepageSearchCloseTimer = window.setTimeout(() => { homepageSearch.hidden = true; }, 360);
-  setHomepageMenuOpen(true);
-};
-const setHomepageAccountOpen = (open, returnToAccountOptions = false) => {
-  if (!homepageAccount) return;
-  window.clearTimeout(homepageAccountCloseTimer);
-  window.clearTimeout(homepageAccountInactivityTimer);
-  if (open) {
-    setHomepageStudioOpen(false);
-    setHomepageAccountOptionsOpen(false);
-    setHomepageMenuOpen(false);
-    homepageAccount.hidden = false;
-    homepageAccount.setAttribute('aria-hidden', 'false');
-    prepareHomepageOverlayMotion(homepageAccount);
-    window.requestAnimationFrame(() => {
-      document.body.classList.add('homepage-account-open');
-      homepageAccount.classList.add('is-open');
-      resetHomepageAccountInactivityTimer();
-    });
-    return;
-  }
-  prepareHomepageOverlayMotion(homepageAccount);
-  homepageAccount.classList.remove('is-open');
-  document.body.classList.remove('homepage-account-open');
-  homepageAccount.setAttribute('aria-hidden', 'true');
-  homepageAccountCloseTimer = window.setTimeout(() => { homepageAccount.hidden = true; }, 360);
-  setHomepageMenuOpen(false);
-  if (returnToAccountOptions) setHomepageAccountOptionsOpen(true);
-};
-const resetHomepageAccountInactivityTimer = () => {
-  window.clearTimeout(homepageAccountInactivityTimer);
-  if (!homepageAccount?.classList.contains('is-open')) return;
-  homepageAccountInactivityTimer = window.setTimeout(() => setHomepageAccountOpen(false), 5000);
-};
-const resetHomepageAccountInteractionTimer = () => {
-  if (homepageMenu?.classList.contains('is-account-options')) resetHomepageMenuInactivityTimer();
-  if (homepageAccount?.classList.contains('is-open')) resetHomepageAccountInactivityTimer();
-};
-const setHomepageServicesOpen = (open) => {
-  if (!homepageServices) return;
-  window.clearTimeout(homepageServicesCloseTimer);
-  if (open) {
-    setHomepageStudioOpen(false);
-    setHomepageMenuOpen(false);
-    setEmployeeDashboardMenuOpen(false);
-    homepageServices.hidden = false;
-    homepageServices.setAttribute('aria-hidden', 'false');
-    prepareHomepageOverlayMotion(homepageServices);
-    window.requestAnimationFrame(() => {
-      document.body.classList.add('homepage-services-open');
-      homepageServices.classList.add('is-open');
-    });
-    return;
-  }
-  prepareHomepageOverlayMotion(homepageServices);
-  homepageServices.classList.remove('is-open');
-  document.body.classList.remove('homepage-services-open');
-  homepageServices.setAttribute('aria-hidden', 'true');
-  homepageServicesCloseTimer = window.setTimeout(() => { homepageServices.hidden = true; }, 360);
-  setHomepageMenuOpen(true);
-};
-const setHomepageLanguageOpen = (open) => {
-  if (!homepageLanguage || !homepageLanguageSelector) return;
-  window.clearTimeout(homepageLanguageCloseTimer);
-  if (open) {
-    setHomepageStudioOpen(false);
-    const activeLanguage = root.lang === 'ar' ? 'ar' : 'en';
-    homepageLanguageSelector.dataset.active = activeLanguage;
-    homepageLanguageSelector.querySelectorAll('[data-home-language-option]').forEach((option) => option.setAttribute('aria-selected', String(option.dataset.homeLanguageOption === activeLanguage)));
-    setHomepageMenuOpen(false);
-    homepageLanguage.hidden = false;
-    homepageLanguage.setAttribute('aria-hidden', 'false');
-    prepareHomepageOverlayMotion(homepageLanguage);
-    window.requestAnimationFrame(() => {
-      document.body.classList.add('homepage-language-open');
-      homepageLanguage.classList.add('is-open');
-    });
-    return;
-  }
-  prepareHomepageOverlayMotion(homepageLanguage);
-  homepageLanguage.classList.remove('is-open');
-  document.body.classList.remove('homepage-language-open');
-  homepageLanguage.setAttribute('aria-hidden', 'true');
-  homepageLanguageCloseTimer = window.setTimeout(() => { homepageLanguage.hidden = true; }, 360);
-  setHomepageMenuOpen(true);
-};
-document.querySelector('[data-employee-dashboard-menu-services]')?.addEventListener('click', () => setHomepageServicesOpen(true));
-const queueHomepageMenuSelection = (active, action) => {
-  setHomepageMenuActive(active);
-  if (active !== 'home') {
-    resetHomepageHomeOptions();
-    resetHomepageNotificationsOptions();
-  }
-  resetHomepageMenuInactivityTimer();
-  window.clearTimeout(homepageMenuSelectionTimer);
-  homepageMenuSelectionTimer = undefined;
-  if (action) action();
-  else setHomepageMenuOpen(false);
-};
-window.setTimeout(() => {
-  if (homepageBottomNavigation?.classList.contains('is-menu-open') || homepageNotifications?.classList.contains('is-open') || homepageSearch?.classList.contains('is-open') || homepageAccount?.classList.contains('is-open') || homepageServices?.classList.contains('is-open')) return;
-  setHomepageMenuOpen(true);
-  window.setTimeout(() => setHomepageMenuOpen(false), 2000);
-}, 3000);
-homepageMenuTrigger?.addEventListener('click', (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  setHomepageMenuOpen(!homepageBottomNavigation.classList.contains('is-menu-open'));
-});
-document.querySelectorAll('[data-language-toggle]').forEach((button) => button.addEventListener('click', () => setHomepageMenuOpen(false)));
-document.querySelector('[data-home-menu-home]')?.addEventListener('click', () => queueHomepageMenuSelection('home', () => {
-  setHomepageHomeOptionsOpen(true);
-}));
-homepageMenu?.addEventListener('click', (event) => {
-  const button = event.target.closest('[data-home-home-option]');
-  if (!button || !homepageMenu.classList.contains('is-home-options')) return;
-  event.preventDefault();
-  event.stopPropagation();
-  const next = button.dataset.homeHomeOption === 'ar' ? 'ar' : 'en';
-  applyLanguage(next);
-  homepageMenu.dataset.homeActive = next;
-  homepageMenu.querySelectorAll('[data-home-home-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
-  resetHomepageMenuInactivityTimer();
-  setHomepageMenuOpen(false);
-});
-homepageMenu?.addEventListener('click', (event) => {
-  const option = event.target.closest('[data-home-notifications-nav-option]');
-  const handle = event.target.closest('[data-home-notifications-nav-handle]');
-  if ((!option && !handle) || !homepageMenu.classList.contains('is-notifications-options')) return;
-  event.preventDefault();
-  event.stopPropagation();
-  const selectedMode = option?.dataset.homeNotificationsNavOption || homepageMenu.dataset.notificationsActive || 'notifications';
-  homepageMenu.dataset.notificationsActive = selectedMode;
-  setHomepageNotificationsOpen(true, selectedMode, true);
-});
-document.querySelector('[data-home-menu-account]')?.addEventListener('click', () => queueHomepageMenuSelection('account', () => {
-  setHomepageAccountOptionsOpen(true);
-}));
-homepageMenu?.querySelectorAll('[data-home-account-nav-option]').forEach((button) => button.addEventListener('click', (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  if (!homepageMenu.classList.contains('is-account-options')) return;
-  const accountType = button.dataset.homeAccountNavOption;
-  homepageMenu.dataset.accountActive = accountType;
-  homepageAccount?.querySelector(`[data-home-account-type="${accountType}"]`)?.click();
-  setHomepageAccountOpen(true);
-}));
-homepageMenu?.querySelector('[data-home-account-nav-handle]')?.addEventListener('click', (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  if (homepageMenu.classList.contains('is-account-options')) setHomepageAccountOpen(true);
-});
-homepageAccount?.querySelector('[data-home-account-panel-handle]')?.addEventListener('click', (event) => {
-  event.preventDefault();
-  event.stopPropagation();
-  setHomepageAccountOpen(false, true);
-});
-let homepageAccountNavHandleStartY;
-const homepageAccountNavHandle = homepageMenu?.querySelector('[data-home-account-nav-handle]');
-homepageAccountNavHandle?.addEventListener('pointerdown', (event) => {
-  homepageAccountNavHandleStartY = event.clientY;
-  homepageAccountNavHandle.setPointerCapture?.(event.pointerId);
-});
-homepageAccountNavHandle?.addEventListener('pointerup', (event) => {
-  if (homepageAccountNavHandleStartY - event.clientY > 24) {
-    event.preventDefault();
-    setHomepageAccountOpen(true);
-  }
-  homepageAccountNavHandleStartY = undefined;
-});
-document.querySelector('[data-home-menu-gallery]')?.addEventListener('click', () => queueHomepageMenuSelection('gallery', () => setHomepageStudioOpen(true)));
-document.querySelector('[data-employee-dashboard-menu-gallery]')?.addEventListener('click', () => location.assign('/brands'));
-document.querySelector('[data-home-menu-services]')?.addEventListener('click', () => queueHomepageMenuSelection('services', () => setHomepageServicesContextOpen(true)));
-document.querySelector('[data-home-menu-menu]')?.addEventListener('click', () => queueHomepageMenuSelection('menu', () => {
-  setHomepageNotificationsOptionsOpen(true);
-}));
-homepageNotifications?.addEventListener('click', (event) => {
-  const panel = event.target.closest('.homepage-notifications-panel');
-  if (!panel || !event.target.closest('button, a, [role="tab"]')) setHomepageNotificationsOpen(false);
-});
-homepageNotifications?.addEventListener('click', (event) => {
-  const handle = event.target.closest('[data-home-notifications-panel-handle]');
-  if (!handle) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  setHomepageNotificationsStage('expanded');
-});
-const renderSharedNotifications = (notifications) => {
-  const list = homepageNotifications?.querySelector('.homepage-notifications-list');
-  if (!list || !Array.isArray(notifications)) return;
-  const sortedNotifications = [...notifications].sort((a, b) => new Date(b.publish_date) - new Date(a.publish_date));
-  const renderedItems = sortedNotifications.length
-    ? sortedNotifications.map(notification => {
-      const item = document.createElement('button'); item.type = 'button'; item.className = 'homepage-notification'; item.dataset.notification = ''; item.setAttribute('aria-expanded', 'false');
-      const summary = document.createElement('span'); summary.className = 'homepage-notification-summary'; const summaryCopy = document.createElement('span'); const title = document.createElement('strong'); title.textContent = notification.title; const date = document.createElement('time'); date.dateTime = notification.publish_date; date.textContent = new Intl.DateTimeFormat(root.lang === 'ar' ? 'ar-IQ' : 'en', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(notification.publish_date)); summaryCopy.append(title); const affordance = document.createElement('span'); affordance.className = 'homepage-notification-affordance'; const unread = document.createElement('span'); unread.className = 'homepage-notification-unread'; unread.setAttribute('aria-hidden', 'true'); const arrow = document.createElement('img'); arrow.className = 'homepage-notification-arrow'; arrow.src = root.lang === 'ar' ? 'assets/icons/New/ARROW LEFT 02.svg' : 'assets/icons/New/ARROW RIGHT 02.svg'; arrow.alt = ''; affordance.append(unread, arrow); summary.append(summaryCopy, affordance);
-      const details = document.createElement('span'); details.className = 'homepage-notification-details'; const copy = document.createElement('span'); copy.className = 'homepage-notification-copy'; copy.textContent = notification.body; details.append(copy, date); item.append(summary, details); return item;
-    })
-    : [Object.assign(document.createElement('p'), { className: 'homepage-notifications-empty', textContent: 'لا توجد إشعارات' })];
-  list.replaceChildren(...renderedItems, Object.assign(document.createElement('p'), { className: 'homepage-notifications-no-older', textContent: 'No older notifications' }));
-  if (homepageNotificationDot) homepageNotificationDot.hidden = sortedNotifications.length === 0;
-};
-const loadSharedNotifications = async () => {
-  try {
-    const response = await fetch('/api/accounts/index?route=public-notifications', { credentials: 'same-origin' });
-    if (!response.ok) throw new Error('notification_load_failed');
-    renderSharedNotifications(await response.json());
-  } catch (_) {
-    renderSharedNotifications([]);
-  }
-};
-loadSharedNotifications();
-homepageNotifications?.addEventListener('click', (event) => {
-  const notification = event.target.closest('[data-notification]');
-  const contact = event.target.closest('.homepage-contact-card');
-  if (!notification && !contact) return;
-  const isCompactFlow = homepageNotifications.dataset.notificationFlow === 'true' && homepageNotifications.querySelector('[data-notifications-panel]')?.dataset.notificationsStage !== 'expanded';
-  if (isCompactFlow) {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    setHomepageNotificationsStage('expanded');
-    return;
-  }
-  if (!notification) return;
-  const expanded = !notification.classList.contains('is-expanded');
-  homepageNotifications.querySelectorAll('[data-notification].is-expanded').forEach((openNotification) => {
-    openNotification.classList.remove('is-expanded');
-    openNotification.setAttribute('aria-expanded', 'false');
+    inactivityResetTimer = window.setTimeout(resetPageToInitialState, inactivityResetDelayMs);
+  };
+
+  const noteInteraction = () => {
+    if (!initializationReady) return;
+    window.clearTimeout(inactivityResetTimer);
+    inactivityResetTimer = window.setTimeout(resetPageToInitialState, inactivityResetDelayMs);
+  };
+
+  ['pointerdown', 'mousemove', 'touchstart', 'click', 'keydown', 'input'].forEach((eventName) => {
+    document.addEventListener(eventName, noteInteraction, { passive: true });
   });
-  notification.classList.toggle('is-expanded', expanded);
-  notification.classList.add('is-read', 'is-selected');
-  notification.setAttribute('aria-expanded', String(expanded));
-  window.clearTimeout(homepageNotificationSelectionTimer);
-  homepageNotificationSelectionTimer = window.setTimeout(() => notification.classList.remove('is-selected'), 340);
-});
-homepageSearch?.addEventListener('pointerdown', (event) => {
-  if (!event.target.closest('.homepage-search-panel')) setHomepageSearchOpen(false);
-});
-homepageAccount?.addEventListener('pointerdown', (event) => {
-  if (!event.target.closest('.homepage-account-panel')) setHomepageAccountOpen(false);
-  else resetHomepageAccountInactivityTimer();
-});
-let homepageAccountPanelStartY;
-homepageAccount?.addEventListener('pointerdown', (event) => {
-  if (!event.target.closest('.homepage-account-panel') || event.target.closest('input, button, a, select, textarea, label, [role="button"], [role="tab"]')) return;
-  homepageAccountPanelStartY = event.clientY;
-  homepageAccount.setPointerCapture?.(event.pointerId);
-  resetHomepageAccountInactivityTimer();
-}, true);
-homepageAccount?.addEventListener('pointerup', (event) => {
-  if (homepageAccountPanelStartY !== undefined && event.clientY - homepageAccountPanelStartY > 24) setHomepageAccountOpen(false);
-  homepageAccountPanelStartY = undefined;
-}, true);
-homepageAccount?.addEventListener('pointercancel', () => { homepageAccountPanelStartY = undefined; }, true);
-homepageAccount?.addEventListener('keydown', resetHomepageAccountInactivityTimer);
-homepageServices?.addEventListener('pointerdown', (event) => {
-  if (!event.target.closest('.homepage-services-panel')) setHomepageServicesOpen(false);
-});
-homepageLanguage?.addEventListener('pointerdown', (event) => {
-  if (!event.target.closest('.homepage-account-panel')) setHomepageLanguageOpen(false);
-});
-homepageLanguageSelector?.querySelectorAll('[data-home-language-option]').forEach((button) => button.addEventListener('click', () => {
-  const next = button.dataset.homeLanguageOption;
-  applyLanguage(next);
-  homepageLanguageSelector.dataset.active = next;
-  homepageLanguageSelector.querySelectorAll('[data-home-language-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
-  setHomepageLanguageOpen(false);
-}));
-homepageServices?.querySelectorAll('[data-home-services-option]').forEach((button) => button.addEventListener('click', () => {
-  const selector = homepageServices.querySelector('[data-home-services-selector]');
-  const panel = homepageServices.querySelector('[data-home-services-panel]');
-  selector.dataset.active = button.dataset.homeServicesOption;
-  panel.dataset.active = button.dataset.homeServicesOption;
-  selector.querySelectorAll('[data-home-services-option]').forEach((option) => option.setAttribute('aria-selected', String(option === button)));
-}));
-document.querySelectorAll('[data-brand-management-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/brand'); }));
-document.querySelectorAll('[data-consultation-link]').forEach((button) => button.addEventListener('click', () => { window.location.assign('/consultation'); }));
-homepageAccount?.querySelectorAll('[data-home-account-type]').forEach((button) => button.addEventListener('click', () => {
-  const selector = homepageAccount.querySelector('[data-home-account-selector]');
-  if (!selector) return;
-  const accountType = button.dataset.homeAccountType;
-  selector.dataset.active = accountType;
-  selector.querySelectorAll('[data-home-account-type]').forEach((item) => item.setAttribute('aria-selected', String(item === button)));
-}));
-homepageAccount?.querySelectorAll('.homepage-account-login').forEach((button) => button.addEventListener('click', async () => {
-  const [usernameInput, passwordInput] = homepageAccount.querySelectorAll('[data-home-account-input]');
-  if (!usernameInput || !passwordInput) return;
-  const expectedAccountType = homepageAccount.querySelector('[data-home-account-selector]')?.dataset.active;
-  button.disabled = true;
-  button.setAttribute('aria-busy', 'true');
-  usernameInput.removeAttribute('aria-invalid');
-  passwordInput.removeAttribute('aria-invalid');
-  try {
-    const response = await fetch('/api/accounts/login', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: usernameInput.value, password: passwordInput.value })
-    });
-    const account = await response.json().catch(() => ({}));
-    if (!response.ok || account.accountType !== expectedAccountType) throw new Error('invalid_credentials');
-    await loadSharedNotifications();
-    if (account.accountType === 'employee') location.assign('/?panel=employee-dashboard');
-    if (account.accountType === 'client') location.assign('/?panel=client-dashboard');
-  } catch (_) {
-    usernameInput.setAttribute('aria-invalid', 'true');
-    passwordInput.setAttribute('aria-invalid', 'true');
-    passwordInput.focus();
-  } finally {
-    button.disabled = false;
-    button.removeAttribute('aria-busy');
-  }
-}));
-homepageAccount?.querySelectorAll('.homepage-account-selector, .homepage-account-form, .homepage-account-login').forEach((element) => element.addEventListener('pointerdown', (event) => event.stopPropagation()));
-homepageSearchInput?.addEventListener('input', renderHomepageSearchSuggestions);
-homepageSearchSuggestions?.addEventListener('click', (event) => event.stopPropagation());
-document.addEventListener('pointerdown', (event) => {
-  resetHomepageAccountInteractionTimer();
-  if (!homepageBottomNavigation?.classList.contains('is-menu-open')) return;
-  resetHomepageMenuInactivityTimer();
-  if (event.target.closest('[data-language-toggle]')) return;
-  if (event.target.closest('.homepage-bottom-navigation')) return;
-  setHomepageMenuOpen(false);
-  event.preventDefault();
-  event.stopPropagation();
-}, true);
-document.addEventListener('pointermove', resetHomepageAccountInteractionTimer, { passive: true });
-document.addEventListener('wheel', resetHomepageAccountInteractionTimer, { passive: true });
-document.addEventListener('keydown', resetHomepageAccountInteractionTimer);
-document.addEventListener('pointermove', resetHomepageMenuInactivityTimer, { passive: true });
-document.addEventListener('keydown', resetHomepageMenuInactivityTimer);
-document.addEventListener('wheel', resetHomepageMenuInactivityTimer, { passive: true });
-document.querySelectorAll('[data-next-panel]').forEach((button) => button.addEventListener('click', () => moveTo(panelIndex + 1)));
-document.querySelectorAll('[data-home-panel]').forEach((button) => button.addEventListener('click', () => moveTo(0)));
-searchOverlay.querySelectorAll('[data-panel-index]').forEach((link) => link.addEventListener('click', (event) => {
-  event.preventDefault();
-  setSearchOpen(false);
-  const targetIndex = panels.findIndex((panel) => panel.dataset.panelId === panelIds[Number(link.dataset.panelIndex)]);
-  if (targetIndex >= 0) moveTo(targetIndex);
-}));
+  window.addEventListener('scroll', noteInteraction, { passive: true });
+
+  window.addEventListener('pageshow', () => {
+    if (isZPage) {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      initializeGroupOne();
+    } else {
+      // A history restore can preserve both scroll position and the live DOM.
+      // /x deliberately treats every entry as a new visit instead.
+      resetPageToInitialState();
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      });
+    }
+  });
+  initializeGroupOne();
+  noteInteraction();
+})();

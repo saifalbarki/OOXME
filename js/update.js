@@ -88,7 +88,7 @@
     });
   };
 
-  face.addEventListener('click', () => window.location.assign('/x'));
+  face.addEventListener('click', () => window.location.assign('/'));
   composer.addEventListener('submit', (event) => { event.preventDefault(); setMenu(!menu.classList.contains('is-open')); });
   document.addEventListener('pointerdown', (event) => {
     if (!menu.classList.contains('is-open')) return;

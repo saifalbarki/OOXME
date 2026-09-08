@@ -1,0 +1,7 @@
+archive/
+.tmp/
+.git/
+.vercel/
+.env*
+node_modules/
+dist/

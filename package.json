@@ -6,11 +6,6 @@
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "build": "node scripts/build-static.js",
-    "db:migrate": "node scripts/migrate-booking-db.js",
-    "db:migrate-promotions": "node scripts/migrate-promotion-source.js"
-  },
-  "dependencies": {
-    "pg": "^8.16.3"
+    "build": "node scripts/build-static.js"
   }
 }

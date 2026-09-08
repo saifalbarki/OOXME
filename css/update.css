@@ -1,3 +1,5 @@
+@import url('./update-base.css');
+
 /* /update keeps the shared /x Section 1 frame. Only its safe-area content
    becomes scrollable so the fixed Master Panel and Top Bar do not move. */
 body.s-page--update {
