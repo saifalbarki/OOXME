@@ -369,10 +369,10 @@ html.s-route.is-day-mode .s-page--rpn .s-page__rpn-submit { color: #111111; }
 .s-page--rpn .s-page__rpn-hero-image {
   position: absolute;
   top: auto;
-  right: 0;
+  right: auto;
   bottom: calc(50% - min(29.612vw, 148.06px));
-  left: 0;
-  width: 100%;
+  left: var(--s-x);
+  width: calc(100% - (var(--s-x) * 2));
   height: calc(var(--s-x) * 8);
 }
 
@@ -440,6 +440,12 @@ html[lang="ar"] .s-page--rpn [data-s-first-group] > .s-page__group-description {
   text-align: right;
 }
 
+html[lang="ar"] .s-page--rpn [data-s-first-group] > .s-page__group-title,
+html[lang="ar"] .s-page--rpn [data-s-rpn-title-output] {
+  direction: rtl;
+  text-align: right;
+}
+
 /* Arabic mirrors only the Section 1 image; its frame and overlay remain fixed. */
 html[dir="rtl"] .s-page--rpn .s-page__rpn-hero-image > .s-page__image-group {
   transform: scaleX(-1);
@@ -455,6 +461,118 @@ html[dir="rtl"] .s-page--rpn .s-page__rpn-hero-image > .s-page__image-group {
 
 html[dir="rtl"] .s-page--rpn .s-page__rpn-hero-image .s-page__image-copy p {
   background-image: linear-gradient(to left, #583B23 0%, #583B23 30%, #FFFFFF 100%);
+}
+
+/* Section 1 uses Brand Management's cursor-first typewriter contract without
+   changing the RPN text block's existing geometry or typography. */
+.s-page--rpn [data-s-rpn-typewriter] {
+  display: grid;
+  min-block-size: 1.2em;
+  align-items: center;
+  justify-items: start;
+  direction: ltr;
+}
+
+html[dir="rtl"] .s-page--rpn [data-s-rpn-typewriter] {
+  justify-items: start;
+  direction: rtl;
+}
+
+.s-page--rpn .s-page__rpn-typewriter-run {
+  position: relative;
+  display: block;
+  inline-size: max-content;
+  max-inline-size: 100%;
+}
+
+.s-page--rpn .s-page__group-description .s-page__rpn-typewriter-run {
+  inline-size: 100%;
+}
+
+.s-page--rpn [data-s-rpn-summary-output],
+.s-page--rpn [data-s-rpn-title-output] {
+  display: block;
+  max-inline-size: 100%;
+  text-align: start;
+  unicode-bidi: isolate;
+  white-space: pre-line;
+}
+
+.s-page--rpn [data-s-rpn-title-output] { min-block-size: 2lh; }
+.s-page--rpn [data-s-rpn-summary-output] { min-block-size: 2lh; }
+
+.s-page--rpn [data-s-rpn-summary-output] {
+  inline-size: 100%;
+}
+
+.s-page--rpn [data-s-rpn-summary-output] + .s-page__rpn-typewriter-cursor {
+  position: absolute;
+}
+
+.s-page--rpn .s-page__rpn-typewriter-cursor {
+  position: absolute;
+  --s-first-typewriter-cursor-gap: .25em;
+  inset-inline-start: calc(100% + var(--s-first-typewriter-cursor-gap));
+  inset-block-start: 50%;
+  width: 2px;
+  height: 1.05em;
+  background: #0A84FF;
+  translate: 0 -50%;
+  opacity: 0;
+}
+
+.s-page--rpn .s-page__rpn-typewriter-run:has(> [dir="rtl"]) .s-page__rpn-typewriter-cursor {
+  inset-inline-start: auto;
+  inset-inline-end: calc(100% + var(--s-first-typewriter-cursor-gap));
+}
+
+.s-page--rpn [data-s-rpn-typewriter].is-typewriter-prelude .s-page__rpn-typewriter-cursor {
+  animation: s-page-first-typewriter-cursor .5s steps(1, end) 2;
+}
+
+.s-page--rpn [data-s-rpn-typewriter].is-cursor-visible .s-page__rpn-typewriter-cursor { opacity: 1; }
+
+/* The existing stack is a true second page section. Page transitions are
+   discrete; the stack retains its own arrow/swipe card navigation. */
+html.s-rpn-discrete-sections,
+html.s-rpn-discrete-sections body.s-page--rpn { overflow: hidden; }
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__content {
+  position: relative;
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 0;
+  overflow: hidden;
+}
+
+.s-page--rpn.s-rpn-discrete-sections [data-s-section] {
+  position: absolute;
+  inset: 0;
+  display: block;
+  min-height: 100dvh;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(12px);
+  transform: translateY(18px);
+  transition: opacity .42s ease, filter .42s ease, transform .42s cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page--rpn.s-rpn-discrete-sections [data-s-section].is-rpn-page-section-active {
+  z-index: 1;
+  pointer-events: auto;
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-major-section { min-height: 100dvh; }
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__secondary-nav {
+  top: var(--s-rpn-secondary-nav-section-two-top, calc(48px + (var(--s-x) * 2))) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+  pointer-events: auto !important;
 }
 
 @media (orientation: landscape) {
@@ -566,7 +684,7 @@ html[dir="rtl"] .s-page--rpn .s-page__composer-menu-item {
 }
 
 .s-page--rpn .s-page__send-utility:not(.s-page__send-utility--status) {
-  transition-duration: .48s, .48s, .48s;
+  transition-duration: .28s, .28s, .28s;
 }
 
 .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility {
@@ -576,23 +694,19 @@ html[dir="rtl"] .s-page--rpn .s-page__composer-menu-item {
 }
 
 .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(1) {
-  transition-delay: .28s;
-}
-
-.s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
   transition-delay: .36s;
 }
 
-.s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
+.s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
   transition-delay: .50s;
 }
 
 html[dir="rtl"] .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(1) {
-  transition-delay: .64s;
+  transition-delay: .50s;
 }
 
-html[dir="rtl"] .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
-  transition-delay: .18s;
+html[dir="rtl"] .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
+  transition-delay: .36s;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -736,9 +850,13 @@ html.s-route.is-day-mode .s-page--rpn {
 /* The selector remains the approved active glass card. The three inactive
    panels reuse that exact material as settled layers behind it. */
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready {
-  --s-rpn-card-stack-step: calc(var(--s-x) * .5);
+  --s-rpn-stack-surface: rgb(41, 41, 41);
   overflow: visible;
   background: transparent;
+}
+
+html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready {
+  --s-rpn-stack-surface: #FFFFFF;
 }
 
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready::before {
@@ -746,7 +864,7 @@ html.s-route.is-day-mode .s-page--rpn {
   inset: 0;
   border: 1px solid var(--s-composer-stroke);
   border-radius: inherit;
-  background: var(--s-composer-surface);
+  background: var(--s-rpn-stack-surface);
   box-shadow: var(--s-composer-shadow);
   content: "";
   -webkit-backdrop-filter: var(--s-composer-backdrop);
@@ -770,25 +888,27 @@ html.s-route.is-day-mode .s-page--rpn {
   .s-page__rpn-apply
 ).is-rpn-card-layer {
   position: absolute;
-  top: calc((var(--s-menu-inset) + 36px + 6px) * -1);
+  --s-rpn-card-layer-top: calc((var(--s-menu-inset) + 36px + 6px) * -1);
+  top: var(--s-rpn-card-layer-top);
   right: auto;
-  left: calc(var(--s-menu-inset) * -1);
+  left: var(--s-rpn-card-stack-left, 0px);
   box-sizing: border-box;
-  width: calc(100% + (var(--s-menu-inset) * 2));
+  width: var(--s-rpn-card-stack-width, 100%);
   height: var(--s-rpn-content-box-height);
   margin: 0;
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--s-composer-stroke);
   border-radius: var(--s-menu-radius);
-  background: var(--s-composer-surface);
+  background: var(--s-rpn-stack-surface);
   box-shadow: var(--s-composer-shadow);
-  opacity: 1;
+  opacity: var(--s-rpn-card-stack-opacity, 1);
   visibility: visible;
   filter: none;
   pointer-events: none;
-  transform: translate3d(0, calc(var(--s-rpn-card-stack-index) * var(--s-rpn-card-stack-step)), 0);
-  transition: transform .32s cubic-bezier(.22, .61, .36, 1), opacity .22s ease;
+  transform-origin: 50% 0;
+  transform: translate3d(0, var(--s-rpn-card-stack-offset, 0px), 0) scale(var(--s-rpn-card-stack-scale, 1));
+  transition: transform .32s cubic-bezier(.22, .61, .36, 1);
   -webkit-backdrop-filter: var(--s-composer-backdrop);
   backdrop-filter: var(--s-composer-backdrop);
 }
@@ -807,6 +927,17 @@ html.s-route.is-day-mode .s-page--rpn {
   .s-page__rpn-requirements,
   .s-page__rpn-rewards,
   .s-page__rpn-apply
+).is-rpn-card-hidden {
+  display: none;
+  opacity: 1;
+}
+
+.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
 ).is-rpn-card-active {
   z-index: 5 !important;
+  opacity: 1;
 }

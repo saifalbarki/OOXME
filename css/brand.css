@@ -362,10 +362,30 @@ body.s-page--brand-management .s-page__major-section--final > .s-page__closed-no
   );
   height: var(--s-x-closed-notice-height);
   background: rgba(10, 132, 255, .14);
+  color: #0A84FF;
 }
 
 html.s-route.is-day-mode body.s-page--brand-management .s-page__major-section--final > .s-page__closed-notice.s-page__closed-notice--section-7 {
   background: rgba(10, 132, 255, .12);
+  color: #0A84FF;
+}
+
+body.s-page--brand-management:not(.s-page--rpn) .s-page__flow-group--section-7-text {
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-rpn-image-block-size)
+    - var(--s-x-closed-notice-height)
+  );
+}
+
+body.s-page--brand-management .s-page__flow-group--section-7-text :is(.s-page__group-title, .s-page__group-description) {
+  color: #FFFFFF;
+}
+
+html.s-route.is-day-mode body.s-page--brand-management .s-page__flow-group--section-7-text :is(.s-page__group-title, .s-page__group-description) {
+  color: #111111;
 }
 
 body.s-page--brand-management .s-page__flow-group--section-7-text .s-page__flow-text {
@@ -393,6 +413,7 @@ body.s-page--brand-management .s-page__major-section--final .s-page__flow-group-
   align-self: end;
   justify-self: center;
   margin-top: 0;
+  background: #0A84FF;
   color: #FFFFFF;
   font-family: OOXMEScript, Arial, sans-serif;
   font-size: 12px;
@@ -409,12 +430,21 @@ body.s-page--brand-management .s-page__major-section--final .s-page__flow-group-
   padding-block: 0;
 }
 
+body.s-page--brand-management .s-page__major-section--final .s-page__flow-group--section-7-action .s-page__consultation-cta:is(:hover, :focus-visible) {
+  background: #0A84FF;
+}
+
 html[lang="ar"] body.s-page--brand-management .s-page__major-section--final .s-page__flow-group--section-7-action .s-page__consultation-cta {
   font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
 }
 
 html.s-route.is-day-mode body.s-page--brand-management .s-page__major-section--final .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  background: #0A84FF;
   color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page--brand-management .s-page__major-section--final .s-page__flow-group--section-7-action .s-page__consultation-cta:is(:hover, :focus-visible) {
+  background: #0A84FF;
 }
 
 body.s-page--brand-management .s-page__flow-group--section-7-text .s-page__reveal-line {

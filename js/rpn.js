@@ -7,7 +7,6 @@
   const composer = page?.querySelector('[data-s-composer]');
   const composerMenu = page?.querySelector('[data-s-composer-menu]');
   const sendUtilities = page?.querySelector('[data-s-send-utilities]');
-  const statusUtility = page?.querySelector('[data-s-utility="status"]');
   const themeUtility = page?.querySelector('[data-s-utility="theme"]');
   const languageUtility = page?.querySelector('[data-s-utility="language"]');
   const addButton = page?.querySelector('.s-page__add');
@@ -28,14 +27,20 @@
   const applyPanel = page?.querySelector('[data-s-rpn-apply]');
   const applyButtons = Array.from(page?.querySelectorAll('[data-s-rpn-apply-destination]') || []);
   const menuLabels = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-label') || []);
+  const menuItems = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-item') || []);
   const title = firstGroup?.querySelector('.s-page__group-title');
   const summary = firstGroup?.querySelector('.s-page__group-description');
+  const titleOutput = firstGroup?.querySelector('[data-s-rpn-title-output]');
+  const summaryOutput = firstGroup?.querySelector('[data-s-rpn-summary-output]');
+  const titleCursor = firstGroup?.querySelector('[data-s-rpn-title-cursor]');
+  const summaryCursor = firstGroup?.querySelector('[data-s-rpn-summary-cursor]');
+  const pageSections = Array.from(page?.querySelectorAll('[data-s-rpn-page-section]') || []);
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !statusUtility
+  if (!page || !content || !composer || !composerMenu || !sendUtilities
     || !themeUtility || !languageUtility || !addButton || !submitButton || !firstGroup
-    || !title || !summary || !hero || !heroMedia || !heroCopy || !nav || !navRail
+    || !title || !summary || !titleOutput || !summaryOutput || !titleCursor || !summaryCursor || pageSections.length !== 2 || !hero || !heroMedia || !heroCopy || !nav || !navRail
     || !previousButton || !nextButton || !contentSlot || !description || !requirements
-    || !rewards || !applyPanel || navItems.length !== 4) return;
+    || !rewards || !applyPanel || navItems.length !== 4 || menuItems.length !== 5) return;
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
@@ -103,6 +108,12 @@
   let viewportOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
   let inactivityTimer = 0;
   let faceController = null;
+  let typeTimer = 0;
+  let typeRun = 0;
+  let pageSectionIndex = 0;
+  let pageSectionLocked = false;
+  let pageSectionUnlockTimer = 0;
+  let pageTouchStart = null;
 
   const setLocalizedText = (element, value) => {
     const fragment = document.createDocumentFragment();
@@ -254,8 +265,6 @@
     const copy = utilityCopy[language];
     root.lang = language;
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
-    setLocalizedText(title, firstGroupCopy[language][0]);
-    setLocalizedText(summary, firstGroupCopy[language][1]);
     menuLabels.forEach((label, index) => { label.textContent = menuCopy[language][index]; });
     nav.setAttribute('aria-label', copy.nav);
     previousButton.setAttribute('aria-label', copy.previous);
@@ -266,12 +275,81 @@
     languageUtility.setAttribute('aria-pressed', String(language === 'en'));
     languageUtility.setAttribute('aria-label', language === 'en' ? copy.toArabic : copy.toEnglish);
     updateThemeLabel();
+    startTypewriter();
     resetNavAlignment();
     scheduleGeometry();
     if (persist) {
       try { localStorage.setItem('ooxme-language', language); } catch (_) {}
     }
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
+  };
+
+  const syncTypewriterCursor = (output, cursor) => {
+    const range = document.createRange();
+    range.selectNodeContents(output);
+    const lineRect = Array.from(range.getClientRects()).at(-1);
+    const runRect = cursor.parentElement?.getBoundingClientRect();
+    const outputRect = output.getBoundingClientRect();
+    if (!runRect) return;
+    const gap = (parseFloat(getComputedStyle(cursor).getPropertyValue('--s-first-typewriter-cursor-gap')) || 0) * (parseFloat(getComputedStyle(cursor).fontSize) || 0);
+    const rtl = output.dir === 'rtl';
+    const edge = lineRect?.width ? lineRect : { left: rtl ? outputRect.right : outputRect.left, right: rtl ? outputRect.right : outputRect.left, top: outputRect.top, height: outputRect.height };
+    cursor.style.insetInlineStart = 'auto';
+    cursor.style.insetInlineEnd = 'auto';
+    cursor.style.left = `${(rtl ? edge.left - runRect.left - gap - cursor.getBoundingClientRect().width : edge.right - runRect.left + gap).toFixed(3)}px`;
+    cursor.style.top = `${(edge.top - runRect.top + edge.height / 2).toFixed(3)}px`;
+  };
+
+  const startTypewriter = () => {
+    clearTimeout(typeTimer);
+    const run = ++typeRun;
+    const language = root.lang === 'ar' ? 'ar' : 'en';
+    const stages = [
+      { element: title, output: titleOutput, cursor: titleCursor, phrase: firstGroupCopy[language][0], multiline: false },
+      { element: summary, output: summaryOutput, cursor: summaryCursor, phrase: firstGroupCopy[language][1], multiline: true }
+    ];
+    stages.forEach((stage) => {
+      stage.element.lang = language;
+      stage.element.dir = language === 'ar' ? 'rtl' : 'ltr';
+      stage.output.lang = language;
+      stage.output.dir = language === 'ar' ? 'rtl' : 'ltr';
+      stage.output.textContent = '';
+      stage.cursor.style.removeProperty('left');
+      stage.cursor.style.removeProperty('top');
+      stage.element.classList.remove('is-cursor-visible', 'is-typewriter-prelude');
+    });
+    const typeStage = (index) => {
+      const stage = stages[index];
+      if (!stage || run !== typeRun) return;
+      let characterIndex = 0;
+      let stageStartedAt = 0;
+      stage.element.classList.add('is-cursor-visible', 'is-typewriter-prelude');
+      syncTypewriterCursor(stage.output, stage.cursor);
+      const typeCharacter = () => {
+        if (run !== typeRun) return;
+        if (stage.multiline) {
+          const progressCharacters = Math.floor(((performance.now() - stageStartedAt) / 5000) * stage.phrase.length);
+          characterIndex = Math.min(stage.phrase.length, Math.max(characterIndex + 1, progressCharacters));
+        } else {
+          characterIndex += 1;
+        }
+        stage.output.textContent = stage.phrase.slice(0, characterIndex);
+        syncTypewriterCursor(stage.output, stage.cursor);
+        if (characterIndex < stage.phrase.length) {
+          typeTimer = window.setTimeout(typeCharacter, stage.multiline ? Math.max(0, Math.min(16, 5000 - (performance.now() - stageStartedAt))) : 52);
+          return;
+        }
+        stage.element.classList.remove('is-cursor-visible');
+        if (index < stages.length - 1) typeTimer = window.setTimeout(() => typeStage(index + 1), 180);
+      };
+      typeTimer = window.setTimeout(() => {
+        if (run !== typeRun) return;
+        stage.element.classList.remove('is-typewriter-prelude');
+        stageStartedAt = performance.now();
+        typeCharacter();
+      }, 1000);
+    };
+    typeStage(0);
   };
 
   const syncBoxHorizontalGeometry = () => {
@@ -348,8 +426,13 @@
     panels.forEach((panel) => panel.classList.remove('is-rpn-panel-exiting'));
     if (!attached) {
       panels.forEach((panel, index) => {
-        panel.classList.remove(...panelClasses[index], 'is-rpn-card-layer', 'is-rpn-card-active');
+        panel.classList.remove(...panelClasses[index], 'is-rpn-card-layer', 'is-rpn-card-active', 'is-rpn-card-hidden');
         panel.style.removeProperty('--s-rpn-card-stack-index');
+        panel.style.removeProperty('--s-rpn-card-stack-scale');
+        panel.style.removeProperty('--s-rpn-card-stack-offset');
+        panel.style.removeProperty('--s-rpn-card-stack-left');
+        panel.style.removeProperty('--s-rpn-card-stack-width');
+        panel.style.removeProperty('--s-rpn-card-stack-opacity');
         panel.style.removeProperty('z-index');
       });
       return;
@@ -359,11 +442,44 @@
     const reveal = () => {
       panels.forEach((panel, index) => panel.classList.remove(...panelClasses[index]));
       target.classList.add(attachedClass);
+      const stackScaleRatio = .99;
+      const navRect = nav.getBoundingClientRect();
+      const slotRect = contentSlot.getBoundingClientRect();
+      const stackCardHeight = navRect.height || 0;
+      const xProbe = document.createElement('div');
+      xProbe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;width:var(--s-x);height:0;';
+      contentSlot.append(xProbe);
+      const stackSpacing = xProbe.getBoundingClientRect().width;
+      xProbe.remove();
+      const stackTopProbe = document.createElement('div');
+      stackTopProbe.className = 's-page__rpn-description is-rpn-card-layer';
+      stackTopProbe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;top:var(--s-rpn-card-layer-top);height:0;';
+      contentSlot.append(stackTopProbe);
+      const stackAnchorDrift = stackTopProbe.getBoundingClientRect().top - navRect.top;
+      stackTopProbe.remove();
+      const stackScales = [1, stackScaleRatio, stackScaleRatio ** 2, stackScaleRatio ** 3];
+      const stackOffsets = [
+        0,
+        -stackSpacing - stackAnchorDrift,
+        -(stackSpacing * 2) - stackAnchorDrift,
+        0
+      ];
       panels.forEach((panel, index) => {
         const stackIndex = (index - activeIndex + panels.length) % panels.length;
-        panel.classList.toggle('is-rpn-card-layer', stackIndex > 0);
+        const stackScale = stackScales[stackIndex];
+        const stackOffset = `${stackOffsets[stackIndex].toFixed(3)}px`;
+        const visibleWidth = Math.max(0, navRect.width - (stackIndex * stackSpacing * 2));
+        const stackWidth = visibleWidth / stackScale;
+        const stackLeft = navRect.left + (navRect.width / 2) - slotRect.left - (stackWidth / 2);
+        panel.classList.toggle('is-rpn-card-layer', stackIndex > 0 && stackIndex < 3);
         panel.classList.toggle('is-rpn-card-active', stackIndex === 0);
+        panel.classList.toggle('is-rpn-card-hidden', stackIndex === 3);
         panel.style.setProperty('--s-rpn-card-stack-index', String(stackIndex));
+        panel.style.setProperty('--s-rpn-card-stack-scale', String(stackScale));
+        panel.style.setProperty('--s-rpn-card-stack-offset', stackOffset);
+        panel.style.setProperty('--s-rpn-card-stack-left', `${stackLeft.toFixed(3)}px`);
+        panel.style.setProperty('--s-rpn-card-stack-width', `${stackWidth.toFixed(3)}px`);
+        panel.style.setProperty('--s-rpn-card-stack-opacity', stackIndex === 1 ? '.8' : stackIndex === 2 ? '.6' : '1');
         panel.style.zIndex = String(panels.length - stackIndex);
       });
       contentRevealFrame = requestAnimationFrame(() => {
@@ -386,6 +502,19 @@
     } else {
       reveal();
     }
+  };
+
+  const syncStackBaseline = (referenceBottom = stateOneImageBottom) => {
+    if (!referenceBottom) return;
+    const stackSection = pageSections[1];
+    const navRect = nav.getBoundingClientRect();
+    const matrix = getComputedStyle(stackSection).transform;
+    const sectionShiftY = matrix === 'none' ? 0 : new DOMMatrixReadOnly(matrix).m42;
+    const unshiftedNavTop = navRect.top - sectionShiftY;
+    const targetTop = referenceBottom - navRect.height;
+    const currentTop = parseFloat(getComputedStyle(nav).top) || nav.offsetTop;
+    const resolvedTop = currentTop + targetTop - unshiftedNavTop;
+    nav.style.setProperty('--s-rpn-secondary-nav-section-two-top', `${resolvedTop.toFixed(3)}px`);
   };
 
   const syncStateOneGeometry = () => {
@@ -732,6 +861,36 @@
     faceController?.setApply(activeIndex === 3);
   };
 
+  const setPageSection = (index) => {
+    const next = Math.max(0, Math.min(pageSections.length - 1, index));
+    if (next === pageSectionIndex) return;
+    const sectionOneImageBottom = stateOneImageBottom || hero.getBoundingClientRect().bottom;
+    pageSectionIndex = next;
+    pageSections.forEach((section, sectionIndex) => section.classList.toggle('is-rpn-page-section-active', sectionIndex === next));
+    if (next === 1) {
+      sectionLocked = true;
+      syncStackBaseline(sectionOneImageBottom);
+      nav.style.setProperty('--s-rpn-composition-progress', '1');
+      nav.style.setProperty('--s-rpn-content-blur', '0px');
+      nav.classList.add('is-rpn-content-interactive');
+      syncActiveContent(true);
+      requestAnimationFrame(() => syncStackBaseline(sectionOneImageBottom));
+    } else {
+      sectionLocked = false;
+      startTypewriter();
+    }
+  };
+
+  const transitionPageSection = (direction) => {
+    if (!direction || pageSectionLocked) return;
+    const target = Math.max(0, Math.min(pageSections.length - 1, pageSectionIndex + direction));
+    if (target === pageSectionIndex) return;
+    pageSectionLocked = true;
+    clearTimeout(pageSectionUnlockTimer);
+    setPageSection(target);
+    pageSectionUnlockTimer = window.setTimeout(() => { pageSectionLocked = false; }, 520);
+  };
+
   let swipeStart = null;
   let lastSwipeAt = -Infinity;
   const beginSwipe = (event) => {
@@ -838,6 +997,10 @@
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
     applyLanguage('en', { persist: false, emit: false });
     applyTheme('dark');
+    pageSectionIndex = 0;
+    pageSectionLocked = false;
+    clearTimeout(pageSectionUnlockTimer);
+    pageSections.forEach((section, sectionIndex) => section.classList.toggle('is-rpn-page-section-active', sectionIndex === 0));
     setActiveSection(0);
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     initialize();
@@ -858,7 +1021,7 @@
   composerMenu.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') composerMenu.classList.remove('is-pulsing'); });
   nav.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') nav.classList.remove('is-pulsing'); });
   hero.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-pulse') hero.classList.remove('is-pulsing'); });
-  [statusUtility, themeUtility, languageUtility].forEach((control) => {
+  [themeUtility, languageUtility].forEach((control) => {
     control.addEventListener('pointerdown', () => pulseUtility(control), { passive: true });
     control.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') control.classList.remove('is-pulsing'); });
   });
@@ -877,6 +1040,10 @@
       item.classList.add('is-active');
       menuFlashTimers.set(item, window.setTimeout(() => item.classList.remove('is-active'), 120));
     }, { passive: true });
+  });
+  menuItems[0].addEventListener('click', (event) => {
+    event.stopPropagation();
+    window.location.assign('/bm');
   });
   addButton.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -903,7 +1070,10 @@
     if (!heroTapStart || event.pointerId !== heroTapStart.id) return;
     const moved = Math.hypot(event.clientX - heroTapStart.x, event.clientY - heroTapStart.y);
     heroTapStart = null;
-    if (moved <= 8) pulseSurface(hero);
+    if (moved <= 8) {
+      pulseSurface(hero);
+      if (pageSectionIndex === 0) transitionPageSection(1);
+    }
   }, { passive: true });
   hero.addEventListener('pointercancel', () => { heroTapStart = null; }, { passive: true });
 
@@ -965,14 +1135,38 @@
     }
   }, { passive: true }));
   window.addEventListener('wheel', (event) => {
+    if (Math.abs(event.deltaY) >= 8 && !event.target.closest('[data-s-rpn-secondary-nav]')) {
+      event.preventDefault();
+      transitionPageSection(event.deltaY > 0 ? 1 : -1);
+      return;
+    }
     cancelReleaseSettle({ stopNativeScroll: true });
     if (sectionLocked && event.deltaY < 0) reverseIntent = true;
-  }, { passive: true });
+  }, { passive: false });
   window.addEventListener('keydown', (event) => {
+    if (['ArrowDown', 'PageDown', 'ArrowUp', 'PageUp'].includes(event.key)) {
+      event.preventDefault();
+      transitionPageSection(['ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
+      return;
+    }
     if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) return;
     cancelReleaseSettle({ stopNativeScroll: true });
     if (sectionLocked && ['ArrowUp', 'PageUp', 'Home'].includes(event.key)) reverseIntent = true;
   }, { passive: true });
+  document.addEventListener('touchstart', (event) => {
+    if (event.target.closest('[data-s-rpn-secondary-nav]')) return;
+    const touch = event.changedTouches[0];
+    if (touch) pageTouchStart = { id: touch.identifier, y: touch.clientY };
+  }, { capture: true, passive: true });
+  document.addEventListener('touchmove', (event) => {
+    const touch = Array.from(event.changedTouches).find((item) => item.identifier === pageTouchStart?.id);
+    if (touch && Math.abs(touch.clientY - pageTouchStart.y) > 4) event.preventDefault();
+  }, { capture: true, passive: false });
+  document.addEventListener('touchend', (event) => {
+    const touch = Array.from(event.changedTouches).find((item) => item.identifier === pageTouchStart?.id);
+    if (touch && Math.abs(touch.clientY - pageTouchStart.y) >= 36) transitionPageSection(touch.clientY < pageTouchStart.y ? 1 : -1);
+    if (touch) pageTouchStart = null;
+  }, { capture: true, passive: true });
   window.addEventListener('scroll', () => {
     scheduleScrollSync();
     scheduleReleaseSettle();
@@ -1004,6 +1198,9 @@
     initialize();
   });
 
+  page.classList.add('s-rpn-discrete-sections');
+  root.classList.add('s-rpn-discrete-sections');
+  pageSections.forEach((section, index) => section.classList.toggle('is-rpn-page-section-active', index === 0));
   setActiveSection(0);
   initialize();
   noteInteraction();
