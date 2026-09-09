@@ -242,20 +242,25 @@ body.s-page--consultation .s-page__consultation-composer-field {
 body.s-page--consultation .s-page__consultation-composer-input {
   position: relative;
   z-index: 0;
-  width: calc(100% / .75);
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   height: 100%;
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
   border: 0;
   outline: 0;
   background: transparent;
   color: inherit;
-  font: 500 16px/1.2 OOXMEScript, Arial, sans-serif;
-  text-align: start;
+  font: 500 12px/1.2 OOXMEScript, Arial, sans-serif;
+  direction: ltr;
+  text-align: left;
   -webkit-appearance: none;
   appearance: none;
-  transform: scale(.75);
-  transform-origin: left center;
+  justify-self: stretch;
+  align-self: stretch;
 }
 
 body.s-page--consultation .s-page__consultation-composer-text-zone {
@@ -267,8 +272,8 @@ body.s-page--consultation .s-page__consultation-composer-text-zone {
   place-items: center;
   direction: ltr;
 }
-body.s-page--consultation .s-page__consultation-composer-input.is-arabic-input { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; text-align: right; transform-origin: right center; }
-body.s-page--consultation .s-page__consultation-composer-input.is-english-input { text-align: left; transform-origin: left center; }
+body.s-page--consultation .s-page__consultation-composer-input.is-arabic-input { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; direction: rtl; text-align: right; }
+body.s-page--consultation .s-page__consultation-composer-input.is-english-input { font-family: OOXMEScript, Arial, sans-serif; direction: ltr; text-align: left; }
 html.s-route:not(.is-day-mode) body.s-page--consultation .s-page__consultation-composer-input { color: #FFFFFF; }
 html.s-route:not(.is-day-mode) body.s-page--consultation .s-page__consultation-composer-input::placeholder { color: rgba(255, 255, 255, .58); }
 

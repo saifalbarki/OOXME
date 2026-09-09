@@ -51,16 +51,12 @@
     const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(input.value);
     input.lang = isArabic ? 'ar' : 'en'; input.dir = isArabic ? 'rtl' : 'ltr'; input.classList.toggle('is-english-input', !isArabic);
   };
-  const configureSectionInputLanguage = () => {
-    const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+  const applySectionInputLanguage = (language) => {
     const direction = language === 'ar' ? 'rtl' : 'ltr';
-    if (sectionInput.dir !== direction) sectionInput.dir = direction;
-    if (sectionInput.lang !== language) sectionInput.lang = language;
+    sectionInput.lang = language;
+    sectionInput.dir = direction;
     sectionInput.classList.toggle('is-arabic-input', language === 'ar');
     sectionInput.classList.toggle('is-english-input', language === 'en');
-  };
-  const placeEmptySectionInputCaret = () => {
-    if (document.activeElement === sectionInput && sectionInput.value === '') sectionInput.setSelectionRange(0, 0, 'none');
   };
   const bookingSteps = [
     { id: 'name', type: 'text' },
@@ -221,10 +217,12 @@
     sectionChoiceTray.append(fragment);
     sectionChoiceTray.classList.add('is-visible');
   };
-  const renderBookingFlow = () => {
+  const renderBookingFlow = ({ clearSectionInput = false, placeSectionCaret = false } = {}) => {
     const language = bookingLanguage();
     const labels = bookingCopy[language];
     const step = currentBookingStep();
+    if (clearSectionInput) sectionInput.value = '';
+    applySectionInputLanguage(language);
     renderAnswerHistory();
     renderChoices(step, language);
     sectionSuccess.hidden = !booking.complete;
@@ -243,23 +241,23 @@
     sectionSend.disabled = false;
     sectionSend.setAttribute('aria-label', step.type === 'confirm' ? labels.confirm : labels.send);
     sectionComposerUnit.classList.toggle('is-booking-complete', booking.complete);
-    configureSectionInputLanguage();
     renderSummary();
     scheduleBookingGeometry();
+    if (placeSectionCaret && !booking.complete && step.type === 'text' && document.activeElement === sectionInput && sectionInput.value === '') {
+      sectionInput.setSelectionRange(0, 0, 'none');
+    }
   };
   const addBookingAnswer = (step, value, choice = '') => {
+    const keepTextFocus = step.type === 'text' && document.activeElement === sectionInput;
     booking.answers.push({ step: step.id, value, choice });
     booking.index += 1;
-    sectionInput.value = '';
-    renderBookingFlow();
-    if (currentBookingStep().type === 'text') placeEmptySectionInputCaret();
+    renderBookingFlow({ clearSectionInput: step.type === 'text', placeSectionCaret: keepTextFocus });
   };
   const completeBooking = () => {
     if (booking.complete) return;
     booking.complete = true;
-    sectionInput.value = '';
     if (document.activeElement === sectionInput) sectionInput.blur();
-    renderBookingFlow();
+    renderBookingFlow({ clearSectionInput: true });
   };
   const submitBooking = () => {
     const step = currentBookingStep();
@@ -270,22 +268,22 @@
     if (!value) return;
     addBookingAnswer(step, value);
   };
-  const applyLanguage = (next, { clearSectionInput = false } = {}) => {
+  const applyLanguage = (next, { clearSectionInput = false, placeSectionCaret = false } = {}) => {
     const current = next === 'ar' ? 'ar' : 'en', labels = copy[current];
     document.documentElement.lang = current; document.documentElement.dir = current === 'ar' ? 'rtl' : 'ltr';
     page.querySelectorAll('.s-page__composer-menu-label').forEach((label, index) => { label.textContent = labels.menu[index]; });
     page.querySelector('.s-page__visually-hidden').textContent = labels.ask; addButton.setAttribute('aria-label', labels.add); submit.setAttribute('aria-label', labels.submit);
-    if (clearSectionInput) sectionInput.value = '';
     language.classList.toggle('is-active', current === 'en'); language.setAttribute('aria-pressed', String(current === 'en')); language.setAttribute('aria-label', labels.language);
     sectionLanguage.classList.toggle('is-active', current === 'en'); sectionLanguage.setAttribute('aria-pressed', String(current === 'en')); sectionLanguage.setAttribute('aria-label', labels.language);
-    updateInputLanguage(); renderBookingFlow();
+    updateInputLanguage();
+    renderBookingFlow({ clearSectionInput, placeSectionCaret });
   };
   const toggleSectionComposerLanguage = () => {
     const wasFocused = document.activeElement === sectionInput;
-    // The language render is deliberately same-step: the persistent input clears in place,
-    // then receives the translated placeholder before one empty-field caret placement.
-    applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar', { clearSectionInput: true });
-    if (wasFocused && currentBookingStep().type === 'text') placeEmptySectionInputCaret();
+    applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar', {
+      clearSectionInput: true,
+      placeSectionCaret: wasFocused
+    });
   };
   const applyTheme = (next) => {
     const day = next === 'day', labels = copy[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
