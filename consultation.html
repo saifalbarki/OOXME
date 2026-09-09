@@ -1,0 +1,87 @@
+<!doctype html>
+<html class="s-route s-x-initializing" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <title>ooxme - Consultation</title>
+    <link rel="canonical" href="https://ooxme.com/consultation" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/consultation.css" />
+    <script src="js/consultation.js" defer></script>
+  </head>
+  <body class="s-page s-page--x s-page--consultation">
+    <main class="s-page__content">
+      <section class="s-page__section" data-s-section aria-label="OOXME consultation">
+        <div class="s-page__major-section s-page__major-section--transition-frame" data-s-major-section>
+          <section class="s-page__group s-page__flow-group s-page__flow-group--section-7-action s-page__consultation-page-action" data-s-group aria-label="Consultation action">
+            <div class="s-page__consultation-composer-unit" data-s-consultation-composer-unit>
+              <div class="s-page__consultation-composer-back-panel" data-s-consultation-composer-back-panel><div class="s-page__consultation-answer-history" data-s-consultation-answer-history aria-live="polite"></div></div>
+              <div class="s-page__consultation-choice-tray" data-s-consultation-choice-tray aria-live="polite"></div>
+              <form class="s-page__consultation-composer-row" data-s-consultation-composer novalidate>
+                <div class="s-page__consultation-composer-field">
+                  <span class="s-page__consultation-composer-zone s-page__consultation-composer-zone--left"><button class="s-page__consultation-composer-language is-active" data-s-consultation-composer-language type="button" aria-label="Switch to Arabic" aria-pressed="true"><span class="s-page__consultation-composer-language-dot" aria-hidden="true"></span></button></span>
+                  <label class="s-page__consultation-composer-text-zone"><span class="s-page__visually-hidden">Consultation message</span><input class="s-page__consultation-composer-input is-english-input" data-s-consultation-composer-input type="text" name="consultation-message" placeholder="What is your name?" autocomplete="name" enterkeyhint="send" maxlength="120" lang="en" dir="ltr" /><output class="s-page__consultation-composer-success" data-s-consultation-composer-success role="status" aria-live="polite" hidden></output></label>
+                  <span class="s-page__consultation-composer-zone s-page__consultation-composer-zone--right"><button class="s-page__consultation-composer-send" type="submit" aria-label="Send consultation message"><svg viewBox="3.9 3.9 16.2 16.2" aria-hidden="true" focusable="false"><path d="m5.75 14.5 6.25-6.25 6.25 6.25" /></svg></button></span>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>
+        <div class="s-page__major-section s-page__major-section--transition-frame" data-s-major-section>
+          <section class="s-page__group s-page__consultation-summary-section" data-s-group aria-labelledby="s-consultation-summary-title">
+            <article class="s-page__consultation-summary-card" data-s-consultation-summary>
+              <div class="s-page__consultation-summary-group">
+                <h1 id="s-consultation-summary-title" class="s-page__consultation-summary-title" data-s-summary-title>Consultation Summary</h1>
+                <dl class="s-page__consultation-summary-list">
+                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="topic">Consultation topic</dt><dd data-s-summary-value="topic">Not selected</dd></div>
+                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="day">Selected day</dt><dd data-s-summary-value="day">Not selected</dd></div>
+                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="time">Selected time</dt><dd data-s-summary-value="time">Not selected</dd></div>
+                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="duration">Selected duration</dt><dd data-s-summary-value="duration">Not selected</dd></div>
+                </dl>
+              </div>
+              <div class="s-page__consultation-summary-divider" aria-hidden="true"></div>
+              <div class="s-page__consultation-summary-group">
+                <h2 class="s-page__consultation-summary-heading" data-s-summary-heading="pricing">Pricing</h2>
+                <dl class="s-page__consultation-summary-list s-page__consultation-summary-list--pricing">
+                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="base">Base Price</dt><dd data-s-summary-value="base">—</dd></div>
+                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="discount">Discount</dt><dd data-s-summary-value="discount">—</dd></div>
+                  <div class="s-page__consultation-summary-row s-page__consultation-summary-row--total"><dt data-s-summary-label="total">Total</dt><dd data-s-summary-value="total">—</dd></div>
+                </dl>
+              </div>
+              <div class="s-page__consultation-summary-divider" aria-hidden="true"></div>
+              <div class="s-page__consultation-summary-group">
+                <h2 class="s-page__consultation-summary-heading" data-s-summary-heading="discountCode">Discount Code</h2>
+                <form class="s-page__consultation-discount-form" data-s-consultation-discount-form novalidate>
+                  <label class="s-page__consultation-discount-field"><span class="s-page__visually-hidden" data-s-summary-label="discountInput">Discount code</span><input data-s-consultation-discount-input type="text" name="discount-code" placeholder="Enter code" autocomplete="off" maxlength="32" /></label>
+                  <button class="s-page__consultation-apply" data-s-consultation-apply type="submit">Apply</button>
+                </form>
+                <p class="s-page__consultation-discount-status" data-s-consultation-discount-status aria-live="polite"></p>
+              </div>
+              <div class="s-page__consultation-summary-divider" aria-hidden="true"></div>
+              <div class="s-page__consultation-summary-group s-page__consultation-payment-group">
+                <h2 class="s-page__consultation-summary-heading" data-s-summary-heading="payment">Payment</h2>
+                <button class="s-page__consultation-pay" data-s-consultation-pay type="button">Pay &amp; Confirm</button>
+              </div>
+            </article>
+          </section>
+        </div>
+      </section>
+    </main>
+    <form class="s-page__composer" data-s-composer novalidate>
+      <div class="s-page__composer-menu" data-s-composer-menu aria-hidden="true">
+        <button class="s-page__composer-menu-item" type="button" data-s-menu-brand><span class="s-page__composer-menu-label">The Brand Management</span></button>
+        <button class="s-page__composer-menu-item" type="button"><span class="s-page__composer-menu-label">The Gallery</span><svg class="s-page__x-menu-lock" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><rect class="s-page__x-menu-lock-body" x="2" y="6.1" width="9" height="5.9" rx="1.2" /><path class="s-page__x-menu-lock-shackle" d="M4.15 6.1V4.45a2.35 2.35 0 0 1 4.7 0V6.1" /></svg></button>
+        <button class="s-page__composer-menu-item" type="button"><span class="s-page__composer-menu-label">The Consultation</span><svg class="s-page__x-menu-lock" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><rect class="s-page__x-menu-lock-body" x="2" y="6.1" width="9" height="5.9" rx="1.2" /><path class="s-page__x-menu-lock-shackle" d="M4.15 6.1V4.45a2.35 2.35 0 0 1 4.7 0V6.1" /></svg></button>
+        <button class="s-page__composer-menu-item" type="button"><span class="s-page__composer-menu-label">The Store</span><svg class="s-page__x-menu-lock" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><rect class="s-page__x-menu-lock-body" x="2" y="6.1" width="9" height="5.9" rx="1.2" /><path class="s-page__x-menu-lock-shackle" d="M4.15 6.1V4.45a2.35 2.35 0 0 1 4.7 0V6.1" /></svg></button>
+        <button class="s-page__composer-menu-item" type="button"><span class="s-page__composer-menu-label">Contact</span><svg class="s-page__x-menu-lock" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><rect class="s-page__x-menu-lock-body" x="2" y="6.1" width="9" height="5.9" rx="1.2" /><path class="s-page__x-menu-lock-shackle" d="M4.15 6.1V4.45a2.35 2.35 0 0 1 4.7 0V6.1" /></svg></button>
+      </div>
+      <button class="s-page__icon-button s-page__add" type="button" aria-label="Add context"><span aria-hidden="true"></span><svg class="s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false" data-s-x-face data-face-state="idle"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85" /><circle cx="9.25" cy="6.5" r="1.85" /></g></g></g></svg></button>
+      <label class="s-page__input-label"><span class="s-page__visually-hidden">Ask ooxme</span><input class="s-page__composer-input is-english-input" type="text" name="question" placeholder="Type..." autocomplete="off" enterkeyhint="send" maxlength="120" lang="en" dir="ltr" /></label>
+      <button class="s-page__submit s-page__x-top-bar-submit" type="submit" aria-label="Submit question"><svg class="s-page__submit-icon" viewBox="3.9 3.9 16.2 16.2" aria-hidden="true" focusable="false"><path class="s-page__x-top-bar-line s-page__x-top-bar-line--top" d="M4.22 8h15.56" /><path class="s-page__x-top-bar-line s-page__x-top-bar-line--bottom" d="M4.22 16h15.56" /></svg></button>
+      <div class="s-page__send-utilities" data-s-send-utilities aria-hidden="true"><button class="s-page__send-utility is-active" type="button" data-s-utility="theme" aria-label="Toggle theme" aria-pressed="true"><span class="s-page__send-utility-inner" aria-hidden="true"></span></button><button class="s-page__send-utility is-active" type="button" data-s-utility="language" aria-label="Toggle language" aria-pressed="true"><span class="s-page__send-utility-inner" aria-hidden="true"></span></button></div>
+    </form>
+  </body>
+</html>
