@@ -9,7 +9,8 @@ const pageRoutes = {
   '/bm': 'brand.html',
   '/rpn': 'rpn.html',
   '/update': 'update.html',
-  '/consultation': 'consultation.html'
+  '/consultation': 'consultation.html',
+  '/store': 'store.html'
 };
 const publicRoots = ['assets', 'css', 'js', 'public'];
 const publicRootFiles = new Set(['favicon.svg', 'site.webmanifest']);

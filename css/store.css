@@ -1,0 +1,309 @@
+@import url("./main.css");
+
+body.s-page--store {
+  --s-store-frame-height: 100dvh;
+  /* The shared page content already owns the X safe-area inset. Store content
+     must size from that inner box so cards do not receive a second inset. */
+  --s-store-card-width: min(100%, 420px);
+  --s-store-surface: rgba(255, 255, 255, .12);
+  --s-store-surface-strong: rgba(255, 255, 255, .16);
+  --s-store-muted: rgba(255, 255, 255, .58);
+  --s-store-image: rgba(255, 255, 255, .055);
+}
+
+body.s-page--store .s-page__major-section,
+body.s-page--store .s-page__major-section--transition-frame > .s-page__group {
+  height: var(--s-store-frame-height);
+  min-height: var(--s-store-frame-height);
+  max-height: var(--s-store-frame-height);
+}
+
+body.s-page--store .s-page__store-section {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
+  padding: calc(var(--s-x) * 4) 0 calc(var(--s-x) * 3);
+  overflow: clip;
+}
+
+body.s-page--store .s-page__store-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  /* Match the shared first-group bottom baseline. The Store frame already
+     reserves 3X below this layout, so only the variable baseline delta is
+     added here (zero in the settled closed-keyboard state). */
+  align-content: end;
+  justify-items: center;
+  gap: var(--s-x);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  box-sizing: border-box;
+  padding-bottom: calc(var(--s-first-group-bottom-baseline) - var(--s-x));
+  justify-self: stretch;
+}
+
+body.s-page--store .s-page__store-section-title {
+  width: var(--s-store-card-width);
+  margin: 0;
+  color: #FFFFFF;
+  font: 500 16px/1.2 OOXMEScript, Arial, sans-serif;
+  text-align: start;
+}
+
+html[lang="ar"] body.s-page--store .s-page__store-section-title,
+html[lang="ar"] body.s-page--store :is(.s-page__store-card-title, .s-page__store-card-description, .s-page__store-eyebrow, .s-page__store-price, .s-page__store-action, .s-page__store-custom-title, .s-page__store-carousel-status) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page--store .s-page__store-card {
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: var(--s-store-surface);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(120%);
+}
+
+body.s-page--store .s-page__store-featured-card {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: var(--s-store-card-width);
+  height: 390px;
+  padding: calc(var(--s-x) * .75);
+  min-width: 0;
+  overflow: hidden;
+}
+
+body.s-page--store .s-page__store-image-placeholder {
+  min-height: 0;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: calc(var(--s-composer-radius) * .72);
+  background: var(--s-store-image);
+}
+
+body.s-page--store .s-page__store-image-placeholder--featured {
+  min-height: 0;
+}
+
+body.s-page--store .s-page__store-card-copy {
+  display: grid;
+  align-content: start;
+  gap: calc(var(--s-x) * .42);
+  padding: var(--s-x) calc(var(--s-x) * .45) calc(var(--s-x) * .35);
+  min-width: 0;
+}
+
+body.s-page--store :is(.s-page__store-eyebrow, .s-page__store-card-title, .s-page__store-card-description, .s-page__store-price) {
+  margin: 0;
+}
+
+body.s-page--store .s-page__store-eyebrow {
+  color: var(--s-store-muted);
+  font: 500 11px/1.25 OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page--store .s-page__store-card-title {
+  color: #FFFFFF;
+  font: 500 16px/1.2 OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page--store .s-page__store-card-description {
+  min-height: 16px;
+  color: var(--s-store-muted);
+  font: 500 12px/1.35 OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page--store .s-page__store-price {
+  color: #FFFFFF;
+  font: 500 12px/1.2 OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page--store .s-page__store-layout--products {
+  gap: calc(var(--s-x) * 1.25);
+}
+
+body.s-page--store .s-page__store-carousel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-inline: 0;
+  justify-self: stretch;
+  direction: ltr;
+}
+
+body.s-page--store .s-page__store-carousel-viewport {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+body.s-page--store .s-page__store-carousel-track {
+  display: flex;
+  align-items: stretch;
+  gap: var(--s-x);
+  width: max-content;
+  will-change: transform;
+  transition: transform .52s cubic-bezier(.22, .61, .36, 1);
+}
+
+body.s-page--store .s-page__store-carousel-track.is-dragging {
+  transition: none;
+}
+
+body.s-page--store .s-page__store-product-card {
+  display: grid;
+  grid-template-rows: 190px auto;
+  width: min(76vw, 340px);
+  height: 370px;
+  padding: calc(var(--s-x) * .65);
+  opacity: .46;
+  transform: scale(.94);
+  transition: opacity .38s ease, transform .52s cubic-bezier(.22, .61, .36, 1), background-color .28s ease;
+  min-width: 0;
+  overflow: hidden;
+}
+
+body.s-page--store .s-page__store-product-card.is-active {
+  opacity: 1;
+  transform: scale(1);
+  background: var(--s-store-surface-strong);
+}
+
+body.s-page--store .s-page__store-product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-x);
+  margin-top: calc(var(--s-x) * .5);
+}
+
+body.s-page--store .s-page__store-action,
+body.s-page--store .s-page__store-carousel-arrow {
+  border: 1px solid var(--s-glass-stroke);
+  background: rgba(255, 255, 255, .11);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background-color .18s ease, transform .18s ease, opacity .18s ease;
+}
+
+body.s-page--store .s-page__store-action {
+  min-height: 36px;
+  padding: 0 calc(var(--s-x) * .8);
+  border-radius: calc(var(--s-composer-radius) * .65);
+  font: 500 12px/1 OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page--store .s-page__store-action:active,
+body.s-page--store .s-page__store-carousel-arrow:active {
+  transform: scale(.96);
+}
+
+body.s-page--store .s-page__store-carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--s-x) * .75);
+  margin-top: var(--s-x);
+}
+
+body.s-page--store .s-page__store-carousel-arrow {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  place-items: center;
+  border-radius: 50%;
+}
+
+body.s-page--store .s-page__store-carousel-arrow:disabled {
+  cursor: default;
+  opacity: .3;
+}
+
+body.s-page--store .s-page__store-carousel-arrow svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body.s-page--store .s-page__store-carousel-status {
+  min-width: 36px;
+  color: var(--s-store-muted);
+  font: 500 11px/1 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+}
+
+body.s-page--store .s-page__store-custom-card {
+  display: grid;
+  align-content: space-between;
+  width: var(--s-store-card-width);
+  height: 260px;
+  padding: calc(var(--s-x) * 1.25);
+}
+
+body.s-page--store .s-page__store-custom-copy {
+  display: grid;
+  gap: calc(var(--s-x) * .65);
+}
+
+body.s-page--store .s-page__store-custom-title {
+  margin: 0;
+  color: #FFFFFF;
+  font: 500 24px/1.15 OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page--store .s-page__store-custom-action {
+  width: 100%;
+  margin-top: calc(var(--s-x) * 2);
+  background: #0A84FF;
+  border-color: transparent;
+}
+
+html.s-route.is-day-mode body.s-page--store {
+  --s-store-surface: rgba(255, 255, 255, .48);
+  --s-store-surface-strong: rgba(255, 255, 255, .68);
+  --s-store-muted: rgba(17, 17, 17, .58);
+  --s-store-image: rgba(17, 17, 17, .035);
+}
+
+html.s-route.is-day-mode body.s-page--store :is(.s-page__store-section-title, .s-page__store-card-title, .s-page__store-price, .s-page__store-custom-title) {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page--store :is(.s-page__store-action, .s-page__store-carousel-arrow) {
+  background: rgba(255, 255, 255, .58);
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page--store .s-page__store-custom-action {
+  background: #0A84FF;
+  color: #FFFFFF;
+}
+
+@media (max-width: 520px) {
+  body.s-page--store .s-page__store-featured-card {
+    height: 360px;
+  }
+
+  body.s-page--store .s-page__store-product-card {
+    grid-template-rows: minmax(0, 176px) auto;
+    height: 350px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.s-page--store .s-page__store-carousel-track,
+  body.s-page--store .s-page__store-product-card {
+    transition: none;
+  }
+}

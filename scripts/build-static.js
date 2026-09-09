@@ -6,7 +6,7 @@ const sourceRoot = root;
 const output = path.join(root, 'dist');
 const directories = ['assets', 'css', 'js', 'public'];
 const rootFiles = ['favicon.svg', 'site.webmanifest'];
-const pageOutputs = { 'main.html': 'index.html', 'brand.html': 'bm.html', 'rpn.html': 'rpn.html', 'update.html': 'update.html', 'consultation.html': 'consultation.html' };
+const pageOutputs = { 'main.html': 'index.html', 'brand.html': 'bm.html', 'rpn.html': 'rpn.html', 'update.html': 'update.html', 'consultation.html': 'consultation.html', 'store.html': 'store.html' };
 
 if (!fs.existsSync(sourceRoot)) {
   throw new Error('Expected website source directory is missing.');
