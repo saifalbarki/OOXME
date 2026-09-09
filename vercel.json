@@ -7,6 +7,7 @@
   "rewrites": [
     { "source": "/bm", "destination": "/bm.html" },
     { "source": "/rpn", "destination": "/rpn.html" },
-    { "source": "/update", "destination": "/update.html" }
+    { "source": "/update", "destination": "/update.html" },
+    { "source": "/consultation", "destination": "/consultation.html" }
   ]
 }
