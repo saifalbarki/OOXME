@@ -32,7 +32,7 @@
     ar: { menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'], ask: 'اسأل اوكسوم', add: 'اضف سياقًا', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' }
   };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  let typeTimer = 0, typeRun = 0, menuTimer = 0, locked = false, unlockTimer = 0, touch = null;
+  let typeTimer = 0, typeRun = 0, menuTimer = 0, locked = false, unlockTimer = 0, transitionSettleTimer = 0, touch = null;
   let closedComposerFrameHeight = 0, closedComposerBottom = 0, keyboardSyncFrame = 0, appliedKeyboardOffset = 0, keyboardViewportRevision = 0;
   let keyboardBaselineViewportHeight = 0, keyboardSessionScrollY = null, keyboardSessionActive = false, keyboardOpen = false;
 
@@ -293,10 +293,22 @@
   const activeIndex = () => sections.reduce((closest, section, index) => { const distance = Math.abs(section.getBoundingClientRect().top - referenceY()); return !closest || distance < closest.distance ? { index, distance } : closest; }, null)?.index ?? 0;
   const transition = (direction) => {
     if (!direction || locked) return;
+    // Section 2 must be entered from a clean Section 1 visual state. Clear the
+    // keyboard transform and any native-pan correction before reading geometry.
+    restoreClosedSectionComposerBaseline();
     const current = activeIndex(), targetIndex = Math.max(0, Math.min(sections.length - 1, current + direction)), target = sections[targetIndex];
     if (!target || targetIndex === current) return;
+    clearTimeout(transitionSettleTimer);
     locked = true; clearTimeout(unlockTimer); unlockTimer = setTimeout(() => { locked = false; }, 800);
     window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - referenceY(), left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    const settleTargetSection = () => {
+      clearTimeout(transitionSettleTimer);
+      transitionSettleTimer = 0;
+      const correction = target.getBoundingClientRect().top - referenceY();
+      if (Math.abs(correction) > .5) window.scrollTo({ top: window.scrollY + correction, left: 0, behavior: 'auto' });
+    };
+    if ('onscrollend' in window) window.addEventListener('scrollend', settleTargetSection, { once: true, passive: true });
+    transitionSettleTimer = setTimeout(settleTargetSection, reducedMotion.matches ? 80 : 900);
   };
   // Section 1 gets one closed-keyboard frame at load. It is intentionally never
   // re-measured on resize/orientation events: those events can arrive while a

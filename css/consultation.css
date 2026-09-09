@@ -399,6 +399,7 @@ html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-compose
    section frame. It inherits the current Consultation glass language and X
    spacing without introducing a new page-level geometry contract. */
 body.s-page--consultation .s-page__consultation-summary-section {
+  --s-consultation-section-2-bottom-inset: calc(var(--s-x) * 2.5);
   position: relative;
   box-sizing: border-box;
   width: 100%;
@@ -406,7 +407,8 @@ body.s-page--consultation .s-page__consultation-summary-section {
   align-items: center;
   justify-content: initial;
   padding: calc(var(--s-x) * 2) var(--s-x);
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 body.s-page--consultation .s-page__consultation-summary-card {
   --s-summary-surface: rgba(255, 255, 255, .16);
@@ -416,7 +418,7 @@ body.s-page--consultation .s-page__consultation-summary-card {
   box-sizing: border-box;
   position: absolute;
   inset-inline-start: 50%;
-  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+  bottom: var(--s-consultation-section-2-bottom-inset);
   width: var(--s-consultation-primary-card-width);
   max-height: 100%;
   margin: 0;
@@ -430,6 +432,11 @@ body.s-page--consultation .s-page__consultation-summary-card {
   backdrop-filter: blur(20px) saturate(125%);
   overflow: auto;
   transform: translateX(-50%);
+}
+@media (orientation: portrait) {
+  body.s-page--consultation .s-page__consultation-summary-section {
+    --s-consultation-section-2-bottom-inset: calc(var(--s-x) * 3);
+  }
 }
 body.s-page--consultation .s-page__consultation-summary-group { display: grid; gap: var(--s-x); }
 body.s-page--consultation .s-page__consultation-summary-title,
