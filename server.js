@@ -11,6 +11,7 @@ const pageRoutes = {
   '/update': 'update.html',
   '/consultation': 'consultation.html',
   '/store': 'store.html'
+  ,'/os': 'os.html'
 };
 const publicRoots = ['assets', 'css', 'js', 'public'];
 const publicRootFiles = new Set(['favicon.svg', 'site.webmanifest']);

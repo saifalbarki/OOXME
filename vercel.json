@@ -10,5 +10,6 @@
     { "source": "/update", "destination": "/update.html" },
     { "source": "/consultation", "destination": "/consultation.html" },
     { "source": "/store", "destination": "/store.html" }
+    ,{ "source": "/os", "destination": "/os.html" }
   ]
 }
