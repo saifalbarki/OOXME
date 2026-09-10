@@ -28,7 +28,7 @@
     en: {
       menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
       ask: 'Ask ooxme', add: 'Add context', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode',
-      featuredLabel: 'Featured Product', featuredName: 'Brand Blueprint', featuredCategory: 'Digital Business Tool', featuredDescription: 'A structured brand planning file for positioning, identity, operations, and growth.', featuredPrice: '$29',
+      featuredLabel: 'Featured Product', featuredName: 'Brand Blueprint', featuredCategory: 'Digital Business Tool', featuredDescription: 'A structured brand planning file for positioning, identity, operations, and growth.', featuredPreviousPrice: '$39', featuredPrice: '$29',
       productOneName: 'Project Planner', productOneCategory: 'Digital File', productOneDescription: 'A practical planning system for organizing projects, tasks, priorities, and execution.', productOnePrice: '$19', productTwoName: 'Business Model Kit', productTwoCategory: 'Business Toolkit', productTwoDescription: 'A structured toolkit for reviewing business models, offers, operations, and growth opportunities.', productTwoPrice: '$39', productThreeName: 'Content System', productThreeCategory: 'Content Toolkit', productThreeDescription: 'A practical framework for planning, organizing, and maintaining consistent brand content.', productThreePrice: '$24', productFourName: 'Custom Brand Pack', productFourCategory: 'Custom Product', productFourDescription: 'A tailored set of brand files prepared around your business needs and priorities.', productFourPrice: 'Custom', view: 'View',
       customLabel: 'Custom Products', customTitle: 'Made for you', customDescription: 'A future space for products shaped around your needs.', customAction: 'Request a Custom Product',
       previous: 'Previous product', next: 'Next product'
@@ -36,7 +36,7 @@
     ar: {
       menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'],
       ask: 'اسأل اوكسوم', add: 'اضف سياقًا', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode',
-      featuredLabel: 'منتج مميز', featuredName: 'مخطط العلامة التجارية', featuredCategory: 'أداة اعمال رقمية', featuredDescription: 'ملف منظم لتخطيط تموضع العلامة التجارية وهويتها وعملياتها ونموها.', featuredPrice: '$29',
+      featuredLabel: 'منتج مميز', featuredName: 'مخطط العلامة التجارية', featuredCategory: 'أداة اعمال رقمية', featuredDescription: 'ملف منظم لتخطيط تموضع العلامة التجارية وهويتها وعملياتها ونموها.', featuredPreviousPrice: '$39', featuredPrice: '$29',
       productOneName: 'مخطط المشروع', productOneCategory: 'ملف رقمي', productOneDescription: 'نظام عملي لتنظيم المشاريع والمهام والاولويات والتنفيذ.', productOnePrice: '$19', productTwoName: 'حزمة نموذج العمل', productTwoCategory: 'ادوات اعمال', productTwoDescription: 'حزمة منظمة لمراجعة نموذج العمل والعروض والعمليات وفرص النمو.', productTwoPrice: '$39', productThreeName: 'نظام المحتوى', productThreeCategory: 'ادوات محتوى', productThreeDescription: 'اطار عملي لتخطيط وتنظيم واستمرار محتوى العلامة التجارية.', productThreePrice: '$24', productFourName: 'حزمة علامة مخصصة', productFourCategory: 'منتج مخصص', productFourDescription: 'مجموعة ملفات علامة تجارية مخصصة حسب احتياجات واولويات عملك.', productFourPrice: 'مخصص', view: 'عرض',
       customLabel: 'منتجات مخصصة', customTitle: 'مصمم لك', customDescription: 'مساحة مستقبلية لمنتجات مصممة حسب احتياجاتك.', customAction: 'اطلب منتج مخصص',
       previous: 'المنتج السابق', next: 'المنتج التالي'
@@ -156,10 +156,12 @@
     clearTimeout(sectionSettleTimer);
     sectionUnlockTimer = setTimeout(() => { sectionLocked = false; }, 820);
     window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - sectionReferenceY(), left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-    sectionSettleTimer = setTimeout(() => {
-      const correction = target.getBoundingClientRect().top - sectionReferenceY();
-      if (Math.abs(correction) > .5) window.scrollTo({ top: window.scrollY + correction, left: 0, behavior: 'auto' });
-    }, reducedMotion.matches ? 80 : 900);
+    if (targetIndex !== sections.length - 1) {
+      sectionSettleTimer = setTimeout(() => {
+        const correction = target.getBoundingClientRect().top - sectionReferenceY();
+        if (Math.abs(correction) > .5) window.scrollTo({ top: window.scrollY + correction, left: 0, behavior: 'auto' });
+      }, reducedMotion.matches ? 80 : 900);
+    }
   };
 
   const setupFace = () => {

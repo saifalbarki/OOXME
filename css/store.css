@@ -28,6 +28,15 @@ body.s-page--store .s-page__store-section {
   overflow: clip;
 }
 
+/* Section 2's carousel is the one Store surface that intentionally leaves the
+   shared content column. Its viewport is clipped by the browser viewport,
+   not by the padded Top Bar/content column. */
+body.s-page--store .s-page__major-section:nth-child(2),
+body.s-page--store .s-page__major-section:nth-child(2) > .s-page__group,
+body.s-page--store .s-page__store-section--products {
+  overflow: visible;
+}
+
 body.s-page--store .s-page__store-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -70,19 +79,25 @@ body.s-page--store .s-page__store-card {
 
 body.s-page--store .s-page__store-featured-card {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
   width: var(--s-store-card-width);
-  height: 390px;
+  height: auto;
+  min-height: 390px;
   padding: calc(var(--s-x) * .75);
   min-width: 0;
   overflow: hidden;
 }
 
 body.s-page--store .s-page__store-image-placeholder {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1.5 / 1;
   min-height: 0;
   border: 1px solid var(--s-glass-stroke);
   border-radius: calc(var(--s-composer-radius) * .72);
   background: var(--s-store-image);
+  object-fit: cover;
 }
 
 body.s-page--store .s-page__store-image-placeholder--featured {
@@ -136,8 +151,9 @@ body.s-page--store .s-page__store-carousel {
 }
 
 body.s-page--store .s-page__store-carousel-viewport {
-  width: 100%;
-  max-width: 100%;
+  width: 100vw;
+  max-width: none;
+  margin-inline: calc(var(--s-x) * -1);
   min-width: 0;
   overflow: hidden;
   touch-action: pan-y;
@@ -158,9 +174,10 @@ body.s-page--store .s-page__store-carousel-track.is-dragging {
 
 body.s-page--store .s-page__store-product-card {
   display: grid;
-  grid-template-rows: 190px auto;
+  grid-template-rows: auto auto;
   width: min(76vw, 340px);
-  height: 370px;
+  height: auto;
+  min-height: 393px;
   padding: calc(var(--s-x) * .65);
   opacity: .46;
   transform: scale(.94);
@@ -183,6 +200,24 @@ body.s-page--store .s-page__store-product-footer {
   margin-top: calc(var(--s-x) * .5);
 }
 
+body.s-page--store .s-page__store-price-group {
+  display: flex;
+  align-items: baseline;
+  gap: calc(var(--s-x) * .45);
+}
+
+body.s-page--store .s-page__store-price--previous {
+  color: var(--s-store-muted);
+  opacity: .72;
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: currentColor;
+}
+
+body.s-page--store .s-page__store-featured-footer {
+  margin-top: calc(var(--s-x) * .5);
+}
+
 body.s-page--store .s-page__store-action,
 body.s-page--store .s-page__store-carousel-arrow {
   border: 1px solid var(--s-glass-stroke);
@@ -197,6 +232,12 @@ body.s-page--store .s-page__store-action {
   padding: 0 calc(var(--s-x) * .8);
   border-radius: calc(var(--s-composer-radius) * .65);
   font: 500 12px/1 OOXMEScript, Arial, sans-serif;
+}
+
+body.s-page--store .s-page__store-view {
+  background: #0A84FF;
+  border-color: transparent;
+  color: #FFFFFF;
 }
 
 body.s-page--store .s-page__store-action:active,
@@ -285,6 +326,11 @@ html.s-route.is-day-mode body.s-page--store :is(.s-page__store-action, .s-page__
   color: #111111;
 }
 
+html.s-route.is-day-mode body.s-page--store .s-page__store-view {
+  background: #0A84FF;
+  color: #FFFFFF;
+}
+
 html.s-route.is-day-mode body.s-page--store .s-page__store-custom-action {
   background: #0A84FF;
   color: #FFFFFF;
@@ -292,12 +338,14 @@ html.s-route.is-day-mode body.s-page--store .s-page__store-custom-action {
 
 @media (max-width: 520px) {
   body.s-page--store .s-page__store-featured-card {
-    height: 360px;
+    height: auto;
+    min-height: 360px;
   }
 
   body.s-page--store .s-page__store-product-card {
-    grid-template-rows: minmax(0, 176px) auto;
-    height: 350px;
+    grid-template-rows: auto auto;
+    height: auto;
+    min-height: 393px;
   }
 }
 
