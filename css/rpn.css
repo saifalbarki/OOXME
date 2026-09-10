@@ -537,49 +537,6 @@ html[dir="rtl"] .s-page--rpn [data-s-rpn-typewriter] {
 
 .s-page--rpn [data-s-rpn-typewriter].is-cursor-visible .s-page__rpn-typewriter-cursor { opacity: 1; }
 
-/* The existing stack is a true second page section. Page transitions are
-   discrete; the stack retains its own arrow/swipe card navigation. */
-html.s-rpn-discrete-sections,
-html.s-rpn-discrete-sections body.s-page--rpn { overflow: hidden; }
-
-.s-page--rpn.s-rpn-discrete-sections .s-page__content {
-  position: relative;
-  height: 100dvh;
-  min-height: 100dvh;
-  padding: 0;
-  overflow: hidden;
-}
-
-.s-page--rpn.s-rpn-discrete-sections [data-s-section] {
-  position: absolute;
-  inset: 0;
-  display: block;
-  min-height: 100dvh;
-  pointer-events: none;
-  opacity: 0;
-  filter: blur(12px);
-  transform: translateY(18px);
-  transition: opacity .42s ease, filter .42s ease, transform .42s cubic-bezier(.22, .61, .36, 1);
-}
-
-.s-page--rpn.s-rpn-discrete-sections [data-s-section].is-rpn-page-section-active {
-  z-index: 1;
-  pointer-events: auto;
-  opacity: 1;
-  filter: none;
-  transform: none;
-}
-
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-major-section { min-height: 100dvh; }
-
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__secondary-nav {
-  top: var(--s-rpn-secondary-nav-section-two-top, calc(48px + (var(--s-x) * 2))) !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  filter: none !important;
-  pointer-events: auto !important;
-}
-
 @media (orientation: landscape) {
   .s-page--rpn .s-page__major-section:first-child {
     min-height: 100dvh;
@@ -966,3 +923,367 @@ html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-r
   z-index: 5 !important;
   opacity: 1;
 }
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+) {
+  position: absolute;
+  top: 0;
+  right: auto;
+  bottom: auto;
+  left: var(--s-rpn-card-stack-left, 0px);
+  width: var(--s-rpn-card-stack-width, var(--s-rpn-os-card-width));
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: var(--s-rpn-os-surface);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(120%);
+  opacity: .46;
+  visibility: visible;
+  filter: none;
+  pointer-events: none;
+  transform: none;
+  transition: opacity .38s ease, background-color .28s ease, left .52s cubic-bezier(.22, .61, .36, 1);
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-active {
+  background: var(--s-rpn-os-surface-strong);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-layer {
+  opacity: .46;
+  pointer-events: none;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-layer > *,
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-active > * {
+  opacity: 1;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+) :is(
+  .s-page__rpn-description-copy,
+  .s-page__rpn-requirements-copy,
+  .s-page__rpn-rewards-copy,
+  .s-page__rpn-apply-copy
+) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: var(--s-rpn-os-card-padding);
+  overflow: auto;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active .s-page__rpn-apply-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-rpn-os-card-gap);
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active .s-page__rpn-carousel-nav {
+  display: grid;
+  grid-template-columns: var(--s-rpn-os-nav-arrow-size) minmax(0, 1fr) var(--s-rpn-os-nav-arrow-size);
+  column-gap: var(--s-rpn-os-nav-gap);
+  align-items: center;
+  width: var(--s-rpn-os-nav-width);
+  height: var(--s-rpn-os-nav-height);
+  margin: 0 0 0 calc(var(--s-rpn-os-nav-width) / -2);
+  padding: 0 8px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, .16);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025), inset 0 0 0 1px var(--s-glass-stroke);
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+  direction: ltr;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > button {
+  position: relative;
+  display: grid;
+  width: var(--s-rpn-os-nav-arrow-size);
+  height: var(--s-rpn-os-nav-arrow-size);
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: 50%;
+  background: #0A84FF;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: background-color .18s ease, opacity .18s ease, transform .18s ease;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > button:active { transform: scale(.96); }
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > button:disabled { cursor: default; opacity: .3; }
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > button svg { width: 13.7px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.12; stroke-linecap: round; stroke-linejoin: round; }
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > span { width: 54px; min-width: 0; justify-self: center; color: var(--s-rpn-os-muted); font: 500 11px/1 OOXMEScript, Arial, sans-serif; text-align: center; }
+
+html.s-route.is-day-mode .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active {
+  --s-rpn-os-surface: rgba(255, 255, 255, .48);
+  --s-rpn-os-surface-strong: rgba(255, 255, 255, .68);
+  --s-rpn-os-muted: rgba(17, 17, 17, .58);
+}
+
+html.s-route.is-day-mode .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav {
+  background: rgba(255, 255, 255, .42);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
+    .s-page__rpn-description,
+    .s-page__rpn-requirements,
+    .s-page__rpn-rewards,
+    .s-page__rpn-apply
+  ) { transition: none; }
+}
+
+/* Match /store's vertical section contract: each RPN page section is a real
+   snap target in document flow, so wheel, key, and touch navigation land on
+   the same section boundary instead of using the former absolute crossfade. */
+html.s-rpn-discrete-sections {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: calc(var(--s-x) * 2);
+}
+
+html.s-rpn-discrete-sections body.s-page--rpn {
+  overflow: clip;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__content {
+  position: relative;
+  height: auto;
+  min-height: 0;
+  padding-top: calc(48px + (var(--s-x) * 2));
+  padding-bottom: 0;
+  overflow: visible;
+}
+
+.s-page--rpn.s-rpn-discrete-sections [data-s-rpn-page-section] {
+  position: relative;
+  inset: auto;
+  display: block;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  opacity: 1;
+  visibility: visible;
+  filter: none;
+  transform: none;
+  pointer-events: auto;
+  transition: none;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.s-page--rpn.s-rpn-discrete-sections [data-s-rpn-page-section] > .s-page__major-section {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  max-height: 100%;
+  overflow: visible;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section {
+  --s-rpn-os-nav-height: 48px;
+  --s-rpn-os-nav-width: 162px;
+  --s-rpn-os-nav-arrow-size: 32px;
+  --s-rpn-os-nav-gap: 8px;
+  --s-rpn-os-surface: rgba(255, 255, 255, .12);
+  --s-rpn-os-surface-strong: rgba(255, 255, 255, .16);
+  --s-rpn-os-muted: rgba(255, 255, 255, .58);
+  overflow: visible;
+}
+
+/* Section 2 has no shared outer panel. Only the active/peek cards carry the
+   Store material; the navigation rail remains an independent control. */
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__secondary-nav {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+  visibility: visible;
+  filter: none;
+  pointer-events: auto;
+  transform: none;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__secondary-nav::before {
+  content: none;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__secondary-nav-rail {
+  display: none;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 calc(var(--s-rpn-os-nav-height) + (var(--s-x) * 1.5));
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  touch-action: pan-y;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active .s-page__rpn-content-slot {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  flex: none;
+  overflow: hidden;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+) {
+  box-sizing: border-box;
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: var(--s-rpn-os-surface);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(120%);
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active .s-page__rpn-content-slot :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+) {
+  height: min(393px, calc(100% - var(--s-rpn-os-nav-height) - (var(--s-x) * 1.5)));
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-active {
+  background: var(--s-rpn-os-surface-strong);
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+) :is(
+  .s-page__rpn-description-copy,
+  .s-page__rpn-requirements-copy,
+  .s-page__rpn-rewards-copy,
+  .s-page__rpn-apply-copy
+) {
+  padding: calc(var(--s-x) * .65);
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
+  .s-page__rpn-description-title,
+  .s-page__rpn-requirement-row > h2,
+  .s-page__rpn-reward-row > h2,
+  .s-page__rpn-apply-row > h2
+) {
+  color: #FFFFFF;
+  font: 500 16px/1.2 OOXMEScript, Arial, sans-serif;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
+  .s-page__rpn-description-explanation p,
+  .s-page__rpn-requirement-row > p,
+  .s-page__rpn-reward-row > p,
+  .s-page__rpn-apply-row > p
+) {
+  color: var(--s-rpn-os-muted);
+  font: 500 12px/1.35 OOXMEScript, Arial, sans-serif;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+).is-rpn-card-layer > * {
+  opacity: 1;
+}
+
+/* The bar is section-local and anchored independently of card left/right
+   movement, at the same bottom baseline as /os's fixed navigation bar. */
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-carousel-nav {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  top: calc(100% + var(--s-x));
+  bottom: auto;
+  margin: 0 0 0 calc(var(--s-rpn-os-nav-width) / -2);
+  transform: none;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active .s-page__rpn-carousel-nav {
+  top: calc(100% - var(--s-rpn-os-nav-height) - (var(--s-x) * .5));
+  bottom: auto;
+}
+
+html.s-route.is-day-mode .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
+  .s-page__rpn-description-title,
+  .s-page__rpn-requirement-row > h2,
+  .s-page__rpn-reward-row > h2,
+  .s-page__rpn-apply-row > h2
+) { color: #111111; }

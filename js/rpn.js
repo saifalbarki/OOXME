@@ -20,6 +20,10 @@
   const navItems = Array.from(page?.querySelectorAll('[data-s-rpn-secondary-nav-item]') || []);
   const previousButton = page?.querySelector('[data-s-rpn-secondary-nav-previous]');
   const nextButton = page?.querySelector('[data-s-rpn-secondary-nav-next]');
+  const carouselNav = page?.querySelector('[data-s-rpn-carousel-nav]');
+  const carouselPrevious = page?.querySelector('[data-s-rpn-carousel-previous]');
+  const carouselNext = page?.querySelector('[data-s-rpn-carousel-next]');
+  const carouselCount = page?.querySelector('[data-s-rpn-carousel-count]');
   const contentSlot = page?.querySelector('[data-s-rpn-content-slot]');
   const description = page?.querySelector('[data-s-rpn-description]');
   const requirements = page?.querySelector('[data-s-rpn-requirements]');
@@ -39,7 +43,7 @@
   if (!page || !content || !composer || !composerMenu || !sendUtilities
     || !themeUtility || !languageUtility || !addButton || !submitButton || !firstGroup
     || !title || !summary || !titleOutput || !summaryOutput || !titleCursor || !summaryCursor || pageSections.length !== 2 || !hero || !heroMedia || !heroCopy || !nav || !navRail
-    || !previousButton || !nextButton || !contentSlot || !description || !requirements
+    || !previousButton || !nextButton || !carouselNav || !carouselPrevious || !carouselNext || !carouselCount || !contentSlot || !description || !requirements
     || !rewards || !applyPanel || navItems.length !== 4 || menuItems.length !== 5) return;
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -62,14 +66,10 @@
     ar: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل']
   };
   const utilityCopy = {
-    en: { add: 'Add context', submit: 'Submit question', previous: 'Previous section', next: 'Next section', nav: 'Section navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
-    ar: { add: 'اضف سياقًا', submit: 'ارسال السؤال', previous: 'القسم السابق', next: 'القسم التالي', nav: 'التنقل بين الاقسام', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
+    en: { submit: 'Submit question', previous: 'Previous section', next: 'Next section', previousCard: 'Previous card', nextCard: 'Next card', nav: 'Section navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
+    ar: { submit: 'ارسال السؤال', previous: 'القسم السابق', next: 'القسم التالي', previousCard: 'البطاقة السابقة', nextCard: 'البطاقة التالية', nav: 'التنقل بين الاقسام', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
   };
 
-  const endpointTolerance = .25;
-  const reverseIntentDistance = 3;
-  const releaseDelay = 1000;
-  const releaseGrace = 120;
   const pulseFrames = new Map();
   const utilityPulseFrames = new Map();
   const menuFlashTimers = new Map();
@@ -78,7 +78,6 @@
   let initialized = false;
   let initializationRun = 0;
   let menuCloseTimer = 0;
-  let addFlashTimer = 0;
   let composerPulseFrame = 0;
   let menuPulseFrame = 0;
   let contentRevealFrame = 0;
@@ -90,30 +89,30 @@
   let navAlignmentFrame = 0;
   let sectionLocked = false;
   let compositionReady = false;
-  let stateOneImageBottom = 0;
-  let transitionDistance = 0;
-  let endpointLockScrollY = 0;
-  let endpointPointerId = null;
-  let endpointPointerStartY = 0;
-  let reverseIntent = false;
-  let releaseTimer = 0;
-  let releaseFrame = 0;
-  let releaseTarget = null;
-  let releaseLastScrollY = 0;
-  let releaseStableFrames = 0;
-  let releaseStartedAt = 0;
-  let releasePointerActive = false;
   let heroGeometryFrozen = false;
   let viewportWidth = root.clientWidth;
   let viewportOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
   let inactivityTimer = 0;
   let faceController = null;
-  let typeTimer = 0;
-  let typeRun = 0;
   let pageSectionIndex = 0;
   let pageSectionLocked = false;
   let pageSectionUnlockTimer = 0;
   let pageTouchStart = null;
+
+  const syncCarouselNav = () => {
+    const labels = utilityCopy[root.lang === 'ar' ? 'ar' : 'en'];
+    carouselCount.textContent = `${activeIndex + 1} / ${panels.length}`;
+    carouselPrevious.disabled = activeIndex === 0;
+    carouselNext.disabled = activeIndex === panels.length - 1;
+    carouselPrevious.setAttribute('aria-label', labels.previousCard);
+    carouselNext.setAttribute('aria-label', labels.nextCard);
+  };
+
+  const setPageSectionState = (index) => {
+    pageSectionIndex = index;
+    sectionLocked = index === 1;
+    pageSections.forEach((section, sectionIndex) => section.classList.toggle('is-rpn-page-section-active', sectionIndex === index));
+  };
 
   const setLocalizedText = (element, value) => {
     const fragment = document.createDocumentFragment();
@@ -132,7 +131,6 @@
     if (!width) return 0;
     const probe = element.cloneNode(false);
     probe.removeAttribute('id');
-    probe.removeAttribute('data-s-reveal');
     probe.lang = language;
     probe.dir = language === 'ar' ? 'rtl' : 'ltr';
     Object.assign(probe.style, {
@@ -220,7 +218,6 @@
   };
 
   const resetTopBar = () => {
-    clearTimeout(addFlashTimer);
     addButton.classList.remove('is-active');
     setActiveUi('none');
   };
@@ -284,77 +281,26 @@
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
   };
 
-  const syncTypewriterCursor = (output, cursor) => {
-    const range = document.createRange();
-    range.selectNodeContents(output);
-    const lineRect = Array.from(range.getClientRects()).at(-1);
-    const runRect = cursor.parentElement?.getBoundingClientRect();
-    const outputRect = output.getBoundingClientRect();
-    if (!runRect) return;
-    const gap = (parseFloat(getComputedStyle(cursor).getPropertyValue('--s-first-typewriter-cursor-gap')) || 0) * (parseFloat(getComputedStyle(cursor).fontSize) || 0);
-    const rtl = output.dir === 'rtl';
-    const edge = lineRect?.width ? lineRect : { left: rtl ? outputRect.right : outputRect.left, right: rtl ? outputRect.right : outputRect.left, top: outputRect.top, height: outputRect.height };
-    cursor.style.insetInlineStart = 'auto';
-    cursor.style.insetInlineEnd = 'auto';
-    cursor.style.left = `${(rtl ? edge.left - runRect.left - gap - cursor.getBoundingClientRect().width : edge.right - runRect.left + gap).toFixed(3)}px`;
-    cursor.style.top = `${(edge.top - runRect.top + edge.height / 2).toFixed(3)}px`;
-  };
-
   const startTypewriter = () => {
-    clearTimeout(typeTimer);
-    const run = ++typeRun;
     const language = root.lang === 'ar' ? 'ar' : 'en';
     const stages = [
-      { element: title, output: titleOutput, cursor: titleCursor, phrase: firstGroupCopy[language][0], multiline: false },
-      { element: summary, output: summaryOutput, cursor: summaryCursor, phrase: firstGroupCopy[language][1], multiline: true }
+      { element: title, output: titleOutput, cursor: titleCursor, phrase: firstGroupCopy[language][0] },
+      { element: summary, output: summaryOutput, cursor: summaryCursor, phrase: firstGroupCopy[language][1] }
     ];
     stages.forEach((stage) => {
       stage.element.lang = language;
       stage.element.dir = language === 'ar' ? 'rtl' : 'ltr';
       stage.output.lang = language;
       stage.output.dir = language === 'ar' ? 'rtl' : 'ltr';
-      stage.output.textContent = '';
+      stage.output.textContent = stage.phrase;
       stage.cursor.style.removeProperty('left');
       stage.cursor.style.removeProperty('top');
       stage.element.classList.remove('is-cursor-visible', 'is-typewriter-prelude');
     });
-    const typeStage = (index) => {
-      const stage = stages[index];
-      if (!stage || run !== typeRun) return;
-      let characterIndex = 0;
-      let stageStartedAt = 0;
-      stage.element.classList.add('is-cursor-visible', 'is-typewriter-prelude');
-      syncTypewriterCursor(stage.output, stage.cursor);
-      const typeCharacter = () => {
-        if (run !== typeRun) return;
-        if (stage.multiline) {
-          const progressCharacters = Math.floor(((performance.now() - stageStartedAt) / 5000) * stage.phrase.length);
-          characterIndex = Math.min(stage.phrase.length, Math.max(characterIndex + 1, progressCharacters));
-        } else {
-          characterIndex += 1;
-        }
-        stage.output.textContent = stage.phrase.slice(0, characterIndex);
-        syncTypewriterCursor(stage.output, stage.cursor);
-        if (characterIndex < stage.phrase.length) {
-          typeTimer = window.setTimeout(typeCharacter, stage.multiline ? Math.max(0, Math.min(16, 5000 - (performance.now() - stageStartedAt))) : 52);
-          return;
-        }
-        stage.element.classList.remove('is-cursor-visible');
-        if (index < stages.length - 1) typeTimer = window.setTimeout(() => typeStage(index + 1), 180);
-      };
-      typeTimer = window.setTimeout(() => {
-        if (run !== typeRun) return;
-        stage.element.classList.remove('is-typewriter-prelude');
-        stageStartedAt = performance.now();
-        typeCharacter();
-      }, 1000);
-    };
-    typeStage(0);
   };
 
   const syncBoxHorizontalGeometry = () => {
     const rect = composerMenu.getBoundingClientRect();
-    nav.style.setProperty('--s-rpn-secondary-nav-left', `${rect.left.toFixed(3)}px`);
     nav.style.setProperty('--s-rpn-secondary-nav-width', `${rect.width.toFixed(3)}px`);
   };
 
@@ -362,18 +308,16 @@
     if (!nav.classList.contains('is-rpn-transition-ready')) return;
     const selector = navItems[activeIndex];
     if (!selector) return;
-    const boxRect = nav.getBoundingClientRect();
     const selectorRect = selector.getBoundingClientRect();
-    nav.style.setProperty('--s-rpn-active-selector-width', `${selectorRect.width.toFixed(3)}px`);
-    nav.setAttribute('data-s-rpn-selector-top-inset', (selectorRect.top - boxRect.top).toFixed(3));
+    const selectorWidth = selectorRect.width || Math.min(contentSlot.getBoundingClientRect().width * .76, 340);
+    nav.style.setProperty('--s-rpn-active-selector-width', `${selectorWidth.toFixed(3)}px`);
   };
 
   const syncBoxHeight = () => {
     if (compositionReady && window.scrollY > .5) return;
     nav.classList.add('is-rpn-measuring');
     let largestHeight = 0;
-    let largestIndex = 0;
-    panels.forEach((panel, index) => {
+    panels.forEach((panel) => {
       panel.classList.add('is-rpn-measuring-panel');
       const copies = Array.from(panel.children).filter((copy) => copy.hasAttribute('lang'));
       const displays = copies.map((copy) => copy.style.display);
@@ -383,16 +327,10 @@
         panelHeight = Math.max(panelHeight, Math.ceil(panel.scrollHeight));
       });
       copies.forEach((copy, copyIndex) => { copy.style.display = displays[copyIndex]; });
-      panel.setAttribute('data-s-rpn-natural-height', `${panelHeight}`);
-      if (panelHeight > largestHeight) {
-        largestHeight = panelHeight;
-        largestIndex = index;
-      }
+      largestHeight = Math.max(largestHeight, panelHeight);
       panel.classList.remove('is-rpn-measuring-panel');
     });
     nav.classList.remove('is-rpn-measuring');
-    nav.setAttribute('data-s-rpn-largest-panel', ['Description', 'Requirements', 'Rewards', 'Apply'][largestIndex]);
-    nav.setAttribute('data-s-rpn-largest-content-height', `${largestHeight}`);
     const style = getComputedStyle(nav);
     const chrome = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth']
       .reduce((total, property) => total + (parseFloat(style[property]) || 0), 0);
@@ -442,45 +380,24 @@
     const reveal = () => {
       panels.forEach((panel, index) => panel.classList.remove(...panelClasses[index]));
       target.classList.add(attachedClass);
-      const stackScaleRatio = .99;
-      const navRect = nav.getBoundingClientRect();
       const slotRect = contentSlot.getBoundingClientRect();
-      const stackCardHeight = navRect.height || 0;
-      const xProbe = document.createElement('div');
-      xProbe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;width:var(--s-x);height:0;';
-      contentSlot.append(xProbe);
-      const stackSpacing = xProbe.getBoundingClientRect().width;
-      xProbe.remove();
-      const stackTopProbe = document.createElement('div');
-      stackTopProbe.className = 's-page__rpn-description is-rpn-card-layer';
-      stackTopProbe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;top:var(--s-rpn-card-layer-top);height:0;';
-      contentSlot.append(stackTopProbe);
-      const stackAnchorDrift = stackTopProbe.getBoundingClientRect().top - navRect.top;
-      stackTopProbe.remove();
-      const stackScales = [1, stackScaleRatio, stackScaleRatio ** 2, stackScaleRatio ** 3];
-      const stackOffsets = [
-        0,
-        -stackSpacing - stackAnchorDrift,
-        -(stackSpacing * 2) - stackAnchorDrift,
-        0
-      ];
+      const cardWidth = Math.min(slotRect.width * .76, 340);
+      const cardGap = parseFloat(getComputedStyle(root).getPropertyValue('--s-x')) || 18;
+      const cardCenter = (slotRect.width - cardWidth) / 2;
       panels.forEach((panel, index) => {
-        const stackIndex = (index - activeIndex + panels.length) % panels.length;
-        const stackScale = stackScales[stackIndex];
-        const stackOffset = `${stackOffsets[stackIndex].toFixed(3)}px`;
-        const visibleWidth = Math.max(0, navRect.width - (stackIndex * stackSpacing * 2));
-        const stackWidth = visibleWidth / stackScale;
-        const stackLeft = navRect.left + (navRect.width / 2) - slotRect.left - (stackWidth / 2);
-        panel.classList.toggle('is-rpn-card-layer', stackIndex > 0 && stackIndex < 3);
-        panel.classList.toggle('is-rpn-card-active', stackIndex === 0);
-        panel.classList.toggle('is-rpn-card-hidden', stackIndex === 3);
-        panel.style.setProperty('--s-rpn-card-stack-index', String(stackIndex));
-        panel.style.setProperty('--s-rpn-card-stack-scale', String(stackScale));
-        panel.style.setProperty('--s-rpn-card-stack-offset', stackOffset);
-        panel.style.setProperty('--s-rpn-card-stack-left', `${stackLeft.toFixed(3)}px`);
-        panel.style.setProperty('--s-rpn-card-stack-width', `${stackWidth.toFixed(3)}px`);
-        panel.style.setProperty('--s-rpn-card-stack-opacity', stackIndex === 1 ? '.8' : stackIndex === 2 ? '.6' : '1');
-        panel.style.zIndex = String(panels.length - stackIndex);
+        const relativeIndex = index - activeIndex;
+        const visible = Math.abs(relativeIndex) <= 1;
+        const cardLeft = cardCenter + (relativeIndex * (cardWidth + cardGap));
+        panel.classList.toggle('is-rpn-card-layer', visible && relativeIndex !== 0);
+        panel.classList.toggle('is-rpn-card-active', relativeIndex === 0);
+        panel.classList.toggle('is-rpn-card-hidden', !visible);
+        panel.style.setProperty('--s-rpn-card-stack-index', String(Math.abs(relativeIndex)));
+        panel.style.setProperty('--s-rpn-card-stack-scale', '1');
+        panel.style.setProperty('--s-rpn-card-stack-offset', '0px');
+        panel.style.setProperty('--s-rpn-card-stack-left', `${cardLeft.toFixed(3)}px`);
+        panel.style.setProperty('--s-rpn-card-stack-width', `${cardWidth.toFixed(3)}px`);
+        panel.style.setProperty('--s-rpn-card-stack-opacity', relativeIndex === 0 ? '1' : '.46');
+        panel.style.zIndex = String(relativeIndex === 0 ? 2 : 1);
       });
       contentRevealFrame = requestAnimationFrame(() => {
         contentRevealFrame = 0;
@@ -504,19 +421,6 @@
     }
   };
 
-  const syncStackBaseline = (referenceBottom = stateOneImageBottom) => {
-    if (!referenceBottom) return;
-    const stackSection = pageSections[1];
-    const navRect = nav.getBoundingClientRect();
-    const matrix = getComputedStyle(stackSection).transform;
-    const sectionShiftY = matrix === 'none' ? 0 : new DOMMatrixReadOnly(matrix).m42;
-    const unshiftedNavTop = navRect.top - sectionShiftY;
-    const targetTop = referenceBottom - navRect.height;
-    const currentTop = parseFloat(getComputedStyle(nav).top) || nav.offsetTop;
-    const resolvedTop = currentTop + targetTop - unshiftedNavTop;
-    nav.style.setProperty('--s-rpn-secondary-nav-section-two-top', `${resolvedTop.toFixed(3)}px`);
-  };
-
   const syncStateOneGeometry = () => {
     if (sectionLocked || (compositionReady && window.scrollY > .5)) return;
     const x = composer.getBoundingClientRect().left || 18;
@@ -527,13 +431,8 @@
     const resolvedTop = nav.offsetTop + desiredTop - boxRect.top;
     nav.style.setProperty('--s-rpn-secondary-nav-state-one-top', `${resolvedTop.toFixed(3)}px`);
     const positionedBox = nav.getBoundingClientRect();
-    stateOneImageBottom = heroRect.bottom;
-    transitionDistance = Math.max(1, Math.round(positionedBox.bottom - heroRect.bottom));
-    page.style.setProperty('--s-rpn-transition-distance', `${transitionDistance}px`);
+    page.style.setProperty('--s-rpn-transition-distance', `${Math.max(1, Math.round(positionedBox.bottom - heroRect.bottom))}px`);
     compositionReady = true;
-    firstGroup.setAttribute('data-s-rpn-state-one-text-image-gap', (heroRect.top - summary.getBoundingClientRect().bottom).toFixed(3));
-    firstGroup.setAttribute('data-s-rpn-state-one-image-box-gap', (positionedBox.top - heroRect.bottom).toFixed(3));
-    firstGroup.setAttribute('data-s-rpn-state-one-image-bottom', stateOneImageBottom.toFixed(3));
     syncActiveContent(true);
   };
 
@@ -553,25 +452,17 @@
     root.style.removeProperty('--s-portrait-measured-x');
     root.style.removeProperty('--s-portrait-section-height');
     root.style.removeProperty('--s-portrait-final-section-height');
-    root.removeAttribute('data-s-portrait-composer-top');
-    root.removeAttribute('data-s-portrait-viewport-height');
-    root.removeAttribute('data-s-portrait-section-top');
-    root.removeAttribute('data-s-portrait-reference-y');
     hero.style.removeProperty('bottom');
     hero.classList.remove('is-portrait-composed');
   };
 
   const syncFirstGroupGap = () => {
     const heroRect = hero.getBoundingClientRect();
-    const titleRect = title.getBoundingClientRect();
     const summaryRect = summary.getBoundingClientRect();
     const x = composer.getBoundingClientRect().left || 18;
     const currentShift = parseFloat(firstGroup.style.getPropertyValue('--s-rpn-first-group-shift')) || 0;
     const shift = heroRect.top - (summaryRect.bottom - currentShift) - x;
-    if (!firstGroup.hasAttribute('data-s-rpn-original-y')) firstGroup.setAttribute('data-s-rpn-original-y', (titleRect.top - currentShift).toFixed(3));
     firstGroup.style.setProperty('--s-rpn-first-group-shift', `${shift.toFixed(3)}px`);
-    firstGroup.setAttribute('data-s-rpn-final-y', (titleRect.top + shift).toFixed(3));
-    firstGroup.setAttribute('data-s-rpn-text-image-gap', x.toFixed(3));
   };
 
   const syncPortraitLayout = () => {
@@ -587,7 +478,6 @@
     // bottom offset of X. Preserve that exact fractional Safari baseline now
     // that the unused anchor has been removed.
     const viewportHeight = window.visualViewport?.height || root.clientHeight;
-    const composerRect = composer.getBoundingClientRect();
     const firstRect = firstGroup.getBoundingClientRect();
     const sectionTop = parseFloat(getComputedStyle(content).paddingTop) || 0;
     const baseline = viewportHeight - x;
@@ -595,19 +485,10 @@
     root.style.setProperty('--s-portrait-section-height', `${viewportHeight}px`);
     root.style.setProperty('--s-portrait-final-section-height', `${relativeBottom}px`);
     root.style.setProperty('--s-portrait-measured-x', `${x}px`);
-    root.setAttribute('data-s-portrait-composer-top', composerRect.top.toFixed(3));
-    root.setAttribute('data-s-portrait-viewport-height', viewportHeight.toFixed(3));
-    root.setAttribute('data-s-portrait-section-top', sectionTop.toFixed(3));
-    root.setAttribute('data-s-portrait-reference-y', baseline.toFixed(3));
     if (!sectionLocked) {
       hero.style.setProperty('bottom', `${firstRect.height - relativeBottom}px`);
       hero.classList.add('is-portrait-composed');
     }
-    firstGroup.setAttribute('data-s-portrait-layout', 'composed');
-    firstGroup.setAttribute('data-s-portrait-final-gap', (composerRect.top - baseline).toFixed(3));
-    firstGroup.setAttribute('data-s-portrait-final-y', baseline.toFixed(3));
-    firstGroup.setAttribute('data-s-portrait-reference-delta', '0.000');
-    firstGroup.setAttribute('data-s-portrait-live-gap', '0.000');
     syncFirstGroupGap();
     scheduleScrollSync();
   };
@@ -634,116 +515,31 @@
       syncStateOneGeometry();
       syncApplyButtonGeometry();
     }
-    if (!compositionReady || transitionDistance <= 0) return;
-    const scrollY = window.scrollY;
-    const rawProgress = Math.min(1, Math.max(0, scrollY / transitionDistance));
-    const nativeLimit = Math.max(0, root.scrollHeight - window.innerHeight);
-    const reachableEndpoint = Math.min(transitionDistance, nativeLimit);
-    const reachedEndpoint = nativeLimit > endpointTolerance && scrollY >= reachableEndpoint - endpointTolerance;
-    let progress = rawProgress;
-    if (sectionLocked) {
-      progress = 1;
-      if (reverseIntent && scrollY <= endpointLockScrollY - reverseIntentDistance) {
-        sectionLocked = false;
-        reverseIntent = false;
-        progress = rawProgress;
-        faceController?.rejectApply();
+    const referenceY = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const current = pageSections.reduce((closest, section, index) => {
+      const distance = Math.abs(section.getBoundingClientRect().top - referenceY);
+      return distance < closest.distance ? { index, distance } : closest;
+    }, { index: pageSectionIndex, distance: Number.POSITIVE_INFINITY }).index;
+    if (!pageSectionLocked && current !== pageSectionIndex) {
+      setPageSectionState(current);
+      if (current === 1) {
+        syncActiveContent(true);
+        syncCarouselNav();
+      } else {
+        syncActiveContent(false);
+        startTypewriter();
       }
-    } else if (reachedEndpoint) {
-      sectionLocked = true;
-      endpointLockScrollY = scrollY;
-      reverseIntent = false;
-      progress = 1;
-      nav.setAttribute('data-s-rpn-final-content-baseline', stateOneImageBottom.toFixed(3));
     }
+    const progress = current === 1 || pageSectionIndex === 1 ? 1 : 0;
     firstGroup.style.setProperty('--s-rpn-first-group-scroll-progress', progress.toFixed(4));
     nav.style.setProperty('--s-rpn-composition-progress', progress.toFixed(4));
-    nav.style.setProperty('--s-rpn-content-blur', `${((1 - progress) * 12).toFixed(3)}px`);
+    nav.style.setProperty('--s-rpn-content-blur', '0px');
     nav.classList.toggle('is-rpn-content-interactive', progress > .05);
-    firstGroup.setAttribute('data-s-rpn-text-scroll-progress', progress.toFixed(4));
-    nav.setAttribute('data-s-rpn-composition-progress', progress.toFixed(4));
   };
 
   function scheduleScrollSync() {
     if (!scrollFrame) scrollFrame = requestAnimationFrame(syncScroll);
   }
-
-  const beginEndpointGesture = (pointerId, clientY) => {
-    if (!sectionLocked) return;
-    endpointPointerId = pointerId;
-    endpointPointerStartY = clientY;
-    reverseIntent = false;
-  };
-  const updateEndpointGesture = (pointerId, clientY) => {
-    if (sectionLocked && pointerId === endpointPointerId) reverseIntent = clientY - endpointPointerStartY >= reverseIntentDistance;
-  };
-  const endEndpointGesture = (pointerId) => {
-    if (pointerId !== endpointPointerId) return;
-    if (reverseIntent && sectionLocked) syncScroll();
-    endpointPointerId = null;
-    endpointPointerStartY = 0;
-    reverseIntent = false;
-  };
-
-  const cancelReleaseSettle = ({ stopNativeScroll = false } = {}) => {
-    if (releaseTimer) clearTimeout(releaseTimer);
-    if (releaseFrame) cancelAnimationFrame(releaseFrame);
-    const settling = releaseTarget !== null;
-    releaseTimer = 0;
-    releaseFrame = 0;
-    releaseTarget = null;
-    releaseLastScrollY = 0;
-    releaseStableFrames = 0;
-    releaseStartedAt = 0;
-    if (stopNativeScroll && settling) window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
-  };
-
-  const watchReleaseSettle = () => {
-    releaseFrame = 0;
-    if (releaseTarget === null) return;
-    const target = releaseTarget;
-    const scrollY = window.scrollY;
-    releaseStableFrames = Math.abs(scrollY - releaseLastScrollY) <= .01 ? releaseStableFrames + 1 : 0;
-    releaseLastScrollY = scrollY;
-    const reached = Math.abs(scrollY - target) <= endpointTolerance;
-    const stopped = releaseStableFrames >= 3 && performance.now() - releaseStartedAt >= releaseGrace;
-    if (reached || stopped) {
-      if (target > 0 && !sectionLocked) {
-        sectionLocked = true;
-        endpointLockScrollY = scrollY;
-        reverseIntent = false;
-        nav.setAttribute('data-s-rpn-final-content-baseline', stateOneImageBottom.toFixed(3));
-      } else if (target === 0 && scrollY > endpointTolerance) {
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      }
-      releaseTarget = null;
-      releaseStableFrames = 0;
-      releaseStartedAt = 0;
-      syncScroll();
-      return;
-    }
-    releaseFrame = requestAnimationFrame(watchReleaseSettle);
-  };
-
-  const scheduleReleaseSettle = () => {
-    if (releasePointerActive || releaseTarget !== null || !compositionReady || sectionLocked) return;
-    if (releaseTimer) clearTimeout(releaseTimer);
-    releaseTimer = window.setTimeout(() => {
-      releaseTimer = 0;
-      if (releasePointerActive || releaseTarget !== null || sectionLocked) return;
-      const target = window.scrollY < transitionDistance / 2 ? 0 : transitionDistance;
-      if (Math.abs(window.scrollY - target) <= endpointTolerance) {
-        if (target > 0) syncScroll();
-        return;
-      }
-      releaseTarget = target;
-      releaseLastScrollY = window.scrollY;
-      releaseStableFrames = 0;
-      releaseStartedAt = performance.now();
-      window.scrollTo({ top: target, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-      releaseFrame = requestAnimationFrame(watchReleaseSettle);
-    }, releaseDelay);
-  };
 
   const createFaceController = () => {
     const face = addButton.querySelector('[data-s-rpn-face]');
@@ -850,7 +646,7 @@
   };
 
   const setActiveSection = (index) => {
-    activeIndex = (index + navItems.length) % navItems.length;
+    activeIndex = Math.max(0, Math.min(navItems.length - 1, index));
     navItems.forEach((item, itemIndex) => {
       const active = itemIndex === activeIndex;
       item.classList.toggle('is-active', active);
@@ -858,37 +654,45 @@
     });
     syncActiveContent(nav.classList.contains('is-rpn-transition-ready'));
     syncApplyButtonGeometry();
+    syncCarouselNav();
     faceController?.setApply(activeIndex === 3);
   };
 
   const setPageSection = (index) => {
     const next = Math.max(0, Math.min(pageSections.length - 1, index));
     if (next === pageSectionIndex) return;
-    const sectionOneImageBottom = stateOneImageBottom || hero.getBoundingClientRect().bottom;
-    pageSectionIndex = next;
-    pageSections.forEach((section, sectionIndex) => section.classList.toggle('is-rpn-page-section-active', sectionIndex === next));
+    setPageSectionState(next);
     if (next === 1) {
-      sectionLocked = true;
-      syncStackBaseline(sectionOneImageBottom);
       nav.style.setProperty('--s-rpn-composition-progress', '1');
       nav.style.setProperty('--s-rpn-content-blur', '0px');
       nav.classList.add('is-rpn-content-interactive');
       syncActiveContent(true);
-      requestAnimationFrame(() => syncStackBaseline(sectionOneImageBottom));
+      syncBoxHeight();
+      requestAnimationFrame(() => {
+        syncActiveContent(true);
+        syncCarouselNav();
+      });
     } else {
-      sectionLocked = false;
       startTypewriter();
     }
   };
 
   const transitionPageSection = (direction) => {
     if (!direction || pageSectionLocked) return;
-    const target = Math.max(0, Math.min(pageSections.length - 1, pageSectionIndex + direction));
-    if (target === pageSectionIndex) return;
+    const referenceY = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const current = pageSections.reduce((closest, section, index) => {
+      const distance = Math.abs(section.getBoundingClientRect().top - referenceY);
+      return distance < closest.distance ? { index, distance } : closest;
+    }, { index: pageSectionIndex, distance: Number.POSITIVE_INFINITY }).index;
+    const target = Math.max(0, Math.min(pageSections.length - 1, current + direction));
+    if (target === current) return;
+    const targetSection = pageSections[target];
     pageSectionLocked = true;
     clearTimeout(pageSectionUnlockTimer);
     setPageSection(target);
-    pageSectionUnlockTimer = window.setTimeout(() => { pageSectionLocked = false; }, 520);
+    const correction = targetSection.getBoundingClientRect().top - referenceY;
+    window.scrollTo({ top: window.scrollY + correction, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    pageSectionUnlockTimer = window.setTimeout(() => { pageSectionLocked = false; }, 820);
   };
 
   let swipeStart = null;
@@ -935,10 +739,8 @@
       void style.transform; void style.opacity; void style.filter; void style.webkitBackdropFilter;
       void layer.getBoundingClientRect();
     });
-    root.setAttribute('data-s-rpn-hero-geometry-ready', 'true');
     if (freeze) {
       heroGeometryFrozen = true;
-      root.setAttribute('data-s-rpn-hero-assets-stable', 'true');
     }
   };
 
@@ -946,18 +748,9 @@
     initializationRun += 1;
     root.classList.add('s-x-initializing');
     initialized = false;
-    cancelReleaseSettle({ stopNativeScroll: true });
-    releasePointerActive = false;
     sectionLocked = false;
     compositionReady = false;
-    stateOneImageBottom = 0;
-    transitionDistance = 0;
-    endpointLockScrollY = 0;
-    endpointPointerId = null;
-    endpointPointerStartY = 0;
-    reverseIntent = false;
     heroGeometryFrozen = false;
-    root.removeAttribute('data-s-rpn-hero-assets-stable');
     nav.classList.remove('is-rpn-content-interactive');
     nav.classList.add('is-rpn-transition-ready');
     nav.style.removeProperty('--s-rpn-secondary-nav-state-one-top');
@@ -997,10 +790,9 @@
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
     applyLanguage('en', { persist: false, emit: false });
     applyTheme('dark');
-    pageSectionIndex = 0;
+    setPageSectionState(0);
     pageSectionLocked = false;
     clearTimeout(pageSectionUnlockTimer);
-    pageSections.forEach((section, sectionIndex) => section.classList.toggle('is-rpn-page-section-active', sectionIndex === 0));
     setActiveSection(0);
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     initialize();
@@ -1092,6 +884,11 @@
     setActiveSection(activeIndex + step);
     pulseSurface(nav);
   }));
+  [[carouselPrevious, -1], [carouselNext, 1]].forEach(([button, step]) => button.addEventListener('click', () => {
+    if (button.disabled || suppressSwipeClick()) return;
+    setActiveSection(activeIndex + step);
+    pulseSurface(carouselNav);
+  }));
   applyButtons.forEach((button) => button.addEventListener('click', () => {
     if (suppressSwipeClick()) return;
     pulseSurface(nav);
@@ -1100,58 +897,24 @@
   }));
 
   document.addEventListener('pointerdown', (event) => {
-    if (event.pointerType !== 'touch') beginEndpointGesture(event.pointerId, event.clientY);
-    releasePointerActive = true;
-    cancelReleaseSettle({ stopNativeScroll: true });
     faceController?.begin(event);
   }, { capture: true, passive: true });
-  document.addEventListener('touchstart', (event) => {
-    const touch = event.changedTouches[0];
-    if (touch) beginEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
-  }, { capture: true, passive: true });
   document.addEventListener('pointermove', (event) => {
-    if (event.pointerType !== 'touch') updateEndpointGesture(event.pointerId, event.clientY);
     faceController?.move(event);
   }, { capture: true, passive: true });
-  document.addEventListener('touchmove', (event) => {
-    const touch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === endpointPointerId);
-    if (touch) updateEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
-  }, { capture: true, passive: true });
-  ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => document.addEventListener(eventName, (event) => {
-    if (eventName.startsWith('pointer')) {
-      if (event.pointerType !== 'touch') {
-        endEndpointGesture(event.pointerId);
-        releasePointerActive = false;
-        scheduleReleaseSettle();
-      }
-      faceController?.end(event, eventName === 'pointercancel');
-    } else {
-      const touch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === endpointPointerId);
-      if (touch) endEndpointGesture(`touch:${touch.identifier}`);
-      if (releasePointerActive) {
-        releasePointerActive = false;
-        scheduleReleaseSettle();
-      }
-    }
+  ['pointerup', 'pointercancel'].forEach((eventName) => document.addEventListener(eventName, (event) => {
+    faceController?.end(event, eventName === 'pointercancel');
   }, { passive: true }));
   window.addEventListener('wheel', (event) => {
     if (Math.abs(event.deltaY) >= 8 && !event.target.closest('[data-s-rpn-secondary-nav]')) {
       event.preventDefault();
       transitionPageSection(event.deltaY > 0 ? 1 : -1);
-      return;
     }
-    cancelReleaseSettle({ stopNativeScroll: true });
-    if (sectionLocked && event.deltaY < 0) reverseIntent = true;
   }, { passive: false });
   window.addEventListener('keydown', (event) => {
-    if (['ArrowDown', 'PageDown', 'ArrowUp', 'PageUp'].includes(event.key)) {
-      event.preventDefault();
-      transitionPageSection(['ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
-      return;
-    }
-    if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) return;
-    cancelReleaseSettle({ stopNativeScroll: true });
-    if (sectionLocked && ['ArrowUp', 'PageUp', 'Home'].includes(event.key)) reverseIntent = true;
+    if (!['ArrowDown', 'PageDown', 'ArrowUp', 'PageUp'].includes(event.key)) return;
+    event.preventDefault();
+    transitionPageSection(['ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
   }, { passive: true });
   document.addEventListener('touchstart', (event) => {
     if (event.target.closest('[data-s-rpn-secondary-nav]')) return;
@@ -1169,7 +932,6 @@
   }, { capture: true, passive: true });
   window.addEventListener('scroll', () => {
     scheduleScrollSync();
-    scheduleReleaseSettle();
     noteInteraction();
   }, { passive: true });
 
@@ -1200,7 +962,7 @@
 
   page.classList.add('s-rpn-discrete-sections');
   root.classList.add('s-rpn-discrete-sections');
-  pageSections.forEach((section, index) => section.classList.toggle('is-rpn-page-section-active', index === 0));
+  setPageSectionState(0);
   setActiveSection(0);
   initialize();
   noteInteraction();

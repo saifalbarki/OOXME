@@ -15,7 +15,6 @@
   const submitButton = composer?.querySelector('button[type="submit"]');
   const logoParticleField = document.querySelector('[data-s-logo-particles]');
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
-  const zHeroImage = document.querySelector('.s-page__z-hero-image');
   const imageFrame = document.querySelector('[data-s-image-frame]');
   const imageCopy = document.querySelector('[data-s-image-copy]');
   const imageMedia = imageFrame?.querySelector('[data-s-flow-item]');
@@ -29,24 +28,11 @@
   const firstTypewriterOutput = document.querySelector('[data-s-first-typewriter-output]');
   const nextImageTextGroup = document.querySelector('[data-s-copy-group="1"]');
   const sectionTwoTextGroups = Array.from(document.querySelectorAll('[data-s-section-2-text]'));
-  const zSecondaryNav = document.querySelector('[data-s-z-secondary-nav]');
-  const zSecondaryNavRail = document.querySelector('[data-s-z-secondary-nav-rail]');
-  const zSecondaryNavIndicator = document.querySelector('[data-s-z-secondary-nav-indicator]');
-  const zSecondaryNavItems = Array.from(document.querySelectorAll('[data-s-z-secondary-nav-item]'));
-  const zSecondaryNavPrevious = document.querySelector('[data-s-z-secondary-nav-previous]');
-  const zSecondaryNavNext = document.querySelector('[data-s-z-secondary-nav-next]');
-  const zContentSlot = document.querySelector('[data-s-z-content-slot]');
-  const zDescription = document.querySelector('[data-s-z-description]');
-  const zDescriptionDate = zDescription?.querySelector('.s-page__z-description-date');
-  const zRequirements = document.querySelector('[data-s-z-requirements]');
-  const zRewards = document.querySelector('[data-s-z-rewards]');
-  const zApply = document.querySelector('[data-s-z-apply]');
-  const zApplyButtons = Array.from(document.querySelectorAll('[data-s-z-apply] button'));
   const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
   const getNavigableMajorSections = () => majorSections.filter((section) => getComputedStyle(section).display !== 'none');
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
-    .filter((item) => item !== imageCopy && (item !== imageMedia || !page?.classList.contains('s-page--z')));
+    .filter((item) => item !== imageCopy && item !== imageMedia);
   const localizedGroups = Array.from(document.querySelectorAll('[data-s-copy-group]'))
     .sort((first, second) => Number(first.dataset.sCopyGroup) - Number(second.dataset.sCopyGroup));
   const conversation = document.querySelector('[data-s-conversation]');
@@ -58,24 +44,12 @@
   }));
   const groups = sections.flatMap((section) => section.groups);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const isZPage = page?.classList.contains('s-page--z') ?? false;
+  // No current route implements the retired focused /z composition.
+  const isZPage = false;
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  if (!isZPage) document.documentElement.classList.add('s-x-discrete-sections');
-  const zHeroCompositorLayers = isZPage
-    ? [
-      zHeroImage,
-      imageMedia,
-      imageCopy,
-      firstGroup?.querySelector('.s-page__group-title'),
-      firstGroup?.querySelector('.s-page__group-description'),
-      zSecondaryNav
-    ].filter(Boolean)
-    : [];
+  document.documentElement.classList.add('s-x-discrete-sections');
 
-  // This controller is shared by the full /x composition and the focused /z
-  // composition. Optional later-section affordances are deliberately guarded so
-  // a page may include only its relevant sections without creating a parallel UI.
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || (!isZPage && (!logoParticleField || !logoParticleCanvas)) || (isZPage && (!zSecondaryNav || !zSecondaryNavRail || !zSecondaryNavIndicator || !zContentSlot || !zDescription || !zRequirements || !zRewards || !zApply || zSecondaryNavItems.length !== 4)) || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || (!isZPage && (!flowGroups.length || !flowItems.length)) || !localizedGroups.length) return;
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -164,17 +138,7 @@
       consultationCta: 'احجز استشارة'
     }
   };
-  const zFirstGroupCopy = {
-    en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive advantages and rewards'],
-    ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الاحالة لاوكسوم متاحة الان للتقديم\nانضم الينا واستفد من مزايا ومكافآت حصرية.']
-  };
-  const zMainMenuCopy = {
-    en: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
-    ar: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل']
-  };
-  const getGroupCopy = (language, groupIndex) => (
-    isZPage && groupIndex === 0 ? zFirstGroupCopy[language] : pageCopy[language].groups[groupIndex]
-  );
+  const getGroupCopy = (language, groupIndex) => pageCopy[language].groups[groupIndex];
   const firstTypewriterPhrases = {
     en: ['Welcome', 'To OOXME', "Iraq's one and only brand management"],
     ar: ['مرحبـــا', 'فيـ اوكسوم', 'ادارة العلامة التجارية الواحد والوحيد في العراق']
@@ -323,193 +287,6 @@
   let applyPageCopy = null;
   let manualThemeOverride = false;
   const arabicScriptPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
-
-  const zPanels = [zDescription, zRequirements, zRewards, zApply];
-  const zPanelClasses = [['is-z-description-attached', 'is-z-description-revealed'], ['is-z-requirements-attached', 'is-z-requirements-revealed'], ['is-z-rewards-attached', 'is-z-rewards-revealed'], ['is-z-apply-attached', 'is-z-apply-revealed']];
-
-  const syncZContentBoxHorizontalGeometry = () => {
-    if (!isZPage) return;
-    const menuRect = composerMenu.getBoundingClientRect();
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-left', `${menuRect.left.toFixed(3)}px`);
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-width', `${menuRect.width.toFixed(3)}px`);
-  };
-
-  const syncZApplyButtonGeometry = () => {
-    if (!isZPage || !zSecondaryNav.classList.contains('is-z-transition-ready')) return;
-    const selector = zSecondaryNavItems[zActiveContentIndex];
-    if (!selector) return;
-    const boxRect = zSecondaryNav.getBoundingClientRect();
-    const selectorRect = selector.getBoundingClientRect();
-    const selectorInset = selectorRect.top - boxRect.top;
-    zSecondaryNav.style.setProperty('--s-z-active-selector-width', `${selectorRect.width.toFixed(3)}px`);
-    zSecondaryNav.setAttribute('data-s-z-selector-top-inset', selectorInset.toFixed(3));
-
-  };
-
-  const syncZContentBoxHeight = () => {
-    if (!isZPage) return;
-    // The box height is part of the scroll travel and therefore immutable once
-    // a transition has begun. Re-measuring mid-travel would move the endpoint.
-    if (zSectionOneCompositionReady && window.scrollY > .5) return;
-    zSecondaryNav.classList.add('is-z-measuring');
-    let largestContentHeight = 0;
-    let largestPanelIndex = 0;
-    zPanels.forEach((panel, index) => {
-      panel.classList.add('is-z-measuring-panel');
-      const localizedCopies = Array.from(panel.children).filter((copy) => copy.hasAttribute('lang'));
-      const originalDisplays = localizedCopies.map((copy) => copy.style.display);
-      let panelHeight = 0;
-      localizedCopies.forEach((activeCopy) => {
-        localizedCopies.forEach((copy) => { copy.style.display = copy === activeCopy ? (panel === zApply ? 'flex' : 'block') : 'none'; });
-        panelHeight = Math.max(panelHeight, Math.ceil(panel.scrollHeight));
-      });
-      localizedCopies.forEach((copy, copyIndex) => { copy.style.display = originalDisplays[copyIndex]; });
-      panel.setAttribute('data-s-z-natural-height', `${panelHeight}`);
-      if (panelHeight > largestContentHeight) {
-        largestContentHeight = panelHeight;
-        largestPanelIndex = index;
-      }
-      panel.classList.remove('is-z-measuring-panel');
-    });
-    zSecondaryNav.classList.remove('is-z-measuring');
-    zSecondaryNav.setAttribute('data-s-z-largest-panel', ['Description', 'Requirements', 'Rewards', 'Apply'][largestPanelIndex]);
-    zSecondaryNav.setAttribute('data-s-z-largest-content-height', `${largestContentHeight}`);
-    const boxStyle = getComputedStyle(zSecondaryNav);
-    const boxChromeHeight = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth']
-      .reduce((total, property) => total + (Number.parseFloat(boxStyle[property]) || 0), 0);
-    const boxRowGap = Number.parseFloat(boxStyle.rowGap) || 0;
-    const contentBoxHeight = Math.ceil((zSecondaryNavRail.offsetHeight || 36) + boxRowGap + largestContentHeight + boxChromeHeight);
-    zSecondaryNav.style.setProperty('--s-z-content-box-height', `${contentBoxHeight}px`);
-
-  };
-
-  // The Description title is the concrete inner-text boundary of the unified
-  // box. Reuse its live border-box geometry instead of approximating an inset.
-  const syncZUnifiedTextAlignment = () => {
-    if (!isZPage) return;
-    const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-    const source = zDescription.querySelector(`.s-page__z-description-copy[lang="${language}"] h2`);
-    if (!source) return;
-    const sourceRect = source.getBoundingClientRect();
-    const firstGroupRect = firstGroup.getBoundingClientRect();
-    const imageRect = zHeroImage.getBoundingClientRect();
-    if (!sourceRect.width || !firstGroupRect.width || !imageRect.width) return;
-    const isRtl = language === 'ar';
-    const firstOffset = isRtl
-      ? firstGroupRect.right - sourceRect.right
-      : sourceRect.left - firstGroupRect.left;
-    const imageOffset = isRtl
-      ? imageRect.right - sourceRect.right
-      : sourceRect.left - imageRect.left;
-    firstGroup.style.setProperty('--s-z-content-text-width', `${sourceRect.width.toFixed(3)}px`);
-    firstGroup.style.setProperty('--s-z-content-text-inline-offset', `${firstOffset.toFixed(3)}px`);
-    imageCopy.style.setProperty('--s-z-content-text-width', `${sourceRect.width.toFixed(3)}px`);
-    imageCopy.style.setProperty('--s-z-content-text-inline-offset', `${imageOffset.toFixed(3)}px`);
-    firstGroup.setAttribute('data-s-z-content-text-left', sourceRect.left.toFixed(3));
-    firstGroup.setAttribute('data-s-z-content-text-right', sourceRect.right.toFixed(3));
-    imageCopy.setAttribute('data-s-z-content-text-left', sourceRect.left.toFixed(3));
-    imageCopy.setAttribute('data-s-z-content-text-right', sourceRect.right.toFixed(3));
-  };
-
-  const syncZStateOneCompositionGeometry = () => {
-    if (!isZPage || zSectionOneLocked) return;
-    if (zSectionOneCompositionReady && window.scrollY > .5) return;
-    const x = composer.getBoundingClientRect().left || 18;
-    const imageRect = zHeroImage.getBoundingClientRect();
-    // Remove the dormant 6px entrance transform before measuring the box.
-    // Otherwise its transformed rect makes the State 1 gap six pixels short.
-    zSecondaryNav.classList.add('is-z-transition-ready');
-    const boxRect = zSecondaryNav.getBoundingClientRect();
-    const desiredBoxTop = imageRect.bottom + x;
-    const resolvedTop = zSecondaryNav.offsetTop + desiredBoxTop - boxRect.top;
-    zSecondaryNav.style.setProperty('--s-z-secondary-nav-state-one-top', `${resolvedTop.toFixed(3)}px`);
-
-    const positionedBoxRect = zSecondaryNav.getBoundingClientRect();
-    zSectionOneOriginalImageBottom = imageRect.bottom + window.scrollY;
-    zSectionOneStateOneImageBottom = imageRect.bottom;
-    zSectionOneContentBoxHeight = positionedBoxRect.height;
-    // The rendered State 1 geometry is the only movement authority. The page's
-    // dynamic viewport-sized scroll surface below makes this exact distance the
-    // native scroll maximum, including while mobile browser chrome changes.
-    const measuredTravel = positionedBoxRect.bottom - imageRect.bottom;
-    zSectionOneTransitionDistance = Math.max(1, Math.round(measuredTravel));
-    page.style.setProperty('--s-z-transition-distance', `${zSectionOneTransitionDistance}px`);
-    zSectionOneCompositionReady = true;
-    firstGroup.setAttribute('data-s-z-state-one-text-image-gap', (imageRect.top - firstGroup.querySelector('.s-page__group-description').getBoundingClientRect().bottom).toFixed(3));
-    firstGroup.setAttribute('data-s-z-state-one-image-box-gap', (positionedBoxRect.top - imageRect.bottom).toFixed(3));
-    firstGroup.setAttribute('data-s-z-original-image-baseline', zSectionOneOriginalImageBottom.toFixed(3));
-    firstGroup.setAttribute('data-s-z-state-one-image-bottom', zSectionOneStateOneImageBottom.toFixed(3));
-    syncZActiveContent(true);
-  };
-
-  const resetZSecondaryNavAlignment = () => {
-    if (!isZPage) return;
-    if (zSecondaryNavAlignmentFrame) window.cancelAnimationFrame(zSecondaryNavAlignmentFrame);
-    zSecondaryNavAlignmentFrame = window.requestAnimationFrame(() => {
-      zSecondaryNavAlignmentFrame = 0;
-      syncZContentBoxHorizontalGeometry();
-      syncZContentBoxHeight();
-      syncZStateOneCompositionGeometry();
-      syncZUnifiedTextAlignment();
-      syncZApplyButtonGeometry();
-    });
-  };
-
-  const syncZActiveContent = (attached = zSectionOneLocked) => {
-    if (!isZPage) return;
-    if (zContentRevealFrame) window.cancelAnimationFrame(zContentRevealFrame);
-    if (zContentTransitionTimer) window.clearTimeout(zContentTransitionTimer);
-    zContentRevealFrame = 0;
-    zContentTransitionTimer = 0;
-    const outgoingIndex = zPanels.findIndex((panel, index) => panel.classList.contains(zPanelClasses[index][0]) && panel.classList.contains(zPanelClasses[index][1]));
-    zPanels.forEach((panel) => panel.classList.remove('is-z-panel-exiting'));
-    if (!attached || ![0, 1, 2, 3].includes(zActiveContentIndex)) {
-      zPanels.forEach((panel, index) => panel.classList.remove(...zPanelClasses[index]));
-      return;
-    }
-    const target = zPanels[zActiveContentIndex];
-    const [attachedClass, revealedClass] = zPanelClasses[zActiveContentIndex];
-    const revealTarget = () => {
-      zPanels.forEach((panel, index) => panel.classList.remove(...zPanelClasses[index]));
-      target.classList.add(attachedClass);
-      if (target === zDescription) syncZApplyButtonGeometry();
-      zContentRevealFrame = window.requestAnimationFrame(() => {
-        zContentRevealFrame = 0;
-        if (!zSecondaryNav.classList.contains('is-z-transition-ready') || zPanels[zActiveContentIndex] !== target) return;
-        target.classList.add(revealedClass);
-        if (target === zDescription) {
-          syncZApplyButtonGeometry();
-          // The reveal class changes opacity/transform on this frame. Re-run
-          // once after styles have committed so the final text edge is used.
-          window.requestAnimationFrame(() => syncZApplyButtonGeometry());
-        }
-      });
-    };
-    if (outgoingIndex !== -1 && zPanels[outgoingIndex] !== target) {
-      const outgoing = zPanels[outgoingIndex];
-      outgoing.classList.remove(zPanelClasses[outgoingIndex][1]);
-      outgoing.classList.add('is-z-panel-exiting');
-      zContentTransitionTimer = window.setTimeout(() => {
-        zContentTransitionTimer = 0;
-        outgoing.classList.remove('is-z-panel-exiting');
-        revealTarget();
-      }, 180);
-      return;
-    }
-    revealTarget();
-  };
-
-  const pulsePageSurface = (element) => {
-    if (!element) return;
-    const pendingFrame = secondaryNavPulseFrames.get(element);
-    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
-    element.classList.remove('is-pulsing');
-    const frame = window.requestAnimationFrame(() => {
-      secondaryNavPulseFrames.delete(element);
-      element.classList.add('is-pulsing');
-    });
-    secondaryNavPulseFrames.set(element, frame);
-  };
 
   const createZFaceController = () => {
     const face = addButton.querySelector(isZPage ? '[data-s-z-face]' : '[data-s-x-face]');
@@ -678,92 +455,6 @@
     return { begin, move, end, setApply, rejectApply };
   };
 
-  zFaceController = createZFaceController();
-
-  if (isZPage) {
-    let heroTapStart = null;
-    const pulseZHero = () => {
-      pulsePageSurface(zHeroImage);
-    };
-    zHeroImage.addEventListener('pointerdown', (event) => {
-      if (event.pointerType === 'mouse' && event.button !== 0) return;
-      heroTapStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
-    }, { passive: true });
-    zHeroImage.addEventListener('pointerup', (event) => {
-      if (!heroTapStart || event.pointerId !== heroTapStart.pointerId) return;
-      const moved = Math.hypot(event.clientX - heroTapStart.x, event.clientY - heroTapStart.y);
-      heroTapStart = null;
-      if (moved <= 8) pulseZHero();
-    }, { passive: true });
-    zHeroImage.addEventListener('pointercancel', () => { heroTapStart = null; }, { passive: true });
-    zHeroImage.addEventListener('animationend', (event) => {
-      if (event.animationName === 's-page-composer-pulse') zHeroImage.classList.remove('is-pulsing');
-    });
-    let swipeStart = null;
-    let zLastHorizontalSwipeAt = -Infinity;
-    const suppressSwipeClick = () => { zLastHorizontalSwipeAt = performance.now(); };
-    const consumeSwipeClickSuppression = () => (
-      performance.now() - zLastHorizontalSwipeAt < 250
-    );
-    const setZActiveSection = (index) => {
-      zActiveContentIndex = (index + zSecondaryNavItems.length) % zSecondaryNavItems.length;
-      zSecondaryNavItems.forEach((item, itemIndex) => {
-        const active = itemIndex === zActiveContentIndex;
-        item.classList.toggle('is-active', active);
-        item.setAttribute('aria-pressed', String(active));
-      });
-      syncZActiveContent(zSecondaryNav.classList.contains('is-z-transition-ready'));
-      syncZApplyButtonGeometry();
-      zFaceController?.setApply(zActiveContentIndex === 3);
-    };
-    const beginSwipe = (event) => {
-      if (event.pointerType === 'mouse' && event.button !== 0) return;
-      swipeStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
-    };
-    const finishSwipe = (event) => {
-      if (!swipeStart || event.pointerId !== swipeStart.pointerId) return;
-      const deltaX = event.clientX - swipeStart.x;
-      const deltaY = event.clientY - swipeStart.y;
-      swipeStart = null;
-      if (Math.abs(deltaX) < 36 || Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
-      suppressSwipeClick();
-      const movesForward = document.documentElement.dir === 'rtl' ? deltaX > 0 : deltaX < 0;
-      setZActiveSection(zActiveContentIndex + (movesForward ? 1 : -1));
-      pulsePageSurface(zSecondaryNav);
-    };
-    [zSecondaryNavRail, zContentSlot].forEach((target) => {
-      target.addEventListener('pointerdown', beginSwipe, { passive: true });
-      target.addEventListener('pointerup', finishSwipe, { passive: true });
-      target.addEventListener('pointercancel', () => { swipeStart = null; }, { passive: true });
-    });
-    zSecondaryNavItems.forEach((item, index) => {
-      item.addEventListener('click', () => {
-        if (consumeSwipeClickSuppression()) return;
-        setZActiveSection(index);
-        pulsePageSurface(zSecondaryNav);
-      });
-    });
-    [[zSecondaryNavPrevious, -1], [zSecondaryNavNext, 1]].forEach(([button, step]) => {
-      button?.addEventListener('click', () => {
-        if (consumeSwipeClickSuppression()) return;
-        setZActiveSection(zActiveContentIndex + step);
-        pulsePageSurface(zSecondaryNav);
-      });
-    });
-    zApplyButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        if (consumeSwipeClickSuppression()) return;
-        pulsePageSurface(zSecondaryNav);
-        const destination = button.getAttribute('data-s-z-apply-destination');
-        if (destination) window.setTimeout(() => { window.location.assign(destination); }, 180);
-      });
-    });
-    zSecondaryNav.addEventListener('animationend', (event) => {
-      if (event.animationName === 's-page-composer-menu-pulse') zSecondaryNav.classList.remove('is-pulsing');
-    });
-    resetZSecondaryNavAlignment();
-  }
-
   const updateComposerInputLanguage = () => {
     const hasTypedText = input.value.trim().length > 0;
     const language = hasTypedText
@@ -792,7 +483,6 @@
     sendLanguageUtility.setAttribute('aria-pressed', String(language === 'en'));
     sendLanguageUtility.setAttribute('aria-label', language === 'en' ? copy.utilities.switchToArabic : copy.utilities.switchToEnglish);
     applyPageCopy?.(language);
-    resetZSecondaryNavAlignment();
     updateComposerInputLanguage();
     updateThemeToggleLabel();
     if (persist && isZPage) {
@@ -1203,7 +893,7 @@
 
   // Each composition keeps its first Text Group untouched; only its final item gains free space.
   const portraitSectionCompositions = [
-    { first: firstGroup, last: isZPage ? zHeroImage : logoParticleField, type: 'anchored' },
+    { first: firstGroup, last: logoParticleField, type: 'anchored' },
     { first: document.querySelector('[data-s-copy-group="3"]'), last: document.querySelector('.s-page__flow-group--strips') },
     { first: document.querySelector('[data-s-copy-group="4"]'), last: document.querySelector('.s-page__flow-group--logos') },
     { first: document.querySelector('.s-page__flow-group--consultation'), last: document.querySelector('.s-page__flow-group--section-7-action') || consultationCta }
@@ -1272,188 +962,12 @@
     finalScrollBufferFrame = window.requestAnimationFrame(syncFinalScrollBuffer);
   };
 
-  const syncZFirstGroupTextGap = () => {
-    if (!isZPage) return;
-    const title = firstGroup.querySelector('.s-page__group-title');
-    const description = firstGroup.querySelector('.s-page__group-description');
-    if (!title || !description || !zHeroImage) return;
-    const imageRect = zHeroImage.getBoundingClientRect();
-    const titleRect = title.getBoundingClientRect();
-    const descriptionRect = description.getBoundingClientRect();
-    const x = composer.getBoundingClientRect().left || 18;
-    const currentShift = Number.parseFloat(firstGroup.style.getPropertyValue('--s-z-first-group-shift')) || 0;
-    const naturalDescriptionBottom = descriptionRect.bottom - currentShift;
-    const shift = imageRect.top - naturalDescriptionBottom - x;
-    if (!firstGroup.hasAttribute('data-s-z-original-y')) {
-      firstGroup.setAttribute('data-s-z-original-y', (titleRect.top - currentShift).toFixed(3));
-    }
-    firstGroup.style.setProperty('--s-z-first-group-shift', `${shift.toFixed(3)}px`);
-    firstGroup.setAttribute('data-s-z-final-y', (titleRect.top + shift).toFixed(3));
-    firstGroup.setAttribute('data-s-z-text-image-gap', x.toFixed(3));
-  };
-
-  // /z uses one normalized progress value for its two-state composition. The
-  // travel equals the box height plus X, so the box's final bottom edge lands
-  // exactly on the image's original first-view baseline.
-  const syncZSectionOneScroll = () => {
-    zSectionOneScrollFrame = 0;
-    if (!isZPage || !zHeroImage) return;
-
-    const scrollY = window.scrollY;
-    if (!zSectionOneCompositionReady) {
-      syncZContentBoxHorizontalGeometry();
-      syncZContentBoxHeight();
-      syncZStateOneCompositionGeometry();
-      syncZApplyButtonGeometry();
-    }
-    if (!zSectionOneCompositionReady || zSectionOneTransitionDistance <= 0) return;
-
-    const rawProgress = Math.min(1, Math.max(0, scrollY / zSectionOneTransitionDistance));
-    const nativeScrollLimit = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-    const reachableEndpoint = Math.min(zSectionOneTransitionDistance, nativeScrollLimit);
-    const hasReachedEndpoint = nativeScrollLimit > zEndpointCaptureTolerancePx
-      && scrollY >= reachableEndpoint - zEndpointCaptureTolerancePx;
-    let progress = rawProgress;
-    if (zSectionOneLocked) {
-      progress = 1;
-      const hasMovedAwayFromEndpoint = scrollY <= zEndpointLockScrollY - zEndpointReverseIntentDistancePx;
-      if (zEndpointReverseIntent && hasMovedAwayFromEndpoint) {
-        zSectionOneLocked = false;
-        zEndpointReverseIntent = false;
-        progress = rawProgress;
-        zFaceController?.rejectApply();
-      }
-    } else if (hasReachedEndpoint) {
-      zSectionOneLocked = true;
-      zEndpointLockScrollY = scrollY;
-      zEndpointReverseIntent = false;
-      progress = 1;
-      zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
-    }
-    const remainingBlur = (1 - progress) * 12;
-    firstGroup.style.setProperty('--s-z-first-group-scroll-progress', progress.toFixed(4));
-    zSecondaryNav.style.setProperty('--s-z-composition-progress', progress.toFixed(4));
-    zSecondaryNav.style.setProperty('--s-z-content-blur', `${remainingBlur.toFixed(3)}px`);
-    zSecondaryNav.classList.toggle('is-z-content-interactive', progress > .05);
-
-    firstGroup.setAttribute('data-s-z-text-scroll-progress', progress.toFixed(4));
-    zSecondaryNav.setAttribute('data-s-z-composition-progress', progress.toFixed(4));
-  };
-
-  const scheduleZSectionOneScroll = () => {
-    if (!isZPage || zSectionOneScrollFrame) return;
-    zSectionOneScrollFrame = window.requestAnimationFrame(syncZSectionOneScroll);
-  };
-
-  const beginZEndpointGesture = (pointerId, clientY) => {
-    if (!isZPage || !zSectionOneLocked) return;
-    zEndpointPointerId = pointerId;
-    zEndpointPointerStartY = clientY;
-    zEndpointReverseIntent = false;
-  };
-
-  const updateZEndpointGesture = (pointerId, clientY) => {
-    if (!zSectionOneLocked || pointerId !== zEndpointPointerId) return;
-    zEndpointReverseIntent = clientY - zEndpointPointerStartY >= zEndpointReverseIntentDistancePx;
-  };
-
-  const endZEndpointGesture = (pointerId) => {
-    if (pointerId !== zEndpointPointerId) return;
-    if (zEndpointReverseIntent && zSectionOneLocked) syncZSectionOneScroll();
-    zEndpointPointerId = null;
-    zEndpointPointerStartY = 0;
-    zEndpointReverseIntent = false;
-  };
-
-  const cancelZReleaseSettle = ({ stopNativeScroll = false } = {}) => {
-    if (zReleaseSettleTimer) window.clearTimeout(zReleaseSettleTimer);
-    if (zReleaseSettleFrame) window.cancelAnimationFrame(zReleaseSettleFrame);
-    const wasSettling = zReleaseSettleTarget !== null;
-    zReleaseSettleTimer = 0;
-    zReleaseSettleFrame = 0;
-    zReleaseSettleTarget = null;
-    zReleaseSettleLastScrollY = 0;
-    zReleaseSettleStableFrames = 0;
-    zReleaseSettleStartedAt = 0;
-    if (stopNativeScroll && wasSettling) {
-      window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
-    }
-  };
-
-  const watchZReleaseSettle = () => {
-    zReleaseSettleFrame = 0;
-    if (zReleaseSettleTarget === null) return;
-    const target = zReleaseSettleTarget;
-    const scrollY = window.scrollY;
-    if (Math.abs(scrollY - zReleaseSettleLastScrollY) <= .01) {
-      zReleaseSettleStableFrames += 1;
-    } else {
-      zReleaseSettleStableFrames = 0;
-    }
-    zReleaseSettleLastScrollY = scrollY;
-    const reachedTarget = Math.abs(scrollY - target) <= zEndpointCaptureTolerancePx;
-    const stoppedAtNativeLimit = zReleaseSettleStableFrames >= 3
-      && performance.now() - zReleaseSettleStartedAt >= zReleaseSettleStartGraceMs;
-    if (reachedTarget || stoppedAtNativeLimit) {
-      if (target > 0) {
-        if (!zSectionOneLocked) {
-          zSectionOneLocked = true;
-          zEndpointLockScrollY = scrollY;
-          zEndpointReverseIntent = false;
-          zSecondaryNav.setAttribute('data-s-z-final-content-baseline', zSectionOneStateOneImageBottom.toFixed(3));
-        }
-      } else if (scrollY > zEndpointCaptureTolerancePx) {
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-      }
-      zReleaseSettleTarget = null;
-      zReleaseSettleStableFrames = 0;
-      zReleaseSettleStartedAt = 0;
-      syncZSectionOneScroll();
-      return;
-    }
-    zReleaseSettleFrame = window.requestAnimationFrame(watchZReleaseSettle);
-  };
-
-  const scheduleZReleaseSettle = () => {
-    if (
-      !isZPage
-      || zReleasePointerActive
-      || zReleaseSettleTarget !== null
-      || !zSectionOneCompositionReady
-      || zSectionOneLocked
-    ) return;
-    if (zReleaseSettleTimer) window.clearTimeout(zReleaseSettleTimer);
-    zReleaseSettleTimer = window.setTimeout(() => {
-      zReleaseSettleTimer = 0;
-      if (zReleasePointerActive || zReleaseSettleTarget !== null || zSectionOneLocked) return;
-      const target = window.scrollY < zSectionOneTransitionDistance / 2
-        ? 0
-        : zSectionOneTransitionDistance;
-      if (Math.abs(window.scrollY - target) <= zEndpointCaptureTolerancePx) {
-        if (target > 0) syncZSectionOneScroll();
-        return;
-      }
-      zReleaseSettleTarget = target;
-      zReleaseSettleLastScrollY = window.scrollY;
-      zReleaseSettleStableFrames = 0;
-      zReleaseSettleStartedAt = performance.now();
-      window.scrollTo({
-        top: target,
-        left: 0,
-        behavior: reducedMotion.matches ? 'auto' : 'smooth'
-      });
-      zReleaseSettleFrame = window.requestAnimationFrame(watchZReleaseSettle);
-    }, zReleaseSettleDelayMs);
-  };
-
   const syncPortraitSectionLayout = () => {
     portraitSectionLayoutFrame = 0;
     const isPortrait = window.matchMedia('(orientation: portrait)').matches;
     if (!isPortrait) {
       syncConversationInputBounds();
       resetPortraitSectionLayout();
-      syncZFirstGroupTextGap();
-      scheduleZSectionOneScroll();
       scheduleFlowSync();
       scheduleFirstGroupBaseline();
       return;
@@ -1502,10 +1016,8 @@
       majorSection.style.removeProperty('height');
       majorSection.removeAttribute('data-s-portrait-overflow');
       if (type === 'anchored') {
-        if (!(isZPage && zSectionOneLocked && last === zHeroImage)) {
-          last.style.setProperty('bottom', `${firstHeight - desiredRelativeBottom}px`);
-          last.classList.add('is-portrait-composed');
-        }
+        last.style.setProperty('bottom', `${firstHeight - desiredRelativeBottom}px`);
+        last.classList.add('is-portrait-composed');
       } else {
         last.style.setProperty('--s-portrait-bottom-up-offset', `${desiredRelativeBottom - naturalRelativeBottom}px`);
         last.classList.add('is-portrait-bottom-up');
@@ -1518,9 +1030,7 @@
       if (first === firstGroup) first.setAttribute('data-s-portrait-live-gap', '0.000');
     });
 
-    syncZFirstGroupTextGap();
     scheduleFinalScrollBuffer();
-    scheduleZSectionOneScroll();
     scheduleFlowSync();
     scheduleFirstGroupBaseline();
   };
@@ -1718,13 +1228,6 @@
     lastFlowScrollY = nextScrollY;
     lastFlowScrollTime = now;
     pauseLogoParticleForScroll();
-    if (isZPage) {
-      // Scroll can dispatch several times before the next paint. One write pass
-      // per frame keeps opacity/filter updates in lockstep with the rendered
-      // scroll position instead of repeatedly invalidating the same frame.
-      scheduleZSectionOneScroll();
-      scheduleZReleaseSettle();
-    }
     if (portraitSectionLayoutTimer) scheduleStablePortraitSectionLayout();
     scheduleFlowSync();
   };
@@ -1912,7 +1415,7 @@
       if (!englishGroup || !arabicGroup) return;
       elements.forEach((element, elementIndex) => {
         element.style.height = '';
-        if (!isZPage && groupIndex === 0 && elementIndex === 0 && firstTypewriterTitle) return;
+        if (groupIndex === 0 && elementIndex === 0 && firstTypewriterTitle) return;
         const height = Math.max(
           measureLocalizedTextHeight(element, englishGroup[elementIndex], 'en'),
           measureLocalizedTextHeight(element, arabicGroup[elementIndex], 'ar')
@@ -1941,13 +1444,7 @@
       });
     });
     startFirstTypewriter();
-    const menuCopy = isZPage ? zMainMenuCopy[language] : copy.menu;
-    menuLabels.forEach((label, index) => { label.textContent = menuCopy[index]; });
-    if (zSecondaryNav) {
-      zSecondaryNav.setAttribute('aria-label', language === 'ar' ? 'التنقل بين الأقسام' : 'Section navigation');
-      zSecondaryNavPrevious?.setAttribute('aria-label', language === 'ar' ? 'القسم السابق' : 'Previous section');
-      zSecondaryNavNext?.setAttribute('aria-label', language === 'ar' ? 'القسم التالي' : 'Next section');
-    }
+    menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });
     if (consultationCta) {
       consultationCta.textContent = copy.consultationCta;
       consultationCta.lang = language;
@@ -2285,11 +1782,6 @@
 
   document.addEventListener('pointerdown', (event) => {
     beginMajorSectionInteraction();
-    if (event.pointerType !== 'touch') beginZEndpointGesture(event.pointerId, event.clientY);
-    if (isZPage) {
-      zReleasePointerActive = true;
-      cancelZReleaseSettle({ stopNativeScroll: true });
-    }
     zFaceController?.begin(event);
   }, { capture: true, passive: true });
   document.addEventListener('touchstart', (event) => {
@@ -2299,10 +1791,8 @@
       if (touch) discreteSectionTouch = { id: touch.identifier, y: touch.clientY, moved: false };
     }
     const touch = event.changedTouches[0];
-    if (touch) beginZEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
   }, { capture: true, passive: true });
   document.addEventListener('pointermove', (event) => {
-    if (event.pointerType !== 'touch') updateZEndpointGesture(event.pointerId, event.clientY);
     zFaceController?.move(event);
     if (event.pointerType === 'touch' || event.buttons !== 0) beginMajorSectionInteraction();
   }, { capture: true, passive: true });
@@ -2313,17 +1803,12 @@
       discreteSectionTouch.moved = true;
       event.preventDefault();
     }
-    const touch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
-    if (touch) updateZEndpointGesture(`touch:${touch.identifier}`, touch.clientY);
   }, { capture: true, passive: false });
   ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
     document.addEventListener(eventName, (event) => {
       endMajorSectionInteraction();
       if (eventName.startsWith('pointer')) {
         if (event.pointerType !== 'touch') {
-          endZEndpointGesture(event.pointerId);
-          zReleasePointerActive = false;
-          scheduleZReleaseSettle();
         }
         zFaceController?.end(event, eventName === 'pointercancel');
       } else {
@@ -2333,12 +1818,6 @@
           if (Math.abs(deltaY) >= 36) transitionMajorSection(deltaY < 0 ? 1 : -1);
         }
         if (touch) discreteSectionTouch = null;
-        const zTouch = Array.from(event.changedTouches).find((item) => `touch:${item.identifier}` === zEndpointPointerId);
-        if (zTouch) endZEndpointGesture(`touch:${zTouch.identifier}`);
-        if (isZPage && zReleasePointerActive) {
-          zReleasePointerActive = false;
-          scheduleZReleaseSettle();
-        }
       }
     }, { passive: true });
   });
@@ -2539,7 +2018,6 @@
         sectionTwoBaselineCorrectionLocked = false;
       }
       scheduleLocalizedGeometry();
-      resetZSecondaryNavAlignment();
     } else if (!window.visualViewport) {
       // Desktop height-only resizing is a genuine viewport resize. On mobile,
       // height-only changes are browser chrome motion and must not reposition a
@@ -2558,7 +2036,6 @@
       sectionTwoBaselineCorrectionLocked = false;
     }
     scheduleLocalizedGeometry();
-    resetZSecondaryNavAlignment();
     scheduleKeyboardOffset();
   }, { passive: true });
 
