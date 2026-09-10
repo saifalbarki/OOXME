@@ -691,9 +691,22 @@ body.s-page:not(.s-page--rpn) .s-page__section-4-metric-box {
   backdrop-filter: none;
 }
 
+/* Main-only Store material mapping. These values mirror the current Store
+   product-card surface without changing the metrics' geometry or behavior. */
+body.s-page.s-page--main .s-page__section-4-metric-box {
+  background: rgba(255, 255, 255, .12);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(120%);
+}
+
 html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-4-metric-box {
   background: #F5F5F3;
   color: #000000;
+}
+
+html.s-route.is-day-mode body.s-page.s-page--main .s-page__section-4-metric-box {
+  background: rgba(255, 255, 255, .48);
 }
 
 body.s-page:not(.s-page--rpn) .s-page__section-4-metric-copy {
@@ -926,6 +939,31 @@ html.s-route.is-day-mode .s-page__number-metric-label {
   height: 100%;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+/* Section 1's aurora is an overlay only. Its frame is sized from the live
+   Section 2 image frame, so it cannot participate in Section 1 flow geometry. */
+.s-page__aurora-frame {
+  position: absolute;
+  z-index: 0;
+  top: auto;
+  left: var(--s-aurora-left, 0px);
+  width: var(--s-aurora-width, 0px);
+  height: var(--s-aurora-height, 0px);
+  bottom: var(--s-aurora-bottom, 0px);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--s-composer-radius);
+  background: transparent;
+  clip-path: inset(0 round var(--s-composer-radius));
+  pointer-events: none;
+}
+
+.s-page__aurora-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: .72;
 }
 
 @media (orientation: portrait) {
@@ -1507,6 +1545,19 @@ body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-
   animation: none !important;
 }
 
+body.s-page--main .s-page__major-section--section-6 .s-page__square-logo-stage {
+  border: 1px solid var(--s-glass-stroke);
+  border-radius: var(--s-composer-radius);
+  background: rgba(255, 255, 255, .12);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(120%);
+}
+
+html.s-route.is-day-mode body.s-page--main .s-page__major-section--section-6 .s-page__square-logo-stage {
+  background: rgba(255, 255, 255, .48);
+}
+
 body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-stage::before {
   position: absolute;
   z-index: 0;
@@ -1730,6 +1781,24 @@ body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
   block-size: var(--s-x-closed-notice-height);
   min-block-size: var(--s-x-closed-notice-height);
   padding-block: 0;
+}
+
+body.s-page--main .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  background: rgba(255, 255, 255, .12);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  font: 500 12px/1 OOXMEScript, Arial, sans-serif;
+  letter-spacing: normal;
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(120%);
+  transition: background-color .18s ease, transform .18s ease, opacity .18s ease;
+}
+
+body.s-page--main .s-page__flow-group--section-7-action .s-page__consultation-cta:active {
+  transform: scale(.96);
+}
+
+html.s-route.is-day-mode body.s-page--main .s-page__flow-group--section-7-action .s-page__consultation-cta {
+  background: rgba(255, 255, 255, .48);
 }
 
 html[lang="ar"] body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
@@ -3050,6 +3119,60 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .
 
 html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__group-description {
   color: #666666;
+}
+
+/* Store typography roles mapped to the equivalent Main content roles. Main's
+   large image/hero scale remains intact; family, weight, rhythm, and secondary
+   color now follow the current Store hierarchy. */
+body.s-page.s-page--main :is(.s-page__group--section-4, .s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-title {
+  color: #FFFFFF;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+}
+
+body.s-page.s-page--main :is(.s-page__group--section-4, .s-page__flow-group--section-5-text, .s-page__flow-group--section-6-text, .s-page__flow-group--section-7-text) .s-page__group-description {
+  color: rgba(255, 255, 255, .58);
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.35;
+}
+
+body.s-page.s-page--main :is(.s-page__section-2-image-frame--shared-overlay, .s-page__section-3-image-frame) .s-page__image-copy-main {
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+
+body.s-page.s-page--main :is(.s-page__section-2-image-frame--shared-overlay, .s-page__section-3-image-frame) .s-page__image-copy-supporting {
+  color: rgba(255, 255, 255, .58);
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.35;
+}
+
+body.s-page.s-page--main .s-page__section-4-metrics .s-page__number-metric-label {
+  color: rgba(255, 255, 255, .58);
+  font: 500 11px/1.25 OOXMEScript, Arial, sans-serif;
+  letter-spacing: normal;
+}
+
+html[lang="ar"] body.s-page--main :is(.s-page__group-title--statement, .s-page__group-description, .s-page__image-copy-main, .s-page__image-copy-supporting, .s-page__number-metric-label, .s-page__consultation-cta) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page--main :is(.s-page__group-title--statement, .s-page__image-copy-main) {
+  color: #111111;
+}
+
+html.s-route.is-day-mode body.s-page--main :is(.s-page__group-description, .s-page__image-copy-supporting, .s-page__number-metric-label) {
+  color: rgba(17, 17, 17, .58);
 }
 
 @media (orientation: landscape) {

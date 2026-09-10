@@ -2,11 +2,14 @@
 
 body.s-page--os, body.s-page--os * { font-family: OOXMEEnglish, Arial, sans-serif; }
 
-body.s-page--os { --s-os-card-width: min(100%, 420px); --s-os-surface: rgba(255,255,255,.12); --s-os-surface-strong: rgba(255,255,255,.16); --s-os-muted: rgba(255,255,255,.58); --s-os-green: #62d99a; --s-os-amber: #f4c76b; --s-os-red: #ff7f7f; --s-os-baseline-gap: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + 0.12px); }
+body.s-page--os { --s-os-card-limit: 340px; --s-os-card-width: min(76vw, var(--s-os-card-limit)); --s-os-card-padding:12px; --s-os-card-gap:calc(var(--s-os-card-padding) / 2); --s-os-surface: rgba(255,255,255,.12); --s-os-surface-strong: rgba(255,255,255,.16); --s-os-muted: rgba(255,255,255,.58); --s-os-green: #62d99a; --s-os-amber: #f4c76b; --s-os-red: #ff7f7f; --s-os-baseline-gap: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + 0.12px); }
 body.s-page--os .s-page__major-section, body.s-page--os .s-page__major-section > .s-page__group { height: 100dvh; min-height: 100dvh; max-height: 100dvh; }
-body.s-page--os .s-page__os-section { position: relative; display: grid; width: 100%; min-width: 0; padding: calc(var(--s-x) * 4) 0 var(--s-os-baseline-gap); overflow: clip; }
+body.s-page--os .s-page__os-section { position: relative; display: grid; grid-template-columns:minmax(0,1fr); width: 100%; min-width: 0; padding: calc(var(--s-x) * 4) 0 var(--s-os-baseline-gap); overflow: clip; }
 body.s-page--os .s-page__os-status-section { grid-template-columns:minmax(0,1fr); }
 body.s-page--os .s-page__os-layout { display: grid; align-content: end; justify-items: center; width: 100%; height: 100%; min-height: 0; padding-bottom:0; }
+body.s-page--os .s-page__os-layout > .s-page__os-section-nav { width:var(--s-os-card-width); justify-self:center; }
+body.s-page--os .s-page__os-status-section .s-page__os-layout > .s-page__os-section-nav,
+body.s-page--os [aria-label="Store Management"] .s-page__os-layout > .s-page__os-section-nav { width:100%; max-width:none; }
 body.s-page--os .s-page__os-layout > .s-page__os-card { align-self:end; }
 body.s-page--os .s-page__os-card { display: grid; gap: calc(var(--s-x) * 1.1); width: var(--s-os-card-width); padding: calc(var(--s-x) * 1.25); border: 1px solid var(--s-glass-stroke); border-radius: var(--s-composer-radius); background: var(--s-os-surface); box-shadow: 0 2px 7px rgba(0,0,0,.045),0 1px 1px rgba(0,0,0,.025); -webkit-backdrop-filter: blur(20px) saturate(120%); backdrop-filter: blur(20px) saturate(120%); overflow: visible; }
 body.s-page--os .s-page__os-status-section .s-page__os-card { width:100%; max-width:none; }
@@ -16,9 +19,27 @@ body.s-page--os .s-page__os-eyebrow { color: var(--s-os-muted); font: 500 11px/1
 body.s-page--os .s-page__os-title { color: #fff; font: 500 22px/1.1 OOXMEScript,Arial,sans-serif; }
 body.s-page--os .s-page__os-description { color: var(--s-os-muted); font: 500 12px/1.35 OOXMEScript,Arial,sans-serif; }
 body.s-page--os .s-page__os-footnote { color: var(--s-os-muted); font: 500 10px/1.35 OOXMEScript,Arial,sans-serif; }
-body.s-page--os .s-page__os-status-list, body.s-page--os .s-page__os-list { display: grid; gap: 8px; }
-body.s-page--os .s-page__os-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.s-page--os .s-page__os-status-list { display:grid; gap:8px; }
+body.s-page--os .s-page__os-list { display:block; }
+body.s-page--os :is(.s-page__os-status-list, [data-os-controls-list]) { overflow:hidden; }
+body.s-page--os :is([data-os-status-track], [data-os-controls-track]) { display:flex; width:100%; transition:transform .52s cubic-bezier(.22,.61,.36,1); will-change:transform; }
+body.s-page--os :is([data-os-status-track], [data-os-controls-track]) > * { flex:0 0 100%; min-width:100%; }
 body.s-page--os .s-page__os-status-row, body.s-page--os .s-page__os-item { display: grid; gap: 3px; padding: 11px 12px; border: 1px solid var(--s-glass-stroke); border-radius: 17px; background: rgba(255,255,255,.055); }
+body.s-page--os .s-page__os-booking-card { grid-column:1 / -1; display:grid; gap:10px; padding:0; border:0; border-radius:0; background:transparent; }
+body.s-page--os .s-page__os-booking-carousel { width:100%; min-width:0; }
+body.s-page--os .s-page__os-booking-viewport { width:100%; min-width:0; overflow:hidden; touch-action:pan-y; }
+body.s-page--os .s-page__os-booking-track { display:flex; align-items:flex-end; gap:var(--s-x); width:max-content; transition:transform .52s cubic-bezier(.22,.61,.36,1); will-change:transform; }
+body.s-page--os .s-page__os-booking-card { flex:0 0 calc(100% - (var(--s-x) * 1.15)); min-width:0; padding:12px; border:1px solid var(--s-glass-stroke); border-radius:17px; background:var(--s-os-surface); box-shadow:0 2px 7px rgba(0,0,0,.045),0 1px 1px rgba(0,0,0,.025); -webkit-backdrop-filter:blur(20px) saturate(120%); backdrop-filter:blur(20px) saturate(120%); }
+body.s-page--os .s-page__os-booking-heading { display:grid; gap:3px; }
+body.s-page--os .s-page__os-booking-details { display:grid; gap:7px; margin:0; }
+body.s-page--os .s-page__os-booking-details > div { display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding-bottom:7px; border-bottom:1px solid var(--s-glass-stroke); }
+body.s-page--os .s-page__os-booking-details > div:last-child { padding-bottom:0; border-bottom:0; }
+body.s-page--os .s-page__os-booking-details dt, body.s-page--os .s-page__os-booking-details dd { margin:0; font:500 10px/1.25 OOXMEScript,Arial,sans-serif; }
+body.s-page--os .s-page__os-booking-details dt { color:var(--s-os-muted); }
+body.s-page--os .s-page__os-booking-details dd { color:#fff; text-align:end; }
+body.s-page--os .s-page__os-booking-actions { display:grid; gap:7px; }
+body.s-page--os .s-page__os-booking-action { width:100%; min-height:36px; padding:0 8px; border:1px solid var(--s-glass-stroke); border-radius:12px; background:rgba(255,255,255,.1); color:#fff; font:500 11px/1 OOXMEEnglish,Arial,sans-serif; }
+body.s-page--os .s-page__os-booking-action.is-confirm { border-color:transparent; background:#0A84FF; }
 body.s-page--os .s-page__os-row-top, body.s-page--os .s-page__os-item-top { display:flex; align-items:center; justify-content:space-between; gap: 10px; }
 body.s-page--os .s-page__os-row-name, body.s-page--os .s-page__os-item-name { color:#fff; font:500 13px/1.2 OOXMEScript,Arial,sans-serif; }
 body.s-page--os .s-page__os-row-detail, body.s-page--os .s-page__os-item-detail { color:var(--s-os-muted); font:500 10px/1.3 OOXMEScript,Arial,sans-serif; }
@@ -67,8 +88,18 @@ body.s-page--os .s-page__store-carousel-arrow { display:grid; width:36px; height
 body.s-page--os .s-page__store-carousel-arrow:disabled { cursor:default; opacity:.3; }
 body.s-page--os .s-page__store-carousel-arrow svg { width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
 body.s-page--os .s-page__store-carousel-status { min-width:36px; color:var(--s-os-muted); font:500 11px/1 OOXMEScript,Arial,sans-serif; text-align:center; }
+body.s-page--os .s-page__os-section-nav { display:flex; align-items:center; justify-content:center; gap:calc(var(--s-x) * .75); margin-top:var(--s-x); direction:ltr; }
+body.s-page--os .s-page__os-section-nav button { position:relative; display:grid; width:36px; height:36px; padding:0; place-items:center; border:1px solid var(--s-glass-stroke); border-radius:50%; background:rgba(255,255,255,.11); color:#fff; font-size:0; line-height:0; cursor:pointer; transition:background-color .18s ease,opacity .18s ease; }
+body.s-page--os .s-page__os-section-nav button::before { position:absolute; inset:0; display:grid; place-items:center; font:400 22px/1 OOXMEEnglish,Arial,sans-serif; }
+body.s-page--os .s-page__os-section-nav button[data-os-nav-prev]::before { content:"‹"; }
+body.s-page--os .s-page__os-section-nav button[data-os-nav-next]::before { content:"›"; }
+body.s-page--os .s-page__os-section-nav button:disabled { cursor:default; opacity:.3; }
+body.s-page--os .s-page__os-section-nav > span { min-width:42px; color:var(--s-os-muted); font:500 11px/1 OOXMEScript,Arial,sans-serif; text-align:center; }
+body.s-page--os .s-page__os-store-management-card .s-page__os-section-nav { width:100%; }
 body.s-page--os .s-page__os-empty-product-card .s-page__os-add-mark { color:var(--s-os-muted); font:300 38px/1 OOXMEScript,Arial,sans-serif; }
 body.s-page--os .s-page__os-item { grid-template-columns: 1fr auto; align-items:center; }
+body.s-page--os .s-page__os-control-item { grid-template-columns:1fr auto; align-items:center; }
+body.s-page--os .s-page__os-control-item.is-disabled { opacity:.62; }
 body.s-page--os .s-page__os-product-item, body.s-page--os .s-page__os-config-item { grid-template-columns: 1fr; align-items:stretch; }
 body.s-page--os .s-page__os-product-card, body.s-page--os .s-page__os-choice-card { min-width:0; padding:8px; border:1px solid var(--s-glass-stroke); border-radius:17px; background:rgba(255,255,255,.055); }
 body.s-page--os .s-page__os-product-image { display:grid; height:52px; place-items:center; border:1px solid var(--s-glass-stroke); border-radius:12px; background:rgba(255,255,255,.045); color:var(--s-os-muted); font:500 9px/1 OOXMEScript,Arial,sans-serif; text-align:center; }
@@ -98,7 +129,10 @@ html.s-route.is-day-mode body.s-page--os :is(.s-page__os-title,.s-page__os-row-n
 html.s-route.is-day-mode body.s-page--os :is(.s-page__os-status-row,.s-page__os-item) { background:rgba(255,255,255,.32); }
 html.s-route.is-day-mode body.s-page--os .s-page__os-item-action { color:#111; background:rgba(255,255,255,.58); }
 html.s-route.is-day-mode body.s-page--os :is(.s-page__store-card-title,.s-page__store-price) { color:#111; }
+html.s-route.is-day-mode body.s-page--os .s-page__os-booking-details dd, html.s-route.is-day-mode body.s-page--os .s-page__os-booking-action { color:#111; }
+html.s-route.is-day-mode body.s-page--os .s-page__os-booking-action.is-confirm { color:#fff; }
 html.s-route.is-day-mode body.s-page--os :is(.s-page__store-action,.s-page__store-carousel-arrow) { background:rgba(255,255,255,.58); color:#111; }
+html.s-route.is-day-mode body.s-page--os .s-page__os-section-nav button { background:rgba(255,255,255,.58); color:#111; }
 html.s-route.is-day-mode body.s-page--os :is(input:not(.s-page__composer-input),textarea) { background:rgba(255,255,255,.44); color:#111; }
 html.s-route.is-day-mode body.s-page--os .s-page__store-product-card input, html.s-route.is-day-mode body.s-page--os .s-page__store-product-card textarea { background:rgba(255,255,255,.34); color:#111; }
 html.s-route.is-day-mode body.s-page--os .s-page__os-action-row button { color:#111; background:rgba(255,255,255,.58); }
@@ -107,7 +141,7 @@ html.s-route.is-day-mode body.s-page--os .s-page__os-action-row button { color:#
 
 /* Section 2 keeps the shared first-group baseline and uses the Store card
    geometry for the image, management fields, and actions. */
-body.s-page--os .s-page__store-product-card { grid-template-rows:165px minmax(0,1fr); height:min(460px, calc(100dvh - 164px)); min-height:380px; }
+body.s-page--os .s-page__store-product-card { grid-template-rows:165px minmax(0,1fr); height:min(420px, calc(100dvh - 164px)); min-height:380px; }
 body.s-page--os .s-page__store-image-placeholder { position:relative; overflow:hidden; }
 body.s-page--os .s-page__os-product-image { width:100%; height:100%; object-fit:cover; border:0; border-radius:inherit; }
 body.s-page--os .s-page__os-status-dot { position:absolute; inset-block-start:10px; inset-inline-end:10px; z-index:2; width:8px; height:8px; border-radius:50%; background:var(--s-os-green); box-shadow:0 0 0 3px rgba(0,0,0,.22); }
@@ -132,3 +166,190 @@ body.s-page--os .s-page__os-empty-product-card .s-page__os-action-row [data-os-e
 body.s-page--os .s-page__os-empty-product-card.is-editing .s-page__os-action-row [data-os-edit-product]::after { content:"Save"; }
 body.s-page--os .s-page__os-empty-product-card .s-page__os-action-row [data-os-edit-product] { background:#0A84FF; border-color:transparent; }
 body.s-page--os .s-page__os-empty-product-card.is-editing .s-page__os-action-row [data-os-edit-product] { background:rgba(255,255,255,.1); border-color:var(--s-glass-stroke); }
+
+/* Unified OS item-carousel geometry: every active item uses the Store card width
+   and the shared Main-derived section baseline defined by --s-os-baseline-gap. */
+body.s-page--os .s-page__os-card { width:100%; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; }
+body.s-page--os .s-page__os-layout > .s-page__os-card { align-self:auto; }
+body.s-page--os .s-page__os-status-section .s-page__os-card { width:100%; max-width:none; }
+body.s-page--os .s-page__os-heading { width:var(--s-os-card-width); margin-inline:auto; }
+body.s-page--os .s-page__store-carousel,
+body.s-page--os .s-page__os-status-list,
+body.s-page--os [data-os-controls-list],
+body.s-page--os [data-os-consultation-list] { width:100%; margin-inline:auto; overflow:hidden; }
+body.s-page--os :is([data-os-controls-list], [data-os-consultation-list]) { display:block; }
+body.s-page--os .s-page__store-carousel-viewport,
+body.s-page--os .s-page__os-booking-viewport { width:100%; }
+body.s-page--os .s-page__store-carousel-track,
+body.s-page--os [data-os-status-track],
+body.s-page--os [data-os-controls-track],
+body.s-page--os .s-page__os-booking-track { gap:var(--s-x); align-items:flex-end; }
+body.s-page--os .s-page__store-product-card,
+body.s-page--os [data-os-status-track] > .s-page__os-status-row,
+body.s-page--os [data-os-controls-track] > .s-page__os-control-item,
+body.s-page--os .s-page__os-booking-card { box-sizing:border-box; flex:0 0 auto; width:var(--s-os-card-width); max-width:none; }
+body.s-page--os [data-os-status-track] > .s-page__os-status-row,
+body.s-page--os [data-os-controls-track] > .s-page__os-control-item { min-width:var(--s-os-card-width); min-height:0; padding:calc(var(--s-x) * 1.25); border:1px solid var(--s-glass-stroke); border-radius:var(--s-composer-radius); background:var(--s-os-surface); box-shadow:0 2px 7px rgba(0,0,0,.045),0 1px 1px rgba(0,0,0,.025); -webkit-backdrop-filter:blur(20px) saturate(120%); backdrop-filter:blur(20px) saturate(120%); }
+body.s-page--os .s-page__os-booking-carousel { width:100%; }
+body.s-page--os .s-page__os-booking-viewport { width:100%; overflow:hidden; }
+body.s-page--os .s-page__os-booking-card { min-width:var(--s-os-card-width); flex-basis:auto; }
+body.s-page--os :is(.s-page__store-product-card, [data-os-status-track] > .s-page__os-status-row, [data-os-controls-track] > .s-page__os-control-item, .s-page__os-booking-card) { opacity:.46; transform:scale(.94); transition:opacity .38s ease, transform .52s cubic-bezier(.22,.61,.36,1), background-color .28s ease; }
+body.s-page--os :is(.s-page__store-product-card.is-active, [data-os-status-track] > .s-page__os-status-row.is-active, [data-os-controls-track] > .s-page__os-control-item.is-active, .s-page__os-booking-card.is-active) { opacity:1; transform:scale(1); background:var(--s-os-surface-strong); }
+/* One fixed card box per section: content can change only inside the box. */
+body.s-page--os { --s-os-status-card-height:74px; --s-os-booking-card-height:332px; --s-os-control-card-height:96px; }
+body.s-page--os [data-os-status-track] > .s-page__os-status-row { height:var(--s-os-status-card-height); }
+body.s-page--os .s-page__os-booking-card { height:var(--s-os-booking-card-height); }
+body.s-page--os [data-os-controls-track] > .s-page__os-control-item { height:var(--s-os-control-card-height); }
+body.s-page--os .s-page__os-layout > .s-page__os-section-nav { width:100%; max-width:none; }
+/* Match every OS action to the existing Section 4 control height. */
+body.s-page--os :is(.s-page__os-booking-action, .s-page__store-product-card:not(.s-page__os-empty-product-card) .s-page__os-action-row button) { height:28px; min-height:28px; box-sizing:border-box; }
+/* The Section 1 dot is the single status-dot reference: a 6px color-only mark. */
+body.s-page--os .s-page__os-status-dot { width:6px; height:6px; border:0; box-shadow:none; }
+/* Keep the Store glass frame once; remove any image-layer stroke/outline. */
+body.s-page--os .s-page__store-image-placeholder { border:1px solid var(--s-glass-stroke); outline:0; box-shadow:none; }
+body.s-page--os .s-page__os-product-image { border:0; outline:0; box-shadow:none; }
+/* Carousel viewports use the physical screen edges, while headings, cards,
+   navigation, and the locked panel baseline remain on the shared safe frame. */
+body.s-page--os .s-page__os-section { overflow:visible; }
+body.s-page--os :is(.s-page__store-carousel, .s-page__os-status-list, [data-os-controls-list], [data-os-consultation-list]) { width:calc(100% + (var(--s-x) * 2)); max-width:none; margin-inline-start:calc(var(--s-x) * -1); margin-inline-end:calc(var(--s-x) * -1); }
+body.s-page--os :is(.s-page__store-carousel-viewport, .s-page__os-status-list, .s-page__os-booking-viewport, [data-os-controls-list]) { touch-action:pan-y; }
+body.s-page--os :is(.s-page__store-carousel-track, [data-os-status-track], [data-os-controls-track], .s-page__os-booking-track).is-dragging { transition:none; }
+body.s-page--os .s-page__os-section-nav button { font-size:0; line-height:0; }
+body.s-page--os .s-page__os-section-nav button::before { display:none; }
+body.s-page--os .s-page__os-section-nav button svg { display:block; width:14px; height:14px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+@media (max-width:420px) {
+  body.s-page--os .s-page__os-card,
+  body.s-page--os .s-page__os-heading,
+  body.s-page--os .s-page__store-product-card,
+  body.s-page--os [data-os-status-track] > .s-page__os-status-row,
+  body.s-page--os [data-os-controls-track] > .s-page__os-control-item,
+  body.s-page--os .s-page__os-booking-card { width:100%; min-width:100%; flex-basis:100%; }
+}
+
+/* Keep OS carousel edges on the physical viewport, not the safe-frame clip. */
+body.s-page--os .s-page__major-section,
+body.s-page--os .s-page__major-section > .s-page__group { overflow:visible; }
+body.s-page.s-page--os:not(.s-page--rpn) .s-page__major-section,
+body.s-page.s-page--os:not(.s-page--rpn) .s-page__major-section--transition-frame > .s-page__group { overflow:visible; }
+
+/* Empty catalog entries must keep the clean Store image surface. */
+body.s-page--os .s-page__os-product-image[hidden] { display:none !important; }
+
+/* Keep the action row inside the fixed product box on short viewports. */
+@media (max-height:700px) {
+  body.s-page--os .s-page__store-product-card { height:min(390px, calc(100dvh - 167px)); min-height:365px; }
+}
+
+/* Add uses the same fixed control height as Section 4 Disable. */
+body.s-page--os .s-page__os-empty-product-card .s-page__os-action-row [data-os-edit-product] { height:28px; min-height:28px; box-sizing:border-box; }
+
+/* Section 3 uses the same inner frame and rhythm as Section 2 products. */
+body.s-page--os .s-page__os-booking-card { box-sizing:border-box; padding:12px; gap:5px; grid-template-rows:auto minmax(0,1fr) auto; align-content:stretch; }
+body.s-page--os .s-page__os-booking-heading,
+body.s-page--os .s-page__os-booking-details,
+body.s-page--os .s-page__os-booking-actions { width:100%; min-width:0; box-sizing:border-box; }
+body.s-page--os .s-page__os-booking-details { gap:4px; }
+body.s-page--os .s-page__os-booking-details > div { padding-bottom:4px; }
+body.s-page--os .s-page__os-booking-actions { gap:4px; grid-template-rows:repeat(2,28px); align-content:end; }
+
+/* Explicitly center the SVG arrow in both axes inside its circular control. */
+body.s-page--os .s-page__os-section-nav button svg { position:absolute; inset:50% auto auto 50%; margin:0; transform:translate(-50%,-50%); }
+
+/* Give Site Controls a readable vertical information hierarchy. */
+body.s-page--os .s-page__os-control-item .s-page__os-item-main { display:grid; gap:4px; align-content:center; }
+body.s-page--os .s-page__os-control-item .s-page__os-item-name,
+body.s-page--os .s-page__os-control-item .s-page__os-item-detail { display:block; }
+
+/* All visible OS card types share one equal outer inset. */
+body.s-page--os :is(
+  .s-page__store-product-card,
+  .s-page__os-booking-card,
+  [data-os-status-track] > .s-page__os-status-row,
+  [data-os-controls-track] > .s-page__os-control-item
+) { box-sizing:border-box; padding:var(--s-os-card-padding); }
+
+/* Every internal card spacing is half the shared outer padding. */
+body.s-page--os :is(
+  .s-page__store-product-card,
+  .s-page__os-booking-card,
+  [data-os-status-track] > .s-page__os-status-row,
+  [data-os-controls-track] > .s-page__os-control-item,
+  .s-page__store-card-copy,
+  .s-page__os-field-grid,
+  .s-page__os-price-grid,
+  .s-page__os-action-row,
+  .s-page__os-booking-heading,
+  .s-page__os-booking-details,
+  .s-page__os-booking-actions,
+  .s-page__os-control-item .s-page__os-item-main
+) { gap:var(--s-os-card-gap); }
+body.s-page--os .s-page__os-row-top,
+body.s-page--os .s-page__os-item-top,
+body.s-page--os .s-page__os-booking-details > div { gap:var(--s-os-card-gap); }
+
+/* Keep the fixed product box closed after applying the shared 6px rhythm. */
+body.s-page--os .s-page__store-product-card .s-page__store-card-copy { padding-top:0; padding-bottom:0; }
+body.s-page--os .s-page__store-product-card input,
+body.s-page--os .s-page__store-product-card textarea { min-height:24px; }
+
+/* Fixed secondary navigation bar shared by every OS carousel. */
+body.s-page--os { --s-os-nav-height:48px; --s-os-nav-padding:12px; --s-os-nav-edge-padding:calc((var(--s-os-nav-height) - var(--s-os-nav-arrow-size)) / 2); --s-os-nav-gap:8px; --s-os-nav-arrow-size:32px; --s-os-nav-counter-width:54px; --s-os-nav-width:162px; }
+body.s-page--os .s-page__os-section-nav {
+  display:grid;
+  grid-template-columns:var(--s-os-nav-arrow-size) minmax(0,1fr) var(--s-os-nav-arrow-size);
+  column-gap:var(--s-os-nav-gap);
+  align-items:center;
+  justify-content:stretch;
+  width:var(--s-os-nav-width);
+  height:var(--s-os-nav-height);
+  padding:0 8px;
+  box-sizing:border-box;
+  border:0;
+  border-radius:28px;
+  background:rgba(255,255,255,.16);
+  box-shadow:0 2px 7px rgba(0,0,0,.045),0 1px 1px rgba(0,0,0,.025),inset 0 0 0 1px var(--s-glass-stroke);
+  -webkit-backdrop-filter:blur(20px) saturate(125%);
+  backdrop-filter:blur(20px) saturate(125%);
+  overflow:visible;
+  position:relative;
+  transform:none;
+  will-change:auto;
+  transition:none;
+}
+body.s-page--os .s-page__os-section-nav button { width:var(--s-os-nav-arrow-size); height:var(--s-os-nav-arrow-size); background:#0A84FF; color:#fff; }
+body.s-page--os .s-page__os-section-nav > span { width:var(--s-os-nav-counter-width); min-width:0; justify-self:center; }
+body.s-page--os .s-page__os-layout > .s-page__os-section-nav { width:var(--s-os-nav-width); max-width:var(--s-os-nav-width); }
+body.s-page--os .s-page__os-status-section .s-page__os-layout > .s-page__os-section-nav,
+body.s-page--os [aria-label="Store Management"] .s-page__os-layout > .s-page__os-section-nav { width:var(--s-os-nav-width); max-width:var(--s-os-nav-width); }
+html.s-route.is-day-mode body.s-page--os .s-page__os-section-nav { background:rgba(255,255,255,.42); box-shadow:0 2px 6px rgba(0,0,0,.022),0 1px 1px rgba(0,0,0,.012),inset 0 0 0 1px var(--s-glass-stroke); }
+html.s-route.is-day-mode body.s-page--os .s-page__os-section-nav button { background:#0A84FF; color:#fff; }
+body.s-page--os .s-page__os-layout { padding-bottom:calc(var(--s-os-nav-height) + var(--s-x)); }
+body.s-page--os .s-page__os-global-nav {
+  position:fixed;
+  z-index:20;
+  left:50%;
+  bottom:calc(var(--s-x) * .5);
+  margin:0 0 0 calc(var(--s-os-nav-width) / -2);
+  transform:none;
+}
+body.s-page--os .s-page__os-section-nav button svg { width:13.7px; height:13px; stroke-width:2.12; stroke-linecap:round; stroke-linejoin:round; }
+
+/* Section 2 height follows the shared padded content box at every viewport. */
+body.s-page--os .s-page__store-product-card { grid-template-rows:165px auto; height:auto; min-height:0; }
+@media (max-width:520px) {
+  body.s-page--os .s-page__store-product-card { grid-template-rows:145px auto; height:auto; min-height:0; }
+}
+
+/* Carousel navigation moves only the track; cards stay rigid at full geometry. */
+body.s-page--os :is(
+  .s-page__store-product-card,
+  [data-os-status-track] > .s-page__os-status-row,
+  [data-os-controls-track] > .s-page__os-control-item,
+  .s-page__os-booking-card
+) { transform:none; transition:opacity .38s ease, background-color .28s ease; }
+body.s-page--os :is(
+  .s-page__store-product-card.is-active,
+  [data-os-status-track] > .s-page__os-status-row.is-active,
+  [data-os-controls-track] > .s-page__os-control-item.is-active,
+  .s-page__os-booking-card.is-active
+) { transform:none; }

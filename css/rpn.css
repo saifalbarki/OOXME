@@ -10,7 +10,12 @@
   --s-rpn-type-2-size: 12px;
   --s-rpn-type-2-weight: 500;
   --s-rpn-type-2-line-height: 1.2;
-  --s-rpn-type-2-color: #A6A6A6;
+  --s-rpn-type-2-color: rgba(255, 255, 255, .58);
+  --s-rpn-store-surface: rgba(255, 255, 255, .12);
+  --s-rpn-store-surface-strong: rgba(255, 255, 255, .16);
+  --s-rpn-store-control-surface: rgba(255, 255, 255, .11);
+  --s-rpn-store-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  --s-rpn-store-backdrop: blur(20px) saturate(120%);
 }
 
 .s-page--rpn .s-page__content {
@@ -731,11 +736,11 @@ html[dir="rtl"] .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utili
 
 /* Unified /rpn section menu: these are the composer-menu's exact glass tokens. */
 .s-page--rpn .s-page__secondary-nav {
-  --s-composer-surface: rgba(255, 255, 255, .16);
+  --s-composer-surface: var(--s-rpn-store-surface);
   --s-composer-stroke: var(--s-glass-stroke);
-  --s-composer-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
-  --s-composer-backdrop: blur(20px) saturate(125%);
-  --s-menu-radius: 28px; --s-menu-inset: 8px; --s-menu-active-radius: 20px;
+  --s-composer-shadow: var(--s-rpn-store-shadow);
+  --s-composer-backdrop: var(--s-rpn-store-backdrop);
+  --s-menu-radius: var(--s-composer-radius); --s-menu-inset: 8px; --s-menu-active-radius: 20px;
   position: absolute; z-index: 3; top: var(--s-rpn-secondary-nav-state-one-top, calc(48px + (var(--s-x) * 2))); right: auto; left: var(--s-x);
   display: flex; box-sizing: border-box; width: var(--s-rpn-secondary-nav-width, 220px); max-width: none; height: var(--s-rpn-content-box-height, auto); min-height: 0;
   margin: 0; padding: var(--s-menu-inset); flex-direction: column; gap: 6px; overflow: hidden;
@@ -745,7 +750,7 @@ html[dir="rtl"] .s-page--rpn .s-page__send-utilities.is-open .s-page__send-utili
   -webkit-backdrop-filter: var(--s-composer-backdrop); backdrop-filter: var(--s-composer-backdrop);
 }
 .s-page--rpn .s-page__secondary-nav::before { content: none; }
-html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav { --s-composer-surface: rgba(255, 255, 255, .42); --s-composer-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012); color: #000000; }
+html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav { --s-composer-surface: var(--s-rpn-store-surface); color: #000000; }
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready { opacity: var(--s-rpn-composition-progress, 0); visibility: visible; filter: blur(var(--s-rpn-content-blur, 12px)); pointer-events: none; transform: translate3d(0, 0, 0); transition: none; will-change: transform, opacity, filter; }
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready.is-rpn-content-interactive { pointer-events: auto; }
 .s-page--rpn .s-page__secondary-nav.is-pulsing { animation: s-page-composer-menu-pulse .18s ease-out; }
@@ -758,7 +763,8 @@ html[dir="rtl"] .s-page--rpn .s-page__secondary-nav-rail { direction: rtl; }
 .s-page--rpn .s-page__secondary-nav-item::before { position: absolute; z-index: -1; inset: 0; border-radius: var(--s-menu-active-radius); background: #000000; content: ""; pointer-events: none; }
 html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav-item::before { background: #000000; }
 html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav-item { color: #FFFFFF; }
-.s-page--rpn .s-page__secondary-nav-arrow { position: absolute; z-index: 2; top: 0; display: grid; width: 32px; height: 36px; margin: 0; padding: 0; place-items: center; border: 0; background: transparent; color: #FFFFFF; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.s-page--rpn .s-page__secondary-nav-arrow { position: absolute; z-index: 2; top: 0; display: grid; width: 32px; height: 36px; margin: 0; padding: 0; place-items: center; border: 0; background: transparent; color: #FFFFFF; cursor: pointer; transition: transform .18s ease; -webkit-tap-highlight-color: transparent; }
+.s-page--rpn .s-page__secondary-nav-arrow:active { transform: scale(.96); }
 .s-page--rpn .s-page__secondary-nav-arrow--left { left: 0; }
 .s-page--rpn .s-page__secondary-nav-arrow--right { right: 0; }
 .s-page--rpn .s-page__secondary-nav-arrow svg { display: block; width: 13.7px; height: 13px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 2.12; stroke-linecap: round; stroke-linejoin: round; }
@@ -783,10 +789,10 @@ html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav-arrow { color: #FFF
 html[lang="ar"] .s-page--rpn .s-page__rpn-apply.is-rpn-apply-attached .s-page__rpn-apply-copy[lang="en"] { display: none; }
 html[lang="ar"] .s-page--rpn .s-page__rpn-apply.is-rpn-apply-attached .s-page__rpn-apply-copy[lang="ar"] { display: flex; }
 .s-page--rpn .s-page__rpn-apply-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin-top: auto; justify-items: center; }
-.s-page--rpn .s-page__rpn-apply-actions button { position: relative; z-index: 0; display: grid; width: var(--s-rpn-active-selector-width, 100%); height: 36px; min-height: 36px; margin: 0; padding: 0; place-items: center; border: 0; border-radius: var(--s-menu-active-radius); background: #000000; box-shadow: none; color: #FFFFFF; text-align: center; isolation: isolate; }
-.s-page--rpn .s-page__rpn-apply-actions button::before { position: absolute; z-index: -1; inset: 0; border: 0; border-radius: var(--s-menu-active-radius); background: #000000; box-shadow: none; content: ""; pointer-events: none; }
-html.s-route.is-day-mode .s-page--rpn .s-page__rpn-apply-actions button { background: #000000; color: #FFFFFF; }
-html.s-route.is-day-mode .s-page--rpn .s-page__rpn-apply-actions button::before { background: #000000; }
+.s-page--rpn .s-page__rpn-apply-actions button { position: relative; z-index: 0; display: grid; width: var(--s-rpn-active-selector-width, 100%); height: 36px; min-height: 36px; margin: 0; padding: 0; place-items: center; border: 1px solid var(--s-glass-stroke); border-radius: calc(var(--s-composer-radius) * .65); background: var(--s-rpn-store-control-surface); box-shadow: var(--s-rpn-store-shadow); color: #FFFFFF; text-align: center; isolation: isolate; transition: transform .18s ease, background-color .18s ease; -webkit-backdrop-filter: var(--s-rpn-store-backdrop); backdrop-filter: var(--s-rpn-store-backdrop); }
+.s-page--rpn .s-page__rpn-apply-actions button::before { content: none; }
+.s-page--rpn .s-page__rpn-apply-actions button:active { transform: scale(.96); }
+html.s-route.is-day-mode .s-page--rpn .s-page__rpn-apply-actions button { background: var(--s-rpn-store-control-surface); color: #111111; }
 
 /* /rpn has two typography roles. These are the only authorities for content
    type; component selectors below them control layout and alignment only. */
@@ -827,13 +833,30 @@ html.s-route.is-day-mode .s-page--rpn .s-page__rpn-apply-actions button::before 
   text-rendering: optimizeLegibility;
 }
 
+/* Store's compact label/control roles fit these fixed RPN control zones
+   without changing the measured content-card typography or stack geometry. */
+.s-page--rpn .s-page__secondary-nav .s-page__secondary-nav-item,
+.s-page--rpn .s-page__rpn-apply .s-page__rpn-apply-actions > button {
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+.s-page--rpn .s-page__rpn-description .s-page__rpn-description-date {
+  color: var(--s-rpn-type-2-color);
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+}
+
 html[lang="ar"] .s-page--rpn {
   --s-rpn-type-font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
 }
 
 html.s-route.is-day-mode .s-page--rpn {
   --s-rpn-type-1-color: #111111;
-  --s-rpn-type-2-color: #666666;
+  --s-rpn-type-2-color: rgba(17, 17, 17, .58);
+  --s-rpn-store-surface: rgba(255, 255, 255, .48);
+  --s-rpn-store-surface-strong: rgba(255, 255, 255, .68);
+  --s-rpn-store-control-surface: rgba(255, 255, 255, .58);
 }
 
 /* A panel is temporarily placed in normal flow so the maximum localized height
@@ -850,13 +873,15 @@ html.s-route.is-day-mode .s-page--rpn {
 /* The selector remains the approved active glass card. The three inactive
    panels reuse that exact material as settled layers behind it. */
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready {
-  --s-rpn-stack-surface: rgb(41, 41, 41);
+  --s-rpn-stack-surface: var(--s-rpn-store-surface);
+  --s-rpn-stack-front-surface: var(--s-rpn-store-surface-strong);
   overflow: visible;
   background: transparent;
 }
 
 html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready {
-  --s-rpn-stack-surface: #FFFFFF;
+  --s-rpn-stack-surface: var(--s-rpn-store-surface);
+  --s-rpn-stack-front-surface: var(--s-rpn-store-surface-strong);
 }
 
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready::before {
@@ -864,7 +889,7 @@ html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-r
   inset: 0;
   border: 1px solid var(--s-composer-stroke);
   border-radius: inherit;
-  background: var(--s-rpn-stack-surface);
+  background: var(--s-rpn-stack-front-surface);
   box-shadow: var(--s-composer-shadow);
   content: "";
   -webkit-backdrop-filter: var(--s-composer-backdrop);
@@ -908,7 +933,7 @@ html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-r
   pointer-events: none;
   transform-origin: 50% 0;
   transform: translate3d(0, var(--s-rpn-card-stack-offset, 0px), 0) scale(var(--s-rpn-card-stack-scale, 1));
-  transition: transform .32s cubic-bezier(.22, .61, .36, 1);
+  transition: transform .52s cubic-bezier(.22, .61, .36, 1);
   -webkit-backdrop-filter: var(--s-composer-backdrop);
   backdrop-filter: var(--s-composer-backdrop);
 }
