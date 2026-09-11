@@ -3,7 +3,6 @@
 
   const root = document.documentElement;
   const page = document.querySelector('.s-page--rpn');
-  const content = page?.querySelector('.s-page__content');
   const composer = page?.querySelector('[data-s-composer]');
   const composerMenu = page?.querySelector('[data-s-composer-menu]');
   const sendUtilities = page?.querySelector('[data-s-send-utilities]');
@@ -20,7 +19,6 @@
   const previousButton = page?.querySelector('[data-s-rpn-secondary-nav-previous]');
   const nextButton = page?.querySelector('[data-s-rpn-secondary-nav-next]');
   const carouselNavs = Array.from(page?.querySelectorAll('[data-s-rpn-carousel-nav]') || []);
-  const description = page?.querySelector('[data-s-rpn-description]');
   const menuLabels = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-label') || []);
   const menuItems = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-item') || []);
   const title = firstGroup?.querySelector('.s-page__group-title');
@@ -31,15 +29,14 @@
   const summaryCursor = firstGroup?.querySelector('[data-s-rpn-summary-cursor]');
   const pageSections = Array.from(page?.querySelectorAll('[data-s-rpn-page-section]') || []);
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities
+  if (!page || !composer || !composerMenu || !sendUtilities
     || !themeUtility || !languageUtility || !addButton || !submitButton || !firstGroup
     || !title || !summary || !titleOutput || !summaryOutput || !titleCursor || !summaryCursor || pageSections.length !== 3 || !hero || !heroMedia || !heroCopy || !nav
-    || !previousButton || !nextButton || !carouselNavs.length || !description || navItems.length !== 4 || menuItems.length !== 5) return;
+    || !previousButton || !nextButton || !carouselNavs.length || navItems.length !== 4 || menuItems.length !== 5) return;
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const heroLayers = [hero, heroMedia, heroCopy, title, summary, nav];
   const firstGroupCopy = {
     en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive advantages and rewards'],
     ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الاحالة لاوكسوم متاحة الان للتقديم\nانضم الينا واستفد من مزايا ومكافآت حصرية.']
@@ -64,15 +61,7 @@
   let composerPulseFrame = 0;
   let menuPulseFrame = 0;
   let geometryFrame = 0;
-  let portraitFrame = 0;
-  let portraitTimer = 0;
   let scrollFrame = 0;
-  let navAlignmentFrame = 0;
-  let sectionLocked = false;
-  let compositionReady = false;
-  let heroGeometryFrozen = false;
-  let viewportWidth = root.clientWidth;
-  let viewportOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
   let inactivityTimer = 0;
   let faceController = null;
   let pageSectionIndex = 0;
@@ -81,7 +70,6 @@
   let pageTouchStart = null;
   const setPageSectionState = (index) => {
     pageSectionIndex = index;
-    sectionLocked = index > 0;
     pageSections.forEach((section, sectionIndex) => section.classList.toggle('is-rpn-page-section-active', sectionIndex === index));
   };
 
@@ -127,7 +115,6 @@
       );
       if (height) element.style.height = `${Math.ceil(height)}px`;
     });
-    schedulePortraitLayout();
   };
 
   const scheduleGeometry = () => {
@@ -244,7 +231,6 @@
     languageUtility.setAttribute('aria-label', language === 'en' ? copy.toArabic : copy.toEnglish);
     updateThemeLabel();
     startTypewriter();
-    resetNavAlignment();
     scheduleGeometry();
     if (persist) {
       try { localStorage.setItem('ooxme-language', language); } catch (_) {}
@@ -270,131 +256,21 @@
     });
   };
 
-  const syncBoxHorizontalGeometry = () => {
-    const rect = composerMenu.getBoundingClientRect();
-    nav.style.setProperty('--s-rpn-secondary-nav-width', `${rect.width.toFixed(3)}px`);
-  };
-
-  const syncTextAlignment = () => {
-    const language = root.lang === 'ar' ? 'ar' : 'en';
-    const source = description.querySelector(`.s-page__rpn-description-copy[lang="${language}"] h2`);
-    if (!source) return;
-    const sourceRect = source.getBoundingClientRect();
-    const firstRect = firstGroup.getBoundingClientRect();
-    const heroRect = hero.getBoundingClientRect();
-    if (!sourceRect.width || !firstRect.width || !heroRect.width) return;
-    const rtl = language === 'ar';
-    const firstOffset = rtl ? firstRect.right - sourceRect.right : sourceRect.left - firstRect.left;
-    const heroOffset = rtl ? heroRect.right - sourceRect.right : sourceRect.left - heroRect.left;
-    firstGroup.style.setProperty('--s-rpn-content-text-width', `${sourceRect.width.toFixed(3)}px`);
-    firstGroup.style.setProperty('--s-rpn-content-text-inline-offset', `${firstOffset.toFixed(3)}px`);
-    heroCopy.style.setProperty('--s-rpn-content-text-width', `${sourceRect.width.toFixed(3)}px`);
-    heroCopy.style.setProperty('--s-rpn-content-text-inline-offset', `${heroOffset.toFixed(3)}px`);
-  };
-
-  const syncStateOneGeometry = () => {
-    if (sectionLocked || (compositionReady && window.scrollY > .5)) return;
-    const x = composer.getBoundingClientRect().left || 18;
-    const heroRect = hero.getBoundingClientRect();
-    nav.classList.add('is-rpn-transition-ready');
-    const boxRect = nav.getBoundingClientRect();
-    const desiredTop = heroRect.bottom + x;
-    const resolvedTop = nav.offsetTop + desiredTop - boxRect.top;
-    nav.style.setProperty('--s-rpn-secondary-nav-state-one-top', `${resolvedTop.toFixed(3)}px`);
-    const positionedBox = nav.getBoundingClientRect();
-    page.style.setProperty('--s-rpn-transition-distance', `${Math.max(1, Math.round(positionedBox.bottom - heroRect.bottom))}px`);
-    compositionReady = true;
-  };
-
-  const resetNavAlignment = () => {
-    if (navAlignmentFrame) cancelAnimationFrame(navAlignmentFrame);
-    navAlignmentFrame = requestAnimationFrame(() => {
-      navAlignmentFrame = 0;
-      syncBoxHorizontalGeometry();
-      syncStateOneGeometry();
-      syncTextAlignment();
-    });
-  };
-
-  const resetPortraitLayout = () => {
-    root.style.removeProperty('--s-portrait-section-height');
-    hero.style.removeProperty('bottom');
-    hero.classList.remove('is-portrait-composed');
-  };
-
-  const syncFirstGroupGap = () => {
-    const heroRect = hero.getBoundingClientRect();
-    const summaryRect = summary.getBoundingClientRect();
-    const x = composer.getBoundingClientRect().left || 18;
-    const currentShift = parseFloat(firstGroup.style.getPropertyValue('--s-rpn-first-group-shift')) || 0;
-    const shift = heroRect.top - (summaryRect.bottom - currentShift) - x;
-    firstGroup.style.setProperty('--s-rpn-first-group-shift', `${shift.toFixed(3)}px`);
-  };
-
-  const syncPortraitLayout = () => {
-    portraitFrame = 0;
-    if (!window.matchMedia('(orientation: portrait)').matches) {
-      resetPortraitLayout();
-      syncFirstGroupGap();
-      scheduleScrollSync();
-      return;
-    }
-    const x = parseFloat(getComputedStyle(root).getPropertyValue('--s-x')) || 18;
-    const viewportHeight = window.visualViewport?.height || root.clientHeight;
-    const firstRect = firstGroup.getBoundingClientRect();
-    const sectionTop = parseFloat(getComputedStyle(content).paddingTop) || 0;
-    const baseline = viewportHeight - x;
-    const relativeBottom = baseline - sectionTop;
-    root.style.setProperty('--s-portrait-section-height', `${viewportHeight}px`);
-    if (!sectionLocked) {
-      hero.style.setProperty('bottom', `${firstRect.height - relativeBottom}px`);
-      hero.classList.add('is-portrait-composed');
-    }
-    syncFirstGroupGap();
-    scheduleScrollSync();
-  };
-
-  function schedulePortraitLayout() {
-    clearTimeout(portraitTimer);
-    portraitTimer = 0;
-    if (!portraitFrame) portraitFrame = requestAnimationFrame(syncPortraitLayout);
-  }
-
-  const scheduleStablePortraitLayout = () => {
-    clearTimeout(portraitTimer);
-    portraitTimer = window.setTimeout(() => {
-      portraitTimer = 0;
-      schedulePortraitLayout();
-    }, 180);
-  };
-
-  const syncScroll = () => {
+  const syncPageSection = () => {
     scrollFrame = 0;
-    if (!compositionReady) {
-      syncBoxHorizontalGeometry();
-      syncStateOneGeometry();
-    }
-    const referenceY = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const referenceY = 0;
     const current = pageSections.reduce((closest, section, index) => {
       const distance = Math.abs(section.getBoundingClientRect().top - referenceY);
       return distance < closest.distance ? { index, distance } : closest;
     }, { index: pageSectionIndex, distance: Number.POSITIVE_INFINITY }).index;
     if (!pageSectionLocked && current !== pageSectionIndex) {
       setPageSectionState(current);
-      if (current === 1) {
-      } else {
-        startTypewriter();
-      }
+      if (current !== 1) startTypewriter();
     }
-    const progress = current === 1 || pageSectionIndex === 1 ? 1 : 0;
-    firstGroup.style.setProperty('--s-rpn-first-group-scroll-progress', progress.toFixed(4));
-    nav.style.setProperty('--s-rpn-composition-progress', progress.toFixed(4));
-    nav.style.setProperty('--s-rpn-content-blur', '0px');
-    nav.classList.toggle('is-rpn-content-interactive', progress > .05);
   };
 
-  function scheduleScrollSync() {
-    if (!scrollFrame) scrollFrame = requestAnimationFrame(syncScroll);
+  function schedulePageSectionSync() {
+    if (!scrollFrame) scrollFrame = requestAnimationFrame(syncPageSection);
   }
 
   const createFaceController = () => {
@@ -515,20 +391,12 @@
     const next = Math.max(0, Math.min(pageSections.length - 1, index));
     if (next === pageSectionIndex) return;
     setPageSectionState(next);
-    if (next === 1) {
-      nav.style.setProperty('--s-rpn-composition-progress', '1');
-      nav.style.setProperty('--s-rpn-content-blur', '0px');
-      nav.classList.add('is-rpn-content-interactive');
-      requestAnimationFrame(() => {
-      });
-    } else {
-      startTypewriter();
-    }
+    if (next !== 1) startTypewriter();
   };
 
   const transitionPageSection = (direction) => {
     if (!direction || pageSectionLocked) return;
-    const referenceY = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
+    const referenceY = 0;
     const current = pageSections.reduce((closest, section, index) => {
       const distance = Math.abs(section.getBoundingClientRect().top - referenceY);
       return distance < closest.distance ? { index, distance } : closest;
@@ -544,67 +412,33 @@
     pageSectionUnlockTimer = window.setTimeout(() => { pageSectionLocked = false; }, 820);
   };
 
-  const prepareHero = ({ freeze = false } = {}) => {
-    if (heroGeometryFrozen || window.scrollY > .5) return;
-    [geometryFrame, portraitFrame, navAlignmentFrame, scrollFrame].forEach((frame) => { if (frame) cancelAnimationFrame(frame); });
-    geometryFrame = 0; portraitFrame = 0; navAlignmentFrame = 0; scrollFrame = 0;
+  const prepareLayout = () => {
     stabilizeLocalizedGeometry();
-    if (portraitFrame) cancelAnimationFrame(portraitFrame);
-    portraitFrame = 0;
-    syncPortraitLayout();
-    if (scrollFrame) cancelAnimationFrame(scrollFrame);
-    scrollFrame = 0;
-    syncBoxHorizontalGeometry();
-    syncStateOneGeometry();
-    syncTextAlignment();
-    syncScroll();
-    heroLayers.forEach((layer) => {
-      layer.classList.add('is-rpn-compositor-ready');
-      const style = getComputedStyle(layer);
-      void style.transform; void style.opacity; void style.filter; void style.webkitBackdropFilter;
-      void layer.getBoundingClientRect();
-    });
-    if (freeze) {
-      heroGeometryFrozen = true;
-    }
+    [hero, heroMedia, heroCopy, title, summary].forEach((layer) => layer.classList.add('is-rpn-compositor-ready'));
+    syncPageSection();
   };
 
   const initialize = () => {
     initializationRun += 1;
     root.classList.add('s-x-initializing');
     initialized = false;
-    sectionLocked = false;
-    compositionReady = false;
-    heroGeometryFrozen = false;
-    nav.classList.remove('is-rpn-content-interactive');
-    nav.classList.add('is-rpn-transition-ready');
-    nav.style.removeProperty('--s-rpn-secondary-nav-state-one-top');
-    nav.style.removeProperty('--s-rpn-composition-progress');
-    nav.style.removeProperty('--s-rpn-content-blur');
-    page.style.removeProperty('--s-rpn-transition-distance');
-    firstGroup.style.setProperty('--s-rpn-first-group-scroll-progress', '0');
     resetTopBar();
     composer.classList.remove('is-pulsing');
     firstGroup.classList.add('is-visible');
     heroMedia.classList.add('is-visible');
     heroCopy.classList.add('is-visible');
     heroCopy.setAttribute('aria-hidden', 'false');
-    prepareHero();
+    prepareLayout();
     const run = initializationRun;
     const fontsReady = document.fonts?.ready || Promise.resolve();
     const imageReady = heroMedia.complete && heroMedia.naturalWidth ? Promise.resolve() : (heroMedia.decode?.().catch(() => {}) || Promise.resolve());
-    Promise.all([fontsReady, imageReady]).then(() => {
-      if (initializationRun === run && window.scrollY <= .5) prepareHero({ freeze: true });
-    });
+    Promise.all([fontsReady, imageReady]).then(() => { if (initializationRun === run) prepareLayout(); });
     initialized = true;
     root.classList.remove('s-x-initializing');
   };
 
   const resetPage = () => {
     clearTimeout(inactivityTimer);
-    clearTimeout(portraitTimer);
-    if (portraitFrame) cancelAnimationFrame(portraitFrame);
-    portraitFrame = 0;
     pulseFrames.forEach(cancelAnimationFrame);
     pulseFrames.clear();
     utilityPulseFrames.forEach(cancelAnimationFrame);
@@ -740,29 +574,13 @@
     if (touch) pageTouchStart = null;
   }, { capture: true, passive: true });
   window.addEventListener('scroll', () => {
-    scheduleScrollSync();
+    schedulePageSectionSync();
     noteInteraction();
   }, { passive: true });
 
-  const viewportChanged = () => {
-    const nextWidth = root.clientWidth;
-    const nextOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
-    if (Math.abs(nextWidth - viewportWidth) > .5 || nextOrientation !== viewportOrientation) {
-      viewportWidth = nextWidth;
-      viewportOrientation = nextOrientation;
-      scheduleGeometry();
-      resetNavAlignment();
-    } else if (!window.visualViewport) {
-      scheduleStablePortraitLayout();
-    }
-  };
-  window.addEventListener('resize', viewportChanged, { passive: true });
-  window.addEventListener('orientationchange', () => {
-    viewportWidth = root.clientWidth;
-    viewportOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
-    scheduleGeometry();
-    resetNavAlignment();
-  }, { passive: true });
+  window.addEventListener('resize', scheduleGeometry, { passive: true });
+  window.addEventListener('orientationchange', scheduleGeometry, { passive: true });
+
   ['pointerdown', 'mousemove', 'touchstart', 'click', 'keydown'].forEach((eventName) => document.addEventListener(eventName, noteInteraction, { passive: true }));
   window.addEventListener('pageshow', () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
