@@ -10,117 +10,64 @@
   const languageUtility = page?.querySelector('[data-s-utility="language"]');
   const addButton = page?.querySelector('.s-page__add');
   const submitButton = composer?.querySelector('button[type="submit"]');
-  const firstGroup = page?.querySelector('[data-s-first-group]');
-  const hero = page?.querySelector('.s-page__rpn-hero-image');
-  const heroMedia = hero?.querySelector('[data-s-flow-item]');
-  const heroCopy = hero?.querySelector('[data-s-image-copy]');
   const nav = page?.querySelector('[data-s-rpn-secondary-nav]');
   const navItems = Array.from(page?.querySelectorAll('[data-s-rpn-secondary-nav-item]') || []);
   const previousButton = page?.querySelector('[data-s-rpn-secondary-nav-previous]');
   const nextButton = page?.querySelector('[data-s-rpn-secondary-nav-next]');
-  const carouselNavs = Array.from(page?.querySelectorAll('[data-s-rpn-carousel-nav]') || []);
+  const carouselNav = page?.querySelector('[data-s-rpn-carousel-nav]');
+  const carouselPrevious = carouselNav?.querySelector('button:first-child');
+  const carouselNext = carouselNav?.querySelector('button:last-child');
+  const carouselCounter = carouselNav?.querySelector('[data-s-rpn-carousel-counter]');
+  const storeCarousel = page?.querySelector('[data-store-carousel]');
+  const storeCarouselViewport = page?.querySelector('[data-store-carousel-viewport]');
+  const storeCarouselTrack = page?.querySelector('[data-store-carousel-track]');
+  const storeProductCards = Array.from(page?.querySelectorAll('[data-store-product-card]') || []);
   const menuLabels = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-label') || []);
   const menuItems = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-item') || []);
-  const title = firstGroup?.querySelector('.s-page__group-title');
-  const summary = firstGroup?.querySelector('.s-page__group-description');
-  const titleOutput = firstGroup?.querySelector('[data-s-rpn-title-output]');
-  const summaryOutput = firstGroup?.querySelector('[data-s-rpn-summary-output]');
-  const titleCursor = firstGroup?.querySelector('[data-s-rpn-title-cursor]');
-  const summaryCursor = firstGroup?.querySelector('[data-s-rpn-summary-cursor]');
-  const pageSections = Array.from(page?.querySelectorAll('[data-s-rpn-page-section]') || []);
 
   if (!page || !composer || !composerMenu || !sendUtilities
-    || !themeUtility || !languageUtility || !addButton || !submitButton || !firstGroup
-    || !title || !summary || !titleOutput || !summaryOutput || !titleCursor || !summaryCursor || pageSections.length !== 3 || !hero || !heroMedia || !heroCopy || !nav
-    || !previousButton || !nextButton || !carouselNavs.length || navItems.length !== 4 || menuItems.length !== 5) return;
+    || !themeUtility || !languageUtility || !addButton || !submitButton || !nav
+    || !previousButton || !nextButton || !carouselNav || !carouselPrevious || !carouselNext || !carouselCounter || !storeCarousel || !storeCarouselViewport || !storeCarouselTrack || storeProductCards.length !== 4 || navItems.length !== 4 || menuItems.length !== 5) return;
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const firstGroupCopy = {
-    en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive advantages and rewards'],
-    ar: ['مرحبــا\nشريكنا القادم', 'شبكة شركاء الاحالة لاوكسوم متاحة الان للتقديم\nانضم الينا واستفد من مزايا ومكافآت حصرية.']
-  };
   const menuCopy = {
     en: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
     ar: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل']
   };
   const utilityCopy = {
-    en: { submit: 'Submit question', previous: 'Previous section', next: 'Next section', nav: 'Section navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
-    ar: { submit: 'ارسال السؤال', previous: 'القسم السابق', next: 'القسم التالي', nav: 'التنقل بين الاقسام', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
+    en: { submit: 'Submit question', previous: 'Previous card', next: 'Next card', nav: 'Card navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
+    ar: { submit: 'ارسال السؤال', previous: 'البطاقة السابقة', next: 'البطاقة التالية', nav: 'التنقل بين البطاقات', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
+  };
+  const storeCopy = {
+    en: {
+      descriptionLabel: 'Description', descriptionTitle: 'OOXME Referral Partner Network', descriptionBody: 'A professional network connecting OOXME with companies and project owners through trusted business relationships. Partners share suitable opportunities and connect clients with our team, while OOXME handles evaluation, presentation, commercial discussions, and contracting.', descriptionSecondary: 'Applications open: 1 October 2026',
+      requirementsLabel: 'Requirements', requirementsOneTitle: 'Strong Relations', requirementsOneBody: 'Connect with business owners, project owners, managers, and decision-makers.', requirementsTwoTitle: 'Related Field', requirementsTwoBody: 'Work in, or have strong connections to, engineering, architecture, construction, or related sectors.', requirementsThreeTitle: 'OOXME Commitment', requirementsThreeBody: 'Follow OOXME’s approved referral process and professional communication standards.',
+      rewardsLabel: 'Rewards', rewardsOneTitle: '25% Commission', rewardsOneBody: 'Earned when a referred client signs a contract with OOXME.', rewardsTwoTitle: 'Client Discount', rewardsTwoBody: 'Available for clients referred through you when they sign a contract with OOXME.', rewardsThreeTitle: 'OOXME ID', rewardsThreeBody: 'Awarded after 2 successful referrals.', rewardsFourTitle: 'Internet Credit', rewardsFourBody: 'Awarded after 3 successful referrals.', rewardsFiveTitle: 'Transport Credit', rewardsFiveBody: 'Awarded after 4 successful referrals.', rewardsSixTitle: 'Formal Suit', rewardsSixBody: 'Awarded after 5 successful referrals.',
+      applyLabel: 'Apply', applyOneTitle: 'Applications Open', applyOneBody: 'Applications will open on the officially announced date.', applyTwoTitle: 'Who Can Apply', applyTwoBody: 'Professionals with strong business relationships, especially in engineering and related sectors.', applyThreeTitle: 'Selection', applyThreeBody: 'Applicants will be reviewed based on network quality, professional relevance, and commitment to the OOXME referral system.', sendEmail: 'Send Email', applyNow: 'Apply Now', previous: 'Previous card', next: 'Next card'
+    },
+    ar: {
+      descriptionLabel: 'وصف', descriptionTitle: 'شبكة شركاء الاحالة لاوكسوم', descriptionBody: 'شبكة مهنية تربط اوكسوم بالشركات واصحاب المشاريع من خلال علاقات اعمال موثوقة. يشارك الشركاء الفرص المناسبة ويربطون العملاء بفريقنا، بينما تتولى اوكسوم التقييم والعرض والمناقشات التجارية والتعاقد.', descriptionSecondary: 'يبدأ التقديم: 1 أكتوبر 2026',
+      requirementsLabel: 'شروط التقديم', requirementsOneTitle: 'علاقات قوية', requirementsOneBody: 'التواصل مع اصحاب الاعمال والمشاريع والمديرين وصناع القرار.', requirementsTwoTitle: 'مجال ذو صلة', requirementsTwoBody: 'العمل في، او امتلاك علاقات قوية مع، الهندسة او العمارة او الانشاءات او القطاعات ذات الصلة.', requirementsThreeTitle: 'التزام اوكسوم', requirementsThreeBody: 'اتباع الية الاحالة المعتمدة لدى اوكسوم ومعايير التواصل المهني.',
+      rewardsLabel: 'المكافآت', rewardsOneTitle: 'عمولة 25%', rewardsOneBody: 'تمنح عند توقيع العميل المحال عقدا مع اوكسوم.', rewardsTwoTitle: 'خصم العميل', rewardsTwoBody: 'متاح للعملاء المحالين من خلالك عند توقيعهم عقدا مع اوكسوم.', rewardsThreeTitle: 'هوية اوكسوم', rewardsThreeBody: 'تمنح بعد احالتين ناجحتين.', rewardsFourTitle: 'رصيد الانترنت', rewardsFourBody: 'يمنح بعد 3 احالات ناجحة.', rewardsFiveTitle: 'رصيد النقل', rewardsFiveBody: 'يمنح بعد 4 احالات ناجحة.', rewardsSixTitle: 'بدلة رسمية', rewardsSixBody: 'تمنح بعد 5 احالات ناجحة.',
+      applyLabel: 'التقديم', applyOneTitle: 'فتح التقديم', applyOneBody: 'سيبدأ التقديم في الموعد المعلن رسميا.', applyTwoTitle: 'من يمكنه التقديم', applyTwoBody: 'المهنيون الذين يمتلكون علاقات اعمال قوية، خصوصا في الهندسة والقطاعات ذات الصلة.', applyThreeTitle: 'الاختيار', applyThreeBody: 'تتم مراجعة المتقدمين بناء على جودة شبكة العلاقات، والصلة المهنية، والالتزام بنظام الاحالة المعتمد لدى اوكسوم.', sendEmail: 'ارسال بريد', applyNow: 'قدم الان', previous: 'البطاقة السابقة', next: 'البطاقة التالية'
+    }
   };
 
   const pulseFrames = new Map();
   const utilityPulseFrames = new Map();
   const menuFlashTimers = new Map();
-  let activeIndex = 0;
+  let activeCard = 0;
   let activeUi = 'none';
   let initialized = false;
   let initializationRun = 0;
   let menuCloseTimer = 0;
   let composerPulseFrame = 0;
   let menuPulseFrame = 0;
-  let geometryFrame = 0;
-  let scrollFrame = 0;
   let inactivityTimer = 0;
   let faceController = null;
-  let pageSectionIndex = 0;
-  let pageSectionLocked = false;
-  let pageSectionUnlockTimer = 0;
-  let pageTouchStart = null;
-  const setPageSectionState = (index) => {
-    pageSectionIndex = index;
-    pageSections.forEach((section, sectionIndex) => section.classList.toggle('is-rpn-page-section-active', sectionIndex === index));
-  };
-
-  const setLocalizedText = (element, value) => {
-    const fragment = document.createDocumentFragment();
-    value.split('\n').forEach((line, index) => {
-      const span = document.createElement('span');
-      span.className = 's-page__reveal-line';
-      span.textContent = line;
-      span.style.setProperty('--s-reveal-delay', `${index * 110}ms`);
-      fragment.append(span);
-    });
-    element.replaceChildren(fragment);
-  };
-
-  const measureTextHeight = (element, value, language) => {
-    const width = element.getBoundingClientRect().width;
-    if (!width) return 0;
-    const probe = element.cloneNode(false);
-    probe.removeAttribute('id');
-    probe.lang = language;
-    probe.dir = language === 'ar' ? 'rtl' : 'ltr';
-    Object.assign(probe.style, {
-      position: 'fixed', inset: '0 auto auto -10000px', width: `${width}px`, maxWidth: 'none',
-      height: 'auto', minHeight: '0', margin: '0', opacity: '1', filter: 'none',
-      clipPath: 'none', visibility: 'hidden', pointerEvents: 'none', transition: 'none',
-      fontFamily: language === 'ar' ? 'OOXMETosh, OOXMEScript, Arial, sans-serif' : 'OOXMEScript, OOXMEEnglish, Arial, sans-serif'
-    });
-    setLocalizedText(probe, value);
-    document.body.append(probe);
-    const height = probe.getBoundingClientRect().height;
-    probe.remove();
-    return height;
-  };
-
-  const stabilizeLocalizedGeometry = () => {
-    geometryFrame = 0;
-    [title, summary].forEach((element, index) => {
-      element.style.height = '';
-      const height = Math.max(
-        measureTextHeight(element, firstGroupCopy.en[index], 'en'),
-        measureTextHeight(element, firstGroupCopy.ar[index], 'ar')
-      );
-      if (height) element.style.height = `${Math.ceil(height)}px`;
-    });
-  };
-
-  const scheduleGeometry = () => {
-    if (geometryFrame) cancelAnimationFrame(geometryFrame);
-    geometryFrame = requestAnimationFrame(stabilizeLocalizedGeometry);
-  };
+  let activeProduct = 0;
+  let storeCarouselDrag = null;
 
   const pulseSurface = (element) => {
     const pending = pulseFrames.get(element);
@@ -206,6 +153,39 @@
     themeUtility.setAttribute('aria-label', root.classList.contains('is-day-mode') ? copy.toDark : copy.toDay);
   };
 
+  const syncStoreCarousel = (animate = true, dragOffset = 0) => {
+    const card = storeProductCards[activeProduct];
+    if (!card) return;
+    storeCarouselTrack.classList.toggle('is-dragging', !animate);
+    const gap = Number.parseFloat(getComputedStyle(storeCarouselTrack).columnGap) || 0;
+    const position = (storeCarouselViewport.clientWidth / 2) - (card.offsetWidth / 2) - (activeProduct * (card.offsetWidth + gap)) + dragOffset;
+    storeCarouselTrack.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
+    storeProductCards.forEach((item, index) => {
+      const active = index === activeProduct;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-current', active ? 'true' : 'false');
+      item.dir = root.lang === 'ar' ? 'rtl' : 'ltr';
+      item.lang = root.lang === 'ar' ? 'ar' : 'en';
+    });
+    carouselCounter.textContent = `${activeProduct + 1} / ${storeProductCards.length}`;
+  };
+
+  const selectStoreProduct = (nextIndex) => {
+    activeProduct = Math.max(0, Math.min(storeProductCards.length - 1, nextIndex));
+    activeCard = activeProduct;
+    syncCardNavigation();
+    syncStoreCarousel(true);
+  };
+
+  const syncCardNavigation = () => {
+    navItems.forEach((item, itemIndex) => {
+      const active = itemIndex === activeCard;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-pressed', String(active));
+    });
+    faceController?.setApply(activeCard === 3);
+  };
+
   const applyTheme = (theme) => {
     const day = theme === 'day';
     root.classList.toggle('is-day-mode', day);
@@ -221,57 +201,27 @@
     root.lang = language;
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
     menuLabels.forEach((label, index) => { label.textContent = menuCopy[language][index]; });
+    page.querySelectorAll('[data-store-copy]').forEach((node) => {
+      const value = storeCopy[language][node.dataset.storeCopy];
+      if (value) node.textContent = value;
+    });
     nav.setAttribute('aria-label', copy.nav);
     previousButton.setAttribute('aria-label', copy.previous);
     nextButton.setAttribute('aria-label', copy.next);
+    carouselPrevious.setAttribute('aria-label', storeCopy[language].previous);
+    carouselNext.setAttribute('aria-label', storeCopy[language].next);
     addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME');
     submitButton.setAttribute('aria-label', copy.submit);
     languageUtility.classList.toggle('is-active', language === 'en');
     languageUtility.setAttribute('aria-pressed', String(language === 'en'));
     languageUtility.setAttribute('aria-label', language === 'en' ? copy.toArabic : copy.toEnglish);
     updateThemeLabel();
-    startTypewriter();
-    scheduleGeometry();
+    syncStoreCarousel(false);
     if (persist) {
       try { localStorage.setItem('ooxme-language', language); } catch (_) {}
     }
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
   };
-
-  const startTypewriter = () => {
-    const language = root.lang === 'ar' ? 'ar' : 'en';
-    const stages = [
-      { element: title, output: titleOutput, cursor: titleCursor, phrase: firstGroupCopy[language][0] },
-      { element: summary, output: summaryOutput, cursor: summaryCursor, phrase: firstGroupCopy[language][1] }
-    ];
-    stages.forEach((stage) => {
-      stage.element.lang = language;
-      stage.element.dir = language === 'ar' ? 'rtl' : 'ltr';
-      stage.output.lang = language;
-      stage.output.dir = language === 'ar' ? 'rtl' : 'ltr';
-      stage.output.textContent = stage.phrase;
-      stage.cursor.style.removeProperty('left');
-      stage.cursor.style.removeProperty('top');
-      stage.element.classList.remove('is-cursor-visible', 'is-typewriter-prelude');
-    });
-  };
-
-  const syncPageSection = () => {
-    scrollFrame = 0;
-    const referenceY = 0;
-    const current = pageSections.reduce((closest, section, index) => {
-      const distance = Math.abs(section.getBoundingClientRect().top - referenceY);
-      return distance < closest.distance ? { index, distance } : closest;
-    }, { index: pageSectionIndex, distance: Number.POSITIVE_INFINITY }).index;
-    if (!pageSectionLocked && current !== pageSectionIndex) {
-      setPageSectionState(current);
-      if (current !== 1) startTypewriter();
-    }
-  };
-
-  function schedulePageSectionSync() {
-    if (!scrollFrame) scrollFrame = requestAnimationFrame(syncPageSection);
-  }
 
   const createFaceController = () => {
     const face = addButton.querySelector('[data-s-rpn-face]');
@@ -377,45 +327,15 @@
     return { begin, move, end, setApply, rejectApply };
   };
 
-  const setActiveSection = (index) => {
-    activeIndex = Math.max(0, Math.min(navItems.length - 1, index));
-    navItems.forEach((item, itemIndex) => {
-      const active = itemIndex === activeIndex;
-      item.classList.toggle('is-active', active);
-      item.setAttribute('aria-pressed', String(active));
-    });
-    faceController?.setApply(activeIndex === 3);
-  };
-
-  const setPageSection = (index) => {
-    const next = Math.max(0, Math.min(pageSections.length - 1, index));
-    if (next === pageSectionIndex) return;
-    setPageSectionState(next);
-    if (next !== 1) startTypewriter();
-  };
-
-  const transitionPageSection = (direction) => {
-    if (!direction || pageSectionLocked) return;
-    const referenceY = 0;
-    const current = pageSections.reduce((closest, section, index) => {
-      const distance = Math.abs(section.getBoundingClientRect().top - referenceY);
-      return distance < closest.distance ? { index, distance } : closest;
-    }, { index: pageSectionIndex, distance: Number.POSITIVE_INFINITY }).index;
-    const target = Math.max(0, Math.min(pageSections.length - 1, current + direction));
-    if (target === current) return;
-    const targetSection = pageSections[target];
-    pageSectionLocked = true;
-    clearTimeout(pageSectionUnlockTimer);
-    setPageSection(target);
-    const correction = targetSection.getBoundingClientRect().top - referenceY;
-    window.scrollTo({ top: window.scrollY + correction, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-    pageSectionUnlockTimer = window.setTimeout(() => { pageSectionLocked = false; }, 820);
+  const setActiveCard = (index) => {
+    activeCard = Math.max(0, Math.min(navItems.length - 1, index));
+    activeProduct = activeCard;
+    syncCardNavigation();
+    syncStoreCarousel(true);
   };
 
   const prepareLayout = () => {
-    stabilizeLocalizedGeometry();
-    [hero, heroMedia, heroCopy, title, summary].forEach((layer) => layer.classList.add('is-rpn-compositor-ready'));
-    syncPageSection();
+    syncStoreCarousel(false);
   };
 
   const initialize = () => {
@@ -424,15 +344,10 @@
     initialized = false;
     resetTopBar();
     composer.classList.remove('is-pulsing');
-    firstGroup.classList.add('is-visible');
-    heroMedia.classList.add('is-visible');
-    heroCopy.classList.add('is-visible');
-    heroCopy.setAttribute('aria-hidden', 'false');
     prepareLayout();
     const run = initializationRun;
     const fontsReady = document.fonts?.ready || Promise.resolve();
-    const imageReady = heroMedia.complete && heroMedia.naturalWidth ? Promise.resolve() : (heroMedia.decode?.().catch(() => {}) || Promise.resolve());
-    Promise.all([fontsReady, imageReady]).then(() => { if (initializationRun === run) prepareLayout(); });
+    fontsReady.then(() => { if (initializationRun === run) prepareLayout(); });
     initialized = true;
     root.classList.remove('s-x-initializing');
   };
@@ -448,10 +363,7 @@
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
     applyLanguage('en', { persist: false, emit: false });
     applyTheme('dark');
-    setPageSectionState(0);
-    pageSectionLocked = false;
-    clearTimeout(pageSectionUnlockTimer);
-    setActiveSection(0);
+    setActiveCard(0);
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     initialize();
     inactivityTimer = window.setTimeout(resetPage, 30000);
@@ -470,7 +382,6 @@
   composer.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing'); });
   composerMenu.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') composerMenu.classList.remove('is-pulsing'); });
   nav.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') nav.classList.remove('is-pulsing'); });
-  hero.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-pulse') hero.classList.remove('is-pulsing'); });
   [themeUtility, languageUtility].forEach((control) => {
     control.addEventListener('pointerdown', () => pulseUtility(control), { passive: true });
     control.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') control.classList.remove('is-pulsing'); });
@@ -514,30 +425,38 @@
     applyLanguage(root.lang === 'ar' ? 'en' : 'ar');
   });
 
-  let heroTapStart = null;
-  hero.addEventListener('pointerdown', (event) => { if (event.pointerType !== 'mouse' || event.button === 0) heroTapStart = { x: event.clientX, y: event.clientY, id: event.pointerId }; }, { passive: true });
-  hero.addEventListener('pointerup', (event) => {
-    if (!heroTapStart || event.pointerId !== heroTapStart.id) return;
-    const moved = Math.hypot(event.clientX - heroTapStart.x, event.clientY - heroTapStart.y);
-    heroTapStart = null;
-    if (moved <= 8) {
-      pulseSurface(hero);
-      if (pageSectionIndex === 0) transitionPageSection(1);
-    }
-  }, { passive: true });
-  hero.addEventListener('pointercancel', () => { heroTapStart = null; }, { passive: true });
-
   navItems.forEach((item, index) => item.addEventListener('click', () => {
-    setActiveSection(index);
+    setActiveCard(index);
     pulseSurface(nav);
   }));
   [[previousButton, -1], [nextButton, 1]].forEach(([button, step]) => button.addEventListener('click', () => {
-    setActiveSection(activeIndex + step);
+    setActiveCard(activeCard + step);
     pulseSurface(nav);
   }));
-  carouselNavs.forEach((carouselNav) => {
-    carouselNav.addEventListener('click', () => pulseSurface(carouselNav));
+  carouselNav.addEventListener('click', () => pulseSurface(carouselNav));
+  carouselPrevious.addEventListener('click', () => selectStoreProduct(activeProduct - 1));
+  carouselNext.addEventListener('click', () => selectStoreProduct(activeProduct + 1));
+  page.querySelectorAll('.s-page__store-action').forEach((button) => button.addEventListener('click', (event) => event.preventDefault()));
+  storeCarouselViewport.addEventListener('pointerdown', (event) => {
+    if (event.target.closest('button')) return;
+    storeCarouselDrag = { id: event.pointerId, startX: event.clientX, delta: 0 };
+    storeCarouselViewport.setPointerCapture?.(event.pointerId);
+    syncStoreCarousel(false);
   });
+  storeCarouselViewport.addEventListener('pointermove', (event) => {
+    if (!storeCarouselDrag || event.pointerId !== storeCarouselDrag.id) return;
+    storeCarouselDrag.delta = event.clientX - storeCarouselDrag.startX;
+    syncStoreCarousel(false, storeCarouselDrag.delta);
+  });
+  const finishStoreCarouselDrag = (event) => {
+    if (!storeCarouselDrag || event.pointerId !== storeCarouselDrag.id) return;
+    const delta = storeCarouselDrag.delta;
+    storeCarouselDrag = null;
+    if (Math.abs(delta) >= 42) selectStoreProduct(activeProduct + (delta < 0 ? 1 : -1));
+    else syncStoreCarousel(true);
+  };
+  storeCarouselViewport.addEventListener('pointerup', finishStoreCarouselDrag);
+  storeCarouselViewport.addEventListener('pointercancel', finishStoreCarouselDrag);
 
   document.addEventListener('pointerdown', (event) => {
     faceController?.begin(event);
@@ -548,38 +467,7 @@
   ['pointerup', 'pointercancel'].forEach((eventName) => document.addEventListener(eventName, (event) => {
     faceController?.end(event, eventName === 'pointercancel');
   }, { passive: true }));
-  window.addEventListener('wheel', (event) => {
-    if (Math.abs(event.deltaY) >= 8 && !event.target.closest('[data-s-rpn-secondary-nav]')) {
-      event.preventDefault();
-      transitionPageSection(event.deltaY > 0 ? 1 : -1);
-    }
-  }, { passive: false });
-  window.addEventListener('keydown', (event) => {
-    if (!['ArrowDown', 'PageDown', 'ArrowUp', 'PageUp'].includes(event.key)) return;
-    event.preventDefault();
-    transitionPageSection(['ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
-  }, { passive: true });
-  document.addEventListener('touchstart', (event) => {
-    if (event.target.closest('[data-s-rpn-secondary-nav]')) return;
-    const touch = event.changedTouches[0];
-    if (touch) pageTouchStart = { id: touch.identifier, y: touch.clientY };
-  }, { capture: true, passive: true });
-  document.addEventListener('touchmove', (event) => {
-    const touch = Array.from(event.changedTouches).find((item) => item.identifier === pageTouchStart?.id);
-    if (touch && Math.abs(touch.clientY - pageTouchStart.y) > 4) event.preventDefault();
-  }, { capture: true, passive: false });
-  document.addEventListener('touchend', (event) => {
-    const touch = Array.from(event.changedTouches).find((item) => item.identifier === pageTouchStart?.id);
-    if (touch && Math.abs(touch.clientY - pageTouchStart.y) >= 36) transitionPageSection(touch.clientY < pageTouchStart.y ? 1 : -1);
-    if (touch) pageTouchStart = null;
-  }, { capture: true, passive: true });
-  window.addEventListener('scroll', () => {
-    schedulePageSectionSync();
-    noteInteraction();
-  }, { passive: true });
-
-  window.addEventListener('resize', scheduleGeometry, { passive: true });
-  window.addEventListener('orientationchange', scheduleGeometry, { passive: true });
+  window.addEventListener('resize', () => syncStoreCarousel(false), { passive: true });
 
   ['pointerdown', 'mousemove', 'touchstart', 'click', 'keydown'].forEach((eventName) => document.addEventListener(eventName, noteInteraction, { passive: true }));
   window.addEventListener('pageshow', () => {
@@ -589,8 +477,7 @@
 
   page.classList.add('s-rpn-discrete-sections');
   root.classList.add('s-rpn-discrete-sections');
-  setPageSectionState(0);
-  setActiveSection(0);
+  setActiveCard(0);
   initialize();
   noteInteraction();
 })();
