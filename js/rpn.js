@@ -16,20 +16,11 @@
   const heroMedia = hero?.querySelector('[data-s-flow-item]');
   const heroCopy = hero?.querySelector('[data-s-image-copy]');
   const nav = page?.querySelector('[data-s-rpn-secondary-nav]');
-  const navRail = page?.querySelector('[data-s-rpn-secondary-nav-rail]');
   const navItems = Array.from(page?.querySelectorAll('[data-s-rpn-secondary-nav-item]') || []);
   const previousButton = page?.querySelector('[data-s-rpn-secondary-nav-previous]');
   const nextButton = page?.querySelector('[data-s-rpn-secondary-nav-next]');
-  const carouselNav = page?.querySelector('[data-s-rpn-carousel-nav]');
-  const carouselPrevious = page?.querySelector('[data-s-rpn-carousel-previous]');
-  const carouselNext = page?.querySelector('[data-s-rpn-carousel-next]');
-  const carouselCount = page?.querySelector('[data-s-rpn-carousel-count]');
-  const contentSlot = page?.querySelector('[data-s-rpn-content-slot]');
+  const carouselNavs = Array.from(page?.querySelectorAll('[data-s-rpn-carousel-nav]') || []);
   const description = page?.querySelector('[data-s-rpn-description]');
-  const requirements = page?.querySelector('[data-s-rpn-requirements]');
-  const rewards = page?.querySelector('[data-s-rpn-rewards]');
-  const applyPanel = page?.querySelector('[data-s-rpn-apply]');
-  const applyButtons = Array.from(page?.querySelectorAll('[data-s-rpn-apply-destination]') || []);
   const menuLabels = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-label') || []);
   const menuItems = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-item') || []);
   const title = firstGroup?.querySelector('.s-page__group-title');
@@ -42,20 +33,12 @@
 
   if (!page || !content || !composer || !composerMenu || !sendUtilities
     || !themeUtility || !languageUtility || !addButton || !submitButton || !firstGroup
-    || !title || !summary || !titleOutput || !summaryOutput || !titleCursor || !summaryCursor || pageSections.length !== 2 || !hero || !heroMedia || !heroCopy || !nav || !navRail
-    || !previousButton || !nextButton || !carouselNav || !carouselPrevious || !carouselNext || !carouselCount || !contentSlot || !description || !requirements
-    || !rewards || !applyPanel || navItems.length !== 4 || menuItems.length !== 5) return;
+    || !title || !summary || !titleOutput || !summaryOutput || !titleCursor || !summaryCursor || pageSections.length !== 3 || !hero || !heroMedia || !heroCopy || !nav
+    || !previousButton || !nextButton || !carouselNavs.length || !description || navItems.length !== 4 || menuItems.length !== 5) return;
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const panels = [description, requirements, rewards, applyPanel];
-  const panelClasses = [
-    ['is-rpn-description-attached', 'is-rpn-description-revealed'],
-    ['is-rpn-requirements-attached', 'is-rpn-requirements-revealed'],
-    ['is-rpn-rewards-attached', 'is-rpn-rewards-revealed'],
-    ['is-rpn-apply-attached', 'is-rpn-apply-revealed']
-  ];
   const heroLayers = [hero, heroMedia, heroCopy, title, summary, nav];
   const firstGroupCopy = {
     en: ['Welcome\nOur Next Partner', 'OOXME RPN is open to apply\nJoin us and get exclusive advantages and rewards'],
@@ -66,8 +49,8 @@
     ar: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل']
   };
   const utilityCopy = {
-    en: { submit: 'Submit question', previous: 'Previous section', next: 'Next section', previousCard: 'Previous card', nextCard: 'Next card', nav: 'Section navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
-    ar: { submit: 'ارسال السؤال', previous: 'القسم السابق', next: 'القسم التالي', previousCard: 'البطاقة السابقة', nextCard: 'البطاقة التالية', nav: 'التنقل بين الاقسام', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
+    en: { submit: 'Submit question', previous: 'Previous section', next: 'Next section', nav: 'Section navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
+    ar: { submit: 'ارسال السؤال', previous: 'القسم السابق', next: 'القسم التالي', nav: 'التنقل بين الاقسام', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
   };
 
   const pulseFrames = new Map();
@@ -80,8 +63,6 @@
   let menuCloseTimer = 0;
   let composerPulseFrame = 0;
   let menuPulseFrame = 0;
-  let contentRevealFrame = 0;
-  let contentTransitionTimer = 0;
   let geometryFrame = 0;
   let portraitFrame = 0;
   let portraitTimer = 0;
@@ -98,19 +79,9 @@
   let pageSectionLocked = false;
   let pageSectionUnlockTimer = 0;
   let pageTouchStart = null;
-
-  const syncCarouselNav = () => {
-    const labels = utilityCopy[root.lang === 'ar' ? 'ar' : 'en'];
-    carouselCount.textContent = `${activeIndex + 1} / ${panels.length}`;
-    carouselPrevious.disabled = activeIndex === 0;
-    carouselNext.disabled = activeIndex === panels.length - 1;
-    carouselPrevious.setAttribute('aria-label', labels.previousCard);
-    carouselNext.setAttribute('aria-label', labels.nextCard);
-  };
-
   const setPageSectionState = (index) => {
     pageSectionIndex = index;
-    sectionLocked = index === 1;
+    sectionLocked = index > 0;
     pageSections.forEach((section, sectionIndex) => section.classList.toggle('is-rpn-page-section-active', sectionIndex === index));
   };
 
@@ -304,40 +275,6 @@
     nav.style.setProperty('--s-rpn-secondary-nav-width', `${rect.width.toFixed(3)}px`);
   };
 
-  const syncApplyButtonGeometry = () => {
-    if (!nav.classList.contains('is-rpn-transition-ready')) return;
-    const selector = navItems[activeIndex];
-    if (!selector) return;
-    const selectorRect = selector.getBoundingClientRect();
-    const selectorWidth = selectorRect.width || Math.min(contentSlot.getBoundingClientRect().width * .76, 340);
-    nav.style.setProperty('--s-rpn-active-selector-width', `${selectorWidth.toFixed(3)}px`);
-  };
-
-  const syncBoxHeight = () => {
-    if (compositionReady && window.scrollY > .5) return;
-    nav.classList.add('is-rpn-measuring');
-    let largestHeight = 0;
-    panels.forEach((panel) => {
-      panel.classList.add('is-rpn-measuring-panel');
-      const copies = Array.from(panel.children).filter((copy) => copy.hasAttribute('lang'));
-      const displays = copies.map((copy) => copy.style.display);
-      let panelHeight = 0;
-      copies.forEach((activeCopy) => {
-        copies.forEach((copy) => { copy.style.display = copy === activeCopy ? (panel === applyPanel ? 'flex' : 'block') : 'none'; });
-        panelHeight = Math.max(panelHeight, Math.ceil(panel.scrollHeight));
-      });
-      copies.forEach((copy, copyIndex) => { copy.style.display = displays[copyIndex]; });
-      largestHeight = Math.max(largestHeight, panelHeight);
-      panel.classList.remove('is-rpn-measuring-panel');
-    });
-    nav.classList.remove('is-rpn-measuring');
-    const style = getComputedStyle(nav);
-    const chrome = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth']
-      .reduce((total, property) => total + (parseFloat(style[property]) || 0), 0);
-    const height = Math.ceil((navRail.offsetHeight || 36) + (parseFloat(style.rowGap) || 0) + largestHeight + chrome);
-    nav.style.setProperty('--s-rpn-content-box-height', `${height}px`);
-  };
-
   const syncTextAlignment = () => {
     const language = root.lang === 'ar' ? 'ar' : 'en';
     const source = description.querySelector(`.s-page__rpn-description-copy[lang="${language}"] h2`);
@@ -355,72 +292,6 @@
     heroCopy.style.setProperty('--s-rpn-content-text-inline-offset', `${heroOffset.toFixed(3)}px`);
   };
 
-  const syncActiveContent = (attached = sectionLocked) => {
-    if (contentRevealFrame) cancelAnimationFrame(contentRevealFrame);
-    if (contentTransitionTimer) clearTimeout(contentTransitionTimer);
-    contentRevealFrame = 0;
-    contentTransitionTimer = 0;
-    const outgoingIndex = panels.findIndex((panel, index) => panel.classList.contains(panelClasses[index][0]) && panel.classList.contains(panelClasses[index][1]));
-    panels.forEach((panel) => panel.classList.remove('is-rpn-panel-exiting'));
-    if (!attached) {
-      panels.forEach((panel, index) => {
-        panel.classList.remove(...panelClasses[index], 'is-rpn-card-layer', 'is-rpn-card-active', 'is-rpn-card-hidden');
-        panel.style.removeProperty('--s-rpn-card-stack-index');
-        panel.style.removeProperty('--s-rpn-card-stack-scale');
-        panel.style.removeProperty('--s-rpn-card-stack-offset');
-        panel.style.removeProperty('--s-rpn-card-stack-left');
-        panel.style.removeProperty('--s-rpn-card-stack-width');
-        panel.style.removeProperty('--s-rpn-card-stack-opacity');
-        panel.style.removeProperty('z-index');
-      });
-      return;
-    }
-    const target = panels[activeIndex];
-    const [attachedClass, revealedClass] = panelClasses[activeIndex];
-    const reveal = () => {
-      panels.forEach((panel, index) => panel.classList.remove(...panelClasses[index]));
-      target.classList.add(attachedClass);
-      const slotRect = contentSlot.getBoundingClientRect();
-      const cardWidth = Math.min(slotRect.width * .76, 340);
-      const cardGap = parseFloat(getComputedStyle(root).getPropertyValue('--s-x')) || 18;
-      const cardCenter = (slotRect.width - cardWidth) / 2;
-      panels.forEach((panel, index) => {
-        const relativeIndex = index - activeIndex;
-        const visible = Math.abs(relativeIndex) <= 1;
-        const cardLeft = cardCenter + (relativeIndex * (cardWidth + cardGap));
-        panel.classList.toggle('is-rpn-card-layer', visible && relativeIndex !== 0);
-        panel.classList.toggle('is-rpn-card-active', relativeIndex === 0);
-        panel.classList.toggle('is-rpn-card-hidden', !visible);
-        panel.style.setProperty('--s-rpn-card-stack-index', String(Math.abs(relativeIndex)));
-        panel.style.setProperty('--s-rpn-card-stack-scale', '1');
-        panel.style.setProperty('--s-rpn-card-stack-offset', '0px');
-        panel.style.setProperty('--s-rpn-card-stack-left', `${cardLeft.toFixed(3)}px`);
-        panel.style.setProperty('--s-rpn-card-stack-width', `${cardWidth.toFixed(3)}px`);
-        panel.style.setProperty('--s-rpn-card-stack-opacity', relativeIndex === 0 ? '1' : '.46');
-        panel.style.zIndex = String(relativeIndex === 0 ? 2 : 1);
-      });
-      contentRevealFrame = requestAnimationFrame(() => {
-        contentRevealFrame = 0;
-        if (panels[activeIndex] !== target) return;
-        target.classList.add(revealedClass);
-        syncApplyButtonGeometry();
-        requestAnimationFrame(syncApplyButtonGeometry);
-      });
-    };
-    if (outgoingIndex !== -1 && panels[outgoingIndex] !== target) {
-      const outgoing = panels[outgoingIndex];
-      outgoing.classList.remove(panelClasses[outgoingIndex][1]);
-      outgoing.classList.add('is-rpn-panel-exiting');
-      contentTransitionTimer = window.setTimeout(() => {
-        contentTransitionTimer = 0;
-        outgoing.classList.remove('is-rpn-panel-exiting');
-        reveal();
-      }, 180);
-    } else {
-      reveal();
-    }
-  };
-
   const syncStateOneGeometry = () => {
     if (sectionLocked || (compositionReady && window.scrollY > .5)) return;
     const x = composer.getBoundingClientRect().left || 18;
@@ -433,7 +304,6 @@
     const positionedBox = nav.getBoundingClientRect();
     page.style.setProperty('--s-rpn-transition-distance', `${Math.max(1, Math.round(positionedBox.bottom - heroRect.bottom))}px`);
     compositionReady = true;
-    syncActiveContent(true);
   };
 
   const resetNavAlignment = () => {
@@ -441,17 +311,13 @@
     navAlignmentFrame = requestAnimationFrame(() => {
       navAlignmentFrame = 0;
       syncBoxHorizontalGeometry();
-      syncBoxHeight();
       syncStateOneGeometry();
       syncTextAlignment();
-      syncApplyButtonGeometry();
     });
   };
 
   const resetPortraitLayout = () => {
-    root.style.removeProperty('--s-portrait-measured-x');
     root.style.removeProperty('--s-portrait-section-height');
-    root.style.removeProperty('--s-portrait-final-section-height');
     hero.style.removeProperty('bottom');
     hero.classList.remove('is-portrait-composed');
   };
@@ -474,17 +340,12 @@
       return;
     }
     const x = parseFloat(getComputedStyle(root).getPropertyValue('--s-x')) || 18;
-    // The former structural anchor was fixed to the visual viewport with a
-    // bottom offset of X. Preserve that exact fractional Safari baseline now
-    // that the unused anchor has been removed.
     const viewportHeight = window.visualViewport?.height || root.clientHeight;
     const firstRect = firstGroup.getBoundingClientRect();
     const sectionTop = parseFloat(getComputedStyle(content).paddingTop) || 0;
     const baseline = viewportHeight - x;
     const relativeBottom = baseline - sectionTop;
     root.style.setProperty('--s-portrait-section-height', `${viewportHeight}px`);
-    root.style.setProperty('--s-portrait-final-section-height', `${relativeBottom}px`);
-    root.style.setProperty('--s-portrait-measured-x', `${x}px`);
     if (!sectionLocked) {
       hero.style.setProperty('bottom', `${firstRect.height - relativeBottom}px`);
       hero.classList.add('is-portrait-composed');
@@ -511,9 +372,7 @@
     scrollFrame = 0;
     if (!compositionReady) {
       syncBoxHorizontalGeometry();
-      syncBoxHeight();
       syncStateOneGeometry();
-      syncApplyButtonGeometry();
     }
     const referenceY = Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
     const current = pageSections.reduce((closest, section, index) => {
@@ -523,10 +382,7 @@
     if (!pageSectionLocked && current !== pageSectionIndex) {
       setPageSectionState(current);
       if (current === 1) {
-        syncActiveContent(true);
-        syncCarouselNav();
       } else {
-        syncActiveContent(false);
         startTypewriter();
       }
     }
@@ -652,9 +508,6 @@
       item.classList.toggle('is-active', active);
       item.setAttribute('aria-pressed', String(active));
     });
-    syncActiveContent(nav.classList.contains('is-rpn-transition-ready'));
-    syncApplyButtonGeometry();
-    syncCarouselNav();
     faceController?.setApply(activeIndex === 3);
   };
 
@@ -666,11 +519,7 @@
       nav.style.setProperty('--s-rpn-composition-progress', '1');
       nav.style.setProperty('--s-rpn-content-blur', '0px');
       nav.classList.add('is-rpn-content-interactive');
-      syncActiveContent(true);
-      syncBoxHeight();
       requestAnimationFrame(() => {
-        syncActiveContent(true);
-        syncCarouselNav();
       });
     } else {
       startTypewriter();
@@ -695,28 +544,6 @@
     pageSectionUnlockTimer = window.setTimeout(() => { pageSectionLocked = false; }, 820);
   };
 
-  let swipeStart = null;
-  let lastSwipeAt = -Infinity;
-  const beginSwipe = (event) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
-    swipeStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
-  };
-  const finishSwipe = (event) => {
-    if (!swipeStart || event.pointerId !== swipeStart.pointerId) return;
-    const dx = event.clientX - swipeStart.x;
-    const dy = event.clientY - swipeStart.y;
-    swipeStart = null;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < 36) return;
-    lastSwipeAt = performance.now();
-    const horizontal = Math.abs(dx) >= Math.abs(dy);
-    const forward = horizontal
-      ? (root.dir === 'rtl' ? dx > 0 : dx < 0)
-      : dy < 0;
-    setActiveSection(activeIndex + (forward ? 1 : -1));
-    pulseSurface(nav);
-  };
-  const suppressSwipeClick = () => performance.now() - lastSwipeAt < 250;
-
   const prepareHero = ({ freeze = false } = {}) => {
     if (heroGeometryFrozen || window.scrollY > .5) return;
     [geometryFrame, portraitFrame, navAlignmentFrame, scrollFrame].forEach((frame) => { if (frame) cancelAnimationFrame(frame); });
@@ -728,10 +555,8 @@
     if (scrollFrame) cancelAnimationFrame(scrollFrame);
     scrollFrame = 0;
     syncBoxHorizontalGeometry();
-    syncBoxHeight();
     syncStateOneGeometry();
     syncTextAlignment();
-    syncApplyButtonGeometry();
     syncScroll();
     heroLayers.forEach((layer) => {
       layer.classList.add('is-rpn-compositor-ready');
@@ -757,7 +582,6 @@
     nav.style.removeProperty('--s-rpn-composition-progress');
     nav.style.removeProperty('--s-rpn-content-blur');
     page.style.removeProperty('--s-rpn-transition-distance');
-    syncActiveContent(false);
     firstGroup.style.setProperty('--s-rpn-first-group-scroll-progress', '0');
     resetTopBar();
     composer.classList.remove('is-pulsing');
@@ -869,32 +693,17 @@
   }, { passive: true });
   hero.addEventListener('pointercancel', () => { heroTapStart = null; }, { passive: true });
 
-  [navRail, contentSlot].forEach((target) => {
-    target.addEventListener('pointerdown', beginSwipe, { passive: true });
-    target.addEventListener('pointerup', finishSwipe, { passive: true });
-    target.addEventListener('pointercancel', () => { swipeStart = null; }, { passive: true });
-  });
   navItems.forEach((item, index) => item.addEventListener('click', () => {
-    if (suppressSwipeClick()) return;
     setActiveSection(index);
     pulseSurface(nav);
   }));
   [[previousButton, -1], [nextButton, 1]].forEach(([button, step]) => button.addEventListener('click', () => {
-    if (suppressSwipeClick()) return;
     setActiveSection(activeIndex + step);
     pulseSurface(nav);
   }));
-  [[carouselPrevious, -1], [carouselNext, 1]].forEach(([button, step]) => button.addEventListener('click', () => {
-    if (button.disabled || suppressSwipeClick()) return;
-    setActiveSection(activeIndex + step);
-    pulseSurface(carouselNav);
-  }));
-  applyButtons.forEach((button) => button.addEventListener('click', () => {
-    if (suppressSwipeClick()) return;
-    pulseSurface(nav);
-    const destination = button.getAttribute('data-s-rpn-apply-destination');
-    if (destination) window.setTimeout(() => window.location.assign(destination), 180);
-  }));
+  carouselNavs.forEach((carouselNav) => {
+    carouselNav.addEventListener('click', () => pulseSurface(carouselNav));
+  });
 
   document.addEventListener('pointerdown', (event) => {
     faceController?.begin(event);

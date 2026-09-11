@@ -2,6 +2,8 @@
 
 /* /rpn keeps the /x system intact; only the shared composer is re-anchored. */
 .s-page--rpn {
+  --s-first-group-bottom-baseline: calc(var(--s-x) + var(--s-keyboard-offset, 0px));
+  --s-rpn-image-block-size: calc(var(--s-x) * 8);
   --s-rpn-type-font-family: OOXMEScript, Arial, sans-serif;
   --s-rpn-type-1-size: 14px;
   --s-rpn-type-1-weight: 500;
@@ -827,18 +829,9 @@ html.s-route.is-day-mode .s-page--rpn {
 .s-page--rpn .s-page__secondary-nav.is-rpn-measuring .s-page__rpn-description-date { position: relative; top: 0; right: auto; bottom: auto; left: auto; }
 @media (orientation: landscape) { .s-page--rpn .s-page__secondary-nav-rail { display: block; } .s-page--rpn .s-page__secondary-nav-item { width: 100%; } }
 
-/* The selector remains the approved active glass card. The three inactive
-   panels reuse that exact material as settled layers behind it. */
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready {
-  --s-rpn-stack-surface: var(--s-rpn-store-surface);
-  --s-rpn-stack-front-surface: var(--s-rpn-store-surface-strong);
   overflow: visible;
   background: transparent;
-}
-
-html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready {
-  --s-rpn-stack-surface: var(--s-rpn-store-surface);
-  --s-rpn-stack-front-surface: var(--s-rpn-store-surface-strong);
 }
 
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready::before {
@@ -846,7 +839,7 @@ html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-r
   inset: 0;
   border: 1px solid var(--s-composer-stroke);
   border-radius: inherit;
-  background: var(--s-rpn-stack-front-surface);
+  background: var(--s-rpn-store-surface-strong);
   box-shadow: var(--s-composer-shadow);
   content: "";
   -webkit-backdrop-filter: var(--s-composer-backdrop);
@@ -861,134 +854,6 @@ html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-r
 .s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready .s-page__rpn-content-slot {
   z-index: auto;
   overflow: visible;
-}
-
-.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-layer {
-  position: absolute;
-  --s-rpn-card-layer-top: calc((var(--s-menu-inset) + 36px + 6px) * -1);
-  top: var(--s-rpn-card-layer-top);
-  right: auto;
-  left: var(--s-rpn-card-stack-left, 0px);
-  box-sizing: border-box;
-  width: var(--s-rpn-card-stack-width, 100%);
-  height: var(--s-rpn-content-box-height);
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--s-composer-stroke);
-  border-radius: var(--s-menu-radius);
-  background: var(--s-rpn-stack-surface);
-  box-shadow: var(--s-composer-shadow);
-  opacity: var(--s-rpn-card-stack-opacity, 1);
-  visibility: visible;
-  filter: none;
-  pointer-events: none;
-  transform-origin: 50% 0;
-  transform: translate3d(0, var(--s-rpn-card-stack-offset, 0px), 0) scale(var(--s-rpn-card-stack-scale, 1));
-  transition: transform .52s cubic-bezier(.22, .61, .36, 1);
-  -webkit-backdrop-filter: var(--s-composer-backdrop);
-  backdrop-filter: var(--s-composer-backdrop);
-}
-
-.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-layer > * {
-  opacity: 0;
-}
-
-.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-hidden {
-  display: none;
-  opacity: 1;
-}
-
-.s-page--rpn .s-page__secondary-nav.is-rpn-transition-ready :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-active {
-  z-index: 5 !important;
-  opacity: 1;
-}
-
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-) {
-  position: absolute;
-  top: 0;
-  right: auto;
-  bottom: auto;
-  left: var(--s-rpn-card-stack-left, 0px);
-  width: var(--s-rpn-card-stack-width, var(--s-rpn-os-card-width));
-  height: 100%;
-  min-height: 0;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--s-glass-stroke);
-  border-radius: var(--s-composer-radius);
-  background: var(--s-rpn-os-surface);
-  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
-  -webkit-backdrop-filter: blur(20px) saturate(120%);
-  backdrop-filter: blur(20px) saturate(120%);
-  opacity: .46;
-  visibility: visible;
-  filter: none;
-  pointer-events: none;
-  transform: none;
-  transition: opacity .38s ease, background-color .28s ease, left .52s cubic-bezier(.22, .61, .36, 1);
-}
-
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-active {
-  background: var(--s-rpn-os-surface-strong);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-layer {
-  opacity: .46;
-  pointer-events: none;
-}
-
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-layer > *,
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-active > * {
-  opacity: 1;
 }
 
 .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active :is(
@@ -1051,7 +916,6 @@ html.s-route.is-day-mode .s-page--rpn .s-page__secondary-nav.is-rpn-transition-r
 }
 
 .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > button:active { transform: scale(.96); }
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > button:disabled { cursor: default; opacity: .3; }
 .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > button svg { width: 13.7px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.12; stroke-linecap: round; stroke-linejoin: round; }
 .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > span { width: 54px; min-width: 0; justify-self: center; color: var(--s-rpn-os-muted); font: 500 11px/1 OOXMEScript, Arial, sans-serif; text-align: center; }
 
@@ -1217,15 +1081,6 @@ html.s-rpn-discrete-sections body.s-page--rpn {
   .s-page__rpn-requirements,
   .s-page__rpn-rewards,
   .s-page__rpn-apply
-).is-rpn-card-active {
-  background: var(--s-rpn-os-surface-strong);
-}
-
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
 ) :is(
   .s-page__rpn-description-copy,
   .s-page__rpn-requirements-copy,
@@ -1255,17 +1110,7 @@ html.s-rpn-discrete-sections body.s-page--rpn {
   font: 500 12px/1.35 OOXMEScript, Arial, sans-serif;
 }
 
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
-  .s-page__rpn-description,
-  .s-page__rpn-requirements,
-  .s-page__rpn-rewards,
-  .s-page__rpn-apply
-).is-rpn-card-layer > * {
-  opacity: 1;
-}
-
-/* The bar is section-local and anchored independently of card left/right
-   movement, at the same bottom baseline as /os's fixed navigation bar. */
+/* The bar is section-local and keeps its existing bottom baseline. */
 .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-carousel-nav {
   position: absolute;
   z-index: 20;
@@ -1276,14 +1121,127 @@ html.s-rpn-discrete-sections body.s-page--rpn {
   transform: none;
 }
 
-.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active .s-page__rpn-carousel-nav {
-  top: calc(100% - var(--s-rpn-os-nav-height) - (var(--s-x) * .5));
-  bottom: auto;
-}
-
 html.s-route.is-day-mode .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-content-slot :is(
   .s-page__rpn-description-title,
   .s-page__rpn-requirement-row > h2,
   .s-page__rpn-reward-row > h2,
   .s-page__rpn-apply-row > h2
 ) { color: #111111; }
+
+/* Section 1 uses the Main page's Section 2 image geometry and overlay contract. */
+.s-page--rpn .s-page__rpn-hero-image {
+  right: auto;
+  left: 0;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 1;
+  margin-inline: 0;
+  overflow: visible;
+}
+
+.s-page--rpn .s-page__rpn-hero-image .s-page__image-copy {
+  padding: 0;
+  overflow: visible;
+}
+
+.s-page--rpn .s-page__rpn-hero-image .s-page__image-copy-language {
+  position: relative;
+  width: calc(100% - (var(--s-x) * 2));
+  height: 100%;
+  margin-inline-start: var(--s-x);
+  max-width: none;
+  overflow: visible;
+}
+
+.s-page--rpn .s-page__rpn-hero-image .s-page__image-copy-main {
+  position: absolute;
+  top: auto;
+  bottom: calc(var(--s-x) + (12px * 1.2) + var(--s-x) - 4px);
+  inset-inline: 0;
+  box-sizing: content-box;
+  padding-block: 4px;
+  line-height: 1.12;
+}
+
+.s-page--rpn .s-page__rpn-hero-image .s-page__image-copy-language--ar .s-page__image-copy-main {
+  direction: rtl;
+  text-align: right;
+}
+
+@media (orientation: portrait) {
+  .s-page--rpn .s-page__rpn-hero-image {
+    width: 100%;
+    height: calc(var(--s-x) * 8);
+    aspect-ratio: auto;
+    bottom: calc(var(--s-x) * 12) !important;
+  }
+
+  .s-page--rpn .s-page__rpn-hero-image .s-page__image-copy-main {
+    font-weight: 500;
+    background-image: linear-gradient(to right, #583B23 0%, #FFFFFF 100%) !important;
+  }
+
+html[dir="rtl"] .s-page--rpn .s-page__rpn-hero-image .s-page__image-copy-main {
+    background-image: linear-gradient(to left, #583B23 0%, #FFFFFF 100%) !important;
+  }
+}
+
+/* Section 2 is navigation-only; keep the existing carousel bar and remove
+   every card panel from layout and accessibility. */
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-content-slot > :is(
+  .s-page__rpn-description,
+  .s-page__rpn-requirements,
+  .s-page__rpn-rewards,
+  .s-page__rpn-apply
+) {
+  display: none !important;
+}
+
+/* Match Main Section 2's section-relative bottom baseline. */
+.s-page--rpn .s-page__rpn-hero-image {
+  bottom: 40px !important;
+}
+
+.s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active .s-page__rpn-carousel-nav {
+  top: auto;
+  bottom: 40px;
+}
+
+@media (orientation: portrait) {
+  .s-page--rpn .s-page__rpn-hero-image {
+    bottom: calc(
+      (var(--s-x) * 2)
+      + var(--s-first-group-bottom-baseline)
+      + var(--s-rpn-image-block-size)
+      + var(--s-x)
+    ) !important;
+  }
+
+  .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section.is-rpn-page-section-active .s-page__rpn-carousel-nav {
+    top: auto;
+    bottom: calc(
+      (var(--s-x) * 2)
+      + var(--s-first-group-bottom-baseline)
+      + var(--s-rpn-image-block-size)
+      + var(--s-x)
+    );
+  }
+
+  .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-stack-page-section .s-page__rpn-carousel-nav {
+    top: auto;
+    bottom: calc(
+      (var(--s-x) * 2)
+      + var(--s-first-group-bottom-baseline)
+      + var(--s-rpn-image-block-size)
+      + var(--s-x)
+    );
+  }
+}
+
+@media (orientation: portrait) and (min-height: 900px) {
+  .s-page--rpn.s-rpn-discrete-sections [data-s-rpn-page-section] {
+    height: 932px;
+    min-height: 932px;
+    max-height: 932px;
+  }
+}
