@@ -15,7 +15,6 @@
   const sectionComposer = page?.querySelector('[data-s-consultation-composer]');
   const sectionInput = page?.querySelector('[data-s-consultation-composer-input]');
   const sectionLanguage = page?.querySelector('[data-s-consultation-composer-language]');
-  const sectionBackPanel = page?.querySelector('[data-s-consultation-composer-back-panel]');
   const sectionAnswerHistory = page?.querySelector('[data-s-consultation-answer-history]');
   const sectionChoiceTray = page?.querySelector('[data-s-consultation-choice-tray]');
   const sectionSuccess = page?.querySelector('[data-s-consultation-composer-success]');
@@ -25,14 +24,14 @@
   const discountInput = page?.querySelector('[data-s-consultation-discount-input]');
   const discountStatus = page?.querySelector('[data-s-consultation-discount-status]');
   const menuItems = Array.from(page?.querySelectorAll('.s-page__composer-menu-item') || []);
-  if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !theme || !language || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionBackPanel || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || sections.length !== 2) return;
+  if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !theme || !language || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || sections.length !== 2) return;
 
   const copy = {
     en: { menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'], ask: 'Ask ooxme', add: 'Add context', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' },
     ar: { menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'], ask: 'اسأل اوكسوم', add: 'اضف سياقًا', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' }
   };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  let typeTimer = 0, typeRun = 0, menuTimer = 0, locked = false, unlockTimer = 0, transitionSettleTimer = 0, touch = null;
+  let menuTimer = 0, locked = false, unlockTimer = 0, transitionSettleTimer = 0, touch = null;
   let closedComposerFrameHeight = 0, closedComposerBottom = 0, keyboardSyncFrame = 0, appliedKeyboardOffset = 0, keyboardViewportRevision = 0;
   let keyboardBaselineViewportHeight = 0, keyboardSessionScrollY = null, keyboardSessionActive = false, keyboardOpen = false;
 

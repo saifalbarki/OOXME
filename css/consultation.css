@@ -417,11 +417,11 @@ body.s-page--consultation .s-page__consultation-summary-card {
   --s-summary-muted: rgba(255, 255, 255, .62);
   box-sizing: border-box;
   position: absolute;
-  inset-inline-start: 50%;
+  inset-inline: 0;
   bottom: var(--s-consultation-section-2-bottom-inset);
   width: var(--s-consultation-primary-card-width);
   max-height: 100%;
-  margin: 0;
+  margin: 0 auto;
   padding: calc(var(--s-x) * 1.25);
   border: 1px solid var(--s-summary-stroke);
   border-radius: var(--s-composer-radius);
@@ -431,7 +431,7 @@ body.s-page--consultation .s-page__consultation-summary-card {
   -webkit-backdrop-filter: blur(20px) saturate(125%);
   backdrop-filter: blur(20px) saturate(125%);
   overflow: auto;
-  transform: translateX(-50%);
+  transform: none;
 }
 @media (orientation: portrait) {
   body.s-page--consultation .s-page__consultation-summary-section {
