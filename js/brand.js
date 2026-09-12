@@ -61,8 +61,10 @@
   const syncServices = (animate = true, dragOffset = 0) => {
     const card = serviceCards[activeService];
     if (!card) return;
+    const rtl = root.lang === 'ar';
     const gap = Number.parseFloat(getComputedStyle(serviceTrack).columnGap) || 0;
-    const position = (serviceViewport.clientWidth / 2) - (card.offsetWidth / 2) - (activeService * (card.offsetWidth + gap)) + dragOffset;
+    const centerOffset = (serviceViewport.clientWidth / 2) - (card.offsetWidth / 2);
+    const position = rtl ? -centerOffset + (activeService * (card.offsetWidth + gap)) + dragOffset : centerOffset - (activeService * (card.offsetWidth + gap)) + dragOffset;
     serviceTrack.classList.toggle('is-dragging', !animate);
     serviceTrack.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
     serviceCards.forEach((item, index) => { const active = index === activeService; item.classList.toggle('is-active', active); item.setAttribute('aria-current', String(active)); item.dir = root.lang === 'ar' ? 'rtl' : 'ltr'; item.lang = root.lang === 'ar' ? 'ar' : 'en'; });
@@ -105,7 +107,7 @@
   serviceNext.addEventListener('click', () => selectService(activeService + 1));
   serviceViewport.addEventListener('pointerdown', (event) => { if (event.target.closest('button')) return; serviceDrag = { id: event.pointerId, startX: event.clientX, delta: 0 }; serviceViewport.setPointerCapture?.(event.pointerId); syncServices(false); });
   serviceViewport.addEventListener('pointermove', (event) => { if (!serviceDrag || event.pointerId !== serviceDrag.id) return; serviceDrag.delta = event.clientX - serviceDrag.startX; syncServices(false, serviceDrag.delta); });
-  const finishServiceDrag = (event) => { if (!serviceDrag || event.pointerId !== serviceDrag.id) return; const delta = serviceDrag.delta; serviceDrag = null; if (Math.abs(delta) >= 42) selectService(activeService + (delta < 0 ? 1 : -1)); else syncServices(); };
+  const finishServiceDrag = (event) => { if (!serviceDrag || event.pointerId !== serviceDrag.id) return; const delta = serviceDrag.delta; serviceDrag = null; if (Math.abs(delta) >= 42) selectService(activeService + ((delta < 0 ? 1 : -1) * (root.lang === 'ar' ? -1 : 1))); else syncServices(); };
   serviceViewport.addEventListener('pointerup', finishServiceDrag); serviceViewport.addEventListener('pointercancel', finishServiceDrag);
   composer.addEventListener('submit', (event) => { event.preventDefault(); setMenu(!menu.classList.contains('is-open')); });
   document.addEventListener('pointerdown', (event) => { if (menu.classList.contains('is-open') && !composer.contains(event.target)) setMenu(false); }, { passive: true });

@@ -83,8 +83,8 @@
     const card = productCards[activeProduct];
     if (!card) return;
     carouselTrack.classList.toggle('is-dragging', !animate);
-    const gap = Number.parseFloat(getComputedStyle(carouselTrack).columnGap) || 0;
-    const position = (carouselViewport.clientWidth / 2) - (card.offsetWidth / 2) - (activeProduct * (card.offsetWidth + gap)) + dragOffset;
+    const cardCenter = card.offsetLeft + (card.offsetWidth / 2);
+    const position = (carouselViewport.clientWidth / 2) - cardCenter + dragOffset;
     carouselTrack.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
     productCards.forEach((item, index) => {
       const active = index === activeProduct;
@@ -221,7 +221,7 @@
     if (!carouselDrag || event.pointerId !== carouselDrag.id) return;
     const delta = carouselDrag.delta;
     carouselDrag = null;
-    if (Math.abs(delta) >= 42) selectProduct(activeProduct + (delta < 0 ? 1 : -1));
+    if (Math.abs(delta) >= 42) selectProduct(activeProduct + ((delta < 0 ? 1 : -1) * (root.lang === 'ar' ? -1 : 1)));
     else syncCarousel(true);
   };
   carouselViewport.addEventListener('pointerup', finishCarouselDrag);

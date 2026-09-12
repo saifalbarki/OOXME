@@ -1188,14 +1188,14 @@
     });
   });
 
-  document.querySelectorAll('[data-s-image-arrow-action]').forEach((arrow) => {
+  document.querySelectorAll('[data-s-image-arrow-route]').forEach((arrow) => {
     ['pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach((eventName) => {
       arrow.addEventListener(eventName, (event) => event.stopPropagation(), { passive: true });
     });
     arrow.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      if (arrow.dataset.sImageArrowAction === 'next-section') transitionMajorSection(1);
+      if (arrow.dataset.sImageArrowRoute) window.location.assign(arrow.dataset.sImageArrowRoute);
     });
   });
 

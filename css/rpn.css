@@ -184,7 +184,7 @@ html.s-route.is-day-mode .s-page--rpn .s-page__rpn-submit { color: #111111; }
   bottom: auto;
   right: 0;
   left: 0;
-  width: 100%;
+  width: var(--s-composer-menu-width);
   transform: none;
 }
 
@@ -825,3 +825,10 @@ html.s-route.is-day-mode .s-page--rpn .s-page__store-view { background: #0A84FF;
 html[dir="rtl"] .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav { direction: rtl; }
 html[dir="rtl"] .s-page--rpn.s-rpn-discrete-sections .s-page__rpn-carousel-nav > button svg { transform: scaleX(-1); }
 html[dir="rtl"] .s-page--rpn .s-page__store-carousel-track { direction: rtl; }
+
+/* Center the menu on the composer bar without changing its vertical position. */
+.s-page--rpn .s-page__composer-menu {
+  left: 50%;
+  right: auto;
+  margin-left: calc(var(--s-composer-menu-width) / -2);
+}

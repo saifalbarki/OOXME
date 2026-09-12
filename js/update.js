@@ -45,8 +45,10 @@
   const syncCarousel = (animate = true, dragOffset = 0) => {
     const card = cards[activeCard];
     if (!card) return;
+    const rtl = root.lang === 'ar';
     const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
-    const position = (viewport.clientWidth / 2) - (card.offsetWidth / 2) - (activeCard * (card.offsetWidth + gap)) + dragOffset;
+    const centerOffset = (viewport.clientWidth / 2) - (card.offsetWidth / 2);
+    const position = rtl ? -(track.scrollWidth - card.offsetWidth - centerOffset) + (activeCard * (card.offsetWidth + gap)) + dragOffset : centerOffset - (activeCard * (card.offsetWidth + gap)) + dragOffset;
     track.classList.toggle('is-dragging', !animate);
     track.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
     cards.forEach((item, index) => { const active = index === activeCard; item.classList.toggle('is-active', active); item.setAttribute('aria-current', String(active)); item.dir = root.lang === 'ar' ? 'rtl' : 'ltr'; item.lang = root.lang === 'ar' ? 'ar' : 'en'; });
@@ -77,7 +79,7 @@
   next.addEventListener('click', () => selectCard(activeCard + 1));
   viewport.addEventListener('pointerdown', (event) => { if (event.target.closest('button')) return; drag = { id: event.pointerId, startX: event.clientX, delta: 0 }; viewport.setPointerCapture?.(event.pointerId); syncCarousel(false); });
   viewport.addEventListener('pointermove', (event) => { if (!drag || event.pointerId !== drag.id) return; drag.delta = event.clientX - drag.startX; syncCarousel(false, drag.delta); });
-  const finishDrag = (event) => { if (!drag || event.pointerId !== drag.id) return; const delta = drag.delta; drag = null; if (Math.abs(delta) >= 42) selectCard(activeCard + (delta < 0 ? 1 : -1)); else syncCarousel(); };
+  const finishDrag = (event) => { if (!drag || event.pointerId !== drag.id) return; const delta = drag.delta; drag = null; if (Math.abs(delta) >= 42) selectCard(activeCard + ((delta < 0 ? 1 : -1) * (root.lang === 'ar' ? -1 : 1))); else syncCarousel(); };
   viewport.addEventListener('pointerup', finishDrag); viewport.addEventListener('pointercancel', finishDrag);
   face.addEventListener('click', () => window.location.assign('/'));
   composer.addEventListener('submit', (event) => { event.preventDefault(); setMenu(!menu.classList.contains('is-open')); });

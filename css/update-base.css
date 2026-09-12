@@ -2043,7 +2043,7 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   --s-composer-stroke: var(--s-glass-stroke);
   --s-composer-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
   --s-composer-backdrop: blur(20px) saturate(125%);
-  --s-composer-menu-width: 220px;
+  --s-composer-menu-width: min(76vw, 340px);
   --s-composer-menu-height: 222px;
   --s-composer-height: 48px;
   --s-control-stagger: .06s;
@@ -2255,6 +2255,7 @@ html[dir="rtl"] .s-page__composer-menu {
   text-align: center;
   appearance: none;
   cursor: pointer;
+  text-decoration: none;
   z-index: 0;
 }
 
@@ -2984,7 +2985,7 @@ body.s-page:not(.s-page--rpn) .s-page__composer-menu {
   right: 0;
   bottom: auto;
   left: 0;
-  width: 100%;
+  width: var(--s-composer-menu-width);
   transform: none;
 }
 
@@ -3205,4 +3206,11 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .
   .s-page__composer.is-pulsing { animation: none; }
   .s-page__composer-menu.is-pulsing { animation: none; }
   .s-page__send-utility.is-pulsing { animation: none; }
+}
+
+/* Center the menu on the composer bar without changing its vertical position. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu {
+  left: 50%;
+  right: auto;
+  margin-left: calc(var(--s-composer-menu-width) / -2);
 }

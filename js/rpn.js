@@ -156,9 +156,11 @@
   const syncStoreCarousel = (animate = true, dragOffset = 0) => {
     const card = storeProductCards[activeProduct];
     if (!card) return;
+    const rtl = root.lang === 'ar';
     storeCarouselTrack.classList.toggle('is-dragging', !animate);
     const gap = Number.parseFloat(getComputedStyle(storeCarouselTrack).columnGap) || 0;
-    const position = (storeCarouselViewport.clientWidth / 2) - (card.offsetWidth / 2) - (activeProduct * (card.offsetWidth + gap)) + dragOffset;
+    const centerOffset = (storeCarouselViewport.clientWidth / 2) - (card.offsetWidth / 2);
+    const position = rtl ? -centerOffset + (activeProduct * (card.offsetWidth + gap)) + dragOffset : centerOffset - (activeProduct * (card.offsetWidth + gap)) + dragOffset;
     storeCarouselTrack.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
     storeProductCards.forEach((item, index) => {
       const active = index === activeProduct;
@@ -452,7 +454,7 @@
     if (!storeCarouselDrag || event.pointerId !== storeCarouselDrag.id) return;
     const delta = storeCarouselDrag.delta;
     storeCarouselDrag = null;
-    if (Math.abs(delta) >= 42) selectStoreProduct(activeProduct + (delta < 0 ? 1 : -1));
+    if (Math.abs(delta) >= 42) selectStoreProduct(activeProduct + ((delta < 0 ? 1 : -1) * (root.lang === 'ar' ? -1 : 1)));
     else syncStoreCarousel(true);
   };
   storeCarouselViewport.addEventListener('pointerup', finishStoreCarouselDrag);
