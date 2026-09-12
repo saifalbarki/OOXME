@@ -1901,7 +1901,7 @@ html[dir="rtl"] .s-page__reveal-line {
 
 .s-page.is-chat-active .s-page__conversation {
   pointer-events: auto;
-  touch-action: pan-y;
+  touch-action: manipulation;
 }
 
 .s-page__conversation-bubble {

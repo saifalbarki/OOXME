@@ -36,6 +36,16 @@ body.s-page--store .s-page__major-section:nth-child(2) > .s-page__group,
 body.s-page--store .s-page__store-section--products {
   overflow: visible;
 }
+body.s-page--store .s-page__store-section--products { position: relative; }
+body.s-page--store .s-page__store-section--products .s-page__store-layout--products {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(var(--s-store-safe-bottom-gap, var(--s-x)) + var(--s-store-nav-height, 48px) + var(--s-x));
+  align-content: start;
+  gap: calc(var(--s-x) * 1.25);
+  height: auto;
+  padding: 0;
+}
 
 body.s-page--store .s-page__store-layout {
   display: grid;
@@ -156,11 +166,12 @@ body.s-page--store .s-page__store-carousel-viewport {
   margin-inline: calc(var(--s-x) * -1);
   min-width: 0;
   overflow: hidden;
-  touch-action: pan-y;
+  touch-action: manipulation;
 }
 
 body.s-page--store .s-page__store-carousel-track {
   display: flex;
+  direction: ltr;
   align-items: stretch;
   gap: var(--s-x);
   width: max-content;
@@ -245,44 +256,38 @@ body.s-page--store .s-page__store-carousel-arrow:active {
   transform: scale(.96);
 }
 
-body.s-page--store .s-page__store-carousel-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: calc(var(--s-x) * .75);
-  margin-top: var(--s-x);
-}
-
-body.s-page--store .s-page__store-carousel-arrow {
+body.s-page--store { --s-store-safe-bottom-gap: var(--s-x); --s-store-nav-height: 48px; --s-store-nav-width: 162px; --s-store-nav-arrow-size: 32px; --s-store-nav-gap: 8px; }
+body.s-page--store .s-page__rpn-carousel-nav {
+  position: absolute;
+  z-index: 20;
+  left: calc(50vw - var(--s-x));
+  bottom: var(--s-store-safe-bottom-gap);
   display: grid;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  place-items: center;
-  border-radius: 50%;
+  grid-template-columns: var(--s-store-nav-arrow-size) minmax(0, 1fr) var(--s-store-nav-arrow-size);
+  column-gap: var(--s-store-nav-gap);
+  align-items: center;
+  width: var(--s-store-nav-width);
+  height: var(--s-store-nav-height);
+  margin: 0 0 0 calc(var(--s-store-nav-width) / -2);
+  padding: 0 8px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 28px;
+  background: rgba(255,255,255,.16);
+  box-shadow: 0 2px 7px rgba(0,0,0,.045),0 1px 1px rgba(0,0,0,.025),inset 0 0 0 1px var(--s-glass-stroke);
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+  direction: ltr;
 }
-
-body.s-page--store .s-page__store-carousel-arrow:disabled {
-  cursor: default;
-  opacity: .3;
-}
-
-body.s-page--store .s-page__store-carousel-arrow svg {
-  width: 14px;
-  height: 14px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-body.s-page--store .s-page__store-carousel-status {
-  min-width: 36px;
-  color: var(--s-store-muted);
-  font: 500 11px/1 OOXMEScript, Arial, sans-serif;
-  text-align: center;
-}
+body.s-page--store .s-page__store-section--products > .s-page__rpn-carousel-nav { margin-top: 0; }
+body.s-page--store .s-page__rpn-carousel-nav > button { position: relative; display: grid; width: var(--s-store-nav-arrow-size); height: var(--s-store-nav-arrow-size); place-items: center; padding: 0; border: 1px solid var(--s-glass-stroke); border-radius: 50%; background: #0A84FF; color: #fff; cursor: pointer; }
+body.s-page--store .s-page__rpn-carousel-nav > button:disabled { opacity: .4; cursor: default; }
+body.s-page--store .s-page__rpn-carousel-nav > button svg { width: 13.7px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.12; stroke-linecap: round; stroke-linejoin: round; }
+body.s-page--store .s-page__rpn-carousel-nav > span { width: 54px; justify-self: center; color: var(--s-store-muted); font: 500 11px/1 OOXMEScript,Arial,sans-serif; text-align: center; }
+html[lang="ar"] body.s-page--store .s-page__rpn-carousel-nav > span { font-family: OOXMETosh,OOXMEScript,Arial,sans-serif; }
+html[dir="rtl"] body.s-page--store .s-page__rpn-carousel-nav { direction: rtl; }
+html[dir="rtl"] body.s-page--store .s-page__rpn-carousel-nav > button svg { transform: scaleX(-1); }
+html[dir="rtl"] body.s-page--store .s-page__store-carousel-track { direction: rtl; }
 
 body.s-page--store .s-page__store-custom-card {
   display: grid;
