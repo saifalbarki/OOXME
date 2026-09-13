@@ -239,6 +239,7 @@
   let flowFrame = 0;
   let metricCountFrame = 0;
   let metricsSectionActive = false;
+  let metricsAnimationStarted = false;
   let zSectionOneScrollFrame = 0;
   let zSectionOneLocked = false;
   let zSectionOneCompositionReady = false;
@@ -826,9 +827,16 @@
       .filter(Boolean);
 
     if (!isActive) {
-      values.forEach(({ value }) => { value.textContent = '0+'; });
+      values.forEach(({ value, target }) => {
+        value.textContent = metricsAnimationStarted ? `${target}+` : '0+';
+      });
       return;
     }
+    if (metricsAnimationStarted) {
+      values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
+      return;
+    }
+    metricsAnimationStarted = true;
     if (reducedMotion.matches) {
       values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
       return;

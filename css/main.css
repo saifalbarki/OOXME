@@ -559,11 +559,6 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__section-3-image-
   color: #666666;
 }
 
-body.s-page.s-page--main .s-page__section-3-image-frame .s-page__image-copy-supporting {
-  color: #FFFFFF;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .72);
-}
-
 /* One shared inset controls every Section 3 overlay-to-image edge distance. */
 body.s-page:not(.s-page--rpn) .s-page__section-3-image-frame .s-page__image-selector-arrow {
   top: auto;
@@ -3232,4 +3227,52 @@ body.s-page:not(.s-page--rpn) .s-page__composer-menu {
   left: 50%;
   right: auto;
   margin-left: calc(var(--s-composer-menu-width) / -2);
+}
+
+/* Main Section 2 uses one stable hero treatment across both languages. */
+body.s-page.s-page--main :is(.s-page__section-2-image-frame--shared-overlay, .s-page__section-3-image-frame) .s-page__image-copy-main {
+  color: #FFFFFF;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  font-family: OOXMEPlayfair, "Playfair Display", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+}
+
+html[lang="ar"] body.s-page.s-page--main :is(.s-page__section-2-image-frame--shared-overlay, .s-page__section-3-image-frame) .s-page__image-copy-main {
+  color: #FFFFFF;
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+}
+
+html[dir="rtl"] body.s-page.s-page--main:not(.s-page--rpn) :is(.s-page__section-2-image-frame--shared-overlay, .s-page__section-3-image-frame) .s-page__image-copy-main {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+}
+
+body.s-page.s-page--main .s-page__section-2-image-frame--shared-overlay .s-page__image-copy-supporting {
+  color: #FFFFFF;
+}
+
+body.s-page.s-page--main .s-page__section-3-image-frame .s-page__image-copy-supporting {
+  color: #000000;
+  text-shadow: none;
+}
+
+body.s-page.s-page--main .s-page__section-3-image-frame .s-page__image-copy-main {
+  color: #000000;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: #000000;
+}
+
+html[lang="ar"] body.s-page.s-page--main .s-page__section-3-image-frame .s-page__image-copy-main {
+  color: #000000;
+  -webkit-text-fill-color: #000000;
 }
