@@ -15,6 +15,12 @@ const pageRoutes = {
 };
 const publicRoots = ['assets', 'css', 'js', 'public'];
 const publicRootFiles = new Set(['favicon.svg', 'site.webmanifest']);
+const apiRoutes = {
+  '/api/booking/available-slots': './api/booking/available-slots',
+  '/api/booking/availability': './api/booking/availability',
+  '/api/booking/confirm': './api/booking/confirm',
+  '/api/promo/validate': './api/promo/validate'
+};
 const types = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
@@ -36,9 +42,44 @@ const send = (response, status, type, body) => {
   response.end(body);
 };
 
+const readRequestBody = (request) => new Promise((resolve, reject) => {
+  let body = '';
+  request.setEncoding('utf8');
+  request.on('data', (chunk) => { body += chunk; });
+  request.on('end', () => {
+    if (!body) return resolve({});
+    try { resolve(JSON.parse(body)); } catch (error) { reject(error); }
+  });
+  request.on('error', reject);
+});
+
+const createApiResponse = (response) => ({
+  status(statusCode) { response.statusCode = statusCode; return this; },
+  setHeader(name, value) { response.setHeader(name, value); return this; },
+  send(body) { response.end(body); }
+});
+
+const handleApiRequest = async (request, response, requestUrl) => {
+  const modulePath = apiRoutes[requestUrl.pathname];
+  if (!modulePath) return false;
+  try {
+    request.query = Object.fromEntries(requestUrl.searchParams.entries());
+    if (request.method === 'POST') request.body = await readRequestBody(request);
+    const handler = require(modulePath);
+    await handler(request, createApiResponse(response));
+  } catch (error) {
+    if (!response.headersSent) send(response, 400, 'application/json; charset=utf-8', JSON.stringify({ error: 'invalid_request' }));
+  }
+  return true;
+};
+
 const server = http.createServer((request, response) => {
   const requestUrl = new URL(request.url || '/', 'http://localhost');
   const requestPath = decodeURIComponent(requestUrl.pathname);
+  if (apiRoutes[requestPath]) {
+    void handleApiRequest(request, response, requestUrl);
+    return;
+  }
   const page = pageRoutes[requestPath];
 
   let relative = page;

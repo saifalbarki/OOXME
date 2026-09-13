@@ -4,6 +4,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "cleanUrls": true,
+  "functions": {
+    "api/**/*.js": { "maxDuration": 30, "includeFiles": "data/promos.json" }
+  },
   "rewrites": [
     { "source": "/bm", "destination": "/bm.html" },
     { "source": "/rpn", "destination": "/rpn.html" },

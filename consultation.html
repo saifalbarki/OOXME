@@ -47,7 +47,8 @@
                 <h2 class="s-page__consultation-summary-heading" data-s-summary-heading="pricing">Pricing</h2>
                 <dl class="s-page__consultation-summary-list s-page__consultation-summary-list--pricing">
                   <div class="s-page__consultation-summary-row"><dt data-s-summary-label="base">Base Price</dt><dd data-s-summary-value="base">—</dd></div>
-                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="discount">Discount</dt><dd data-s-summary-value="discount">—</dd></div>
+                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="discountCode">Discount Code</dt><dd data-s-summary-value="discountCode">—</dd></div>
+                  <div class="s-page__consultation-summary-row"><dt data-s-summary-label="discount">Discount Amount</dt><dd data-s-summary-value="discount">—</dd></div>
                   <div class="s-page__consultation-summary-row s-page__consultation-summary-row--total"><dt data-s-summary-label="total">Total</dt><dd data-s-summary-value="total">—</dd></div>
                 </dl>
               </div>
@@ -63,6 +64,11 @@
               <div class="s-page__consultation-summary-divider" aria-hidden="true"></div>
               <div class="s-page__consultation-summary-group s-page__consultation-payment-group">
                 <h2 class="s-page__consultation-summary-heading" data-s-summary-heading="payment">Payment</h2>
+                <div class="s-page__consultation-payment-options" data-s-consultation-payment-options role="group" aria-label="Payment method">
+                  <button type="button" data-consultation-payment="ZainCash">Zain Cash</button>
+                  <button type="button" data-consultation-payment="Qi">SuperQi</button>
+                </div>
+                <p class="s-page__consultation-payment-status" data-s-consultation-payment-status aria-live="polite"></p>
                 <button class="s-page__consultation-pay" data-s-consultation-pay type="button">Pay &amp; Confirm</button>
               </div>
             </article>

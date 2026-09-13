@@ -124,6 +124,7 @@ body.s-page--consultation .s-page__consultation-answer-row {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+body.s-page--consultation .s-page__consultation-answer-row[role="button"] { pointer-events: auto; cursor: pointer; }
 
 body.s-page--consultation .s-page__consultation-answer-row + .s-page__consultation-answer-row {
   border-top: 0;
@@ -474,6 +475,36 @@ html[lang="ar"] body.s-page--consultation .s-page__consultation-discount-status 
 html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-summary-card { --s-summary-surface: rgba(255, 255, 255, .42); --s-summary-text: #111111; --s-summary-muted: rgba(17, 17, 17, .62); }
 html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-discount-field input { background: rgba(255, 255, 255, .45); color: #111111; }
 html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-apply { background: rgba(255, 255, 255, .42); color: #111111; }
+
+body.s-page--consultation .s-page__consultation-payment-group { gap: calc(var(--s-x) * .7); }
+body.s-page--consultation .s-page__consultation-payment-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--s-x) * .5);
+}
+body.s-page--consultation .s-page__consultation-payment-options button {
+  min-height: 34px;
+  padding: 0 calc(var(--s-x) * .6);
+  border: 1px solid var(--s-summary-stroke);
+  border-radius: calc(var(--s-composer-radius) * .65);
+  background: rgba(255, 255, 255, .1);
+  color: var(--s-summary-text);
+  font: 500 11px/1 OOXMEScript, Arial, sans-serif;
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+html[lang="ar"] body.s-page--consultation .s-page__consultation-payment-options button { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
+body.s-page--consultation .s-page__consultation-payment-options button.is-selected { border-color: #0A84FF; background: rgba(10, 132, 255, .22); }
+body.s-page--consultation .s-page__consultation-payment-options button:active { transform: scale(.98); }
+html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-payment-options button { background: rgba(255, 255, 255, .42); }
+body.s-page--consultation .s-page__consultation-payment-status {
+  min-height: 14px;
+  margin: 0;
+  color: var(--s-summary-muted);
+  font: 500 11px/1.2 OOXMEScript, Arial, sans-serif;
+}
+html[lang="ar"] body.s-page--consultation .s-page__consultation-payment-status { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
+body.s-page--consultation .s-page__consultation-payment-status.is-error { color: #FF6961; }
 
 @media (prefers-reduced-motion: reduce) {
   body.s-page--consultation .s-page__consultation-composer-unit { transition: none; }
