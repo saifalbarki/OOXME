@@ -29,6 +29,11 @@
     || !themeUtility || !languageUtility || !addButton || !submitButton || !nav
     || !previousButton || !nextButton || !carouselNav || !carouselPrevious || !carouselNext || !carouselCounter || !storeCarousel || !storeCarouselViewport || !storeCarouselTrack || storeProductCards.length !== 4 || navItems.length !== 4 || menuItems.length !== 5) return;
 
+  const brandMenuItem = menuItems[0];
+  brandMenuItem.removeAttribute('href');
+  brandMenuItem.setAttribute('aria-disabled', 'true');
+  brandMenuItem.insertAdjacentHTML('beforeend', '<svg class="s-page__rpn-menu-lock" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><rect class="s-page__rpn-menu-lock-body" x="2" y="6.1" width="9" height="5.9" rx="1.2" /><path class="s-page__rpn-menu-lock-shackle" d="M4.15 6.1V4.45a2.35 2.35 0 0 1 4.7 0V6.1" /></svg>');
+
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
   const menuCopy = {
@@ -405,8 +410,8 @@
     }, { passive: true });
   });
   menuItems[0].addEventListener('click', (event) => {
+    event.preventDefault();
     event.stopPropagation();
-    window.location.assign('/bm');
   });
   addButton.addEventListener('click', (event) => {
     event.stopPropagation();

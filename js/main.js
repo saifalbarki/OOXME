@@ -711,7 +711,7 @@
       item.classList.add('is-active');
       menuItemFlashTimers.set(item, window.setTimeout(() => item.classList.remove('is-active'), 120));
     }, { passive: true });
-    if (index === 0) {
+    if (index === 0 && item.getAttribute('aria-disabled') !== 'true') {
       item.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();

@@ -200,7 +200,7 @@
   languageButton.addEventListener('click', (event) => { event.stopPropagation(); applyLanguage(root.lang === 'ar' ? 'en' : 'ar'); });
   menuItems.forEach((item, index) => {
     item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true });
-    if (index === 0) item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/bm'); });
+    if (index === 0 && item.getAttribute('aria-disabled') !== 'true') item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/bm'); });
   });
   page.querySelectorAll('.s-page__store-action').forEach((button) => button.addEventListener('click', (event) => event.preventDefault()));
   previousProduct.addEventListener('click', () => selectProduct(activeProduct - 1));
