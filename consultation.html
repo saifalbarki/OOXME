@@ -56,10 +56,9 @@
               <div class="s-page__consultation-summary-group">
                 <h2 class="s-page__consultation-summary-heading" data-s-summary-heading="discountCode">Discount Code</h2>
                 <form class="s-page__consultation-discount-form" data-s-consultation-discount-form novalidate>
-                  <label class="s-page__consultation-discount-field"><span class="s-page__visually-hidden" data-s-summary-label="discountInput">Discount code</span><input data-s-consultation-discount-input type="text" name="discount-code" placeholder="Enter code" autocomplete="off" maxlength="32" /></label>
+                  <label class="s-page__consultation-discount-field"><span class="s-page__visually-hidden" data-s-summary-label="discountInput">Discount code</span><input data-s-consultation-discount-input type="text" name="discount-code" placeholder="Enter code" autocomplete="off" maxlength="32" /><span class="s-page__consultation-discount-status" data-s-consultation-discount-status aria-live="polite"></span></label>
                   <button class="s-page__consultation-apply" data-s-consultation-apply type="submit">Apply</button>
                 </form>
-                <p class="s-page__consultation-discount-status" data-s-consultation-discount-status aria-live="polite"></p>
               </div>
               <div class="s-page__consultation-summary-divider" aria-hidden="true"></div>
               <div class="s-page__consultation-summary-group s-page__consultation-payment-group">
@@ -68,7 +67,6 @@
                   <button type="button" data-consultation-payment="ZainCash">Zain Cash</button>
                   <button type="button" data-consultation-payment="Qi">SuperQi</button>
                 </div>
-                <p class="s-page__consultation-payment-status" data-s-consultation-payment-status aria-live="polite"></p>
                 <button class="s-page__consultation-pay" data-s-consultation-pay type="button">Pay &amp; Confirm</button>
               </div>
             </article>
@@ -76,6 +74,15 @@
         </div>
       </section>
     </main>
+    <div class="s-page__consultation-payment-overlay" data-s-consultation-payment-overlay hidden aria-hidden="true">
+      <article class="s-page__consultation-payment-overlay-card" data-s-consultation-payment-overlay-card role="dialog" aria-modal="true" aria-labelledby="s-consultation-payment-overlay-title" aria-describedby="s-consultation-payment-overlay-instruction">
+        <h2 id="s-consultation-payment-overlay-title" class="s-page__visually-hidden" data-s-consultation-payment-overlay-title>Payment</h2>
+        <div class="s-page__consultation-payment-overlay-image-container" data-s-consultation-payment-overlay-image-container>
+          <img class="s-page__consultation-payment-overlay-qr" data-s-consultation-payment-overlay-qr alt="Payment QR code" />
+        </div>
+        <p class="s-page__consultation-payment-overlay-instruction" data-s-consultation-payment-overlay-instruction></p>
+      </article>
+    </div>
     <form class="s-page__composer" data-s-composer novalidate>
       <div class="s-page__composer-menu" data-s-composer-menu aria-hidden="true">
         <a class="s-page__composer-menu-item" href="/bm"><span class="s-page__composer-menu-label">The Brand Management</span></a>
@@ -89,5 +96,12 @@
       <button class="s-page__submit s-page__x-top-bar-submit" type="submit" aria-label="Submit question"><svg class="s-page__submit-icon" viewBox="3.9 3.9 16.2 16.2" aria-hidden="true" focusable="false"><path class="s-page__x-top-bar-line s-page__x-top-bar-line--top" d="M4.22 8h15.56" /><path class="s-page__x-top-bar-line s-page__x-top-bar-line--bottom" d="M4.22 16h15.56" /></svg></button>
       <div class="s-page__send-utilities" data-s-send-utilities aria-hidden="true"><button class="s-page__send-utility is-active" type="button" data-s-utility="theme" aria-label="Toggle theme" aria-pressed="true"><span class="s-page__send-utility-inner" aria-hidden="true"></span></button><button class="s-page__send-utility is-active" type="button" data-s-utility="language" aria-label="Toggle language" aria-pressed="true"><span class="s-page__send-utility-inner" aria-hidden="true"></span></button></div>
     </form>
+    <div class="s-page__consultation-success-overlay" data-s-consultation-success-overlay hidden aria-hidden="true">
+      <article class="s-page__consultation-success-state" data-s-consultation-success-state role="dialog" aria-modal="true" aria-labelledby="s-consultation-success-title" aria-describedby="s-consultation-success-instruction">
+        <h2 id="s-consultation-success-title" class="s-page__visually-hidden" data-s-consultation-success-title>Booking confirmed</h2>
+        <div class="s-page__consultation-success-check" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M13 25.5 21 33l14-18" /></svg></div>
+        <p class="s-page__consultation-success-instruction" data-s-consultation-success-instruction></p>
+      </article>
+    </div>
   </body>
 </html>

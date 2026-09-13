@@ -24,9 +24,17 @@
   const discountInput = page?.querySelector('[data-s-consultation-discount-input]');
   const discountStatus = page?.querySelector('[data-s-consultation-discount-status]');
   const paymentOptions = Array.from(page?.querySelectorAll('[data-consultation-payment]') || []);
-  const paymentStatus = page?.querySelector('[data-s-consultation-payment-status]');
+  const paymentOverlay = page?.querySelector('[data-s-consultation-payment-overlay]');
+  const paymentOverlayCard = page?.querySelector('[data-s-consultation-payment-overlay-card]');
+  const paymentOverlayTitle = page?.querySelector('[data-s-consultation-payment-overlay-title]');
+  const paymentOverlayQr = page?.querySelector('[data-s-consultation-payment-overlay-qr]');
+  const paymentOverlayInstruction = page?.querySelector('[data-s-consultation-payment-overlay-instruction]');
+  const successOverlay = page?.querySelector('[data-s-consultation-success-overlay]');
+  const successOverlayState = page?.querySelector('[data-s-consultation-success-state]');
+  const successOverlayTitle = page?.querySelector('[data-s-consultation-success-title]');
+  const successOverlayInstruction = page?.querySelector('[data-s-consultation-success-instruction]');
   const menuItems = Array.from(page?.querySelectorAll('.s-page__composer-menu-item') || []);
-  if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !theme || !language || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentStatus || sections.length !== 2) return;
+  if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !theme || !language || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || sections.length !== 2) return;
 
   const copy = {
     en: { menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'], ask: 'Ask ooxme', add: 'Add context', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' },
@@ -56,6 +64,14 @@
     const direction = language === 'ar' ? 'rtl' : 'ltr';
     sectionInput.lang = language;
     sectionInput.dir = direction;
+    sectionInput.classList.toggle('is-arabic-input', language === 'ar');
+    sectionInput.classList.toggle('is-english-input', language === 'en');
+  };
+  const containsArabicText = (value) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(value || '');
+  const syncSectionInputTextStyle = () => {
+    const language = containsArabicText(sectionInput.value) ? 'ar' : bookingLanguage();
+    sectionInput.lang = language;
+    sectionInput.dir = language === 'ar' ? 'rtl' : 'ltr';
     sectionInput.classList.toggle('is-arabic-input', language === 'ar');
     sectionInput.classList.toggle('is-english-input', language === 'en');
   };
@@ -104,11 +120,84 @@
   let discountCode = '';
   let discountQuote = null;
   let discountLoading = false;
+  let discountStatusKind = '';
+  let discountValidationId = 0;
   let bookingSubmission = null;
   let bookingStatus = '';
   let bookingGeometryFrame = 0;
+  let openPaymentMethod = '';
+  let editingAnswer = null;
   const bookingLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
   const currentBookingStep = () => bookingSteps[booking.index] || bookingSteps[bookingSteps.length - 1];
+  const paymentOverlayContent = {
+    ZainCash: {
+      src: '/assets/Payment/ZAINCASH.png',
+      en: { title: 'Zain Cash', alt: 'Zain Cash payment QR code', instruction: 'Take a screenshot of the code, complete the payment, and we’ll confirm your booking after receiving it.' },
+      ar: { title: 'زين كاش', alt: 'رمز الدفع عبر زين كاش', instruction: 'التقط صورة للرمز، أكمل الدفع، وسنؤكد حجزك بعد الاستلام.' }
+    },
+    Qi: {
+      src: '/assets/Payment/QI.png',
+      en: { title: 'SuperQi', alt: 'SuperQi payment QR code', instruction: 'Take a screenshot of the code, complete the payment, and we’ll confirm your booking after receiving it.' },
+      ar: { title: 'سوبر كي', alt: 'رمز الدفع عبر سوبر كي', instruction: 'التقط صورة للرمز، أكمل الدفع، وسنؤكد حجزك بعد الاستلام.' }
+    }
+  };
+  const successOverlayContent = {
+    en: { title: 'Booking confirmed', instruction: 'Your booking information has been received successfully. We will send you an email with instructions for the next stage.' },
+    ar: { title: 'تم تأكيد الحجز', instruction: 'تم استلام معلومات حجزك بنجاح، سوف نرسل لك بريد بالارشادات للمرحلة القادمة' }
+  };
+  const syncPaymentOverlay = () => {
+    const content = paymentOverlayContent[openPaymentMethod];
+    if (!content) return;
+    const language = bookingLanguage();
+    const copy = content[language];
+    paymentOverlayTitle.textContent = copy.title;
+    paymentOverlayTitle.setAttribute('aria-label', copy.title);
+    paymentOverlayQr.src = content.src;
+    paymentOverlayQr.alt = copy.alt;
+    paymentOverlayInstruction.textContent = copy.instruction;
+    paymentOverlay.lang = language;
+    paymentOverlay.dir = language === 'ar' ? 'rtl' : 'ltr';
+  };
+  const closePaymentOverlay = () => {
+    openPaymentMethod = '';
+    paymentOverlay.hidden = true;
+    paymentOverlay.setAttribute('aria-hidden', 'true');
+    paymentOverlay.classList.remove('is-open');
+    document.documentElement.classList.remove('s-consultation-payment-overlay-open');
+    paymentOptions.forEach((button) => button.classList.remove('is-selected'));
+  };
+  const openPaymentOverlay = (method) => {
+    if (!paymentOverlayContent[method]) return;
+    openPaymentMethod = method;
+    syncPaymentOverlay();
+    paymentOverlay.hidden = false;
+    paymentOverlay.setAttribute('aria-hidden', 'false');
+    paymentOverlay.classList.add('is-open');
+    document.documentElement.classList.add('s-consultation-payment-overlay-open');
+    paymentOptions.forEach((button) => button.classList.toggle('is-selected', button.dataset.consultationPayment === method));
+  };
+  const syncPaymentButtonState = () => {
+    paymentOptions.forEach((button) => button.classList.toggle('is-selected', !paymentOverlay.hidden && button.dataset.consultationPayment === openPaymentMethod));
+  };
+  const syncSuccessOverlay = () => {
+    const content = successOverlayContent[bookingLanguage()];
+    successOverlayTitle.textContent = content.title;
+    successOverlayTitle.setAttribute('aria-label', content.title);
+    successOverlayInstruction.textContent = content.instruction;
+    successOverlay.lang = bookingLanguage();
+    successOverlay.dir = bookingLanguage() === 'ar' ? 'rtl' : 'ltr';
+  };
+  const closeSuccessOverlay = () => {
+    successOverlay.hidden = true;
+    successOverlay.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('s-consultation-success-overlay-open');
+  };
+  const openSuccessOverlay = () => {
+    syncSuccessOverlay();
+    successOverlay.hidden = false;
+    successOverlay.setAttribute('aria-hidden', 'false');
+    document.documentElement.classList.add('s-consultation-success-overlay-open');
+  };
   const renderSectionSuccessMessage = (language) => {
     if (!booking.complete) {
       sectionSuccess.textContent = '';
@@ -163,9 +252,9 @@
     const language = bookingLanguage();
     const ar = language === 'ar';
     const labels = ar ? {
-      title: 'ملخص الاستشارة', topic: 'موضوع الاستشارة', day: 'اليوم المحدد', time: 'الوقت المحدد', duration: 'المدة المحددة', pricing: 'الأسعار', base: 'السعر الأساسي', discount: 'مبلغ الخصم', total: 'الإجمالي النهائي', discountCode: 'رمز الخصم', discountInput: 'رمز الخصم', placeholder: 'غير محدد', codePlaceholder: 'أدخل الرمز', apply: 'تطبيق', applied: 'تم تطبيق الرمز', applying: 'جارٍ التحقق…', payment: 'الدفع', paymentMethod: 'وسيلة الدفع', zainCash: 'زين كاش', qi: 'سوبر كي', pay: 'ادفع وأكد', choosePayment: 'اختر وسيلة الدفع', paymentRequired: 'اختر وسيلة دفع للمتابعة', booking: 'جارٍ تأكيد الحجز…', bookingError: 'تعذر تأكيد الحجز الآن.'
+      title: 'ملخص الاستشارة', topic: 'موضوع الاستشارة', day: 'اليوم المحدد', time: 'الوقت المحدد', duration: 'المدة المحددة', pricing: 'الأسعار', base: 'السعر الأساسي', discount: 'مبلغ الخصم', total: 'الإجمالي النهائي', discountCode: 'رمز الخصم', discountInput: 'رمز الخصم', placeholder: 'غير محدد', codePlaceholder: 'أدخل الرمز', apply: 'تطبيق', applied: 'تم تطبيق الرمز', applying: 'جارٍ التحقق…', payment: 'الدفع', paymentMethod: 'وسيلة الدفع', zainCash: 'زين كاش', qi: 'سوبر كي', pay: 'ادفع وأكد', booking: 'جارٍ تأكيد الحجز…', bookingError: 'تعذر تأكيد الحجز الآن.'
     } : {
-      title: 'Consultation Summary', topic: 'Consultation topic', day: 'Selected day', time: 'Selected time', duration: 'Selected duration', pricing: 'Pricing', base: 'Base Price', discount: 'Discount Amount', total: 'Final Total', discountCode: 'Discount Code', discountInput: 'Discount code', placeholder: 'Not selected', codePlaceholder: 'Enter code', apply: 'Apply', applied: 'Discount applied', applying: 'Checking…', payment: 'Payment', paymentMethod: 'Payment method', zainCash: 'Zain Cash', qi: 'SuperQi', pay: 'Pay & Confirm', choosePayment: 'Choose a payment method', paymentRequired: 'Choose a payment method to continue', booking: 'Confirming booking…', bookingError: 'We could not confirm the booking right now.'
+      title: 'Consultation Summary', topic: 'Consultation topic', day: 'Selected day', time: 'Selected time', duration: 'Selected duration', pricing: 'Pricing', base: 'Base Price', discount: 'Discount Amount', total: 'Final Total', discountCode: 'Discount Code', discountInput: 'Discount code', placeholder: 'Not selected', codePlaceholder: 'Enter code', apply: 'Apply', applied: 'Discount applied', applying: 'Checking…', payment: 'Payment', paymentMethod: 'Payment method', zainCash: 'Zain Cash', qi: 'SuperQi', pay: 'Pay & Confirm', booking: 'Confirming booking…', bookingError: 'We could not confirm the booking right now.'
     };
     const valueFor = (stepId) => { const answer = answerFor(stepId); return answer ? resolveChoice(answer, language) : labels.placeholder; };
     const duration = selectedDuration();
@@ -192,6 +281,7 @@
     page.querySelector('[data-s-consultation-apply]').textContent = labels.apply;
     page.querySelector('[data-s-consultation-pay]').textContent = quote?.finalAmount === 0 ? (ar ? 'تأكيد الحجز' : 'Confirm Booking') : labels.pay;
     discountStatus.textContent = discountLoading ? labels.applying : (discountCode && quote ? `${labels.applied}: ${discountCode}` : bookingStatus);
+    discountInput.classList.toggle('has-status', Boolean(discountStatus.textContent));
     summary.dir = language === 'ar' ? 'rtl' : 'ltr';
     summary.lang = language;
     const paymentGroup = page.querySelector('[data-s-consultation-payment-options]');
@@ -199,8 +289,9 @@
     paymentOptions.forEach((button) => {
       button.textContent = button.dataset.consultationPayment === 'ZainCash' ? labels.zainCash : labels.qi;
     });
-    paymentStatus.textContent = quote?.finalAmount === 0 || booking.payment ? '' : (paymentStatus.classList.contains('is-error') ? labels.paymentRequired : labels.choosePayment);
-    paymentOptions.forEach((button) => button.classList.toggle('is-selected', button.dataset.consultationPayment === booking.payment));
+    syncPaymentButtonState();
+    syncPaymentOverlay();
+    discountStatus.classList.toggle('is-error', discountStatusKind === 'error');
   };
   const scheduleBookingGeometry = () => {
     if (bookingGeometryFrame) return;
@@ -221,21 +312,31 @@
   };
   const renderAnswerHistory = () => {
     const language = bookingLanguage();
+    const canEditHistory = !booking.complete && currentBookingStep().type !== 'confirm';
     const fragment = document.createDocumentFragment();
     booking.answers.forEach((answer, answerIndex) => {
       const row = document.createElement('p');
-      row.className = `s-page__consultation-answer-row ${language === 'ar' ? 'is-arabic-answer' : 'is-english-answer'}`;
-      row.lang = language;
-      row.dir = language === 'ar' ? 'rtl' : 'ltr';
-      row.textContent = resolveChoice(answer, language);
-      if (!booking.complete) {
+      const displayValue = resolveChoice(answer, language);
+      const valueLanguage = containsArabicText(displayValue) ? 'ar' : 'en';
+      row.className = `s-page__consultation-answer-row ${valueLanguage === 'ar' ? 'is-arabic-answer' : 'is-english-answer'}`;
+      row.lang = valueLanguage;
+      row.dir = valueLanguage === 'ar' ? 'rtl' : 'ltr';
+      row.textContent = displayValue;
+      if (canEditHistory) {
         row.tabIndex = 0;
         row.setAttribute('role', 'button');
         const rewind = () => {
+          const answerStep = bookingSteps.find((step) => step.id === answer.step);
           booking.answers = booking.answers.slice(0, answerIndex);
           booking.index = answerIndex;
+          editingAnswer = { ...answer };
+          booking.payment = '';
+          discountCode = '';
+          discountQuote = null;
+          discountLoading = false;
+          discountInput.value = '';
           bookingStatus = '';
-          renderBookingFlow({ clearSectionInput: true });
+          renderBookingFlow({ clearSectionInput: answerStep?.type !== 'text' });
         };
         row.addEventListener('click', rewind);
         row.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); rewind(); } });
@@ -303,6 +404,7 @@
       option.lang = language;
       option.dir = language === 'ar' ? 'rtl' : 'ltr';
       option.disabled = loading;
+      option.classList.toggle('is-selected', editingAnswer?.step === step.id && editingAnswer.choice === id);
       fragment.append(option);
     });
     sectionChoiceTray.append(fragment);
@@ -314,6 +416,8 @@
     const step = currentBookingStep();
     if (clearSectionInput) sectionInput.value = '';
     applySectionInputLanguage(language);
+    if (!clearSectionInput && editingAnswer?.step === step.id && step.type === 'text') sectionInput.value = editingAnswer.value;
+    syncSectionInputTextStyle();
     renderAnswerHistory();
     renderChoices(step, language);
     sectionSuccess.hidden = !booking.complete;
@@ -332,7 +436,9 @@
     sectionSend.disabled = false;
     sectionSend.setAttribute('aria-label', step.type === 'confirm' ? labels.confirm : labels.send);
     sectionComposerUnit.classList.toggle('is-booking-complete', booking.complete);
+    sectionComposerUnit.classList.toggle('is-booking-ready', !booking.complete && step.type === 'confirm');
     renderSummary();
+    syncSuccessOverlay();
     scheduleBookingGeometry();
     if (placeSectionCaret && !booking.complete && step.type === 'text' && document.activeElement === sectionInput && sectionInput.value === '') {
       sectionInput.setSelectionRange(0, 0, 'none');
@@ -354,6 +460,15 @@
   };
   async function submitCalendarBooking() {
     if (bookingSubmission || booking.complete) return bookingSubmission;
+    const firstIncompleteIndex = bookingSteps.findIndex((step) => step.type !== 'confirm' && !answerFor(step.id));
+    if (firstIncompleteIndex >= 0) {
+      booking.index = firstIncompleteIndex;
+      editingAnswer = null;
+      bookingStatus = '';
+      renderBookingFlow({ clearSectionInput: true });
+      transition(-1);
+      return false;
+    }
     const date = stableChoiceValue('day');
     const time = stableChoiceValue('time');
     const duration = selectedDuration();
@@ -364,12 +479,6 @@
       renderSummary();
       return false;
     }
-    if ((quote?.finalAmount ?? consultationPrices.get(duration)) > 0 && !booking.payment) {
-      paymentStatus.textContent = bookingLanguage() === 'ar' ? 'اختر وسيلة دفع للمتابعة.' : 'Choose a payment method to continue.';
-      paymentStatus.classList.add('is-error');
-      return false;
-    }
-    paymentStatus.classList.remove('is-error');
     bookingStatus = bookingLanguage() === 'ar' ? 'جارٍ تأكيد الحجز…' : 'Confirming booking…';
     renderSummary();
     bookingSubmission = verifySelectedSlot(date, time, duration).then(() => fetch('/api/booking/confirm', {
@@ -397,6 +506,7 @@
       bookingStatus = bookingLanguage() === 'ar' ? `تم تأكيد الحجز ${body.id || ''}`.trim() : `Booking confirmed${body.id ? ` — ${body.id}` : ''}`;
       if (currentQuote()) discountQuote = { ...currentQuote(), finalAmount: Number(body.finalAmount), currency: body.currency };
       renderBookingFlow({ clearSectionInput: true });
+      openSuccessOverlay();
       return body;
     }).catch((error) => {
       bookingStatus = error.message === 'slot_unavailable'
@@ -409,6 +519,7 @@
   }
   const addBookingAnswer = (step, value, choice = '') => {
     const keepTextFocus = step.type === 'text' && document.activeElement === sectionInput;
+    editingAnswer = null;
     booking.answers.push({ step: step.id, value, choice });
     booking.index += 1;
     renderBookingFlow({ clearSectionInput: step.type === 'text', placeSectionCaret: keepTextFocus });
@@ -458,6 +569,7 @@
     // keyboard transform and any native-pan correction before reading geometry.
     restoreClosedSectionComposerBaseline();
     const current = activeIndex(), targetIndex = Math.max(0, Math.min(sections.length - 1, current + direction)), target = sections[targetIndex];
+    if (booking.complete && targetIndex === 0) return;
     if (!target || targetIndex === current) return;
     clearTimeout(transitionSettleTimer);
     locked = true; clearTimeout(unlockTimer); unlockTimer = setTimeout(() => { locked = false; }, 800);
@@ -599,28 +711,33 @@
   composer.addEventListener('pointerdown', (event) => { if (event.target === composer) composer.classList.add('is-pulsing'); }, { passive: true });
   composer.addEventListener('animationend', () => composer.classList.remove('is-pulsing'));
   input.addEventListener('input', updateInputLanguage);
+  sectionInput.addEventListener('input', syncSectionInputTextStyle);
   sectionInput.addEventListener('focus', beginSectionKeyboardSession);
   sectionInput.addEventListener('blur', restoreClosedSectionComposerBaseline);
   sectionComposer.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (booking.complete) { transition(1); return; }
+    if (booking.complete || currentBookingStep().type === 'confirm') { transition(1); return; }
     submitBooking();
   });
   const validateDiscountCode = async ({ showFeedback = true } = {}) => {
     const code = discountInput.value.trim().toUpperCase();
+    const validationId = ++discountValidationId;
     discountCode = code;
     discountQuote = null;
     discountLoading = Boolean(code);
+    discountStatusKind = code ? 'loading' : '';
     bookingStatus = '';
     renderSummary();
     if (!code) {
       discountLoading = false;
+      discountStatusKind = '';
       renderSummary();
       return true;
     }
     const duration = selectedDuration();
     if (!duration) {
       discountLoading = false;
+      discountStatusKind = 'error';
       bookingStatus = bookingLanguage() === 'ar' ? 'اختر المدة أولاً.' : 'Choose a duration first.';
       renderSummary();
       return false;
@@ -633,14 +750,18 @@
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body.success || !body.data?.quote) throw new Error(body.error || 'promotion_unavailable');
+      if (validationId !== discountValidationId || !discountInput.value.trim()) return false;
       discountQuote = body.data.quote;
       discountCode = body.data.promoCode || code;
       discountInput.value = discountCode;
+      discountStatusKind = '';
       if (showFeedback) bookingStatus = '';
       return true;
     } catch (_) {
+      if (validationId !== discountValidationId) return false;
       discountCode = '';
       discountInput.value = code;
+      discountStatusKind = 'error';
       bookingStatus = bookingLanguage() === 'ar' ? 'رمز الخصم غير صالح.' : 'Invalid discount code.';
       return false;
     } finally {
@@ -652,15 +773,33 @@
     event.preventDefault();
     void validateDiscountCode();
   });
+  discountInput.addEventListener('input', () => {
+    if (discountInput.value.trim()) return;
+    discountValidationId += 1;
+    discountCode = '';
+    discountQuote = null;
+    discountLoading = false;
+    discountStatusKind = '';
+    bookingStatus = '';
+    renderSummary();
+  });
+  paymentOverlay.addEventListener('click', closePaymentOverlay);
+  paymentOverlayCard.addEventListener('click', (event) => event.stopPropagation());
+  successOverlay.addEventListener('click', closeSuccessOverlay);
+  successOverlayState.addEventListener('click', (event) => event.stopPropagation());
+  window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !paymentOverlay.hidden) closePaymentOverlay();
+    if (event.key === 'Escape' && !successOverlay.hidden) closeSuccessOverlay();
+  });
   page.querySelector('[data-s-consultation-pay]').addEventListener('click', (event) => {
     event.preventDefault();
     if (!booking.complete) void submitCalendarBooking();
   });
   paymentOptions.forEach((button) => button.addEventListener('click', () => {
+    const method = button.dataset.consultationPayment || '';
+    openPaymentOverlay(method);
     if (booking.complete) return;
-    booking.payment = button.dataset.consultationPayment || '';
-    paymentStatus.classList.remove('is-error');
-    paymentStatus.textContent = '';
+    booking.payment = method;
     renderSummary();
   }));
   sectionSend.addEventListener('pointerdown', (event) => { if (!booking.complete) event.preventDefault(); });
