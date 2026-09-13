@@ -252,9 +252,9 @@
     const language = bookingLanguage();
     const ar = language === 'ar';
     const labels = ar ? {
-      title: 'ملخص الاستشارة', topic: 'موضوع الاستشارة', day: 'اليوم المحدد', time: 'الوقت المحدد', duration: 'المدة المحددة', pricing: 'الأسعار', base: 'السعر الأساسي', discount: 'مبلغ الخصم', total: 'الإجمالي النهائي', discountCode: 'رمز الخصم', discountInput: 'رمز الخصم', placeholder: 'غير محدد', codePlaceholder: 'أدخل الرمز', apply: 'تطبيق', applied: 'تم تطبيق الرمز', applying: 'جارٍ التحقق…', payment: 'الدفع', paymentMethod: 'وسيلة الدفع', zainCash: 'زين كاش', qi: 'سوبر كي', pay: 'ادفع وأكد', booking: 'جارٍ تأكيد الحجز…', bookingError: 'تعذر تأكيد الحجز الآن.'
+      title: 'ملخص الاستشارة', topic: 'موضوع الاستشارة', day: 'اليوم المحدد', time: 'الوقت المحدد', duration: 'المدة المحددة', pricing: 'الأسعار', base: 'السعر الأساسي', discount: 'مبلغ الخصم', total: 'الإجمالي النهائي', discountCode: 'رمز الخصم', discountInput: 'رمز الخصم', placeholder: 'غير محدد', codePlaceholder: 'أدخل الرمز', apply: 'تطبيق', applied: 'تم تطبيق الرمز', applying: 'جارٍ التحقق…', payment: 'الدفع', paymentMethod: 'وسيلة الدفع', zainCash: 'زين كاش', qi: 'سوبر كي', pay: 'تأكيد', booking: 'جارٍ تأكيد الحجز…', bookingError: 'تعذر تأكيد الحجز الآن.'
     } : {
-      title: 'Consultation Summary', topic: 'Consultation topic', day: 'Selected day', time: 'Selected time', duration: 'Selected duration', pricing: 'Pricing', base: 'Base Price', discount: 'Discount Amount', total: 'Final Total', discountCode: 'Discount Code', discountInput: 'Discount code', placeholder: 'Not selected', codePlaceholder: 'Enter code', apply: 'Apply', applied: 'Discount applied', applying: 'Checking…', payment: 'Payment', paymentMethod: 'Payment method', zainCash: 'Zain Cash', qi: 'SuperQi', pay: 'Pay & Confirm', booking: 'Confirming booking…', bookingError: 'We could not confirm the booking right now.'
+      title: 'Consultation Summary', topic: 'Consultation topic', day: 'Selected day', time: 'Selected time', duration: 'Selected duration', pricing: 'Pricing', base: 'Base Price', discount: 'Discount Amount', total: 'Final Total', discountCode: 'Discount Code', discountInput: 'Discount code', placeholder: 'Not selected', codePlaceholder: 'Enter code', apply: 'Apply', applied: 'Discount Applied', applying: 'Checking…', payment: 'Payment', paymentMethod: 'Payment method', zainCash: 'Zain Cash', qi: 'SuperQi', pay: 'Confirm', booking: 'Confirming booking…', bookingError: 'We could not confirm the booking right now.'
     };
     const valueFor = (stepId) => { const answer = answerFor(stepId); return answer ? resolveChoice(answer, language) : labels.placeholder; };
     const duration = selectedDuration();
@@ -276,11 +276,12 @@
     totalValue.textContent = duration ? (quote || !discountCode ? formatMoney(finalAmount) : labels.applying) : '—';
     discountValue.classList.toggle('is-applied', Boolean(quote && discountAmount));
     totalValue.classList.toggle('is-pending', Boolean(discountCode && !quote));
-    discountInput.placeholder = labels.codePlaceholder;
+    const feedbackText = discountLoading ? labels.applying : (discountCode && quote ? `${labels.applied}: ${discountCode}` : bookingStatus);
+    discountInput.placeholder = feedbackText ? '' : labels.codePlaceholder;
     discountInput.setAttribute('aria-label', labels.discountInput);
     page.querySelector('[data-s-consultation-apply]').textContent = labels.apply;
-    page.querySelector('[data-s-consultation-pay]').textContent = quote?.finalAmount === 0 ? (ar ? 'تأكيد الحجز' : 'Confirm Booking') : labels.pay;
-    discountStatus.textContent = discountLoading ? labels.applying : (discountCode && quote ? `${labels.applied}: ${discountCode}` : bookingStatus);
+    page.querySelector('[data-s-consultation-pay]').textContent = labels.pay;
+    discountStatus.textContent = feedbackText;
     discountInput.classList.toggle('has-status', Boolean(discountStatus.textContent));
     summary.dir = language === 'ar' ? 'rtl' : 'ltr';
     summary.lang = language;
@@ -727,6 +728,7 @@
     discountLoading = Boolean(code);
     discountStatusKind = code ? 'loading' : '';
     bookingStatus = '';
+    if (code) discountInput.value = '';
     renderSummary();
     if (!code) {
       discountLoading = false;
@@ -753,14 +755,13 @@
       if (validationId !== discountValidationId || !discountInput.value.trim()) return false;
       discountQuote = body.data.quote;
       discountCode = body.data.promoCode || code;
-      discountInput.value = discountCode;
       discountStatusKind = '';
       if (showFeedback) bookingStatus = '';
       return true;
     } catch (_) {
       if (validationId !== discountValidationId) return false;
       discountCode = '';
-      discountInput.value = code;
+      discountInput.value = '';
       discountStatusKind = 'error';
       bookingStatus = bookingLanguage() === 'ar' ? 'رمز الخصم غير صالح.' : 'Invalid discount code.';
       return false;
@@ -781,6 +782,17 @@
     discountLoading = false;
     discountStatusKind = '';
     bookingStatus = '';
+    renderSummary();
+  });
+  discountInput.addEventListener('focus', () => {
+    if (!discountStatus.textContent && !discountCode && !discountQuote) return;
+    discountValidationId += 1;
+    discountCode = '';
+    discountQuote = null;
+    discountLoading = false;
+    discountStatusKind = '';
+    bookingStatus = '';
+    discountInput.value = '';
     renderSummary();
   });
   paymentOverlay.addEventListener('click', closePaymentOverlay);
