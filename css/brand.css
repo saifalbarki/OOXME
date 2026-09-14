@@ -117,8 +117,9 @@ html.s-route.is-day-mode body.s-page--brand-management .s-page__store-view { bac
 body.s-page--brand-management {
   --s-bm-service-safe-top: calc(48px + (var(--s-x) * 2));
   --s-bm-service-safe-bottom-gap: var(--s-x);
+  --s-bm-service-layout-padding: 16px;
   --s-bm-service-card-padding: calc(var(--s-x) * .65);
-  --s-bm-service-card-side-padding: calc(var(--s-bm-service-card-padding) * 2);
+  --s-bm-service-card-side-padding: calc(var(--s-x) * 1.3);
   --s-bm-service-card-list-gap: calc(var(--s-bm-service-card-padding) * .55);
   --s-bm-service-surface: rgba(255, 255, 255, .12);
   --s-bm-service-surface-strong: rgba(255, 255, 255, .16);
@@ -137,14 +138,14 @@ body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-vie
 body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-track { display: flex; flex-direction: row; direction: ltr; align-items: flex-start; gap: var(--s-x); width: max-content; will-change: transform; transition: transform .52s cubic-bezier(.22,.61,.36,1); }
 body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-track.is-dragging { transition: none; }
 html[dir="rtl"] body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-track { flex-direction: row-reverse; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-product-card { display: grid; align-self: flex-start; grid-template-rows: minmax(0,1fr); width: min(76vw,340px); height: auto; min-height: 393px; padding: var(--s-bm-service-card-padding) var(--s-bm-service-card-side-padding) var(--s-bm-service-card-side-padding); opacity: .46; transform: scale(.94); transition: opacity .38s ease, transform .52s cubic-bezier(.22,.61,.36,1), background-color .28s ease; min-width: 0; overflow: hidden; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-product-card { position: relative; display: block; align-self: flex-start; width: min(76vw,340px); height: var(--s-bm-service-card-height, auto); min-height: 0; margin-top: 0; padding: 0 var(--s-bm-service-card-side-padding); box-sizing: border-box; opacity: .46; transform: scale(.94); transition: opacity .38s ease, transform .52s cubic-bezier(.22,.61,.36,1), background-color .28s ease; min-width: 0; overflow: hidden; }
 body.s-page--brand-management .s-page__update-layout .s-page__store-product-card.is-active { opacity: 1; transform: scale(1); background: var(--s-bm-service-surface-strong); }
 /* Section 2 uses the existing horizontal card padding as the only vertical spacing unit. */
-body.s-page--brand-management .s-page__update-layout .s-page__store-card-copy { display: grid; grid-template-rows: auto minmax(0,1fr) auto; align-content: stretch; row-gap: calc(var(--s-bm-service-card-padding) * .5); padding: 0; min-width: 0; min-height: 0; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-card-copy { position: absolute; inset-inline: var(--s-bm-service-card-side-padding); top: var(--s-bm-service-layout-padding); bottom: var(--s-bm-service-layout-padding); display: block; padding: 0; min-width: 0; min-height: 0; }
 body.s-page--brand-management .s-page__update-layout :is(.s-page__store-card-title, .s-page__store-card-description, .s-page__store-card-list) { margin: 0; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-card-title { height: var(--s-bm-service-title-height, auto); color: #FFFFFF; font: 500 16px/1.2 OOXMEScript, Arial, sans-serif; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-card-description { height: var(--s-bm-service-description-height, auto); min-height: 16px; color: var(--s-bm-service-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-card-list { display: grid; gap: var(--s-bm-service-card-list-gap); height: var(--s-bm-service-list-height, auto); padding: 0; color: var(--s-bm-service-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; list-style: none; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-card-title { height: auto; margin: 0 0 var(--s-bm-service-layout-padding); color: #FFFFFF; font: 500 16px/1.2 OOXMEScript, Arial, sans-serif; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-card-description { height: auto; min-height: 0; margin: 0 0 calc(var(--s-bm-service-layout-padding) * 1.5); color: var(--s-bm-service-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-card-list { position: absolute; inset-inline: 0; bottom: 0; display: grid; gap: var(--s-bm-service-card-list-gap); height: auto; padding: 0; color: var(--s-bm-service-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; list-style: none; }
 body.s-page--brand-management .s-page__update-layout .s-page__store-card-list li::before { content: '- '; }
 body.s-page--brand-management .s-page__update-layout .s-page__rpn-carousel-nav { position: absolute; z-index: 20; left: 50%; bottom: var(--s-bm-service-safe-bottom-gap); display: grid; grid-template-columns: var(--s-bm-service-nav-arrow-size) minmax(0,1fr) var(--s-bm-service-nav-arrow-size); column-gap: var(--s-bm-service-nav-gap); align-items: center; width: var(--s-bm-service-nav-width); height: var(--s-bm-service-nav-height); margin: 0 0 0 calc(var(--s-bm-service-nav-width) / -2); padding: 0 8px; box-sizing: border-box; border: 0; border-radius: 28px; background: rgba(255,255,255,.16); box-shadow: 0 2px 7px rgba(0,0,0,.045),0 1px 1px rgba(0,0,0,.025),inset 0 0 0 1px var(--s-glass-stroke); -webkit-backdrop-filter: blur(20px) saturate(125%); backdrop-filter: blur(20px) saturate(125%); direction: ltr; transform: none; }
 body.s-page--brand-management .s-page__update-layout .s-page__rpn-carousel-nav > button { position: relative; display: grid; width: var(--s-bm-service-nav-arrow-size); height: var(--s-bm-service-nav-arrow-size); place-items: center; padding: 0; border: 1px solid var(--s-glass-stroke); border-radius: 50%; background: #0A84FF; color: #FFFFFF; cursor: pointer; }

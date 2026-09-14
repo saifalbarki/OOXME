@@ -25,22 +25,20 @@
   };
   const serviceCopy = {
     en: [
-      { title: 'Core Brand Management', description: 'Integrated management and development of the brand to ensure clarity, consistency, and strong market positioning.', list: ['Brand Strategy & Positioning', 'Brand Identity Development', 'Monthly Brand Planning', 'Brand Performance Review'] },
-      { title: 'Growth & Business Development', description: 'Developing the commercial side of the brand and building stronger opportunities for growth, sales, and expansion.', list: ['Business Development & Executive Consulting', 'Sales System Development', 'Offer Development', 'Customer Journey Development'] },
-      { title: 'Content & Market Presence', description: 'Building a consistent and professional brand presence through content, production, and stronger market communication.', list: ['Social Media Management & Content Strategy', 'Photography & Videography', 'Creative Direction', 'Campaign Management'] },
-      { title: 'Digital & Operational Support', description: 'Developing the digital and operational foundation the brand needs to work efficiently and scale with greater control.', list: ['Website & Digital Ecosystem', 'Business Verification & HR Support', 'Internal Systems Development', 'VIP Support & Dedicated Account Manager'] }
+      { title: 'Brand Strategy', description: 'Define brand direction and build a clear system that protects identity and strengthens market position.', list: ['Brand Strategy & Positioning', 'Identity & Brand Standards', 'Monthly Brand Planning', 'Performance & Growth Review'] },
+      { title: 'Business Growth', description: 'Turn brand goals into practical growth opportunities through better sales, offers, and customer experience.', list: ['Business Development & Opportunities', 'Sales System Development', 'Offers & Pricing Development', 'Customer Journey Improvement'] },
+      { title: 'Content & Presence', description: 'Build a distinctive presence that reflects brand value through focused content, production, and communication.', list: ['Content & Publishing Strategy', 'Photography & Video Production', 'Creative Direction', 'Campaign Planning & Management'] },
+      { title: 'Systems & Support', description: 'Build digital and operational systems that help the brand work efficiently and scale with control.', list: ['Website & Digital Ecosystem', 'Business Verification & HR', 'Internal Systems Development', 'Account Management & Support'] }
     ],
     ar: [
-      { title: 'ادارة العلامة التجارية الاساسية', description: 'ادارة وتطوير متكامل للعلامة التجارية لضمان الوضوح والاتساق ومكانة قوية في السوق.', list: ['استراتيجية العلامة التجارية وتحديد موقعها', 'تطوير هوية العلامة التجارية', 'التخطيط الشهري للعلامة التجارية', 'مراجعة اداء العلامة التجارية'] },
-      { title: 'النمو وتطوير الاعمال', description: 'تطوير الجانب التجاري للعلامة التجارية وبناء فرص اقوى للنمو والمبيعات والتوسع.', list: ['تطوير الاعمال والاستشارات التنفيذية', 'تطوير نظام المبيعات', 'تطوير العروض', 'تطوير رحلة العميل'] },
-      { title: 'المحتوى والحضور في السوق', description: 'بناء حضور متسق واحترافي للعلامة التجارية من خلال المحتوى والانتاج وتواصل اقوى في السوق.', list: ['ادارة وسائل التواصل الاجتماعي واستراتيجية المحتوى', 'التصوير الفوتوغرافي وتصوير الفيديو', 'التوجيه الابداعي', 'ادارة الحملات'] },
-      { title: 'الدعم الرقمي والتشغيلي', description: 'تطوير الاساس الرقمي والتشغيلي الذي تحتاجه العلامة التجارية للعمل بكفاءة والتوسع بتحكم اكبر.', list: ['الموقع والمنظومة الرقمية', 'توثيق الاعمال ودعم الموارد البشرية', 'تطوير الانظمة الداخلية', 'دعم كبار العملاء ومدير حساب مخصص'] }
+      { title: 'استراتيجية العلامة', description: 'نحدد اتجاه العلامة ونبني نظاما واضحا يحافظ على هويتها ويقوي مكانتها في السوق.', list: ['استراتيجية العلامة وموقعها', 'تطوير الهوية والمعايير', 'التخطيط الشهري للعلامة', 'مراجعة الاداء والتطور'] },
+      { title: 'النمو التجاري', description: 'نحول اهداف العلامة الى فرص نمو عملية عبر تطوير المبيعات والعروض وتجربة العميل.', list: ['تطوير الاعمال والفرص', 'بناء نظام المبيعات', 'تطوير العروض والتسعير', 'تحسين رحلة العميل'] },
+      { title: 'المحتوى والحضور', description: 'نبني حضورا واضحا ومميزا يعكس قيمة العلامة من خلال محتوى وانتاج واتصال اقوى.', list: ['استراتيجية المحتوى والنشر', 'التصوير وانتاج الفيديو', 'التوجيه الابداعي', 'تخطيط وادارة الحملات'] },
+      { title: 'الانظمة والدعم', description: 'نبني البنية الرقمية والتشغيلية التي تساعد العلامة على العمل بكفاءة والتوسع بثبات.', list: ['الموقع والمنظومة الرقمية', 'توثيق الاعمال والموارد', 'تطوير الانظمة الداخلية', 'ادارة الحساب والدعم'] }
     ]
   };
-  const captureEnglishServiceGeometry = () => {
-    root.lang = 'en'; root.dir = 'ltr';
-    serviceCards.forEach((card) => { const item = serviceCopy.en[Number(card.dataset.brandServiceIndex)]; card.querySelector('[data-brand-service-copy="title"]').textContent = item.title; card.querySelector('[data-brand-service-copy="description"]').textContent = item.description; card.querySelectorAll('[data-brand-service-copy="list"] li').forEach((node, index) => { node.textContent = item.list[index]; }); });
-    serviceCards.forEach((card) => { const title = card.querySelector('[data-brand-service-copy="title"]'); const description = card.querySelector('[data-brand-service-copy="description"]'); const list = card.querySelector('[data-brand-service-copy="list"]'); card.style.setProperty('--s-bm-service-title-height', `${title.offsetHeight}px`); card.style.setProperty('--s-bm-service-description-height', `${description.offsetHeight}px`); card.style.setProperty('--s-bm-service-list-height', `${list.offsetHeight}px`); });
+  const setServiceCopy = (language) => {
+    serviceCards.forEach((card) => { const item = serviceCopy[language][Number(card.dataset.brandServiceIndex)]; card.querySelector('[data-brand-service-copy="title"]').textContent = item.title; card.querySelector('[data-brand-service-copy="description"]').textContent = item.description; card.querySelectorAll('[data-brand-service-copy="list"] li').forEach((node, index) => { node.textContent = item.list[index]; }); });
   };
   const captureEnglishFeaturedGeometry = () => {
     const card = page.querySelector('.s-page__store-featured-card');
@@ -53,6 +51,35 @@
     description.textContent = copy.en.description;
     secondary.textContent = copy.en.secondary;
     card.style.setProperty('--s-bm-featured-description-height', `${description.offsetHeight}px`);
+  };
+  const measureServiceCardHeight = () => {
+    const image = page.querySelector('.s-page__store-featured-card img');
+    const featuredTitle = page.querySelector('[data-brand-copy="title"]');
+    if (!image || !featuredTitle) return;
+    const padding = Math.max(0, featuredTitle.getBoundingClientRect().top - image.getBoundingClientRect().bottom);
+    root.style.setProperty('--s-bm-service-layout-padding', `${padding}px`);
+    const current = root.lang === 'ar' ? 'ar' : 'en';
+    const saved = serviceCards.map((card) => ({ card, active: card.classList.contains('is-active'), height: card.style.height, minHeight: card.style.minHeight, transform: card.style.transform, copy: card.querySelector('.s-page__store-card-copy'), position: card.querySelector('.s-page__store-card-copy').style.position, bottom: card.querySelector('.s-page__store-card-copy').style.bottom }));
+    root.style.removeProperty('--s-bm-service-card-height');
+    saved.forEach(({ card, copy }) => { card.classList.add('is-active'); card.style.height = 'auto'; card.style.minHeight = '0'; card.style.transform = 'none'; copy.style.position = 'static'; copy.style.bottom = 'auto'; });
+    let largest = 0;
+    ['en', 'ar'].forEach((language) => {
+      root.lang = language; root.dir = language === 'ar' ? 'rtl' : 'ltr'; setServiceCopy(language);
+      serviceCards.forEach((card) => {
+        const title = card.querySelector('[data-brand-service-copy="title"]');
+        const description = card.querySelector('[data-brand-service-copy="description"]');
+        const list = card.querySelector('[data-brand-service-copy="list"]');
+        const style = getComputedStyle(card);
+        const borders = (Number(style.borderTopWidth.replace('px', '')) || 0) + (Number(style.borderBottomWidth.replace('px', '')) || 0);
+        largest = Math.max(largest, title.getBoundingClientRect().height + description.getBoundingClientRect().height + list.getBoundingClientRect().height + (padding * 4.5) + borders);
+      });
+    });
+    root.style.setProperty('--s-bm-service-card-height', `${Math.ceil(largest * 100) / 100}px`);
+    saved.forEach(({ card, active, height, minHeight, transform, copy, position, bottom }) => { card.classList.toggle('is-active', active); card.style.height = height; card.style.minHeight = minHeight; card.style.transform = transform; copy.style.position = position; copy.style.bottom = bottom; });
+    root.lang = current; root.dir = current === 'ar' ? 'rtl' : 'ltr'; setServiceCopy(current);
+    const cssHeight = Number(getComputedStyle(serviceCards[0]).height.replace('px', '')) || largest;
+    const renderedRequirement = Math.max(...serviceCards.map((card) => { const scale = card.offsetWidth ? card.getBoundingClientRect().width / card.offsetWidth : 1; const topGap = (card.querySelector('[data-brand-service-copy="title"]').getBoundingClientRect().top - card.getBoundingClientRect().top) / (scale || 1); return cssHeight + padding - topGap; }));
+    root.style.setProperty('--s-bm-service-card-height', `${Math.ceil(Math.max(largest, renderedRequirement) * 100) / 100}px`);
   };
   let activeService = 0;
   let serviceDrag = null;
@@ -138,15 +165,16 @@
   document.addEventListener('touchend', (event) => { const item = [...event.changedTouches].find((candidate) => candidate.identifier === sectionTouch?.id); if (item && Math.abs(item.clientY - sectionTouch.y) >= 36) transitionSection(item.clientY < sectionTouch.y ? 1 : -1); if (item) sectionTouch = null; }, { capture: true, passive: true });
   window.addEventListener('wheel', (event) => { event.preventDefault(); if (Math.abs(event.deltaY) >= 8) transitionSection(event.deltaY > 0 ? 1 : -1); }, { passive: false });
   window.addEventListener('keydown', (event) => { if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return; event.preventDefault(); if (event.key === 'Home') transitionSection(-sections.length); else if (event.key === 'End') transitionSection(sections.length); else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1); }, { passive: false });
-  window.addEventListener('resize', () => { const current = root.lang; captureEnglishFeaturedGeometry(); if (current !== 'en') applyLanguage(current, { persist: false }); syncServices(false); syncFinalText(); }, { passive: true });
+  window.addEventListener('resize', () => { const current = root.lang; captureEnglishFeaturedGeometry(); if (current !== 'en') applyLanguage(current, { persist: false }); measureServiceCardHeight(); syncServices(false); syncFinalText(); }, { passive: true });
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false }); });
   let initialLanguage = 'en';
   try { initialLanguage = localStorage.getItem('ooxme-language') || 'en'; } catch (_) {}
-  captureEnglishServiceGeometry(); captureEnglishFeaturedGeometry(); applyLanguage(initialLanguage, { persist: false }); applyTheme('dark'); syncServices(false);
+  root.lang = 'en'; root.dir = 'ltr'; setServiceCopy('en'); captureEnglishFeaturedGeometry(); applyLanguage(initialLanguage, { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
   requestAnimationFrame(() => syncServices(false));
-  document.fonts?.ready.then(() => syncServices(false));
+  document.fonts?.ready.then(() => { requestAnimationFrame(() => { measureServiceCardHeight(); syncServices(false); }); });
+  setTimeout(() => { measureServiceCardHeight(); syncServices(false); }, 250);
   document.fonts?.ready.then(syncFinalText);
   root.classList.remove('s-x-initializing');
 })();
