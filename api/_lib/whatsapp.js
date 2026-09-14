@@ -1,6 +1,7 @@
 const { required, optional } = require('./config');
 
 const normalizeRecipient = (phone) => String(phone || '').replace(/[^0-9]/g, '');
+const bookingConfirmationTemplate = 'ooxme_booking_confirmation';
 
 async function sendWhatsAppText(to, body) {
   const recipient = normalizeRecipient(to);
@@ -18,12 +19,17 @@ async function sendWhatsAppText(to, body) {
   return result;
 }
 
-async function sendYCloudBookingConfirmation(to, { reference, consultation, duration }) {
+const yCloudBookingParameters = ({ reference, name, date, time, duration }) => [
+  reference,
+  `${name} — ${date} at ${time} (Iraq time)`,
+  `${duration} minutes. Booking confirmed. Next-stage instructions will be sent.`
+];
+
+async function sendYCloudBookingConfirmation(to, { reference, name, date, time, duration }) {
   const recipient = normalizeRecipient(to);
   if (!recipient) return { skipped: true, reason: 'no_recipient' };
   const apiKey = required('YCLOUD_API_KEY');
   const from = required('YCLOUD_WHATSAPP_FROM');
-  const templateName = optional('YCLOUD_WHATSAPP_BOOKING_CONFIRMATION_TEMPLATE', 'ooxme_booking_confirmation');
   const language = optional('YCLOUD_WHATSAPP_TEMPLATE_LANGUAGE', 'en_US');
   const response = await fetch('https://api.ycloud.com/v2/whatsapp/messages/sendDirectly', {
     method: 'POST',
@@ -33,13 +39,9 @@ async function sendYCloudBookingConfirmation(to, { reference, consultation, dura
       to: `+${recipient}`,
       type: 'template',
       template: {
-        name: templateName,
+        name: bookingConfirmationTemplate,
         language: { code: language },
-        components: [{ type: 'body', parameters: [
-          { type: 'text', text: reference },
-          { type: 'text', text: consultation },
-          { type: 'text', text: String(duration) }
-        ] }]
+        components: [{ type: 'body', parameters: yCloudBookingParameters({ reference, name, date, time, duration }).map((text) => ({ type: 'text', text })) }]
       }
     })
   });
@@ -48,4 +50,4 @@ async function sendYCloudBookingConfirmation(to, { reference, consultation, dura
   return result;
 }
 
-module.exports = { sendWhatsAppText, sendYCloudBookingConfirmation, normalizeRecipient };
+module.exports = { sendWhatsAppText, sendYCloudBookingConfirmation, normalizeRecipient, yCloudBookingParameters, bookingConfirmationTemplate };

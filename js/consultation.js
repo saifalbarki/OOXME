@@ -133,11 +133,13 @@
   let discountStatusKind = '';
   let discountValidationId = 0;
   let bookingSubmission = null;
+  let bookingIdempotencyKey = '';
   let bookingStatus = '';
   let bookingGeometryFrame = 0;
   let openPaymentMethod = '';
   let editingAnswer = null;
   const bookingLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
+  const createBookingIdempotencyKey = () => globalThis.crypto?.randomUUID?.() || `booking-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const currentBookingStep = () => bookingSteps[booking.index] || bookingSteps[bookingSteps.length - 1];
   const paymentOverlayContent = {
     ZainCash: {
@@ -505,6 +507,7 @@
     }
     bookingStatus = bookingLanguage() === 'ar' ? 'جارٍ تأكيد الحجز…' : 'Confirming booking…';
     renderSummary();
+    const idempotencyKey = bookingIdempotencyKey || (bookingIdempotencyKey = createBookingIdempotencyKey());
     bookingSubmission = verifySelectedSlot(date, time, duration).then(() => fetch('/api/booking/confirm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -514,6 +517,7 @@
         duration,
         payment: booking.payment,
         promoCode: discountCode,
+        idempotencyKey,
         customer: {
           name: stableChoiceValue('name'),
           email: stableChoiceValue('email'),
@@ -533,6 +537,7 @@
       openSuccessOverlay();
       return body;
     }).catch((error) => {
+      if (error.message === 'slot_unavailable') bookingIdempotencyKey = '';
       bookingStatus = error.message === 'slot_unavailable'
         ? (bookingLanguage() === 'ar' ? 'هذا الوقت لم يعد متاحاً. اختر وقتاً آخر.' : 'This time is no longer available. Choose another.')
         : (bookingLanguage() === 'ar' ? 'تعذر تأكيد الحجز الآن.' : 'We could not confirm the booking right now.');

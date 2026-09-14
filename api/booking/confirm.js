@@ -4,14 +4,14 @@ const { bookingConfig } = require('../_lib/config');
 const { createCalendarBooking, bookingId } = require('../_lib/calendar');
 const { storeBookingRecord } = require('../_lib/drive');
 const { sendBookingNotifications } = require('../_lib/messaging');
-const { sendBookingConfirmationEmail } = require('../_lib/mailer');
-const { withTransaction } = require('../_lib/db');
+const { query, withTransaction } = require('../_lib/db');
 const { normalizePromoCode, validatePromoOrToken } = require('../_lib/promo-engine');
 
 const validEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 const normalizePhone = (value) => String(value || '').replace(/\D/g, '');
 const identityHash = (email, phone) => crypto.createHash('sha256').update(`${normalizeEmail(email)}\u0000${normalizePhone(phone)}`).digest('hex');
+const validIdempotencyKey = (value) => /^[A-Za-z0-9._:-]{16,128}$/.test(String(value || ''));
 const slotBounds = (date, time, duration) => {
   const start = new Date(`${date}T${time}:00+03:00`);
   const end = new Date(start.getTime() + Number(duration) * 60_000);
@@ -32,6 +32,7 @@ async function reserveBooking(input, customer, config) {
     time: input.time,
     duration,
     payment: input.payment || '',
+    idempotencyKey: String(input.idempotencyKey),
     promo: normalizePromoCode(input.promoCode || input.promo),
     offerToken: input.offerToken || '',
     offerSession: input.offerSession || '',
@@ -65,7 +66,7 @@ async function reserveBooking(input, customer, config) {
     await execute(
       `INSERT INTO bookings (id, public_reference, status, service_code, customer_name, customer_email, customer_phone, customer_email_normalized, customer_phone_normalized, customer_identity_hash, topic, sector, additional_information, scheduled_start, scheduled_end, timezone, duration_minutes, base_amount, discount_amount, final_amount, currency, payment_provider, promotion_id, promo_code_normalized, idempotency_key)
        VALUES ($1, $2, 'held', 'consultation', $3, $4, $5, $4, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`,
-      [booking.id, booking.publicReference, booking.customer.name, booking.customer.email, booking.customer.phone, normalizePhone(booking.customer.phone), customerHash, booking.customer.topic, booking.customer.sector, booking.customer.additional, bounds.start, bounds.end, config.timezone, duration, quote.baseAmount, quote.discountAmount, quote.finalAmount, quote.currency, quote.finalAmount === 0 ? null : booking.payment, promotion.promotionId || null, booking.promo || null, crypto.randomUUID()]
+      [booking.id, booking.publicReference, booking.customer.name, booking.customer.email, booking.customer.phone, normalizePhone(booking.customer.phone), customerHash, booking.customer.topic, booking.customer.sector, booking.customer.additional, bounds.start, bounds.end, config.timezone, duration, quote.baseAmount, quote.discountAmount, quote.finalAmount, quote.currency, quote.finalAmount === 0 ? null : booking.payment, promotion.promotionId || null, booking.promo || null, booking.idempotencyKey]
     );
     await execute(
       `INSERT INTO booking_holds (id, booking_id, service_code, slot_start, slot_end, status, expires_at)
@@ -111,6 +112,22 @@ async function finalizeReservation(booking, calendarEventId) {
   });
 }
 
+async function findBookingByIdempotencyKey(key) {
+  const result = await query('SELECT public_reference, status, calendar_event_id, final_amount, currency FROM bookings WHERE idempotency_key = $1', [key]);
+  return result.rows[0] || null;
+}
+
+const bookingResponse = (booking, quote, integrations = {}, replayed = false) => ({
+  id: booking.publicReference || booking.public_reference,
+  status: booking.status,
+  calendarEventId: booking.calendarEventId || booking.calendar_event_id,
+  requiresPayment: Number(quote?.finalAmount ?? booking.final_amount) > 0,
+  finalAmount: Number(quote?.finalAmount ?? booking.final_amount),
+  currency: quote?.currency || booking.currency,
+  integrations,
+  replayed
+});
+
 module.exports = async (request, response) => {
   if (request.method !== 'POST') return methodNotAllowed(response, ['POST']);
   let reservation;
@@ -119,9 +136,12 @@ module.exports = async (request, response) => {
     const customer = input.customer || {};
     const duration = Number(input.duration);
     const config = bookingConfig();
-    if (!customer.name || !validEmail(customer.email) || normalizePhone(customer.phone).length < 7 || !customer.topic || !customer.sector || !/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !config.slots.includes(input.time) || !config.consultationMinutes.includes(duration)) {
+    if (!customer.name || !validEmail(customer.email) || normalizePhone(customer.phone).length < 7 || !customer.topic || !customer.sector || !validIdempotencyKey(input.idempotencyKey) || !/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !config.slots.includes(input.time) || !config.consultationMinutes.includes(duration)) {
       return json(response, 400, { error: 'invalid_booking' });
     }
+    const existing = await findBookingByIdempotencyKey(input.idempotencyKey);
+    if (existing?.status === 'confirmed') return json(response, 200, bookingResponse(existing, null, {}, true));
+    if (existing) return json(response, 409, { error: 'booking_in_progress' });
     reservation = await reserveBooking(input, customer, config);
     const event = await createCalendarBooking(reservation.booking);
     reservation.booking.calendarEventId = event.id;
@@ -132,22 +152,21 @@ module.exports = async (request, response) => {
       storeBookingRecord(reservation.booking),
       sendBookingNotifications(reservation.booking)
     ]);
-    sendBookingConfirmationEmail(reservation.booking).catch((mailError) => console.error('SMTP booking email failed', mailError.message));
-    return json(response, 201, {
-      id: reservation.booking.publicReference,
-      status: reservation.booking.status,
-      calendarEventId: event.id,
-      requiresPayment: reservation.promotion.quote.finalAmount > 0,
-      finalAmount: reservation.promotion.quote.finalAmount,
-      currency: reservation.promotion.quote.currency,
-      integrations: { drive: drive.status, notifications: notifications.status }
-    });
+    const notificationReport = notifications.status === 'fulfilled' ? notifications.value : { delivery: { status: 'rejected', reason: 'notification_dispatch_failed' } };
+    const notificationFailures = Object.entries(notificationReport).filter(([, result]) => result.status === 'rejected').map(([channel]) => channel);
+    if (notificationFailures.length) console.error('booking notification delivery failed', { booking: reservation.booking.publicReference, channels: notificationFailures });
+    return json(response, 201, bookingResponse(reservation.booking, reservation.promotion.quote, {
+      drive: { status: drive.status },
+      notifications: notificationReport
+    }));
   } catch (error) {
     if (reservation?.booking) await releaseReservation(reservation.booking).catch(() => undefined);
     console.error('booking confirmation failed', error.message);
-    const status = ['slot_unavailable', 'promotion_limit_reached', 'offer_unavailable', 'promotion_unavailable', 'payment_required'].includes(error.code)
+    const duplicateIdempotencyKey = error.code === '23505' && error.constraint === 'bookings_idempotency_key_unique';
+    const errorCode = duplicateIdempotencyKey ? 'booking_in_progress' : error.code || 'booking_unavailable';
+    const status = ['slot_unavailable', 'promotion_limit_reached', 'offer_unavailable', 'promotion_unavailable', 'payment_required', 'booking_in_progress'].includes(errorCode)
       ? 409
-      : (error.code === 'invalid_booking' || error.code === 'unsupported_price' ? 400 : 503);
-    return json(response, status, { error: error.code || 'booking_unavailable' });
+      : (errorCode === 'invalid_booking' || errorCode === 'unsupported_price' ? 400 : 503);
+    return json(response, status, { error: errorCode });
   }
 };

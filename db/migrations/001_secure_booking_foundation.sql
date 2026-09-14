@@ -72,7 +72,8 @@ CREATE TABLE IF NOT EXISTS offer_tokens (
   CHECK (expires_at > created_at)
 );
 
-ALTER TABLE bookings ADD COLUMN IF NOT EXISTS offer_token_id UUID UNIQUE REFERENCES offer_tokens(id);
+ALTER TABLE bookings
+  ADD COLUMN IF NOT EXISTS offer_token_id UUID UNIQUE REFERENCES offer_tokens(id);
 
 CREATE TABLE IF NOT EXISTS promotion_redemptions (
   id UUID PRIMARY KEY,
@@ -98,7 +99,26 @@ CREATE TABLE IF NOT EXISTS booking_holds (
   released_at TIMESTAMPTZ,
   CHECK (slot_end > slot_start),
   CHECK (expires_at > created_at),
-  EXCLUDE USING gist (service_code WITH =, tstzrange(slot_start, slot_end, '[)') WITH &&) WHERE (status = 'active')
+  EXCLUDE USING gist (
+    service_code WITH =,
+    tstzrange(slot_start, slot_end, '[)') WITH &&
+  ) WHERE (status = 'active')
+);
+
+CREATE TABLE IF NOT EXISTS idempotency_keys (
+  id UUID PRIMARY KEY,
+  scope TEXT NOT NULL,
+  idempotency_key TEXT NOT NULL,
+  request_hash CHAR(64) NOT NULL,
+  status TEXT NOT NULL DEFAULT 'processing' CHECK (status IN ('processing', 'completed', 'failed')),
+  booking_id UUID REFERENCES bookings(id),
+  response_status INTEGER,
+  response_body JSONB,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  completed_at TIMESTAMPTZ,
+  UNIQUE (scope, idempotency_key),
+  CHECK (expires_at > created_at)
 );
 
 CREATE INDEX IF NOT EXISTS bookings_schedule_index ON bookings (service_code, scheduled_start, scheduled_end) WHERE status IN ('held', 'confirmed');
@@ -107,3 +127,4 @@ CREATE INDEX IF NOT EXISTS promotions_eligibility_index ON promotions (status, s
 CREATE INDEX IF NOT EXISTS promotion_redemptions_promotion_index ON promotion_redemptions (promotion_id, status, customer_identity_hash);
 CREATE INDEX IF NOT EXISTS offer_tokens_lookup_index ON offer_tokens (token_hash, status, expires_at);
 CREATE INDEX IF NOT EXISTS booking_holds_expiry_index ON booking_holds (status, expires_at);
+CREATE INDEX IF NOT EXISTS idempotency_keys_expiry_index ON idempotency_keys (scope, expires_at);
