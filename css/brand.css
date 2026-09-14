@@ -3,17 +3,22 @@
 /* /bm uses the Store featured-card geometry inside its single section. */
 body.s-page--brand-management {
   --s-bm-card-width: min(100%, 420px);
+  --s-bm-section-height: 100vh;
   --s-bm-surface: rgba(255, 255, 255, .12);
   --s-bm-muted: rgba(255, 255, 255, .58);
   --s-bm-image: rgba(255, 255, 255, .055);
 }
 
+@supports (height: 100svh) {
+  body.s-page--brand-management { --s-bm-section-height: 100svh; }
+}
+
 body.s-page--brand-management .s-page__content { padding-top: 0; padding-bottom: 0; min-height: 0; }
 body.s-page--brand-management .s-page__major-section,
 body.s-page--brand-management .s-page__major-section--transition-frame > .s-page__group {
-  height: 100dvh;
-  min-height: 100dvh;
-  max-height: 100dvh;
+  height: var(--s-bm-section-height);
+  min-height: var(--s-bm-section-height);
+  max-height: var(--s-bm-section-height);
 }
 body.s-page--brand-management .s-page__store-section {
   position: relative;
@@ -81,10 +86,11 @@ body.s-page--brand-management .s-page__store-featured-card .s-page__store-card-c
 body.s-page--brand-management .s-page__store-featured-card .s-page__store-card-copy > :is(.s-page__store-card-title, .s-page__store-card-description:not([data-brand-copy="secondary"])) { grid-column: 1 / -1; }
 body.s-page--brand-management .s-page__store-featured-bottom-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-column: 1 / -1; grid-row: 3; align-items: center; gap: var(--s-x); width: 100%; margin-top: 0; direction: inherit; }
 body.s-page--brand-management .s-page__store-featured-bottom-row [data-brand-copy="secondary"] { grid-column: 1; min-width: 0; margin: 0; direction: inherit; justify-self: start; text-align: start; }
-body.s-page--brand-management .s-page__store-featured-bottom-row [data-brand-view] { grid-column: 2; justify-self: end; }
+body.s-page--brand-management .s-page__store-featured-bottom-row [data-brand-view] { grid-column: 2; justify-self: end; margin-inline-end: calc(var(--s-x) * -.45); }
 body.s-page--brand-management :is(.s-page__store-card-title, .s-page__store-card-description) { margin: 0; }
 body.s-page--brand-management .s-page__store-card-title { color: #FFFFFF; font: 500 16px/1.2 OOXMEScript, Arial, sans-serif; }
 body.s-page--brand-management .s-page__store-card-description { min-height: 16px; color: var(--s-bm-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; }
+body.s-page--brand-management .s-page__store-featured-card > .s-page__store-card-copy > .s-page__store-card-description:not([data-brand-copy="secondary"]) { height: var(--s-bm-featured-description-height, auto); }
 body.s-page--brand-management [data-brand-copy="secondary"] { color: #0A84FF; }
 body.s-page--brand-management .s-page__store-action {
   min-height: 36px;
@@ -112,33 +118,33 @@ body.s-page--brand-management {
   --s-bm-service-safe-top: calc(48px + (var(--s-x) * 2));
   --s-bm-service-safe-bottom-gap: var(--s-x);
   --s-bm-service-card-padding: calc(var(--s-x) * .65);
-  --s-bm-service-card-text-gap: var(--s-bm-service-card-padding);
+  --s-bm-service-card-side-padding: calc(var(--s-bm-service-card-padding) * 2);
   --s-bm-service-card-list-gap: calc(var(--s-bm-service-card-padding) * .55);
   --s-bm-service-surface: rgba(255, 255, 255, .12);
   --s-bm-service-surface-strong: rgba(255, 255, 255, .16);
   --s-bm-service-muted: rgba(255, 255, 255, .58);
-  --s-bm-service-image: rgba(255, 255, 255, .055);
   --s-bm-service-nav-height: 48px;
   --s-bm-service-nav-width: 162px;
   --s-bm-service-nav-arrow-size: 32px;
   --s-bm-service-nav-gap: 8px;
 }
-body.s-page--brand-management .s-page__major-section:nth-child(2) { width: 100%; height: 100dvh; min-height: 100dvh; max-height: 100dvh; padding-top: var(--s-bm-service-safe-top); overflow: visible; }
+body.s-page--brand-management .s-page__major-section:nth-child(2), body.s-page--brand-management .s-page__major-section:nth-child(2) > .s-page__group { width: 100%; height: var(--s-bm-section-height); min-height: var(--s-bm-section-height); max-height: var(--s-bm-section-height); }
+body.s-page--brand-management .s-page__major-section:nth-child(2) { padding-top: var(--s-bm-service-safe-top); overflow: visible; }
 body.s-page--brand-management .s-page__update-layout { position: absolute; inset: 0; display: block; width: 100%; height: 100%; min-height: 0; padding: 0; overflow: visible; }
 body.s-page--brand-management .s-page__update-layout > .s-page__store-layout { position: absolute; inset-inline: 0; bottom: calc(var(--s-bm-service-safe-bottom-gap) + var(--s-bm-service-nav-height) + var(--s-x)); display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; justify-items: center; gap: calc(var(--s-x) * 1.25); width: 100%; height: auto; min-width: 0; min-height: 0; box-sizing: border-box; padding: 0; }
 body.s-page--brand-management .s-page__update-layout .s-page__store-carousel { width: 100%; max-width: 100%; min-width: 0; margin-inline: 0; justify-self: stretch; direction: ltr; }
 body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-viewport { width: 100vw; max-width: none; margin-inline: calc(var(--s-x) * -1); min-width: 0; overflow: hidden; touch-action: manipulation; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-track { display: flex; flex-direction: row-reverse; direction: ltr; align-items: stretch; gap: var(--s-x); width: max-content; will-change: transform; transition: transform .52s cubic-bezier(.22,.61,.36,1); }
+body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-track { display: flex; flex-direction: row; direction: ltr; align-items: flex-start; gap: var(--s-x); width: max-content; will-change: transform; transition: transform .52s cubic-bezier(.22,.61,.36,1); }
 body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-track.is-dragging { transition: none; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-product-card { display: grid; align-self: stretch; grid-template-rows: auto auto; width: min(76vw,340px); height: auto; min-height: 0; padding: var(--s-bm-service-card-padding); opacity: .46; transform: scale(.94); transition: opacity .38s ease, transform .52s cubic-bezier(.22,.61,.36,1), background-color .28s ease; min-width: 0; overflow: hidden; }
+html[dir="rtl"] body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-track { flex-direction: row-reverse; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-product-card { display: grid; align-self: flex-start; grid-template-rows: minmax(0,1fr); width: min(76vw,340px); height: auto; min-height: 393px; padding: var(--s-bm-service-card-padding) var(--s-bm-service-card-side-padding) var(--s-bm-service-card-side-padding); opacity: .46; transform: scale(.94); transition: opacity .38s ease, transform .52s cubic-bezier(.22,.61,.36,1), background-color .28s ease; min-width: 0; overflow: hidden; }
 body.s-page--brand-management .s-page__update-layout .s-page__store-product-card.is-active { opacity: 1; transform: scale(1); background: var(--s-bm-service-surface-strong); }
-body.s-page--brand-management .s-page__update-layout .s-page__rpn-card-image { position: relative; width: 100%; aspect-ratio: 1.5 / 1; overflow: hidden; border: 1px solid var(--s-glass-stroke); border-radius: calc(var(--s-composer-radius) * .72); background: var(--s-bm-service-image); }
-body.s-page--brand-management .s-page__update-layout .s-page__rpn-card-image > img { display: block; width: 100%; height: 100%; border: 0; border-radius: inherit; object-fit: cover; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-card-copy { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: var(--s-bm-service-card-padding); min-width: 0; }
+/* Section 2 uses the existing horizontal card padding as the only vertical spacing unit. */
+body.s-page--brand-management .s-page__update-layout .s-page__store-card-copy { display: grid; grid-template-rows: auto minmax(0,1fr) auto; align-content: stretch; row-gap: calc(var(--s-bm-service-card-padding) * .5); padding: 0; min-width: 0; min-height: 0; }
 body.s-page--brand-management .s-page__update-layout :is(.s-page__store-card-title, .s-page__store-card-description, .s-page__store-card-list) { margin: 0; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-card-title { color: #FFFFFF; font: 500 16px/1.2 OOXMEScript, Arial, sans-serif; margin-bottom: var(--s-bm-service-card-text-gap); }
-body.s-page--brand-management .s-page__update-layout .s-page__store-card-description { min-height: 16px; margin-bottom: var(--s-bm-service-card-text-gap); color: var(--s-bm-service-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; }
-body.s-page--brand-management .s-page__update-layout .s-page__store-card-list { display: grid; gap: var(--s-bm-service-card-list-gap); padding: 0; color: var(--s-bm-service-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; list-style: none; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-card-title { height: var(--s-bm-service-title-height, auto); color: #FFFFFF; font: 500 16px/1.2 OOXMEScript, Arial, sans-serif; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-card-description { height: var(--s-bm-service-description-height, auto); min-height: 16px; color: var(--s-bm-service-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; }
+body.s-page--brand-management .s-page__update-layout .s-page__store-card-list { display: grid; gap: var(--s-bm-service-card-list-gap); height: var(--s-bm-service-list-height, auto); padding: 0; color: var(--s-bm-service-muted); font: 500 12px/1.35 OOXMEScript, Arial, sans-serif; list-style: none; }
 body.s-page--brand-management .s-page__update-layout .s-page__store-card-list li::before { content: '- '; }
 body.s-page--brand-management .s-page__update-layout .s-page__rpn-carousel-nav { position: absolute; z-index: 20; left: 50%; bottom: var(--s-bm-service-safe-bottom-gap); display: grid; grid-template-columns: var(--s-bm-service-nav-arrow-size) minmax(0,1fr) var(--s-bm-service-nav-arrow-size); column-gap: var(--s-bm-service-nav-gap); align-items: center; width: var(--s-bm-service-nav-width); height: var(--s-bm-service-nav-height); margin: 0 0 0 calc(var(--s-bm-service-nav-width) / -2); padding: 0 8px; box-sizing: border-box; border: 0; border-radius: 28px; background: rgba(255,255,255,.16); box-shadow: 0 2px 7px rgba(0,0,0,.045),0 1px 1px rgba(0,0,0,.025),inset 0 0 0 1px var(--s-glass-stroke); -webkit-backdrop-filter: blur(20px) saturate(125%); backdrop-filter: blur(20px) saturate(125%); direction: ltr; transform: none; }
 body.s-page--brand-management .s-page__update-layout .s-page__rpn-carousel-nav > button { position: relative; display: grid; width: var(--s-bm-service-nav-arrow-size); height: var(--s-bm-service-nav-arrow-size); place-items: center; padding: 0; border: 1px solid var(--s-glass-stroke); border-radius: 50%; background: #0A84FF; color: #FFFFFF; cursor: pointer; }
@@ -147,7 +153,4 @@ body.s-page--brand-management .s-page__update-layout .s-page__rpn-carousel-nav >
 body.s-page--brand-management .s-page__update-layout .s-page__rpn-carousel-nav > span { width: 54px; justify-self: center; color: var(--s-bm-service-muted); font: 500 11px/1 OOXMEScript, Arial, sans-serif; text-align: center; }
 html[lang="ar"] body.s-page--brand-management .s-page__update-layout :is(.s-page__store-card-title, .s-page__store-card-description, .s-page__store-card-list, .s-page__rpn-carousel-nav > span) { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
 html.s-route.is-day-mode body.s-page--brand-management .s-page__update-layout :is(.s-page__store-card-title, .s-page__store-card-description, .s-page__store-card-list, .s-page__rpn-carousel-nav > span) { color: #111111; }
-@media (max-width: 520px) { body.s-page--brand-management .s-page__update-layout .s-page__store-product-card { min-height: 393px; } }
 @media (prefers-reduced-motion: reduce) { body.s-page--brand-management .s-page__update-layout .s-page__store-carousel-track, body.s-page--brand-management .s-page__update-layout .s-page__store-product-card { transition: none; } }
-html[dir="rtl"] body.s-page--brand-management .s-page__rpn-carousel-nav { direction: rtl; }
-html[dir="rtl"] body.s-page--brand-management .s-page__rpn-carousel-nav > button svg { transform: scaleX(-1); }

@@ -37,6 +37,23 @@
       { title: 'الدعم الرقمي والتشغيلي', description: 'تطوير الاساس الرقمي والتشغيلي الذي تحتاجه العلامة التجارية للعمل بكفاءة والتوسع بتحكم اكبر.', list: ['الموقع والمنظومة الرقمية', 'توثيق الاعمال ودعم الموارد البشرية', 'تطوير الانظمة الداخلية', 'دعم كبار العملاء ومدير حساب مخصص'] }
     ]
   };
+  const captureEnglishServiceGeometry = () => {
+    root.lang = 'en'; root.dir = 'ltr';
+    serviceCards.forEach((card) => { const item = serviceCopy.en[Number(card.dataset.brandServiceIndex)]; card.querySelector('[data-brand-service-copy="title"]').textContent = item.title; card.querySelector('[data-brand-service-copy="description"]').textContent = item.description; card.querySelectorAll('[data-brand-service-copy="list"] li').forEach((node, index) => { node.textContent = item.list[index]; }); });
+    serviceCards.forEach((card) => { const title = card.querySelector('[data-brand-service-copy="title"]'); const description = card.querySelector('[data-brand-service-copy="description"]'); const list = card.querySelector('[data-brand-service-copy="list"]'); card.style.setProperty('--s-bm-service-title-height', `${title.offsetHeight}px`); card.style.setProperty('--s-bm-service-description-height', `${description.offsetHeight}px`); card.style.setProperty('--s-bm-service-list-height', `${list.offsetHeight}px`); });
+  };
+  const captureEnglishFeaturedGeometry = () => {
+    const card = page.querySelector('.s-page__store-featured-card');
+    const title = page.querySelector('[data-brand-copy="title"]');
+    const description = page.querySelector('[data-brand-copy="description"]');
+    const secondary = page.querySelector('[data-brand-copy="secondary"]');
+    if (!card || !title || !description || !secondary) return;
+    root.lang = 'en'; root.dir = 'ltr';
+    title.textContent = copy.en.title;
+    description.textContent = copy.en.description;
+    secondary.textContent = copy.en.secondary;
+    card.style.setProperty('--s-bm-featured-description-height', `${description.offsetHeight}px`);
+  };
   let activeService = 0;
   let serviceDrag = null;
   let sectionLocked = false;
@@ -61,15 +78,18 @@
   const syncServices = (animate = true, dragOffset = 0) => {
     const card = serviceCards[activeService];
     if (!card) return;
+    const isArabic = root.lang === 'ar';
     const gap = Number.parseFloat(getComputedStyle(serviceTrack).columnGap) || 0;
     const centerOffset = (serviceViewport.clientWidth / 2) - (card.offsetWidth / 2);
-    const position = centerOffset - ((serviceCards.length - 1 - activeService) * (card.offsetWidth + gap)) + dragOffset;
+    const position = centerOffset - ((isArabic ? serviceCards.length - 1 - activeService : activeService) * (card.offsetWidth + gap)) + dragOffset;
     serviceTrack.classList.toggle('is-dragging', !animate);
     serviceTrack.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
-    serviceCards.forEach((item, index) => { const active = index === activeService; item.classList.toggle('is-active', active); item.setAttribute('aria-current', String(active)); item.dir = root.lang === 'ar' ? 'rtl' : 'ltr'; item.lang = root.lang === 'ar' ? 'ar' : 'en'; });
+    serviceCards.forEach((item, index) => { const active = index === activeService; item.classList.toggle('is-active', active); item.setAttribute('aria-current', String(active)); item.dir = isArabic ? 'rtl' : 'ltr'; item.lang = isArabic ? 'ar' : 'en'; });
     serviceCounter.textContent = `${activeService + 1} / ${serviceCards.length}`;
-    servicePrevious.disabled = activeService === 0;
-    serviceNext.disabled = activeService === serviceCards.length - 1;
+    servicePrevious.disabled = isArabic ? activeService === serviceCards.length - 1 : activeService === 0;
+    serviceNext.disabled = isArabic ? activeService === 0 : activeService === serviceCards.length - 1;
+    servicePrevious.setAttribute('aria-label', isArabic ? 'Forward card' : 'Previous card');
+    serviceNext.setAttribute('aria-label', isArabic ? 'Previous card' : 'Forward card');
   };
   const selectService = (index) => { activeService = Math.max(0, Math.min(serviceCards.length - 1, index)); syncServices(); };
   const syncFinalText = () => {
@@ -102,11 +122,11 @@
     if (persist) try { localStorage.setItem('ooxme-language', current); } catch (_) {}
   };
   const applyTheme = (next) => { const day = next === 'day'; const labels = copy[root.lang === 'ar' ? 'ar' : 'en']; root.classList.toggle('is-day-mode', day); theme.classList.toggle('is-active', !day); theme.setAttribute('aria-pressed', String(!day)); theme.setAttribute('aria-label', day ? labels.dark : labels.day); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000'); };
-  servicePrevious.addEventListener('click', () => selectService(activeService - 1));
-  serviceNext.addEventListener('click', () => selectService(activeService + 1));
+  servicePrevious.addEventListener('click', () => selectService(activeService + (root.lang === 'ar' ? 1 : -1)));
+  serviceNext.addEventListener('click', () => selectService(activeService + (root.lang === 'ar' ? -1 : 1)));
   serviceViewport.addEventListener('pointerdown', (event) => { if (event.target.closest('button')) return; serviceDrag = { id: event.pointerId, startX: event.clientX, delta: 0 }; serviceViewport.setPointerCapture?.(event.pointerId); syncServices(false); });
   serviceViewport.addEventListener('pointermove', (event) => { if (!serviceDrag || event.pointerId !== serviceDrag.id) return; serviceDrag.delta = event.clientX - serviceDrag.startX; syncServices(false, serviceDrag.delta); });
-  const finishServiceDrag = (event) => { if (!serviceDrag || event.pointerId !== serviceDrag.id) return; const delta = serviceDrag.delta; serviceDrag = null; if (Math.abs(delta) >= 42) selectService(activeService + (delta > 0 ? 1 : -1)); else syncServices(); };
+  const finishServiceDrag = (event) => { if (!serviceDrag || event.pointerId !== serviceDrag.id) return; const delta = serviceDrag.delta; serviceDrag = null; if (Math.abs(delta) >= 42) { const forward = root.lang === 'ar' ? delta > 0 : delta < 0; selectService(activeService + (forward ? 1 : -1)); } else syncServices(); };
   serviceViewport.addEventListener('pointerup', finishServiceDrag); serviceViewport.addEventListener('pointercancel', finishServiceDrag);
   composer.addEventListener('submit', (event) => { event.preventDefault(); setMenu(!menu.classList.contains('is-open')); });
   document.addEventListener('pointerdown', (event) => { if (menu.classList.contains('is-open') && !composer.contains(event.target)) setMenu(false); }, { passive: true });
@@ -118,11 +138,11 @@
   document.addEventListener('touchend', (event) => { const item = [...event.changedTouches].find((candidate) => candidate.identifier === sectionTouch?.id); if (item && Math.abs(item.clientY - sectionTouch.y) >= 36) transitionSection(item.clientY < sectionTouch.y ? 1 : -1); if (item) sectionTouch = null; }, { capture: true, passive: true });
   window.addEventListener('wheel', (event) => { event.preventDefault(); if (Math.abs(event.deltaY) >= 8) transitionSection(event.deltaY > 0 ? 1 : -1); }, { passive: false });
   window.addEventListener('keydown', (event) => { if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return; event.preventDefault(); if (event.key === 'Home') transitionSection(-sections.length); else if (event.key === 'End') transitionSection(sections.length); else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1); }, { passive: false });
-  window.addEventListener('resize', () => { syncServices(false); syncFinalText(); }, { passive: true });
+  window.addEventListener('resize', () => { const current = root.lang; captureEnglishFeaturedGeometry(); if (current !== 'en') applyLanguage(current, { persist: false }); syncServices(false); syncFinalText(); }, { passive: true });
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false }); });
   let initialLanguage = 'en';
   try { initialLanguage = localStorage.getItem('ooxme-language') || 'en'; } catch (_) {}
-  applyLanguage(initialLanguage, { persist: false }); applyTheme('dark'); syncServices(false);
+  captureEnglishServiceGeometry(); captureEnglishFeaturedGeometry(); applyLanguage(initialLanguage, { persist: false }); applyTheme('dark'); syncServices(false);
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
   requestAnimationFrame(() => syncServices(false));
