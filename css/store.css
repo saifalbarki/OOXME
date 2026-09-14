@@ -110,6 +110,33 @@ body.s-page--store .s-page__store-image-placeholder {
   object-fit: cover;
 }
 
+body.s-page--store .s-page__store-hero-panel {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0;
+  background: #f1f3f7;
+  color: #111111;
+  text-align: center;
+}
+
+body.s-page--store .s-page__store-hero-number {
+  font: 700 clamp(84px, 20vw, 126px)/.82 OOXMESFPro, Arial, sans-serif;
+  letter-spacing: -.045em;
+}
+
+body.s-page--store .s-page__store-hero-word {
+  font: 700 clamp(36px, 7vw, 48px)/1 OOXMEScript, Arial, sans-serif;
+}
+
+html[lang="ar"] body.s-page--store .s-page__store-hero-panel {
+  direction: rtl;
+}
+
+html[lang="ar"] body.s-page--store .s-page__store-hero-word {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
 body.s-page--store .s-page__store-image-placeholder--featured {
   min-height: 0;
 }

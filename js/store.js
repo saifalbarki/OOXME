@@ -21,6 +21,8 @@
   const previousProduct = page?.querySelector('[data-store-carousel-previous]');
   const nextProduct = page?.querySelector('[data-store-carousel-next]');
   const carouselStatus = page?.querySelector('[data-store-carousel-status]');
+  const featuredCard = page?.querySelector('.s-page__store-featured-card');
+  const featuredCopy = featuredCard?.querySelector('.s-page__store-card-copy');
 
   if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !themeButton || !languageButton || sections.length !== 3 || !carousel || !carouselViewport || !carouselTrack || productCards.length !== 4 || !previousProduct || !nextProduct || !carouselStatus) return;
 
@@ -28,7 +30,7 @@
     en: {
       menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
       ask: 'Ask ooxme', add: 'Add context', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode',
-      featuredLabel: 'Featured Product', featuredName: 'Brand Blueprint', featuredCategory: 'Digital Business Tool', featuredDescription: 'A structured brand planning file for positioning, identity, operations, and growth.', featuredPreviousPrice: '$39', featuredPrice: '$29',
+      featuredHeroNumber: '1000', featuredHeroWord: 'Key', featuredLabel: 'Premium Product', featuredName: '1000 Key', featuredCategory: 'Applied E-Book', featuredDescription: 'A book that brings together 1000 keys to the success of any project, divided within OOXME hidden files for managing commercial projects.', featuredPreviousPrice: '$99', featuredPrice: '$49',
       productOneName: 'Project Planner', productOneCategory: 'Digital File', productOneDescription: 'A practical planning system for organizing projects, tasks, priorities, and execution.', productOnePrice: '$19', productTwoName: 'Business Model Kit', productTwoCategory: 'Business Toolkit', productTwoDescription: 'A structured toolkit for reviewing business models, offers, operations, and growth opportunities.', productTwoPrice: '$39', productThreeName: 'Content System', productThreeCategory: 'Content Toolkit', productThreeDescription: 'A practical framework for planning, organizing, and maintaining consistent brand content.', productThreePrice: '$24', productFourName: 'Custom Brand Pack', productFourCategory: 'Custom Product', productFourDescription: 'A tailored set of brand files prepared around your business needs and priorities.', productFourPrice: 'Custom', view: 'View',
       customLabel: 'Custom Products', customTitle: 'Made for you', customDescription: 'A future space for products shaped around your needs.', customAction: 'Request a Custom Product',
       previous: 'Previous product', next: 'Next product'
@@ -36,7 +38,7 @@
     ar: {
       menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'],
       ask: 'اسأل اوكسوم', add: 'اضف سياقًا', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode',
-      featuredLabel: 'منتج مميز', featuredName: 'مخطط العلامة التجارية', featuredCategory: 'أداة اعمال رقمية', featuredDescription: 'ملف منظم لتخطيط تموضع العلامة التجارية وهويتها وعملياتها ونموها.', featuredPreviousPrice: '$39', featuredPrice: '$29',
+      featuredHeroNumber: '1000', featuredHeroWord: 'مفتاح', featuredLabel: 'منتج مميز ', featuredName: '1000 مفتاح', featuredCategory: 'كتاب الكتروني تطبيقي', featuredDescription: 'كتاب يجمع 1000 مفتاح لنجاح اي مشروع مقسمة ضمن ملفات اوكسوم المخفية لإدارة المشاريع التجارية', featuredPreviousPrice: '$99', featuredPrice: '$49',
       productOneName: 'مخطط المشروع', productOneCategory: 'ملف رقمي', productOneDescription: 'نظام عملي لتنظيم المشاريع والمهام والاولويات والتنفيذ.', productOnePrice: '$19', productTwoName: 'حزمة نموذج العمل', productTwoCategory: 'ادوات اعمال', productTwoDescription: 'حزمة منظمة لمراجعة نموذج العمل والعروض والعمليات وفرص النمو.', productTwoPrice: '$39', productThreeName: 'نظام المحتوى', productThreeCategory: 'ادوات محتوى', productThreeDescription: 'اطار عملي لتخطيط وتنظيم واستمرار محتوى العلامة التجارية.', productThreePrice: '$24', productFourName: 'حزمة علامة مخصصة', productFourCategory: 'منتج مخصص', productFourDescription: 'مجموعة ملفات علامة تجارية مخصصة حسب احتياجات واولويات عملك.', productFourPrice: 'مخصص', view: 'عرض',
       customLabel: 'منتجات مخصصة', customTitle: 'مصمم لك', customDescription: 'مساحة مستقبلية لمنتجات مصممة حسب احتياجاتك.', customAction: 'اطلب منتج مخصص',
       previous: 'المنتج السابق', next: 'المنتج التالي'
@@ -51,6 +53,20 @@
   let menuTimer = 0;
   let sectionTouch = null;
   let carouselDrag = null;
+  let featuredEnglishRows = '';
+  const featuredFontsReady = document.fonts?.ready || Promise.resolve();
+  let languageSwitchPending = false;
+
+  const syncFeaturedGeometry = (language) => {
+    if (!featuredCard || !featuredCopy) return;
+    featuredCard.style.height = 'auto';
+    if (language === 'en') {
+      featuredCopy.style.removeProperty('grid-template-rows');
+      featuredEnglishRows = getComputedStyle(featuredCopy).gridTemplateRows;
+      return;
+    }
+    if (featuredEnglishRows) featuredCopy.style.gridTemplateRows = featuredEnglishRows;
+  };
 
   const setMenuOpen = (open) => {
     clearTimeout(menuTimer);
@@ -123,10 +139,24 @@
     nextProduct.setAttribute('aria-label', labels.next);
     input.value = '';
     updateInputLanguage();
+    syncFeaturedGeometry(language);
     syncCarousel(false);
     if (persist) {
       try { localStorage.setItem('ooxme-language', language); } catch (_) {}
     }
+  };
+
+  const requestLanguageChange = (next) => {
+    if (languageSwitchPending) return;
+    if (!document.fonts || document.fonts.status === 'loaded') {
+      applyLanguage(next);
+      return;
+    }
+    languageSwitchPending = true;
+    featuredFontsReady.then(() => {
+      syncFeaturedGeometry('en');
+      applyLanguage(next);
+    }).finally(() => { languageSwitchPending = false; });
   };
 
   const applyTheme = (next) => {
@@ -197,7 +227,7 @@
   input.addEventListener('input', updateInputLanguage);
   addButton.addEventListener('click', (event) => { event.stopPropagation(); setMenuOpen(false); });
   themeButton.addEventListener('click', (event) => { event.stopPropagation(); applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'); });
-  languageButton.addEventListener('click', (event) => { event.stopPropagation(); applyLanguage(root.lang === 'ar' ? 'en' : 'ar'); });
+  languageButton.addEventListener('click', (event) => { event.stopPropagation(); requestLanguageChange(root.lang === 'ar' ? 'en' : 'ar'); });
   menuItems.forEach((item, index) => {
     item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true });
     if (index === 0 && item.getAttribute('aria-disabled') !== 'true') item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/bm'); });
@@ -250,14 +280,21 @@
     else if (event.key === 'End') transitionSection(sections.length);
     else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
   }, { passive: false });
-  window.addEventListener('resize', () => syncCarousel(false), { passive: true });
-  window.addEventListener('storage', (event) => { if (event.key === 'ooxme-language' && event.newValue) applyLanguage(event.newValue, { persist: false }); });
+  window.addEventListener('resize', () => {
+    if (root.lang === 'ar') {
+      applyLanguage('en', { persist: false });
+      applyLanguage('ar', { persist: false });
+    } else {
+      applyLanguage('en', { persist: false });
+    }
+    syncCarousel(false);
+  }, { passive: true });
+  window.addEventListener('storage', (event) => { if (event.key === 'ooxme-language' && event.newValue) requestLanguageChange(event.newValue); });
 
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
-  let initialLanguage = 'en';
-  try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
-  applyLanguage(initialLanguage, { persist: false });
+  applyLanguage('en', { persist: false });
+  featuredFontsReady.then(() => { if (root.lang === 'en') syncFeaturedGeometry('en'); });
   applyTheme('dark');
   setupFace();
   requestAnimationFrame(() => {
