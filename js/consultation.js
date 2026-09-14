@@ -60,13 +60,6 @@
     const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(input.value);
     input.lang = isArabic ? 'ar' : 'en'; input.dir = isArabic ? 'rtl' : 'ltr'; input.classList.toggle('is-english-input', !isArabic);
   };
-  const applySectionInputLanguage = (language) => {
-    const direction = language === 'ar' ? 'rtl' : 'ltr';
-    sectionInput.lang = language;
-    sectionInput.dir = direction;
-    sectionInput.classList.toggle('is-arabic-input', language === 'ar');
-    sectionInput.classList.toggle('is-english-input', language === 'en');
-  };
   const containsArabicText = (value) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(value || '');
   const syncDiscountTextStyle = () => {
     const language = bookingLanguage();
@@ -433,9 +426,7 @@
     const labels = bookingCopy[language];
     const step = currentBookingStep();
     if (clearSectionInput) sectionInput.value = '';
-    applySectionInputLanguage(language);
     if (!clearSectionInput && editingAnswer?.step === step.id && step.type === 'text') sectionInput.value = editingAnswer.value;
-    syncSectionInputTextStyle();
     renderAnswerHistory();
     renderChoices(step, language);
     sectionSuccess.hidden = !booking.complete;
@@ -456,6 +447,9 @@
     sectionInput.inputMode = textInputAttributes?.inputmode || 'text';
     sectionInput.autocomplete = textInputAttributes?.autocomplete || 'off';
     sectionInput.spellcheck = step.id !== 'email' && step.id !== 'phone';
+    // Set the language state after native type changes so mobile browsers keep
+    // the current language's direction for both text and placeholder rendering.
+    syncSectionInputTextStyle();
     sectionInput.setAttribute('aria-label', booking.complete ? labels.success : labels.questions[step.id]);
     sectionInput.closest('label').querySelector('.s-page__visually-hidden').textContent = booking.complete ? labels.success : labels.message;
     sectionSend.classList.toggle('is-confirm', !booking.complete && step.type === 'confirm');

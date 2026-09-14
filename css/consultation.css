@@ -297,7 +297,7 @@ body.s-page--consultation .s-page__consultation-composer-text-zone {
 }
 body.s-page--consultation .s-page__consultation-composer-input.is-arabic-input { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; direction: rtl; text-align: right; }
 body.s-page--consultation .s-page__consultation-composer-input.is-english-input { font-family: OOXMEScript, Arial, sans-serif; direction: ltr; text-align: left; }
-html[lang="ar"] body.s-page--consultation .s-page__consultation-composer-input.is-arabic-input::placeholder { direction: rtl; text-align: right; }
+html[lang="ar"] body.s-page--consultation .s-page__consultation-composer-input.is-arabic-input::placeholder { direction: rtl; text-align: right; unicode-bidi: plaintext; }
 body.s-page--consultation .s-page__consultation-composer-input:-webkit-autofill,
 body.s-page--consultation .s-page__consultation-composer-input:-webkit-autofill:hover,
 body.s-page--consultation .s-page__consultation-composer-input:-webkit-autofill:focus {
@@ -607,14 +607,16 @@ body.s-page--consultation .s-page__consultation-payment-overlay-qr {
   border-radius: var(--s-composer-radius);
   background: transparent;
 }
-body.s-page--consultation .s-page__consultation-payment-overlay-instruction {
+body.s-page--consultation .s-page__consultation-payment-overlay-instruction,
+body.s-page--consultation .s-page__consultation-success-instruction {
   max-width: 100%;
   margin: 0;
   color: var(--s-overlay-text);
   font: 500 12px/1.45 OOXMEScript, Arial, sans-serif;
   text-align: center;
 }
-html[lang="ar"] body.s-page--consultation .s-page__consultation-payment-overlay-instruction { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
+html[lang="ar"] body.s-page--consultation .s-page__consultation-payment-overlay-instruction,
+html[lang="ar"] body.s-page--consultation .s-page__consultation-success-instruction { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
 html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-payment-overlay-card {
   --s-overlay-surface: rgba(255, 255, 255, .56);
   --s-overlay-stroke: rgba(17, 17, 17, .12);
@@ -646,6 +648,8 @@ body.s-page--consultation .s-page__consultation-success-state {
   --s-consultation-overlay-card-min-height: min(calc(100dvh - (var(--s-x) * 2)), 432px);
   box-sizing: border-box;
   display: grid;
+  grid-template-rows: auto auto;
+  align-items: center;
   justify-items: center;
   gap: var(--s-x);
   width: min(calc(100vw - (var(--s-x) * 2)), 380px);
@@ -666,6 +670,8 @@ body.s-page--consultation .s-page__consultation-success-check {
   width: 96px;
   height: 96px;
   place-items: center;
+  justify-self: center;
+  align-self: center;
 }
 body.s-page--consultation .s-page__consultation-success-check svg {
   display: block;
@@ -675,7 +681,7 @@ body.s-page--consultation .s-page__consultation-success-check svg {
 body.s-page--consultation .s-page__consultation-success-check circle {
   fill: none;
   stroke: var(--color-green);
-  stroke-width: 4;
+  stroke-width: 2.5;
   stroke-dasharray: 126;
   stroke-dashoffset: 126;
   animation: s-consultation-success-circle .16s ease-out forwards;
@@ -683,21 +689,13 @@ body.s-page--consultation .s-page__consultation-success-check circle {
 body.s-page--consultation .s-page__consultation-success-check path {
   fill: none;
   stroke: var(--color-green);
-  stroke-width: 4;
+  stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 42;
   stroke-dashoffset: 42;
   animation: s-consultation-success-check .14s .16s ease-out forwards;
 }
-body.s-page--consultation .s-page__consultation-success-instruction {
-  max-width: 100%;
-  margin: 0;
-  color: #FFFFFF;
-  font: 500 12px/1.45 OOXMEScript, Arial, sans-serif;
-  text-align: center;
-}
-html[lang="ar"] body.s-page--consultation .s-page__consultation-success-instruction { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
 html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-success-state {
   --s-overlay-surface: rgba(255, 255, 255, .56);
   --s-overlay-stroke: rgba(17, 17, 17, .12);
