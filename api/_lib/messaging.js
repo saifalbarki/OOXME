@@ -19,12 +19,23 @@ const customerConfirmationText = (booking) => {
   ].join('\n');
 };
 
-const settledReport = (jobs) => Promise.allSettled(Object.values(jobs)).then((results) => Object.fromEntries(
-  Object.keys(jobs).map((name, index) => [name, {
+const safeProviderMessage = (error) => String(error?.message || '')
+  .replace(/\+?\d{7,15}/g, '[redacted-phone]')
+  .slice(0, 240);
+const settledReport = (jobs) => Promise.allSettled(Object.values(jobs)).then((results) => {
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') console.error('booking notification channel failed', {
+      channel: Object.keys(jobs)[index],
+      providerStatus: result.reason?.providerStatus,
+      providerCode: result.reason?.providerCode,
+      providerMessage: safeProviderMessage(result.reason)
+    });
+  });
+  return Object.fromEntries(Object.keys(jobs).map((name, index) => [name, {
     status: results[index].status,
     reason: results[index].status === 'rejected' ? 'delivery_failed' : undefined
-  }])
-));
+  }]));
+});
 
 async function sendEmail({ to, subject, text }) {
   const from = required('GMAIL_SENDER_EMAIL');
