@@ -9,6 +9,7 @@ const mock = (path, exports) => {
 const records = new Map();
 let calendarCalls = 0;
 let notificationCalls = 0;
+const notificationLanguages = [];
 let failCustomerWhatsApp = false;
 let failCalendar = false;
 const config = {
@@ -39,6 +40,8 @@ mock('../api/_lib/messaging', {
     assert.equal(booking.customer.name, 'Safe Test Customer');
     assert.equal(booking.customer.email, 'safe.customer@example.test');
     assert.equal(booking.customer.phone, '+9647700000000');
+    assert.ok(['ar', 'en'].includes(booking.language));
+    notificationLanguages.push(booking.language);
     return {
       internalEmail: { status: 'fulfilled' },
       customerEmail: { status: 'fulfilled' },
@@ -54,7 +57,7 @@ mock('../api/_lib/db', {
   query: async (text, values) => ({ rows: text.startsWith('SELECT public_reference') && records.has(values[0]) ? [records.get(values[0])] : [] }),
   withTransaction: async (work) => work({
     query: async (text, values = []) => {
-      if (text.startsWith('INSERT INTO bookings')) records.set(values[21], { public_reference: values[1], status: 'held', calendar_event_id: null, final_amount: values[16], currency: values[17], payment_provider: values[18] });
+      if (text.startsWith('INSERT INTO bookings')) records.set(values[21], { public_reference: values[1], status: 'held', calendar_event_id: null, final_amount: values[16], currency: values[17], payment_provider: values[18], booking_language: values[22] });
       if (text.startsWith('UPDATE bookings SET status = \'confirmed\'')) {
         for (const record of records.values()) {
           if (record.status === 'held') { record.status = 'confirmed'; record.calendar_event_id = values[1]; }
@@ -73,6 +76,7 @@ const bookingBody = (idempotencyKey) => ({
   duration: 45,
   payment: 'ZainCash',
   promoCode: '',
+  language: 'ar',
   customer: {
     name: 'Safe Test Customer',
     email: 'safe.customer@example.test',
@@ -102,6 +106,7 @@ const invoke = async (idempotencyKey, overrides = {}) => {
   assert.equal(noPayment.code, 201);
   assert.equal(noPayment.body.status, 'confirmed');
   assert.equal(records.get('safe-booking-no-payment').payment_provider, null);
+  assert.equal(records.get('safe-booking-no-payment').booking_language, 'ar');
   assert.equal(calendarCalls, 1);
   assert.equal(notificationCalls, 1);
   const first = await invoke('safe-booking-idempotency-0001');
@@ -126,6 +131,11 @@ const invoke = async (idempotencyKey, overrides = {}) => {
   const calendarFailure = await invoke('safe-booking-idempotency-0003');
   assert.equal(calendarFailure.code, 503);
   assert.equal(notificationCalls, 3);
+  failCalendar = false;
+  const englishLanguage = await invoke('safe-booking-language-en', { language: 'en' });
+  assert.equal(englishLanguage.code, 201);
+  assert.equal(records.get('safe-booking-language-en').booking_language, 'en');
+  assert.deepEqual(notificationLanguages.slice(-2), ['ar', 'en']);
   console.log('Safe consultation booking verification passed.');
 })().catch((error) => {
   console.error(error.stack || error.message);

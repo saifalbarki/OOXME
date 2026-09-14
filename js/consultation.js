@@ -513,6 +513,7 @@
         payment: booking.payment,
         promoCode: discountCode,
         idempotencyKey,
+        language: bookingLanguage(),
         customer: {
           name: stableChoiceValue('name'),
           email: stableChoiceValue('email'),

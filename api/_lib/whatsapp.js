@@ -11,6 +11,8 @@ const e164Phone = (phone) => {
   return digits ? `+${digits}` : '';
 };
 const bookingConfirmationTemplate = 'ooxme_booking_confirmation';
+const legacyBookingTemplateContract = 'legacy3';
+const approvedSixVariableBookingTemplateContract = 'approved_six_v1';
 
 async function sendWhatsAppText(to, body) {
   const recipient = normalizeRecipient(to);
@@ -28,19 +30,34 @@ async function sendWhatsAppText(to, body) {
   return result;
 }
 
-const yCloudBookingParameters = ({ reference, name, date, time, duration }) => [
-  reference,
-  `${name} — ${date} at ${time} (Iraq time)`,
-  `${duration} minutes. Booking confirmed. Next-stage instructions will be sent.`
-];
+const bookingTemplateValues = ({ reference, name, topic, date, time, duration }) => ({ reference, name, topic, date, time, duration });
+const yCloudBookingParameters = (booking, contract = legacyBookingTemplateContract) => {
+  const { reference, name, topic, date, time, duration } = bookingTemplateValues(booking);
+  if (contract === approvedSixVariableBookingTemplateContract) return [name, topic, reference, date, time, String(duration)];
+  return [
+    reference,
+    `${name} — ${date} at ${time} (Iraq time)`,
+    `${duration} minutes. Booking confirmed. Next-stage instructions will be sent.`
+  ];
+};
+const bookingTemplateContract = () => optional('YCLOUD_WHATSAPP_BOOKING_TEMPLATE_CONTRACT', legacyBookingTemplateContract) === approvedSixVariableBookingTemplateContract
+  ? approvedSixVariableBookingTemplateContract
+  : legacyBookingTemplateContract;
+const yCloudTemplateLanguage = (language, contract) => contract === approvedSixVariableBookingTemplateContract && language === 'ar'
+  ? optional('YCLOUD_WHATSAPP_TEMPLATE_LANGUAGE_AR', 'ar')
+  : optional('YCLOUD_WHATSAPP_TEMPLATE_LANGUAGE', 'en_US');
 
-async function sendYCloudBookingConfirmation(to, { reference, name, date, time, duration }) {
+async function sendYCloudBookingConfirmation(to, { reference, name, topic, date, time, duration, language }) {
   const recipient = normalizeRecipient(to);
   if (!recipient) return { skipped: true, reason: 'no_recipient' };
   const apiKey = required('YCLOUD_API_KEY');
   const from = e164Phone(required('YCLOUD_WHATSAPP_FROM'));
   if (!from) throw new Error('YCLOUD_WHATSAPP_FROM is not a valid phone number');
-  const language = optional('YCLOUD_WHATSAPP_TEMPLATE_LANGUAGE', 'en_US');
+  const contract = bookingTemplateContract();
+  const templateLanguage = yCloudTemplateLanguage(language, contract);
+  // The default branch retains the existing en_US three-parameter payload.
+  // The six-variable branch is unreachable until Production sets the approved value.
+  const parameters = yCloudBookingParameters({ reference, name, topic, date, time, duration }, contract);
   const response = await fetch('https://api.ycloud.com/v2/whatsapp/messages/sendDirectly', {
     method: 'POST',
     headers: { 'X-API-Key': apiKey, 'Content-Type': 'application/json' },
@@ -50,8 +67,8 @@ async function sendYCloudBookingConfirmation(to, { reference, name, date, time, 
       type: 'template',
       template: {
         name: bookingConfirmationTemplate,
-        language: { code: language, policy: 'deterministic' },
-        components: [{ type: 'body', parameters: yCloudBookingParameters({ reference, name, date, time, duration }).map((text) => ({ type: 'text', text })) }]
+        language: { code: templateLanguage, policy: 'deterministic' },
+        components: [{ type: 'body', parameters: parameters.map((text) => ({ type: 'text', text })) }]
       }
     })
   });
@@ -65,4 +82,4 @@ async function sendYCloudBookingConfirmation(to, { reference, name, date, time, 
   return result;
 }
 
-module.exports = { sendWhatsAppText, sendYCloudBookingConfirmation, normalizeRecipient, e164Phone, yCloudBookingParameters, bookingConfirmationTemplate };
+module.exports = { sendWhatsAppText, sendYCloudBookingConfirmation, normalizeRecipient, e164Phone, yCloudBookingParameters, bookingTemplateContract, yCloudTemplateLanguage, legacyBookingTemplateContract, approvedSixVariableBookingTemplateContract, bookingConfirmationTemplate };

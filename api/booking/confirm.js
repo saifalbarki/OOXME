@@ -31,6 +31,7 @@ async function reserveBooking(input, customer, config) {
     date: input.date,
     time: input.time,
     duration,
+    language: input.language === 'ar' ? 'ar' : 'en',
     payment: ['ZainCash', 'Qi'].includes(input.payment) ? input.payment : '',
     idempotencyKey: String(input.idempotencyKey),
     promo: normalizePromoCode(input.promoCode || input.promo),
@@ -62,9 +63,9 @@ async function reserveBooking(input, customer, config) {
     booking.notificationMode = promotion.notificationMode || 'final';
     await execute("UPDATE booking_holds SET status = 'expired', released_at = now() WHERE status = 'active' AND expires_at <= now()");
     await execute(
-      `INSERT INTO bookings (id, public_reference, status, service_code, customer_name, customer_email, customer_phone, customer_email_normalized, customer_phone_normalized, customer_identity_hash, topic, sector, additional_information, scheduled_start, scheduled_end, timezone, duration_minutes, base_amount, discount_amount, final_amount, currency, payment_provider, promotion_id, promo_code_normalized, idempotency_key)
-       VALUES ($1, $2, 'held', 'consultation', $3, $4, $5, $4, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`,
-      [booking.id, booking.publicReference, booking.customer.name, booking.customer.email, booking.customer.phone, normalizePhone(booking.customer.phone), customerHash, booking.customer.topic, booking.customer.sector, booking.customer.additional, bounds.start, bounds.end, config.timezone, duration, quote.baseAmount, quote.discountAmount, quote.finalAmount, quote.currency, quote.finalAmount === 0 ? null : (booking.payment || null), promotion.promotionId || null, booking.promo || null, booking.idempotencyKey]
+      `INSERT INTO bookings (id, public_reference, status, service_code, customer_name, customer_email, customer_phone, customer_email_normalized, customer_phone_normalized, customer_identity_hash, topic, sector, additional_information, scheduled_start, scheduled_end, timezone, duration_minutes, base_amount, discount_amount, final_amount, currency, payment_provider, promotion_id, promo_code_normalized, idempotency_key, booking_language)
+       VALUES ($1, $2, 'held', 'consultation', $3, $4, $5, $4, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
+      [booking.id, booking.publicReference, booking.customer.name, booking.customer.email, booking.customer.phone, normalizePhone(booking.customer.phone), customerHash, booking.customer.topic, booking.customer.sector, booking.customer.additional, bounds.start, bounds.end, config.timezone, duration, quote.baseAmount, quote.discountAmount, quote.finalAmount, quote.currency, quote.finalAmount === 0 ? null : (booking.payment || null), promotion.promotionId || null, booking.promo || null, booking.idempotencyKey, booking.language]
     );
     await execute(
       `INSERT INTO booking_holds (id, booking_id, service_code, slot_start, slot_end, status, expires_at)
