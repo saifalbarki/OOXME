@@ -447,11 +447,11 @@
     sectionInput.disabled = booking.complete || step.type !== 'text';
     sectionInput.placeholder = booking.complete ? '' : labels.questions[step.id];
     const textInputAttributes = {
-      name: { autocomplete: 'name', type: 'text', inputmode: 'text' },
-      phone: { autocomplete: 'tel', type: 'tel', inputmode: 'tel' },
-      email: { autocomplete: 'email', type: 'email', inputmode: 'email' }
+      name: { name: 'customer-name', autocomplete: 'name', type: 'text', inputmode: 'text' },
+      phone: { name: 'customer-phone', autocomplete: 'tel', type: 'tel', inputmode: 'tel' },
+      email: { name: 'customer-email', autocomplete: 'email', type: 'email', inputmode: 'email' }
     }[step.id];
-    sectionInput.name = textInputAttributes?.autocomplete || 'consultation-message';
+    sectionInput.name = textInputAttributes?.name || 'consultation-message';
     sectionInput.type = textInputAttributes?.type || 'text';
     sectionInput.inputMode = textInputAttributes?.inputmode || 'text';
     sectionInput.autocomplete = textInputAttributes?.autocomplete || 'off';
@@ -500,11 +500,6 @@
     const time = stableChoiceValue('time');
     const duration = selectedDuration();
     if (!date || !time || !duration) return false;
-    if (!['ZainCash', 'Qi'].includes(booking.payment)) {
-      bookingStatus = bookingLanguage() === 'ar' ? 'اختر وسيلة الدفع أولاً.' : 'Choose a payment method first.';
-      renderSummary();
-      return false;
-    }
     const quote = currentQuote();
     if (discountCode && !quote) {
       bookingStatus = bookingLanguage() === 'ar' ? 'يرجى انتظار التحقق من الخصم.' : 'Please wait for the discount to finish checking.';
@@ -550,9 +545,7 @@
       if (error.message === 'slot_unavailable') bookingIdempotencyKey = '';
       bookingStatus = error.code === 'slot_unavailable'
         ? (bookingLanguage() === 'ar' ? 'هذا الوقت لم يعد متاحاً. اختر وقتاً آخر.' : 'This time is no longer available. Choose another.')
-        : error.code === 'payment_required'
-          ? (bookingLanguage() === 'ar' ? 'اختر وسيلة الدفع أولاً.' : 'Choose a payment method first.')
-          : (bookingLanguage() === 'ar' ? 'تعذر تأكيد الحجز الآن.' : 'We could not confirm the booking right now.');
+        : (bookingLanguage() === 'ar' ? 'تعذر تأكيد الحجز الآن.' : 'We could not confirm the booking right now.');
       renderSummary();
       throw error;
     }).finally(() => { bookingSubmission = null; });
@@ -835,6 +828,7 @@
   };
   discountForm.addEventListener('submit', (event) => {
     event.preventDefault();
+    if (!discountInput.value.trim()) return;
     void validateDiscountCode();
   });
   discountInput.addEventListener('input', () => {

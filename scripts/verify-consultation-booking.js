@@ -1,4 +1,5 @@
 const assert = require('assert/strict');
+const { validatePromotionInput } = require('../api/_lib/promo-engine');
 
 const resolve = (path) => require.resolve(path);
 const mock = (path, exports) => {
@@ -53,7 +54,7 @@ mock('../api/_lib/db', {
   query: async (text, values) => ({ rows: text.startsWith('SELECT public_reference') && records.has(values[0]) ? [records.get(values[0])] : [] }),
   withTransaction: async (work) => work({
     query: async (text, values = []) => {
-      if (text.startsWith('INSERT INTO bookings')) records.set(values[21], { public_reference: values[1], status: 'held', calendar_event_id: null, final_amount: values[16], currency: values[17] });
+      if (text.startsWith('INSERT INTO bookings')) records.set(values[21], { public_reference: values[1], status: 'held', calendar_event_id: null, final_amount: values[16], currency: values[17], payment_provider: values[18] });
       if (text.startsWith('UPDATE bookings SET status = \'confirmed\'')) {
         for (const record of records.values()) {
           if (record.status === 'held') { record.status = 'confirmed'; record.calendar_event_id = values[1]; }
@@ -94,32 +95,37 @@ const invoke = async (idempotencyKey, overrides = {}) => {
 };
 
 (async () => {
-  const paymentRequired = await invoke('safe-booking-payment-required', { payment: '' });
-  assert.equal(paymentRequired.code, 409);
-  assert.equal(paymentRequired.body.error, 'payment_required');
-  assert.equal(calendarCalls, 0);
-  assert.equal(notificationCalls, 0);
+  const noPromoQuote = await validatePromotionInput({ promoCode: '', serviceCode: 'consultation', durationMinutes: 45 });
+  assert.equal(noPromoQuote.valid, true);
+  assert.deepEqual(noPromoQuote.quote, { baseAmount: 30, discountAmount: 0, finalAmount: 30, currency: 'USD', durationMinutes: 45, serviceCode: 'consultation' });
+  const noPayment = await invoke('safe-booking-no-payment', { payment: '' });
+  assert.equal(noPayment.code, 201);
+  assert.equal(noPayment.body.status, 'confirmed');
+  assert.equal(records.get('safe-booking-no-payment').payment_provider, null);
+  assert.equal(calendarCalls, 1);
+  assert.equal(notificationCalls, 1);
   const first = await invoke('safe-booking-idempotency-0001');
   assert.equal(first.code, 201);
   assert.equal(first.body.status, 'confirmed');
+  assert.equal(records.get('safe-booking-idempotency-0001').payment_provider, 'ZainCash');
   assert.equal(first.body.integrations.notifications.customerEmail.status, 'fulfilled');
   assert.equal(first.body.integrations.notifications.customerWhatsApp.status, 'fulfilled');
   const replay = await invoke('safe-booking-idempotency-0001');
   assert.equal(replay.code, 200);
   assert.equal(replay.body.replayed, true);
-  assert.equal(calendarCalls, 1);
-  assert.equal(notificationCalls, 1);
+  assert.equal(calendarCalls, 2);
+  assert.equal(notificationCalls, 2);
   failCustomerWhatsApp = true;
   const notificationFailure = await invoke('safe-booking-idempotency-0002');
   assert.equal(notificationFailure.code, 201);
   assert.equal(notificationFailure.body.status, 'confirmed');
   assert.equal(notificationFailure.body.integrations.notifications.customerWhatsApp.status, 'rejected');
-  assert.equal(calendarCalls, 2);
-  assert.equal(notificationCalls, 2);
+  assert.equal(calendarCalls, 3);
+  assert.equal(notificationCalls, 3);
   failCalendar = true;
   const calendarFailure = await invoke('safe-booking-idempotency-0003');
   assert.equal(calendarFailure.code, 503);
-  assert.equal(notificationCalls, 2);
+  assert.equal(notificationCalls, 3);
   console.log('Safe consultation booking verification passed.');
 })().catch((error) => {
   console.error(error.stack || error.message);

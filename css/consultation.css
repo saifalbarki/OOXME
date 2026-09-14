@@ -297,6 +297,7 @@ body.s-page--consultation .s-page__consultation-composer-text-zone {
 }
 body.s-page--consultation .s-page__consultation-composer-input.is-arabic-input { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; direction: rtl; text-align: right; }
 body.s-page--consultation .s-page__consultation-composer-input.is-english-input { font-family: OOXMEScript, Arial, sans-serif; direction: ltr; text-align: left; }
+html[lang="ar"] body.s-page--consultation .s-page__consultation-composer-input.is-arabic-input::placeholder { direction: rtl; text-align: right; }
 body.s-page--consultation .s-page__consultation-composer-input:-webkit-autofill,
 body.s-page--consultation .s-page__consultation-composer-input:-webkit-autofill:hover,
 body.s-page--consultation .s-page__consultation-composer-input:-webkit-autofill:focus {
@@ -566,6 +567,7 @@ body.s-page--consultation .s-page__consultation-payment-overlay-card {
   --s-overlay-stroke: var(--s-glass-stroke);
   --s-overlay-text: #FFFFFF;
   --s-consultation-summary-padding-inline: calc(var(--s-x) * 1.25);
+  --s-consultation-overlay-card-min-height: min(calc(100dvh - (var(--s-x) * 2)), 432px);
   box-sizing: border-box;
   display: grid;
   grid-template-rows: auto auto;
@@ -573,6 +575,7 @@ body.s-page--consultation .s-page__consultation-payment-overlay-card {
   justify-items: center;
   gap: var(--s-x);
   width: min(calc(100vw - (var(--s-x) * 2)), 380px);
+  min-height: var(--s-consultation-overlay-card-min-height);
   max-height: calc(100dvh - (var(--s-x) * 2));
   padding: var(--s-consultation-summary-padding-inline);
   border: 1px solid var(--s-overlay-stroke);
@@ -639,11 +642,14 @@ body.s-page--consultation .s-page__consultation-success-state {
   --s-overlay-surface: rgba(255, 255, 255, .16);
   --s-overlay-stroke: var(--s-glass-stroke);
   --s-overlay-text: #FFFFFF;
+  --s-consultation-summary-padding-inline: calc(var(--s-x) * 1.25);
+  --s-consultation-overlay-card-min-height: min(calc(100dvh - (var(--s-x) * 2)), 432px);
   box-sizing: border-box;
   display: grid;
   justify-items: center;
   gap: var(--s-x);
   width: min(calc(100vw - (var(--s-x) * 2)), 380px);
+  min-height: var(--s-consultation-overlay-card-min-height);
   max-height: calc(100dvh - (var(--s-x) * 2));
   padding: var(--s-consultation-summary-padding-inline);
   border: 1px solid var(--s-overlay-stroke);
@@ -660,25 +666,29 @@ body.s-page--consultation .s-page__consultation-success-check {
   width: 96px;
   height: 96px;
   place-items: center;
-  border-radius: 50%;
-  background: var(--color-green);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
-  animation: s-consultation-success-pop .42s cubic-bezier(.22, .61, .36, 1) both;
 }
 body.s-page--consultation .s-page__consultation-success-check svg {
   display: block;
   width: 54px;
   height: 54px;
 }
+body.s-page--consultation .s-page__consultation-success-check circle {
+  fill: none;
+  stroke: var(--color-green);
+  stroke-width: 4;
+  stroke-dasharray: 126;
+  stroke-dashoffset: 126;
+  animation: s-consultation-success-circle .16s ease-out forwards;
+}
 body.s-page--consultation .s-page__consultation-success-check path {
   fill: none;
-  stroke: #FFFFFF;
+  stroke: var(--color-green);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 42;
   stroke-dashoffset: 42;
-  animation: s-consultation-success-check .36s .16s ease-out forwards;
+  animation: s-consultation-success-check .14s .16s ease-out forwards;
 }
 body.s-page--consultation .s-page__consultation-success-instruction {
   max-width: 100%;
@@ -698,16 +708,13 @@ html.s-route.s-consultation-success-overlay-open,
 html.s-route.s-consultation-success-overlay-open body.s-page--consultation { overflow: hidden; }
 html.s-route.s-consultation-success-overlay-open body.s-page--consultation { touch-action: none; }
 
-@keyframes s-consultation-success-pop {
-  from { opacity: 0; transform: scale(.62); }
-  to { opacity: 1; transform: scale(1); }
-}
+@keyframes s-consultation-success-circle { to { stroke-dashoffset: 0; } }
 @keyframes s-consultation-success-check {
   to { stroke-dashoffset: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   body.s-page--consultation .s-page__consultation-composer-unit,
-  body.s-page--consultation .s-page__consultation-success-check,
-  body.s-page--consultation .s-page__consultation-success-check path { animation: none; transition: none; }
+  body.s-page--consultation .s-page__consultation-success-check circle,
+  body.s-page--consultation .s-page__consultation-success-check path { animation: none; transition: none; stroke-dashoffset: 0; }
 }
