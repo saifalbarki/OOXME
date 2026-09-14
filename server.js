@@ -21,6 +21,7 @@ const apiRoutes = {
   '/api/booking/confirm': './api/booking/confirm',
   '/api/promo/validate': './api/promo/validate'
 };
+const productionOrigin = process.env.OOXME_PRODUCTION_ORIGIN || 'https://www.ooxme.com';
 const types = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
@@ -59,9 +60,29 @@ const createApiResponse = (response) => ({
   send(body) { response.end(body); }
 });
 
+const proxyProductionAvailability = async (response, requestUrl) => {
+  try {
+    const upstream = await fetch(`${productionOrigin}/api/booking/available-slots${requestUrl.search}`, {
+      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' }
+    });
+    const body = await upstream.text();
+    response.writeHead(upstream.status, {
+      'Content-Type': upstream.headers.get('content-type') || 'application/json; charset=utf-8',
+      'Cache-Control': 'no-cache'
+    });
+    response.end(body);
+  } catch (error) {
+    send(response, 503, 'application/json; charset=utf-8', JSON.stringify({ error: 'availability_proxy_unavailable' }));
+  }
+};
+
 const handleApiRequest = async (request, response, requestUrl) => {
   const modulePath = apiRoutes[requestUrl.pathname];
   if (!modulePath) return false;
+  if (requestUrl.pathname === '/api/booking/available-slots' && process.env.NODE_ENV !== 'production') {
+    await proxyProductionAvailability(response, requestUrl);
+    return true;
+  }
   try {
     request.query = Object.fromEntries(requestUrl.searchParams.entries());
     if (request.method === 'POST') request.body = await readRequestBody(request);

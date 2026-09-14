@@ -312,7 +312,8 @@ html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-compose
   caret-color: #111111;
 }
 html.s-route:not(.is-day-mode) body.s-page--consultation .s-page__consultation-composer-input { color: #FFFFFF; }
-html.s-route:not(.is-day-mode) body.s-page--consultation .s-page__consultation-composer-input::placeholder { color: rgba(255, 255, 255, .58); }
+body.s-page--consultation .s-page__consultation-composer-input::placeholder { color: #FFFFFF; opacity: 1; }
+html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-composer-input::placeholder { color: #111111; opacity: 1; }
 
 body.s-page--consultation .s-page__consultation-composer-success {
   position: absolute;
@@ -497,8 +498,9 @@ body.s-page--consultation .s-page__consultation-summary-divider { height: 1px; m
 body.s-page--consultation .s-page__consultation-discount-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: calc(var(--s-x) * .5); }
 body.s-page--consultation .s-page__consultation-discount-field { position: relative; min-width: 0; }
 body.s-page--consultation .s-page__consultation-discount-field input { box-sizing: border-box; width: 100%; height: 36px; padding: 0 calc(var(--s-x) * .65); border: 1px solid var(--s-summary-stroke); border-radius: calc(var(--s-composer-radius) * .65); outline: 0; background: rgba(0, 0, 0, .12); color: var(--s-summary-text); font: 500 12px/1.2 OOXMEScript, Arial, sans-serif; }
-body.s-page--consultation .s-page__consultation-discount-field input.has-status { padding-inline-end: 48%; }
-html[lang="ar"] body.s-page--consultation .s-page__consultation-discount-field input { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; text-align: right; }
+body.s-page--consultation .s-page__consultation-discount-field input.has-status { padding-inline-end: calc(var(--s-x) * .65); color: transparent; -webkit-text-fill-color: transparent; caret-color: transparent; }
+body.s-page--consultation .s-page__consultation-discount-field input.is-english-text { direction: ltr; text-align: left; font-family: OOXMEEnglish, Arial, sans-serif; }
+body.s-page--consultation .s-page__consultation-discount-field input.is-arabic-text { direction: rtl; text-align: right; font-family: OOXMEArabic, Tahoma, sans-serif; }
 body.s-page--consultation .s-page__consultation-discount-field input::placeholder { color: var(--s-summary-muted); }
 body.s-page--consultation .s-page__consultation-apply,
 body.s-page--consultation .s-page__consultation-pay { border: 1px solid var(--s-summary-stroke); border-radius: calc(var(--s-composer-radius) * .65); background: rgba(255, 255, 255, .12); color: var(--s-summary-text); cursor: pointer; font: 500 12px/1 OOXMEScript, Arial, sans-serif; transition: background-color .18s ease, transform .18s ease; }
@@ -511,11 +513,13 @@ body.s-page--consultation .s-page__consultation-apply:hover,
 body.s-page--consultation .s-page__consultation-apply:focus-visible { background: rgba(255, 255, 255, .22); }
 body.s-page--consultation .s-page__consultation-pay:hover,
 body.s-page--consultation .s-page__consultation-pay:focus-visible { background: #147FE5; }
-body.s-page--consultation .s-page__consultation-discount-status { position: absolute; inset-inline-end: calc(var(--s-x) * .65); top: 50%; width: 44%; max-width: 44%; overflow: hidden; transform: translateY(-50%); color: var(--color-green); font: 500 11px/1.2 OOXMEScript, Arial, sans-serif; pointer-events: none; white-space: nowrap; text-overflow: ellipsis; }
+body.s-page--consultation .s-page__consultation-discount-status { position: absolute; inset: 0; display: flex; box-sizing: border-box; width: 100%; max-width: none; padding: 0 calc(var(--s-x) * .65); align-items: center; overflow: hidden; color: var(--color-green); font: 500 11px/1.2 OOXMEScript, Arial, sans-serif; pointer-events: none; white-space: nowrap; text-overflow: ellipsis; }
+body.s-page--consultation .s-page__consultation-discount-status.is-english-text { direction: ltr; justify-content: flex-start; text-align: left; font-family: OOXMEEnglish, Arial, sans-serif; }
+body.s-page--consultation .s-page__consultation-discount-status.is-arabic-text { direction: rtl; justify-content: flex-end; text-align: right; font-family: OOXMEArabic, Tahoma, sans-serif; }
 body.s-page--consultation .s-page__consultation-discount-status.is-error { color: #FF6961; }
-html[lang="ar"] body.s-page--consultation .s-page__consultation-discount-status { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
 html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-summary-card { --s-summary-surface: rgba(255, 255, 255, .42); --s-summary-text: #111111; --s-summary-muted: rgba(17, 17, 17, .62); }
-html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-discount-field input { background: rgba(255, 255, 255, .45); color: #111111; }
+html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-discount-field input { background: rgba(255, 255, 255, .45); }
+html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-discount-field input:not(.has-status) { color: #111111; }
 html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-apply { background: rgba(255, 255, 255, .42); color: #111111; }
 
 body.s-page--consultation .s-page__consultation-discount-status:empty { display: none; }

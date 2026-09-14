@@ -68,8 +68,18 @@
     sectionInput.classList.toggle('is-english-input', language === 'en');
   };
   const containsArabicText = (value) => /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(value || '');
+  const syncDiscountTextStyle = () => {
+    const language = bookingLanguage();
+    [discountInput, discountStatus].forEach((node) => {
+      const isArabic = language === 'ar';
+      node.lang = isArabic ? 'ar' : 'en';
+      node.dir = isArabic ? 'rtl' : 'ltr';
+      node.classList.toggle('is-arabic-text', isArabic);
+      node.classList.toggle('is-english-text', !isArabic);
+    });
+  };
   const syncSectionInputTextStyle = () => {
-    const language = containsArabicText(sectionInput.value) ? 'ar' : bookingLanguage();
+    const language = bookingLanguage();
     sectionInput.lang = language;
     sectionInput.dir = language === 'ar' ? 'rtl' : 'ltr';
     sectionInput.classList.toggle('is-arabic-input', language === 'ar');
@@ -283,6 +293,7 @@
     page.querySelector('[data-s-consultation-pay]').textContent = labels.pay;
     discountStatus.textContent = feedbackText;
     discountInput.classList.toggle('has-status', Boolean(discountStatus.textContent));
+    syncDiscountTextStyle();
     summary.dir = language === 'ar' ? 'rtl' : 'ltr';
     summary.lang = language;
     const paymentGroup = page.querySelector('[data-s-consultation-payment-options]');
@@ -356,6 +367,9 @@
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !Array.isArray(body.days)) throw new Error(body.error || 'availability_unavailable');
       bookingAvailability.days = body.days.filter((item) => item && /^\d{4}-\d{2}-\d{2}$/.test(item.date) && Array.isArray(item.times) && item.times.length);
+      bookingAvailability.days.forEach(({ date, times }) => {
+        bookingAvailability.timesByDate.set(`${date}:45`, times.slice(0, 4));
+      });
     } catch (_) {
       bookingStatus = bookingLanguage() === 'ar' ? 'تعذر تحميل المواعيد المتاحة.' : 'Available times could not be loaded.';
     } finally {
@@ -429,7 +443,16 @@
     sectionInput.hidden = booking.complete;
     sectionInput.disabled = booking.complete || step.type !== 'text';
     sectionInput.placeholder = booking.complete ? '' : labels.questions[step.id];
-    sectionInput.autocomplete = step.id === 'name' ? 'name' : step.id === 'phone' ? 'tel' : step.id === 'email' ? 'email' : 'off';
+    const textInputAttributes = {
+      name: { autocomplete: 'name', type: 'text', inputmode: 'text' },
+      phone: { autocomplete: 'tel', type: 'tel', inputmode: 'tel' },
+      email: { autocomplete: 'email', type: 'email', inputmode: 'email' }
+    }[step.id];
+    sectionInput.name = textInputAttributes?.autocomplete || 'consultation-message';
+    sectionInput.type = textInputAttributes?.type || 'text';
+    sectionInput.inputMode = textInputAttributes?.inputmode || 'text';
+    sectionInput.autocomplete = textInputAttributes?.autocomplete || 'off';
+    sectionInput.spellcheck = step.id !== 'email' && step.id !== 'phone';
     sectionInput.setAttribute('aria-label', booking.complete ? labels.success : labels.questions[step.id]);
     sectionInput.closest('label').querySelector('.s-page__visually-hidden').textContent = booking.complete ? labels.success : labels.message;
     sectionSend.classList.toggle('is-confirm', !booking.complete && step.type === 'confirm');
@@ -524,6 +547,12 @@
     booking.answers.push({ step: step.id, value, choice });
     booking.index += 1;
     renderBookingFlow({ clearSectionInput: step.type === 'text', placeSectionCaret: keepTextFocus });
+    // Keep the native keyboard session alive while consecutive Section 1
+    // questions are text inputs. It closes naturally when the next step is a
+    // choice/confirmation step because the input is disabled there.
+    if (keepTextFocus && currentBookingStep().type === 'text') {
+      sectionInput.focus({ preventScroll: true });
+    }
     if (step.id === 'duration' && discountCode) void validateDiscountCode({ showFeedback: false });
   };
   const completeBooking = () => {
@@ -721,6 +750,7 @@
     submitBooking();
   });
   const validateDiscountCode = async ({ showFeedback = true } = {}) => {
+    if (discountLoading) return false;
     const code = discountInput.value.trim().toUpperCase();
     const validationId = ++discountValidationId;
     discountCode = code;
@@ -775,6 +805,17 @@
     void validateDiscountCode();
   });
   discountInput.addEventListener('input', () => {
+    if (discountInput.value.length > 10) discountInput.value = discountInput.value.slice(0, 10);
+    if (discountInput.value.trim() && discountStatus.textContent) {
+      discountValidationId += 1;
+      discountCode = '';
+      discountQuote = null;
+      discountLoading = false;
+      discountStatusKind = '';
+      bookingStatus = '';
+      renderSummary();
+      return;
+    }
     if (discountInput.value.trim()) return;
     discountValidationId += 1;
     discountCode = '';
