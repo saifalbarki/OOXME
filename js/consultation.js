@@ -132,6 +132,7 @@
   let discountLoading = false;
   let discountStatusKind = '';
   let discountValidationId = 0;
+  let discountRequest = null;
   let bookingSubmission = null;
   let bookingIdempotencyKey = '';
   let bookingStatus = '';
@@ -499,6 +500,11 @@
     const time = stableChoiceValue('time');
     const duration = selectedDuration();
     if (!date || !time || !duration) return false;
+    if (!['ZainCash', 'Qi'].includes(booking.payment)) {
+      bookingStatus = bookingLanguage() === 'ar' ? 'اختر وسيلة الدفع أولاً.' : 'Choose a payment method first.';
+      renderSummary();
+      return false;
+    }
     const quote = currentQuote();
     if (discountCode && !quote) {
       bookingStatus = bookingLanguage() === 'ar' ? 'يرجى انتظار التحقق من الخصم.' : 'Please wait for the discount to finish checking.';
@@ -529,7 +535,11 @@
       })
     })).then(async (response) => {
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error || 'booking_unavailable');
+      if (!response.ok) {
+        const error = new Error(body.error || 'booking_unavailable');
+        error.code = body.error || 'booking_unavailable';
+        throw error;
+      }
       booking.complete = true;
       bookingStatus = bookingLanguage() === 'ar' ? `تم تأكيد الحجز ${body.id || ''}`.trim() : `Booking confirmed${body.id ? ` — ${body.id}` : ''}`;
       if (currentQuote()) discountQuote = { ...currentQuote(), finalAmount: Number(body.finalAmount), currency: body.currency };
@@ -538,9 +548,11 @@
       return body;
     }).catch((error) => {
       if (error.message === 'slot_unavailable') bookingIdempotencyKey = '';
-      bookingStatus = error.message === 'slot_unavailable'
+      bookingStatus = error.code === 'slot_unavailable'
         ? (bookingLanguage() === 'ar' ? 'هذا الوقت لم يعد متاحاً. اختر وقتاً آخر.' : 'This time is no longer available. Choose another.')
-        : (bookingLanguage() === 'ar' ? 'تعذر تأكيد الحجز الآن.' : 'We could not confirm the booking right now.');
+        : error.code === 'payment_required'
+          ? (bookingLanguage() === 'ar' ? 'اختر وسيلة الدفع أولاً.' : 'Choose a payment method first.')
+          : (bookingLanguage() === 'ar' ? 'تعذر تأكيد الحجز الآن.' : 'We could not confirm the booking right now.');
       renderSummary();
       throw error;
     }).finally(() => { bookingSubmission = null; });
@@ -754,6 +766,12 @@
     if (booking.complete || currentBookingStep().type === 'confirm') { transition(1); return; }
     submitBooking();
   });
+  const cancelDiscountValidation = () => {
+    discountValidationId += 1;
+    discountRequest?.controller.abort();
+    discountRequest = null;
+    discountLoading = false;
+  };
   const validateDiscountCode = async ({ showFeedback = true } = {}) => {
     if (discountLoading) return false;
     const code = discountInput.value.trim().toUpperCase();
@@ -779,30 +797,40 @@
       renderSummary();
       return false;
     }
+    const controller = new AbortController();
+    const request = { validationId, controller };
+    discountRequest = request;
+    let timeout = 0;
     try {
+      timeout = window.setTimeout(() => controller.abort(), 12_000);
       const response = await fetch('/api/promo/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ promoCode: code, serviceCode: 'consultation', durationMinutes: duration })
+        body: JSON.stringify({ promoCode: code, serviceCode: 'consultation', durationMinutes: duration }),
+        signal: controller.signal
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body.success || !body.data?.quote) throw new Error(body.error || 'promotion_unavailable');
-      if (validationId !== discountValidationId || !discountInput.value.trim()) return false;
+      if (validationId !== discountValidationId || discountRequest !== request) return false;
       discountQuote = body.data.quote;
       discountCode = body.data.promoCode || code;
       discountStatusKind = '';
       if (showFeedback) bookingStatus = '';
       return true;
     } catch (_) {
-      if (validationId !== discountValidationId) return false;
+      if (validationId !== discountValidationId || discountRequest !== request) return false;
       discountCode = '';
       discountInput.value = '';
       discountStatusKind = 'error';
       bookingStatus = bookingLanguage() === 'ar' ? 'رمز الخصم غير صالح.' : 'Invalid discount code.';
       return false;
     } finally {
-      discountLoading = false;
-      renderSummary();
+      window.clearTimeout(timeout);
+      if (discountRequest === request) {
+        discountRequest = null;
+        discountLoading = false;
+        renderSummary();
+      }
     }
   };
   discountForm.addEventListener('submit', (event) => {
@@ -812,30 +840,27 @@
   discountInput.addEventListener('input', () => {
     if (discountInput.value.length > 10) discountInput.value = discountInput.value.slice(0, 10);
     if (discountInput.value.trim() && discountStatus.textContent) {
-      discountValidationId += 1;
+      cancelDiscountValidation();
       discountCode = '';
       discountQuote = null;
-      discountLoading = false;
       discountStatusKind = '';
       bookingStatus = '';
       renderSummary();
       return;
     }
     if (discountInput.value.trim()) return;
-    discountValidationId += 1;
+    cancelDiscountValidation();
     discountCode = '';
     discountQuote = null;
-    discountLoading = false;
     discountStatusKind = '';
     bookingStatus = '';
     renderSummary();
   });
   discountInput.addEventListener('focus', () => {
     if (!discountStatus.textContent && !discountCode && !discountQuote) return;
-    discountValidationId += 1;
+    cancelDiscountValidation();
     discountCode = '';
     discountQuote = null;
-    discountLoading = false;
     discountStatusKind = '';
     bookingStatus = '';
     discountInput.value = '';

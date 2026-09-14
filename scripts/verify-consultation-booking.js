@@ -81,7 +81,7 @@ const bookingBody = (idempotencyKey) => ({
     additional: ''
   }
 });
-const invoke = async (idempotencyKey) => {
+const invoke = async (idempotencyKey, overrides = {}) => {
   const response = {
     code: 0,
     body: null,
@@ -89,11 +89,16 @@ const invoke = async (idempotencyKey) => {
     setHeader() { return this; },
     send(body) { this.body = JSON.parse(body); }
   };
-  await handler({ method: 'POST', body: bookingBody(idempotencyKey) }, response);
+  await handler({ method: 'POST', body: { ...bookingBody(idempotencyKey), ...overrides } }, response);
   return response;
 };
 
 (async () => {
+  const paymentRequired = await invoke('safe-booking-payment-required', { payment: '' });
+  assert.equal(paymentRequired.code, 409);
+  assert.equal(paymentRequired.body.error, 'payment_required');
+  assert.equal(calendarCalls, 0);
+  assert.equal(notificationCalls, 0);
   const first = await invoke('safe-booking-idempotency-0001');
   assert.equal(first.code, 201);
   assert.equal(first.body.status, 'confirmed');
