@@ -158,7 +158,7 @@ async function sendBookingNotifications(booking) {
     internalEmail: sendEmail({ to: required('BOOKING_INTERNAL_EMAIL'), subject: `${isTest ? 'TEST ' : ''}New OOXME booking — ${reference}`, text: details }),
     customerEmail: sendEmail({
       to: booking.customer.email,
-      subject: `${isTest ? 'TEST ' : ''}${bookingLanguage(booking) === 'ar' ? 'تأكيد حجز استشارة اوكسوم' : 'OOXME consultation booking confirmation'}`,
+      subject: bookingLanguage(booking) === 'ar' ? 'تأكيد حجز استشارة اوكسوم' : 'OOXME consultation booking confirmation',
       text: customerConfirmationText(booking),
       html: customerConfirmationHtml(booking)
     })
