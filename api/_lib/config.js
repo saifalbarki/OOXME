@@ -6,8 +6,17 @@ const required = (name) => {
 
 const optional = (name, fallback = '') => process.env[name] || fallback;
 
+const validTimezone = (value, fallback = 'Asia/Baghdad') => {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: value }).format();
+    return value;
+  } catch (_) {
+    return fallback;
+  }
+};
+
 const bookingConfig = () => ({
-  timezone: optional('BOOKING_TIMEZONE', 'Asia/Baghdad'),
+  timezone: validTimezone(optional('BOOKING_TIMEZONE', 'Asia/Baghdad')),
   calendarId: required('GOOGLE_CALENDAR_ID'),
   slots: optional('BOOKING_SLOT_TIMES', '10:00,13:00,16:00,19:00')
     .split(',')

@@ -5,6 +5,7 @@ body.s-page--consultation {
   --s-consultation-keyboard-offset: 0px;
   --s-consultation-frame-height: 100dvh;
   --s-consultation-primary-card-width: min(calc(100% - (var(--s-x) * 2)), 420px);
+  --s-consultation-section-bottom-inset: calc(var(--s-x) * 2.5);
 }
 
 body.s-page--consultation .s-page__major-section,
@@ -12,6 +13,14 @@ body.s-page--consultation .s-page__major-section--transition-frame > .s-page__gr
   height: var(--s-consultation-frame-height);
   min-height: var(--s-consultation-frame-height);
   max-height: var(--s-consultation-frame-height);
+}
+
+/* The composer belongs to the bottom edge of the full consultation frame.
+   The shared group defaults to flex-start; align-self on the composer only
+   controls its horizontal cross-axis and cannot provide vertical placement. */
+body.s-page--consultation .s-page__consultation-page-action {
+  justify-content: flex-end;
+  padding-bottom: var(--s-consultation-section-bottom-inset);
 }
 
 body.s-page--consultation .s-page__consultation-composer-unit {
@@ -440,7 +449,6 @@ html.s-route.is-day-mode body.s-page--consultation .s-page__consultation-compose
    section frame. It inherits the current Consultation glass language and X
    spacing without introducing a new page-level geometry contract. */
 body.s-page--consultation .s-page__consultation-summary-section {
-  --s-consultation-section-2-bottom-inset: calc(var(--s-x) * 2.5);
   position: relative;
   box-sizing: border-box;
   width: 100%;
@@ -461,7 +469,7 @@ body.s-page--consultation .s-page__consultation-summary-card {
   box-sizing: border-box;
   position: absolute;
   inset-inline: 0;
-  bottom: var(--s-consultation-section-2-bottom-inset);
+  bottom: var(--s-consultation-section-bottom-inset);
   width: var(--s-consultation-primary-card-width);
   max-height: 100%;
   margin: 0 auto;
@@ -477,8 +485,8 @@ body.s-page--consultation .s-page__consultation-summary-card {
   transform: none;
 }
 @media (orientation: portrait) {
-  body.s-page--consultation .s-page__consultation-summary-section {
-    --s-consultation-section-2-bottom-inset: calc(var(--s-x) * 3);
+  body.s-page--consultation {
+    --s-consultation-section-bottom-inset: calc(var(--s-x) * 3);
   }
 }
 body.s-page--consultation .s-page__consultation-summary-group { display: grid; gap: var(--s-x); }

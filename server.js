@@ -4,6 +4,20 @@ const os = require('os');
 const path = require('path');
 
 const root = __dirname;
+
+// The LAN development server must be able to execute the real booking API
+// locally. Node does not load dotenv files automatically, while Vercel injects
+// these values for production functions. Load the ignored local env files only
+// for non-production runs, without overriding explicitly provided variables.
+if (process.env.NODE_ENV !== 'production' && typeof process.loadEnvFile === 'function') {
+  for (const file of ['.env.local', '.env.development.local']) {
+    const envPath = path.join(root, file);
+    if (fs.existsSync(envPath)) {
+      try { process.loadEnvFile(envPath); } catch (_) { /* keep explicit env values */ }
+    }
+  }
+}
+
 const pageRoutes = {
   '/': 'main.html',
   '/bm': 'brand.html',
@@ -76,10 +90,17 @@ const proxyProductionAvailability = async (response, requestUrl) => {
   }
 };
 
+const hasLocalCalendarConfig = () => Boolean(
+  process.env.GOOGLE_CALENDAR_ID
+  && process.env.GOOGLE_OAUTH_CLIENT_ID
+  && process.env.GOOGLE_OAUTH_CLIENT_SECRET
+  && process.env.GOOGLE_OAUTH_REFRESH_TOKEN
+);
+
 const handleApiRequest = async (request, response, requestUrl) => {
   const modulePath = apiRoutes[requestUrl.pathname];
   if (!modulePath) return false;
-  if (requestUrl.pathname === '/api/booking/available-slots' && process.env.NODE_ENV !== 'production') {
+  if (requestUrl.pathname === '/api/booking/available-slots' && process.env.NODE_ENV !== 'production' && !hasLocalCalendarConfig()) {
     await proxyProductionAvailability(response, requestUrl);
     return true;
   }
