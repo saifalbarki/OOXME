@@ -146,7 +146,6 @@
     submit.setAttribute('aria-label', labels.submit); language.setAttribute('aria-label', labels.language); language.setAttribute('aria-pressed', String(current === 'en')); language.classList.toggle('is-active', current === 'en'); theme.setAttribute('aria-label', root.classList.contains('is-day-mode') ? labels.dark : labels.day); view.textContent = labels.view; input.lang = current; input.dir = current === 'ar' ? 'rtl' : 'ltr';
     syncServices(false);
     syncFinalText();
-    if (persist) try { localStorage.setItem('ooxme-language', current); } catch (_) {}
   };
   const applyTheme = (next) => { const day = next === 'day'; const labels = copy[root.lang === 'ar' ? 'ar' : 'en']; root.classList.toggle('is-day-mode', day); theme.classList.toggle('is-active', !day); theme.setAttribute('aria-pressed', String(!day)); theme.setAttribute('aria-label', day ? labels.dark : labels.day); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000'); };
   servicePrevious.addEventListener('click', () => selectService(activeService + (root.lang === 'ar' ? 1 : -1)));
@@ -167,9 +166,7 @@
   window.addEventListener('keydown', (event) => { if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return; event.preventDefault(); if (event.key === 'Home') transitionSection(-sections.length); else if (event.key === 'End') transitionSection(sections.length); else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1); }, { passive: false });
   window.addEventListener('resize', () => { const current = root.lang; captureEnglishFeaturedGeometry(); if (current !== 'en') applyLanguage(current, { persist: false }); measureServiceCardHeight(); syncServices(false); syncFinalText(); }, { passive: true });
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false }); });
-  let initialLanguage = 'en';
-  try { initialLanguage = localStorage.getItem('ooxme-language') || 'en'; } catch (_) {}
-  root.lang = 'en'; root.dir = 'ltr'; setServiceCopy('en'); captureEnglishFeaturedGeometry(); applyLanguage(initialLanguage, { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
+  root.lang = 'en'; root.dir = 'ltr'; setServiceCopy('en'); captureEnglishFeaturedGeometry(); applyLanguage('en', { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
   requestAnimationFrame(() => syncServices(false));

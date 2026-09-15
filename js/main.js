@@ -486,9 +486,6 @@
     applyPageCopy?.(language);
     updateComposerInputLanguage();
     updateThemeToggleLabel();
-    if (persist && isZPage) {
-      try { localStorage.setItem('ooxme-language', language); } catch (_) {}
-    }
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
   };
 
@@ -1714,13 +1711,6 @@
     event.stopPropagation();
     applyLanguage(document.documentElement.lang === 'ar' ? 'en' : 'ar');
   });
-  if (isZPage) {
-    window.addEventListener('storage', (event) => {
-      if (event.key === 'ooxme-language' && event.newValue) {
-        applyLanguage(event.newValue, { persist: false });
-      }
-    });
-  }
 
   const latinScriptPattern = /[A-Za-z]/u;
   const detectMessageLanguage = (message) => (arabicScriptPattern.test(message) ? 'ar' : 'en');

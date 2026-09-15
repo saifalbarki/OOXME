@@ -224,9 +224,6 @@
     languageUtility.setAttribute('aria-label', language === 'en' ? copy.toArabic : copy.toEnglish);
     updateThemeLabel();
     syncStoreCarousel(false);
-    if (persist) {
-      try { localStorage.setItem('ooxme-language', language); } catch (_) {}
-    }
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
   };
 

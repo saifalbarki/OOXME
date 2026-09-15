@@ -576,7 +576,6 @@
   const applyLanguage = (next, { clearSectionInput = false, placeSectionCaret = false } = {}) => {
     const current = next === 'ar' ? 'ar' : 'en', labels = copy[current];
     document.documentElement.lang = current; document.documentElement.dir = current === 'ar' ? 'rtl' : 'ltr';
-    try { localStorage.setItem('ooxme-language', current); } catch (_) {}
     window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: current } }));
     page.querySelectorAll('.s-page__composer-menu-label').forEach((label, index) => { label.textContent = labels.menu[index]; });
     page.querySelector('.s-page__visually-hidden').textContent = labels.ask; addButton.setAttribute('aria-label', labels.add); submit.setAttribute('aria-label', labels.submit);
@@ -921,8 +920,6 @@
     }
   }, { passive: true });
   document.documentElement.classList.add('s-x-discrete-sections');
-  let initialLanguage = 'en';
-  try { initialLanguage = localStorage.getItem('ooxme-language') === 'ar' ? 'ar' : 'en'; } catch (_) {}
-  applyLanguage(initialLanguage); applyTheme('dark'); setupFace(); establishClosedComposerBaseline();
+  applyLanguage('en', { persist: false, emit: false }); applyTheme('dark'); setupFace(); establishClosedComposerBaseline();
   requestAnimationFrame(() => { renderBookingFlow(); restoreClosedSectionComposerBaseline(); document.documentElement.classList.remove('s-x-initializing'); void loadNearestBookingDays(); });
 })();

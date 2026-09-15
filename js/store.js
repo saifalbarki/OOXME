@@ -141,9 +141,6 @@
     updateInputLanguage();
     syncFeaturedGeometry(language);
     syncCarousel(false);
-    if (persist) {
-      try { localStorage.setItem('ooxme-language', language); } catch (_) {}
-    }
   };
 
   const requestLanguageChange = (next) => {
@@ -289,8 +286,6 @@
     }
     syncCarousel(false);
   }, { passive: true });
-  window.addEventListener('storage', (event) => { if (event.key === 'ooxme-language' && event.newValue) requestLanguageChange(event.newValue); });
-
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
   applyLanguage('en', { persist: false });

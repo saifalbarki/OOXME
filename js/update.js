@@ -69,7 +69,6 @@
     });
     face.setAttribute('aria-label', current === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME'); submit.setAttribute('aria-label', utility.submit); language.classList.toggle('is-active', current === 'en'); language.setAttribute('aria-pressed', String(current === 'en')); language.setAttribute('aria-label', current === 'en' ? utility.toArabic : utility.toEnglish); previous.setAttribute('aria-label', utility.previous); next.setAttribute('aria-label', utility.next); page.querySelector('[data-update-carousel-nav]').setAttribute('aria-label', utility.nav);
     syncCarousel(false);
-    if (persist) try { localStorage.setItem('ooxme-language', current); } catch (_) {}
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: current } }));
   };
   const applyTheme = (nextTheme) => { const day = nextTheme === 'day'; root.classList.toggle('is-day-mode', day); theme.classList.toggle('is-active', !day); theme.setAttribute('aria-pressed', String(!day)); theme.setAttribute('aria-label', day ? utilityCopy[root.lang === 'ar' ? 'ar' : 'en'].toDark : utilityCopy[root.lang === 'ar' ? 'ar' : 'en'].toDay); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000'); };
@@ -88,8 +87,7 @@
   language.addEventListener('click', () => applyLanguage(root.lang === 'ar' ? 'en' : 'ar'));
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false, emit: false }); });
   window.addEventListener('resize', () => syncCarousel(false), { passive: true });
-  let initialLanguage = 'en'; try { initialLanguage = localStorage.getItem('ooxme-language') || 'en'; } catch (_) {}
-  applyLanguage(initialLanguage, { persist: false, emit: false }); applyTheme('dark'); syncCarousel(false);
+  applyLanguage('en', { persist: false, emit: false }); applyTheme('dark'); syncCarousel(false);
   requestAnimationFrame(() => syncCarousel(false));
   document.fonts?.ready.then(() => syncCarousel(false));
   root.classList.remove('s-x-initializing');
