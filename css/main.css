@@ -1751,63 +1751,254 @@ body.s-page--x :is(.s-page__flow-group--section-5-text, .s-page__flow-group--sec
   transform: translateX(-50%);
 }
 
-/* The unlocked consultation copy retains its existing centered composition. */
-body.s-page--x .s-page__flow-group--section-7-text .s-page__flow-text {
-  position: relative;
+/* Main-only contact section: build upward from the consultation CTA baseline. */
+body.s-page--main .s-page__major-section--section-8 {
+  min-height: var(--s-section-frame-height, 100dvh);
+  height: var(--s-section-frame-height, 100dvh);
+}
+
+body.s-page--main .s-page__flow-group--section-8-contact {
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
+  display: flex;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  align-items: center;
+  justify-content: flex-end;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  translate: none !important;
+}
+
+body.s-page--main .s-page__contact-consultation {
+  display: flex;
+  width: var(--s-x-closed-notice-width);
+  max-width: calc(100% - (var(--s-x) * 2));
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin-bottom: var(--s-x);
+}
+
+body.s-page--main .s-page__contact-consultation-text {
   display: grid;
   width: 100%;
   justify-items: center;
+  margin-bottom: calc(var(--s-x) * .5);
   text-align: center;
-  transform: translateX(calc((100vw - 100%) / 2 - var(--s-x)));
 }
 
-html[dir="rtl"] body.s-page--x .s-page__flow-group--section-7-text .s-page__flow-text {
-  transform: translateX(calc((100% - 100vw) / 2 + var(--s-x)));
-}
-
-body.s-page--x .s-page__flow-group--section-7-action {
-  bottom: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + var(--s-section-2-bottom-baseline-correction, 0px));
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  height: var(--s-rpn-image-block-size);
-  place-items: center;
-}
-
-body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {
-  /* The action slot's bottom is the shared rendered image-card baseline. */
-  align-self: end;
-  justify-self: center;
-  margin-top: 0;
-  color: #FFFFFF;
+body.s-page--main .s-page__contact-consultation-text .s-page__group-title,
+body.s-page--main .s-page__contact-consultation-text .s-page__group-description {
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  margin: 0;
   font-family: OOXMEScript, Arial, sans-serif;
-  font-size: 14px;
+  font-style: normal;
   font-weight: 500;
-  line-height: 1.2;
+  letter-spacing: normal;
   text-align: center;
+}
+
+body.s-page--main .s-page__contact-consultation-text .s-page__group-title {
+  color: #FFFFFF;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+body.s-page--main .s-page__contact-consultation-text .s-page__group-description {
+  margin-top: calc(var(--s-x) * .5);
+  color: rgba(255, 255, 255, .58);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+body.s-page--main .s-page__contact-offer {
+  position: static;
+  display: flex;
+  width: var(--s-x-rpn-image-text-width, calc(100% - 34px));
+  height: auto;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #0A84FF;
+  font: 500 12px/1.2 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+body.s-page--main .s-page__contact-offer {
+  margin-bottom: var(--s-x);
+}
+
+body.s-page--main .s-page__contact-consultation-action {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+body.s-page--main .s-page__contact-consultation-action .s-page__consultation-cta {
   box-sizing: border-box;
   inline-size: var(--s-x-closed-notice-width);
   block-size: var(--s-x-closed-notice-height);
   min-block-size: var(--s-x-closed-notice-height);
+  margin: 0;
   padding-block: 0;
-}
-
-body.s-page--main .s-page__flow-group--section-7-action .s-page__consultation-cta {
-  background: rgba(255, 255, 255, .12);
-  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+  background: #0A84FF;
   font: 500 12px/1 OOXMEScript, Arial, sans-serif;
   letter-spacing: normal;
+  text-align: center;
   -webkit-backdrop-filter: blur(20px) saturate(120%);
   backdrop-filter: blur(20px) saturate(120%);
   transition: background-color .18s ease, transform .18s ease, opacity .18s ease;
+}
+
+body.s-page--main .s-page__contact-separator {
+  display: flex;
+  width: calc(var(--s-x-closed-notice-width) - (var(--s-x) * 2));
+  max-width: calc(100% - (var(--s-x) * 2));
+  align-items: center;
+  gap: var(--s-x);
+  color: rgba(255, 255, 255, .52);
+  font: 500 10px/1 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+}
+
+body.s-page--main .s-page__contact-separator > span:first-child,
+body.s-page--main .s-page__contact-separator > span:last-child {
+  height: 1px;
+  flex: 1 1 auto;
+  background: var(--s-glass-stroke);
+}
+
+html:not([lang="ar"]) :is(.s-page__contact-consultation-copy--ar, .s-page__contact-offer .s-page__closed-notice-copy--ar),
+html[lang="ar"] :is(.s-page__contact-consultation-copy--en, .s-page__contact-offer .s-page__closed-notice-copy--en) {
+  display: none;
+}
+
+html[lang="ar"] body.s-page--main :is(.s-page__contact-consultation, .s-page__contact-separator) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html[lang="ar"] body.s-page--main .s-page__contact-offer,
+html[lang="ar"] body.s-page--main .s-page__contact-consultation-action .s-page__consultation-cta {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page--main .s-page__contact-offer { color: #0A84FF; }
+
+body.s-page--main .s-page__contact-layout {
+  display: flex;
+  width: var(--s-x-closed-notice-width);
+  max-width: calc(100% - (var(--s-x) * 2));
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: var(--s-x);
+  gap: 0;
+}
+
+body.s-page--main .s-page__contact-buttons {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: var(--s-x);
+  margin-bottom: calc(var(--s-x) * 2);
+}
+
+/* Landscape-only contact grid. The shared 340px composition width remains
+   unchanged for the CTA, separator, legal row, and rights text. */
+@media (orientation: landscape) and (min-width: 600px) {
+  body.s-page--main .s-page__contact-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-x);
+    row-gap: var(--s-x);
+  }
+}
+
+body.s-page--main .s-page__contact-button {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--s-x-closed-notice-height);
+  height: var(--s-x-closed-notice-height);
+  margin: 0;
+  padding-block: 0;
+  font: 500 12px/1 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+  cursor: default;
+  opacity: 1;
+}
+
+body.s-page--main a.s-page__contact-button {
+  cursor: pointer;
   text-decoration: none;
 }
 
-body.s-page--main .s-page__flow-group--section-7-action .s-page__consultation-cta:active {
-  transform: scale(.96);
+body.s-page--main button.s-page__contact-button:disabled {
+  cursor: default;
 }
 
-html.s-route.is-day-mode body.s-page--main .s-page__flow-group--section-7-action .s-page__consultation-cta {
-  background: rgba(255, 255, 255, .48);
+body.s-page--main .s-page__contact-button:disabled {
+  color: inherit;
+  opacity: 1;
+}
+
+body.s-page--main .s-page__legal-links {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  column-gap: calc(var(--s-x) * .5);
+  margin-bottom: calc(var(--s-x) * .5);
+}
+
+body.s-page--main .s-page__legal-link {
+  display: inline-block;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, .58);
+  font: 500 10px/1.2 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+  text-decoration: none;
+}
+
+body.s-page--main .s-page__legal-link:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 3px;
+}
+
+body.s-page--main .s-page__rights-copy {
+  margin: 0;
+  color: rgba(255, 255, 255, .52);
+  font: 500 10px/1.2 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+  white-space: nowrap;
+}
+
+html:not([lang="ar"]) :is(.s-page__contact-copy--ar, .s-page__legal-copy--ar, .s-page__rights-copy > [dir="rtl"]),
+html[lang="ar"] :is(.s-page__contact-copy--en, .s-page__legal-copy--en, .s-page__rights-copy > [dir="ltr"]) {
+  display: none;
+}
+
+html[lang="ar"] body.s-page--main :is(.s-page__contact-button, .s-page__legal-link, .s-page__rights-copy) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page--main .s-page__legal-link,
+html.s-route.is-day-mode body.s-page--main .s-page__rights-copy {
+  color: rgba(17, 17, 17, .58);
 }
 
 html[lang="ar"] body.s-page--x .s-page__flow-group--section-7-action .s-page__consultation-cta {

@@ -22,7 +22,6 @@
   const metricsMajorSection = numbersMetrics?.closest('[data-s-major-section]');
   const numberMetricItems = Array.from(document.querySelectorAll('[data-s-number-metric]'));
   const squareLogoStage = document.querySelector('[data-s-square-logo-stage]');
-  const consultationCta = document.querySelector('[data-s-consultation-cta]');
   const firstGroup = document.querySelector('[data-s-first-group]');
   const firstTypewriterTitle = document.querySelector('[data-s-first-typewriter]');
   const firstTypewriterOutput = document.querySelector('[data-s-first-typewriter-output]');
@@ -98,7 +97,7 @@
         ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.'],
         ['Let’s talk\nabout what’s next', 'A focused consultation to understand your business, identify the right direction, and define the next practical step.']
       ],
-      menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
+      menu: ['The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'],
       inputPlaceholder: 'Type...',
       ask: 'Ask ooxme',
       addContext: 'Add context',
@@ -111,7 +110,6 @@
         switchToDay: 'Switch to Day Mode',
         switchToDark: 'Switch to Dark Mode'
       },
-      consultationCta: 'Book a Consultation'
     },
     ar: {
       groups: [
@@ -122,7 +120,7 @@
         ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.'],
         ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول الى الخطوة العملية التالية.']
       ],
-      menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'],
+      menu: ['إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'],
       inputPlaceholder: 'اكتب...',
       ask: 'اسأل اوكسوم',
       addContext: 'اضف سياقًا',
@@ -135,7 +133,6 @@
         switchToDay: 'التبديل الى الوضع النهاري',
         switchToDark: 'التبديل الى الوضع الداكن'
       },
-      consultationCta: 'احجز استشارة'
     }
   };
   const getGroupCopy = (language, groupIndex) => pageCopy[language].groups[groupIndex];
@@ -285,6 +282,9 @@
   const inputLabel = composer.querySelector('.s-page__visually-hidden');
   const composerMenuItems = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-item'));
   const menuLabels = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-label'));
+  document.querySelectorAll('[data-s-legal-placeholder]').forEach((link) => {
+    link.addEventListener('click', (event) => event.preventDefault());
+  });
   let applyPageCopy = null;
   let manualThemeOverride = false;
   const arabicScriptPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u;
@@ -349,9 +349,9 @@
       const bounce = enteringApply ? Math.sin(Math.min(1, reactionElapsed / 420) * Math.PI * 2) * .62 : 0;
       const shake = leavingApply ? Math.sin(Math.min(1, reactionElapsed / 340) * Math.PI * 4) * .68 : 0;
       const happyEyes = state === 'apply' || enteringApply;
-      const blinkPhase = ((phase + .7) % 5.6) / 5.6;
+      const blinkPhase = ((phase + .7) % 2) / 2;
       // Preserve the natural idle cadence while shortening only the close/open window.
-      const blink = state === 'idle' ? 1 - (.84 * Math.exp(-Math.pow((blinkPhase - .72) / .022, 2))) : 1;
+      const blink = state === 'idle' ? 1 - (.84 * Math.exp(-Math.pow((blinkPhase - .72) / .014, 2))) : 1;
       // Reactions are exclusive and zero-mean; eye bounds stay inside the fixed circle.
       shell.setAttribute('transform', `translate(${shake.toFixed(3)} ${bounce.toFixed(3)})`);
       eyes.setAttribute('transform', `translate(${currentGaze.x.toFixed(3)} ${currentGaze.y.toFixed(3)})`);
@@ -455,6 +455,7 @@
     animationFrame = window.requestAnimationFrame(tick);
     return { begin, move, end, setApply, rejectApply };
   };
+  zFaceController = createZFaceController();
 
   const updateComposerInputLanguage = () => {
     const hasTypedText = input.value.trim().length > 0;
@@ -701,6 +702,14 @@
   composerMenu.addEventListener('click', (event) => event.stopPropagation());
   composerMenuPanel?.addEventListener('click', (event) => event.stopPropagation());
   sendUtilities.addEventListener('click', (event) => event.stopPropagation());
+  composerMenuItems.forEach((item) => {
+    const label = item.querySelector('.s-page__composer-menu-label')?.textContent.trim();
+    if (label === 'The Consultation') {
+      item.dataset.sMenuTarget = 'consultation';
+      item.removeAttribute('aria-disabled');
+      item.querySelector('svg')?.remove();
+    }
+  });
   composerMenuItems.forEach((item, index) => {
     item.addEventListener('pointerdown', () => {
       pulseComposerMenu();
@@ -716,6 +725,30 @@
         window.location.assign('/bm');
       });
     }
+    if (item.dataset.sMenuTarget === 'consultation' && item.getAttribute('aria-disabled') !== 'true') {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        activateTemporaryUi('none');
+        window.location.assign('/consultation');
+      });
+    }
+    if (item.dataset.sMenuTarget === 'contact' && item.getAttribute('aria-disabled') !== 'true') {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        activateTemporaryUi('none');
+        const contactSection = majorSections.find((section) => section.matches('.s-page__major-section--contact'));
+        const contactIndex = contactSection ? getNavigableMajorSections().indexOf(contactSection) : -1;
+        if (contactIndex >= 0) transitionToMajorSection(contactIndex);
+      });
+    }
+  });
+
+  document.querySelector('[data-s-contact-consultation-cta]')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    window.location.assign('/consultation');
   });
 
   addButton.addEventListener('click', (event) => {
@@ -901,7 +934,6 @@
     { first: firstGroup, last: logoParticleField, type: 'anchored' },
     { first: document.querySelector('[data-s-copy-group="3"]'), last: document.querySelector('.s-page__flow-group--strips') },
     { first: document.querySelector('[data-s-copy-group="4"]'), last: document.querySelector('.s-page__flow-group--logos') },
-    { first: document.querySelector('.s-page__flow-group--consultation'), last: document.querySelector('.s-page__flow-group--section-7-action') || consultationCta }
   ].filter(({ first, last }) => first && last);
 
   const resetPortraitSectionLayout = ({ preserveFinalSettleSpace = false } = {}) => {
@@ -1362,6 +1394,30 @@
     });
   };
 
+  // The merged Contact section keeps one shared vertical box for both
+  // languages. Reserve the larger rendered line box so Arabic font metrics
+  // can change glyphs and direction without moving the section upward.
+  const syncContactSectionCopyGeometry = () => {
+    const contact = document.querySelector('[data-s-contact-consultation]');
+    if (!contact) return;
+    [
+      contact.querySelector('.s-page__group-title'),
+      contact.querySelector('.s-page__group-description'),
+      contact.querySelector('.s-page__contact-offer')
+    ].filter(Boolean).forEach((box) => {
+      const copies = Array.from(box.querySelectorAll('[lang]'));
+      if (copies.length < 2) return;
+      const originalDisplays = copies.map((copy) => copy.style.display);
+      let height = 0;
+      copies.forEach((activeCopy) => {
+        copies.forEach((copy) => { copy.style.display = copy === activeCopy ? 'block' : 'none'; });
+        height = Math.max(height, activeCopy.getBoundingClientRect().height);
+      });
+      copies.forEach((copy, index) => { copy.style.display = originalDisplays[index]; });
+      if (height) box.style.height = `${Math.ceil(height)}px`;
+    });
+  };
+
   // The original /x Composer used the layout viewport's bottom edge. Keep that
   // reference, then compensate only for the browser's fractional rendered
   // layout so the last visible edge of the First Text Group is exact.
@@ -1414,6 +1470,7 @@
     localizedGeometryFrame = 0;
     syncFirstGroupTextGeometry();
     syncSectionTwoCopyGeometry();
+    syncContactSectionCopyGeometry();
     groupElements.forEach((elements, groupIndex) => {
       const englishGroup = getGroupCopy('en', groupIndex);
       const arabicGroup = getGroupCopy('ar', groupIndex);
@@ -1450,11 +1507,6 @@
     });
     startFirstTypewriter();
     menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });
-    if (consultationCta) {
-      consultationCta.textContent = copy.consultationCta;
-      consultationCta.lang = language;
-      consultationCta.dir = language === 'ar' ? 'rtl' : 'ltr';
-    }
     input.placeholder = copy.inputPlaceholder;
     inputLabel.textContent = copy.ask;
     addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME');
