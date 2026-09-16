@@ -1246,7 +1246,7 @@
     }));
   };
 
-  document.querySelectorAll('.s-page__closed-notice:not(.s-page__closed-notice--section-7)').forEach((notice) => {
+  document.querySelectorAll('.s-page__closed-notice:not(.s-page__closed-notice--section-7):not(.s-page__contact-offer)').forEach((notice) => {
     [notice, notice.nextElementSibling].filter(Boolean).forEach((target) => {
       target.addEventListener('pointerdown', () => triggerLockedNoticeShake(notice), { passive: true });
     });

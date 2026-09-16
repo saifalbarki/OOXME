@@ -28,7 +28,7 @@ const pageRoutes = {
   '/os': 'os.html'
 };
 const publicRoots = ['assets', 'css', 'js', 'public'];
-const publicRootFiles = new Set(['favicon.svg', 'site.webmanifest']);
+const publicRootFiles = new Set(['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest']);
 const apiRoutes = {
   '/api/booking/available-slots': './api/booking/available-slots',
   '/api/booking/availability': './api/booking/availability',
@@ -41,6 +41,7 @@ const types = {
   '.js': 'application/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.svg': 'image/svg+xml',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',

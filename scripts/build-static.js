@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, '..');
 const sourceRoot = root;
 const output = path.join(root, 'dist');
 const directories = ['assets', 'css', 'js', 'public'];
-const rootFiles = ['favicon.svg', 'site.webmanifest'];
+const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest'];
 const pageOutputs = { 'main.html': 'index.html', 'brand.html': 'bm.html', 'rpn.html': 'rpn.html', 'update.html': 'update.html', 'consultation.html': 'consultation.html', 'store.html': 'store.html', 'os.html': 'os.html' };
 
 if (!fs.existsSync(sourceRoot)) {
