@@ -10,7 +10,7 @@
     "per_customer_limit": null,
     "source_restrictions": ["promo_input"],
     "booking_defaults": null,
-    "notification_mode": "test"
+    "notification_mode": "final"
   },
   {
     "code": "R100",

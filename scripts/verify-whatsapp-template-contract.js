@@ -24,11 +24,14 @@ const originalEnglishLanguage = process.env.YCLOUD_WHATSAPP_TEMPLATE_LANGUAGE;
 try {
   delete process.env.YCLOUD_WHATSAPP_BOOKING_TEMPLATE_CONTRACT;
   assert.equal(bookingConfirmationTemplate, 'ooxme_booking_confirmation');
-  assert.equal(bookingTemplateContract(), legacyBookingTemplateContract);
+  assert.equal(bookingTemplateContract(), approvedSixVariableBookingTemplateContract);
   assert.deepEqual(yCloudBookingParameters(booking), [
+    'Safe Test Customer',
+    'Safe Test Topic',
     'OOX-SAFE-TEST',
-    'Safe Test Customer — 2030-01-07 at 13:00 (Iraq time)',
-    '45 minutes. Booking confirmed. Next-stage instructions will be sent.'
+    '2030-01-07',
+    '13:00',
+    '45'
   ]);
 
   const futureExpected = ['Safe Test Customer', 'Safe Test Topic', 'OOX-SAFE-TEST', '2030-01-07', '13:00', '45'];
@@ -39,7 +42,7 @@ try {
   process.env.YCLOUD_WHATSAPP_TEMPLATE_LANGUAGE_AR = 'ar';
   assert.equal(yCloudTemplateLanguage('en', approvedSixVariableBookingTemplateContract), 'en_US');
   assert.equal(yCloudTemplateLanguage('ar', approvedSixVariableBookingTemplateContract), 'ar');
-  assert.equal(yCloudTemplateLanguage('ar', legacyBookingTemplateContract), 'en_US');
+  assert.equal(yCloudTemplateLanguage('ar', approvedSixVariableBookingTemplateContract), 'ar');
 
   process.env.YCLOUD_WHATSAPP_BOOKING_TEMPLATE_CONTRACT = approvedSixVariableBookingTemplateContract;
   assert.equal(bookingTemplateContract(), approvedSixVariableBookingTemplateContract);

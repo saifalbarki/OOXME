@@ -31,7 +31,7 @@ async function sendWhatsAppText(to, body) {
 }
 
 const bookingTemplateValues = ({ reference, name, topic, date, time, duration }) => ({ reference, name, topic, date, time, duration });
-const yCloudBookingParameters = (booking, contract = legacyBookingTemplateContract) => {
+const yCloudBookingParameters = (booking, contract = approvedSixVariableBookingTemplateContract) => {
   const { reference, name, topic, date, time, duration } = bookingTemplateValues(booking);
   if (contract === approvedSixVariableBookingTemplateContract) return [name, topic, reference, date, time, String(duration)];
   return [
@@ -40,7 +40,7 @@ const yCloudBookingParameters = (booking, contract = legacyBookingTemplateContra
     `${duration} minutes. Booking confirmed. Next-stage instructions will be sent.`
   ];
 };
-const bookingTemplateContract = () => optional('YCLOUD_WHATSAPP_BOOKING_TEMPLATE_CONTRACT', legacyBookingTemplateContract) === approvedSixVariableBookingTemplateContract
+const bookingTemplateContract = () => optional('YCLOUD_WHATSAPP_BOOKING_TEMPLATE_CONTRACT', approvedSixVariableBookingTemplateContract) === approvedSixVariableBookingTemplateContract
   ? approvedSixVariableBookingTemplateContract
   : legacyBookingTemplateContract;
 const yCloudTemplateLanguage = (language, contract) => contract === approvedSixVariableBookingTemplateContract && language === 'ar'
@@ -55,8 +55,6 @@ async function sendYCloudBookingConfirmation(to, { reference, name, topic, date,
   if (!from) throw new Error('YCLOUD_WHATSAPP_FROM is not a valid phone number');
   const contract = bookingTemplateContract();
   const templateLanguage = yCloudTemplateLanguage(language, contract);
-  // The default branch retains the existing en_US three-parameter payload.
-  // The six-variable branch is unreachable until Production sets the approved value.
   const parameters = yCloudBookingParameters({ reference, name, topic, date, time, duration }, contract);
   const response = await fetch('https://api.ycloud.com/v2/whatsapp/messages/sendDirectly', {
     method: 'POST',
