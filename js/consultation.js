@@ -132,9 +132,34 @@
   let bookingGeometryFrame = 0;
   let openPaymentMethod = '';
   let editingAnswer = null;
+  let sectionInputValidationStep = '';
   const bookingLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
   const createBookingIdempotencyKey = () => globalThis.crypto?.randomUUID?.() || `booking-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const currentBookingStep = () => bookingSteps[booking.index] || bookingSteps[bookingSteps.length - 1];
+  const sectionInputValidationMessages = {
+    phone: { en: 'Enter a real phone number.', ar: 'ادخل رقم هاتف حقيقي.' },
+    email: { en: 'Enter a valid email address.', ar: 'ادخل بريدا الكترونيا صالحا.' }
+  };
+  const normalizePhoneInput = (value) => String(value || '').trim().replace(/[\s().-]/g, '').replace(/^00/, '+');
+  const isValidPhoneInput = (value) => {
+    const normalized = normalizePhoneInput(value);
+    const digits = normalized.startsWith('+') ? normalized.slice(1) : normalized;
+    return /^\+?\d+$/.test(normalized)
+      && digits.length >= 7
+      && digits.length <= 15
+      && !/^0+$/.test(digits)
+      && (!normalized.startsWith('+') || /^[1-9]/.test(digits));
+  };
+  const isValidEmailInput = (value) => {
+    const normalized = String(value || '').trim();
+    if (!normalized || normalized.length > 254 || /\s/.test(normalized)) return false;
+    const parts = normalized.split('@');
+    if (parts.length !== 2) return false;
+    const [local, domain] = parts;
+    if (!local || local.length > 64 || !domain || domain.length > 253 || local.startsWith('.') || local.endsWith('.') || local.includes('..') || domain.startsWith('.') || domain.endsWith('.') || domain.includes('..')) return false;
+    if (!/^[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]+$/.test(local)) return false;
+    return domain.split('.').every((label) => label.length > 0 && label.length <= 63 && /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(label));
+  };
   const paymentOverlayContent = {
     ZainCash: {
       src: '/assets/Payment/ZAINCASH.png',
@@ -344,6 +369,7 @@
           discountLoading = false;
           discountInput.value = '';
           bookingStatus = '';
+          sectionInputValidationStep = '';
           renderBookingFlow({ clearSectionInput: answerStep?.type !== 'text' });
         };
         row.addEventListener('click', rewind);
@@ -436,16 +462,20 @@
     renderSectionSuccessMessage(language);
     sectionInput.hidden = booking.complete;
     sectionInput.disabled = booking.complete || step.type !== 'text';
-    sectionInput.placeholder = booking.complete ? '' : labels.questions[step.id];
+    const validationMessage = sectionInputValidationStep === step.id ? sectionInputValidationMessages[step.id]?.[language] : '';
+    sectionInput.placeholder = booking.complete ? '' : validationMessage || labels.questions[step.id];
     const textInputAttributes = {
       name: { name: 'customer-name', autocomplete: 'name', type: 'text', inputmode: 'text' },
       phone: { name: 'customer-phone', autocomplete: 'tel', type: 'tel', inputmode: 'tel' },
       email: { name: 'customer-email', autocomplete: 'email', type: 'email', inputmode: 'email' }
     }[step.id];
+    sectionInput.removeAttribute('name');
+    sectionInput.removeAttribute('autocomplete');
+    sectionInput.removeAttribute('inputmode');
     sectionInput.name = textInputAttributes?.name || 'consultation-message';
     sectionInput.type = textInputAttributes?.type || 'text';
-    sectionInput.inputMode = textInputAttributes?.inputmode || 'text';
-    sectionInput.autocomplete = textInputAttributes?.autocomplete || 'off';
+    sectionInput.setAttribute('inputmode', textInputAttributes?.inputmode || 'text');
+    sectionInput.setAttribute('autocomplete', textInputAttributes?.autocomplete || 'off');
     sectionInput.spellcheck = step.id !== 'email' && step.id !== 'phone';
     // Set the language state after native type changes so mobile browsers keep
     // the current language's direction for both text and placeholder rendering.
@@ -570,7 +600,17 @@
     if (step.type === 'confirm') { completeBooking(); return; }
     if (step.type !== 'text') return;
     const value = sectionInput.value.trim();
-    if (!value) return;
+    const valid = step.id === 'phone' ? isValidPhoneInput(value)
+      : step.id === 'email' ? isValidEmailInput(value)
+        : Boolean(value);
+    if (!valid) {
+      if (step.id === 'phone' || step.id === 'email') {
+        sectionInputValidationStep = step.id;
+        renderBookingFlow();
+      }
+      return;
+    }
+    sectionInputValidationStep = '';
     addBookingAnswer(step, value);
   };
   const applyLanguage = (next, { clearSectionInput = false, placeSectionCaret = false } = {}) => {
@@ -745,7 +785,13 @@
   composer.addEventListener('pointerdown', (event) => { if (event.target === composer) composer.classList.add('is-pulsing'); }, { passive: true });
   composer.addEventListener('animationend', () => composer.classList.remove('is-pulsing'));
   input.addEventListener('input', updateInputLanguage);
-  sectionInput.addEventListener('input', syncSectionInputTextStyle);
+  sectionInput.addEventListener('input', () => {
+    syncSectionInputTextStyle();
+    if (sectionInputValidationStep) {
+      sectionInputValidationStep = '';
+      renderBookingFlow();
+    }
+  });
   sectionInput.addEventListener('focus', beginSectionKeyboardSession);
   sectionInput.addEventListener('blur', restoreClosedSectionComposerBaseline);
   sectionComposer.addEventListener('submit', (event) => {
