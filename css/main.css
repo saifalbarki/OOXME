@@ -1439,6 +1439,10 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) :is(.s-page__major-sectio
   background: rgba(255, 64, 64, .08);
 }
 
+html.s-route.is-day-mode body.s-page.s-page--main :is(.s-page__major-section--section-5, .s-page__major-section--section-6) > .s-page__closed-notice .s-page__closed-notice-copy {
+  color: #000000;
+}
+
 body.s-page.s-page--x:not(.s-page--rpn) .s-page__major-section--final > .s-page__closed-notice.s-page__closed-notice--section-7 {
   bottom: calc(
     (var(--s-x) * 2)

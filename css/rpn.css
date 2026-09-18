@@ -126,7 +126,7 @@ html.s-route.is-day-mode .s-page--rpn .s-page__add.is-active {
   color: #FFFFFF;
 }
 
-.s-page--rpn .s-page__rpn-add-eyes {
+.s-page--rpn .s-page__x-top-bar-eyes {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -141,7 +141,7 @@ html.s-route.is-day-mode .s-page--rpn .s-page__add.is-active {
   stroke-linejoin: round;
 }
 
-.s-page--rpn .s-page__rpn-face-eyes {
+.s-page--rpn .s-page__x-face-eyes {
   fill: currentColor;
   stroke: none;
 }

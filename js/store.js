@@ -291,7 +291,6 @@
   applyLanguage('en', { persist: false });
   featuredFontsReady.then(() => { if (root.lang === 'en') syncFeaturedGeometry('en'); });
   applyTheme('dark');
-  setupFace();
   requestAnimationFrame(() => {
     syncCarousel(false);
     root.classList.remove('s-x-initializing');

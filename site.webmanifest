@@ -7,14 +7,14 @@
   "theme_color": "#f1f3f7",
   "icons": [
     {
-      "src": "/favicon-32x32.png",
-      "sizes": "32x32",
+      "src": "/assets/logo/Favicon.png",
+      "sizes": "4000x4000",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/favicon-16x16.png",
-      "sizes": "16x16",
+      "src": "/assets/logo/Favicon.png",
+      "sizes": "4000x4000",
       "type": "image/png",
       "purpose": "any maskable"
     }

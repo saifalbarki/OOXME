@@ -1751,7 +1751,7 @@
       isInViewport = true;
     }
     logoMaskImage.addEventListener('load', resizeCanvas, { once: true });
-    logoMaskImage.src = 'assets/logo/OX-001-LOGO-black.png';
+    logoMaskImage.src = 'assets/logo/Logo.png';
   };
   if (logoParticleField && logoParticleCanvas) setupLogoParticleField();
 
