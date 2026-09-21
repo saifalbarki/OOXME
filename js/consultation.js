@@ -935,7 +935,7 @@
   theme.addEventListener('click', (event) => { event.stopPropagation(); applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day'); });
   language.addEventListener('pointerdown', (event) => { event.preventDefault(); event.stopPropagation(); });
   language.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); toggleSectionComposerLanguage(); });
-  menuItems.forEach((item, index) => { item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true }); if (index === 0 && item.getAttribute('aria-disabled') !== 'true') item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/bm'); }); });
+  menuItems.forEach((item, index) => { item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true }); if (index === 0 && item.getAttribute('aria-disabled') !== 'true') item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/service'); }); });
   document.addEventListener('pointerdown', (event) => {
     if (!composer.contains(event.target)) setMenuOpen(false);
     if (!sectionComposer.contains(event.target) && document.activeElement === sectionInput) sectionInput.blur();

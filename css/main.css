@@ -1209,13 +1209,17 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   object-fit: contain;
   pointer-events: none;
   user-select: none;
-  filter: brightness(0) invert(1);
+  filter: none;
   transform: scale(1);
   transform-origin: center;
 }
 
 html.s-route.is-day-mode .s-page__square-logo img {
-  filter: brightness(0) invert(0);
+  filter: none;
+}
+
+html.s-route:not(.is-day-mode) body.s-page.s-page--main .s-page__major-section--section-6 .s-page__square-logo img {
+  filter: invert(1);
 }
 
 .s-page__square-logo--center {

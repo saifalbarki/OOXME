@@ -9,6 +9,7 @@ body.s-page--store {
   --s-store-surface-strong: rgba(255, 255, 255, .16);
   --s-store-muted: rgba(255, 255, 255, .58);
   --s-store-image: rgba(255, 255, 255, .055);
+  overscroll-behavior-y: none;
 }
 
 body.s-page--store .s-page__major-section,
@@ -40,7 +41,7 @@ body.s-page--store .s-page__store-section--products { position: relative; }
 body.s-page--store .s-page__store-section--products .s-page__store-layout--products {
   position: absolute;
   inset-inline: 0;
-  bottom: calc(var(--s-store-safe-bottom-gap, var(--s-x)) + var(--s-store-nav-height, 48px) + var(--s-x));
+  bottom: calc(var(--s-store-safe-bottom-gap, var(--s-x)) + var(--s-store-nav-height, 48px) + (var(--s-x) * 3));
   align-content: start;
   gap: calc(var(--s-x) * 1.25);
   height: auto;
@@ -288,7 +289,9 @@ body.s-page--store .s-page__rpn-carousel-nav {
   position: absolute;
   z-index: 20;
   left: calc(50vw - var(--s-x));
-  bottom: var(--s-store-safe-bottom-gap);
+  /* The carousel controls are content in Section 2, so their lowest edge
+     uses the same baseline contract as the Section 1 card and Section 3 card. */
+  bottom: calc(var(--s-store-safe-bottom-gap) + (var(--s-x) * 2));
   display: grid;
   grid-template-columns: var(--s-store-nav-arrow-size) minmax(0, 1fr) var(--s-store-nav-arrow-size);
   column-gap: var(--s-store-nav-gap);

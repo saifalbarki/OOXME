@@ -20,12 +20,12 @@ if (process.env.NODE_ENV !== 'production' && typeof process.loadEnvFile === 'fun
 
 const pageRoutes = {
   '/': 'main.html',
-  '/bm': 'brand.html',
-  '/rpn': 'rpn.html',
-  '/update': 'update.html',
-  '/consultation': 'consultation.html',
+  '/service': 'brand.html',
+  '/space': 'rpn.html',
+  '/start': 'update.html',
+  '/scale': 'consultation.html',
   '/store': 'store.html',
-  '/os': 'os.html'
+  '/system': 'os.html'
 };
 const publicRoots = ['assets', 'css', 'js', 'public'];
 const publicRootFiles = new Set(['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest']);

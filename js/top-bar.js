@@ -88,7 +88,7 @@
       if (target !== 'consultation' && target !== 'store') return;
       event.preventDefault();
       event.stopPropagation();
-      window.location.assign(target === 'consultation' ? '/consultation' : '/store');
+      window.location.assign(target === 'consultation' ? '/scale' : '/store');
     });
   });
 })();

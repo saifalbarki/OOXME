@@ -221,6 +221,7 @@
   let pendingFinalRevealTimer = 0;
   let localizedGeometryFrame = 0;
   let portraitSectionLayoutFrame = 0;
+  let sectionFiveMobileGapFrame = 0;
   let portraitSectionLayoutTimer = 0;
   let finalScrollBufferFrame = 0;
   let majorSectionSettleTimer = 0;
@@ -722,7 +723,7 @@
         event.preventDefault();
         event.stopPropagation();
         activateTemporaryUi('none');
-        window.location.assign('/bm');
+        window.location.assign('/service');
       });
     }
     if (item.dataset.sMenuTarget === 'consultation' && item.getAttribute('aria-disabled') !== 'true') {
@@ -730,7 +731,7 @@
         event.preventDefault();
         event.stopPropagation();
         activateTemporaryUi('none');
-        window.location.assign('/consultation');
+        window.location.assign('/scale');
       });
     }
     if (item.dataset.sMenuTarget === 'contact' && item.getAttribute('aria-disabled') !== 'true') {
@@ -748,7 +749,7 @@
   document.querySelector('[data-s-contact-consultation-cta]')?.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
-    window.location.assign('/consultation');
+    window.location.assign('/scale');
   });
 
   addButton.addEventListener('click', (event) => {
@@ -999,6 +1000,47 @@
     finalScrollBufferFrame = window.requestAnimationFrame(syncFinalScrollBuffer);
   };
 
+  // Safari can expand the narrow Section 5 copy when its description wraps,
+  // while the shared text-group box keeps its reserved height. Measure the
+  // painted gap against Section 6 after layout and correct only Section 5 on
+  // coarse portrait devices.
+  const syncSectionFiveMobileGap = () => {
+    sectionFiveMobileGapFrame = 0;
+    const sectionFive = document.querySelector('.s-page__major-section--section-5');
+    const sectionSix = document.querySelector('.s-page__major-section--section-6');
+    const sectionFiveText = sectionFive?.querySelector('.s-page__flow-text');
+    if (!sectionFive || !sectionSix || !sectionFiveText) return;
+
+    const isMobilePortrait = document.body.classList.contains('s-page--main')
+      && window.matchMedia('(orientation: portrait)').matches
+      && window.matchMedia('(pointer: coarse)').matches;
+    if (!isMobilePortrait) {
+      sectionFiveText.style.removeProperty('bottom');
+      return;
+    }
+
+    const sectionFiveDescription = sectionFive.querySelector('.s-page__group-description');
+    const sectionFiveNotice = sectionFive.querySelector('.s-page__closed-notice');
+    const sectionSixDescription = sectionSix.querySelector('.s-page__group-description');
+    const sectionSixNotice = sectionSix.querySelector('.s-page__closed-notice');
+    if (!sectionFiveDescription || !sectionFiveNotice || !sectionSixDescription || !sectionSixNotice) return;
+
+    const referenceGap = sectionSixNotice.getBoundingClientRect().top
+      - sectionSixDescription.getBoundingClientRect().bottom;
+    const renderedGap = sectionFiveNotice.getBoundingClientRect().top
+      - sectionFiveDescription.getBoundingClientRect().bottom;
+    const delta = referenceGap - renderedGap;
+    if (Math.abs(delta) <= .25) return;
+
+    const currentBottom = Number.parseFloat(getComputedStyle(sectionFiveText).bottom) || 0;
+    sectionFiveText.style.bottom = `${(currentBottom + delta).toFixed(3)}px`;
+  };
+
+  const scheduleSectionFiveMobileGap = () => {
+    if (sectionFiveMobileGapFrame) return;
+    sectionFiveMobileGapFrame = window.requestAnimationFrame(syncSectionFiveMobileGap);
+  };
+
   const syncPortraitSectionLayout = () => {
     portraitSectionLayoutFrame = 0;
     const isPortrait = window.matchMedia('(orientation: portrait)').matches;
@@ -1007,6 +1049,7 @@
       resetPortraitSectionLayout();
       scheduleFlowSync();
       scheduleFirstGroupBaseline();
+      scheduleSectionFiveMobileGap();
       return;
     }
 
@@ -1070,6 +1113,7 @@
     scheduleFinalScrollBuffer();
     scheduleFlowSync();
     scheduleFirstGroupBaseline();
+    scheduleSectionFiveMobileGap();
   };
 
   const schedulePortraitSectionLayout = () => {

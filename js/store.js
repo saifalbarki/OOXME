@@ -48,8 +48,12 @@
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let activeProduct = 1;
   let sectionLocked = false;
+  let sectionInputLocked = false;
   let sectionUnlockTimer = 0;
-  let sectionSettleTimer = 0;
+  let sectionSettleFrame = 0;
+  let sectionSettleTarget = null;
+  let sectionSettleStableFrames = 0;
+  let sectionScrollResumeTimer = 0;
   let menuTimer = 0;
   let sectionTouch = null;
   let carouselDrag = null;
@@ -172,23 +176,65 @@
     return !closest || distance < closest.distance ? { index, distance } : closest;
   }, null)?.index ?? 0;
 
+  const sectionReferenceScrollY = (section) => (
+    window.scrollY + section.getBoundingClientRect().top - sectionReferenceY()
+  );
+
+  const cancelSectionSettle = ({ stopNativeScroll = false } = {}) => {
+    if (sectionSettleFrame) window.cancelAnimationFrame(sectionSettleFrame);
+    sectionSettleFrame = 0;
+    const wasSettling = sectionSettleTarget !== null;
+    sectionSettleTarget = null;
+    sectionSettleStableFrames = 0;
+    if (stopNativeScroll) sectionLocked = false;
+    if (stopNativeScroll && wasSettling) window.scrollTo({ top: window.scrollY, left: 0, behavior: 'auto' });
+  };
+
+  const watchSectionSettle = () => {
+    sectionSettleFrame = 0;
+    if (sectionSettleTarget === null) return;
+    if (Math.abs(window.scrollY - sectionSettleTarget) <= 1) {
+      sectionSettleStableFrames += 1;
+      if (sectionSettleStableFrames >= 2) {
+        sectionSettleTarget = null;
+        sectionSettleStableFrames = 0;
+        sectionLocked = false;
+        return;
+      }
+    } else {
+      sectionSettleStableFrames = 0;
+    }
+    sectionSettleFrame = window.requestAnimationFrame(watchSectionSettle);
+  };
+
+  const settleToNearestSection = () => {
+    if (sectionSettleTarget !== null || sectionLocked) return;
+    const current = activeSectionIndex();
+    const target = sectionReferenceScrollY(sections[current]);
+    if (Math.abs(window.scrollY - target) <= 1) return;
+    sectionSettleTarget = target;
+    sectionSettleStableFrames = 0;
+    sectionLocked = true;
+    window.scrollTo({ top: target, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    sectionSettleFrame = window.requestAnimationFrame(watchSectionSettle);
+  };
+
   const transitionSection = (direction) => {
-    if (!direction || sectionLocked) return;
+    if (!direction || sectionInputLocked || sectionSettleTarget !== null) return;
     const current = activeSectionIndex();
     const targetIndex = Math.max(0, Math.min(sections.length - 1, current + direction));
     const target = sections[targetIndex];
     if (!target || targetIndex === current) return;
     sectionLocked = true;
     clearTimeout(sectionUnlockTimer);
-    clearTimeout(sectionSettleTimer);
-    sectionUnlockTimer = setTimeout(() => { sectionLocked = false; }, 820);
-    window.scrollTo({ top: window.scrollY + target.getBoundingClientRect().top - sectionReferenceY(), left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-    if (targetIndex !== sections.length - 1) {
-      sectionSettleTimer = setTimeout(() => {
-        const correction = target.getBoundingClientRect().top - sectionReferenceY();
-        if (Math.abs(correction) > .5) window.scrollTo({ top: window.scrollY + correction, left: 0, behavior: 'auto' });
-      }, reducedMotion.matches ? 80 : 900);
-    }
+    cancelSectionSettle();
+    sectionSettleTarget = sectionReferenceScrollY(target);
+    sectionSettleStableFrames = 0;
+    sectionInputLocked = true;
+    window.clearTimeout(sectionUnlockTimer);
+    sectionUnlockTimer = window.setTimeout(() => { sectionInputLocked = false; }, 800);
+    window.scrollTo({ top: sectionSettleTarget, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    sectionSettleFrame = window.requestAnimationFrame(watchSectionSettle);
   };
 
   const setupFace = () => {
@@ -227,7 +273,7 @@
   languageButton.addEventListener('click', (event) => { event.stopPropagation(); requestLanguageChange(root.lang === 'ar' ? 'en' : 'ar'); });
   menuItems.forEach((item, index) => {
     item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true });
-    if (index === 0 && item.getAttribute('aria-disabled') !== 'true') item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/bm'); });
+    if (index === 0 && item.getAttribute('aria-disabled') !== 'true') item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/service'); });
   });
   page.querySelectorAll('.s-page__store-action').forEach((button) => button.addEventListener('click', (event) => event.preventDefault()));
   previousProduct.addEventListener('click', () => selectProduct(activeProduct - 1));
@@ -255,6 +301,7 @@
   carouselViewport.addEventListener('pointercancel', finishCarouselDrag);
 
   document.addEventListener('pointerdown', (event) => { if (!composer.contains(event.target)) setMenuOpen(false); }, { passive: true });
+  document.addEventListener('pointerdown', () => cancelSectionSettle({ stopNativeScroll: true }), { capture: true, passive: true });
   document.addEventListener('touchstart', (event) => {
     if (event.target.closest('[data-s-composer], [data-store-carousel]')) return;
     const item = event.changedTouches[0];
@@ -270,6 +317,11 @@
     if (item) sectionTouch = null;
   }, { capture: true, passive: true });
   window.addEventListener('wheel', (event) => { event.preventDefault(); if (Math.abs(event.deltaY) >= 8) transitionSection(event.deltaY > 0 ? 1 : -1); }, { passive: false });
+  window.addEventListener('scroll', () => {
+    if (sectionSettleTarget !== null || sectionTouch) return;
+    window.clearTimeout(sectionScrollResumeTimer);
+    sectionScrollResumeTimer = window.setTimeout(settleToNearestSection, 90);
+  }, { passive: true });
   window.addEventListener('keydown', (event) => {
     if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return;
     event.preventDefault();

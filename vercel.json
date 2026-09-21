@@ -8,11 +8,11 @@
     "api/**/*.js": { "maxDuration": 30, "includeFiles": "data/promos.json" }
   },
   "rewrites": [
-    { "source": "/bm", "destination": "/bm.html" },
-    { "source": "/rpn", "destination": "/rpn.html" },
-    { "source": "/update", "destination": "/update.html" },
-    { "source": "/consultation", "destination": "/consultation.html" },
+    { "source": "/service", "destination": "/brand.html" },
+    { "source": "/space", "destination": "/rpn.html" },
+    { "source": "/start", "destination": "/update.html" },
+    { "source": "/scale", "destination": "/consultation.html" },
     { "source": "/store", "destination": "/store.html" }
-    ,{ "source": "/os", "destination": "/os.html" }
+    ,{ "source": "/system", "destination": "/os.html" }
   ]
 }
