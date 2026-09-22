@@ -6,7 +6,15 @@ const sourceRoot = root;
 const output = path.join(root, 'dist');
 const directories = ['assets', 'css', 'js', 'public'];
 const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest'];
-const pageOutputs = { 'main.html': 'index.html', 'brand.html': 'bm.html', 'rpn.html': 'rpn.html', 'update.html': 'update.html', 'consultation.html': 'consultation.html', 'store.html': 'store.html', 'os.html': 'os.html' };
+const pageOutputs = {
+  'main.html': 'index.html',
+  'brand.html': 'service.html',
+  'rpn.html': 'space.html',
+  'update.html': 'start.html',
+  'consultation.html': 'scale.html',
+  'store.html': 'store.html',
+  'os.html': 'system.html'
+};
 
 if (!fs.existsSync(sourceRoot)) {
   throw new Error('Expected website source directory is missing.');
