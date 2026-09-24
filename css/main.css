@@ -186,9 +186,18 @@ html.s-x-discrete-sections {
   scroll-padding-top: calc(var(--s-x) * 2);
 }
 
+html.s-main-free-scroll {
+  scroll-snap-type: none;
+}
+
 html.s-x-discrete-sections body.s-page:not(.s-page--rpn) .s-page__major-section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
+}
+
+html.s-main-free-scroll.s-x-discrete-sections body.s-page--main .s-page__major-section {
+  scroll-snap-align: none;
+  scroll-snap-stop: normal;
 }
 
 /* The first two /x frames remain contiguous snap targets. Isolation creates a
@@ -3390,6 +3399,30 @@ html.s-route.is-day-mode body.s-page--main :is(.s-page__group-description, .s-pa
   }
 }
 
+@media (orientation: landscape) {
+  body.s-page.s-page--main :is(
+    .s-page__section-3-image-frame .s-page__image-copy-supporting,
+    .s-page__group--section-4 .s-page__group-description,
+    .s-page__flow-group--section-5-text .s-page__group-description,
+    .s-page__flow-group--section-6-text .s-page__group-description
+  ) {
+    white-space: nowrap;
+  }
+
+  body.s-page.s-page--main .s-page__section-3-image-frame .s-page__image-copy-supporting br {
+    display: none;
+  }
+
+  body.s-page.s-page--main :is(
+    .s-page__group--section-4 .s-page__group-description,
+    .s-page__flow-group--section-5-text .s-page__group-description,
+    .s-page__flow-group--section-6-text .s-page__group-description
+  ) .s-page__reveal-line {
+    display: inline;
+    margin-inline-end: .28em;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
   .s-page__flow-media { transition: none; }
@@ -3474,4 +3507,159 @@ body.s-page.s-page--main .s-page__section-3-image-frame .s-page__image-copy-main
 html[lang="ar"] body.s-page.s-page--main .s-page__section-3-image-frame .s-page__image-copy-main {
   color: #000000;
   -webkit-text-fill-color: #000000;
+}
+
+/* Temporarily conceal only Main Section 1's typewriter without changing its box. */
+body.s-page.s-page--main [data-s-first-typewriter] {
+  visibility: hidden !important;
+}
+
+body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy {
+  position: absolute;
+  z-index: 1;
+  inset-inline: 0;
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+  );
+  width: auto;
+  margin: 0;
+}
+
+body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy {
+  z-index: 1;
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+    + var(--s-rpn-image-block-size)
+    + var(--s-x)
+  );
+  border-radius: var(--s-composer-radius);
+}
+
+body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) > .s-page__image-copy > .s-page__image-copy-language {
+  text-align: center;
+}
+
+body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) > .s-page__image-copy > .s-page__image-copy-language > :is(
+  .s-page__image-copy-main,
+  .s-page__image-copy-supporting
+) {
+  text-align: center;
+}
+
+body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) > .s-page__image-group {
+  border-radius: var(--s-composer-radius);
+  corner-shape: superellipse(2);
+}
+
+body.s-page.s-page--main [data-s-main-section-1-image-card] {
+  border-radius: var(--s-composer-radius);
+  corner-shape: superellipse(2);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: none;
+}
+
+body.s-page.s-page--main [data-s-main-section-1-image-card].is-ready {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+body.s-page.s-page--main .s-page__major-section--section-2 > .s-page__group--section-2-image > .s-page__section-2-image-frame {
+  display: none;
+}
+
+body.s-page.s-page--main .s-page__major-section--section-3 > .s-page__group--section-3 > [data-s-section-2-relocated] {
+  display: none !important;
+}
+
+body.s-page.s-page--main :is(
+  .s-page__major-section--section-2,
+  .s-page__major-section--section-3
+) {
+  display: none;
+}
+
+body.s-page.s-page--main .s-page__major-section--transition-frame:has(
+  > .s-page__section-2-image-frame--section-1-copy.is-pulsing,
+  > .s-page__section-3-image-frame--section-1-copy.is-pulsing
+) {
+  overflow: visible;
+}
+
+body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) .s-page__image-copy-main {
+  color: #FFFFFF;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  font-family: OOXMEPlayfair, "Playfair Display", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+}
+
+html[lang="ar"] body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) .s-page__image-copy-main {
+  color: #FFFFFF;
+  -webkit-text-fill-color: currentColor;
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+}
+
+body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) .s-page__image-copy-supporting {
+  color: #FFFFFF;
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  font-family: OOXMEScript, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.2;
+  text-rendering: optimizeLegibility;
+}
+
+html[lang="ar"] body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) .s-page__image-copy-supporting {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) .s-page__image-copy-main {
+  color: #111111;
+  -webkit-text-fill-color: currentColor;
+}
+
+html.s-route.is-day-mode body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) .s-page__image-copy-supporting {
+  color: #666666;
 }

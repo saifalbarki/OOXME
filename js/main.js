@@ -46,9 +46,40 @@
   // No current route implements the retired focused /z composition.
   const isZPage = false;
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  document.documentElement.classList.add('s-x-discrete-sections');
+  document.documentElement.classList.add('s-x-discrete-sections', 's-main-free-scroll');
 
   if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
+
+  const mainSectionOneImageCards = page.classList.contains('s-page--main')
+    ? Array.from(page.querySelectorAll('[data-s-main-section-1-image-card]'))
+    : [];
+  if (mainSectionOneImageCards.length) {
+    const waitForDecodedImage = (image) => {
+      const decode = () => {
+        try {
+          return typeof image.decode === 'function'
+            ? Promise.resolve(image.decode()).catch(() => {})
+            : Promise.resolve();
+        } catch (_) {
+          return Promise.resolve();
+        }
+      };
+      if (image.complete) return decode();
+      return new Promise((resolve) => {
+        image.addEventListener('load', () => { decode().then(resolve); }, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      });
+    };
+    Promise.all([
+      document.fonts?.ready || Promise.resolve(),
+      ...mainSectionOneImageCards.map((card) => {
+        const image = card.querySelector('img');
+        return image ? waitForDecodedImage(image) : Promise.resolve();
+      })
+    ]).then(() => {
+      mainSectionOneImageCards.forEach((card) => card.classList.add('is-ready'));
+    });
+  }
 
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
@@ -92,9 +123,9 @@
       groups: [
         ['Welcome\nOur Next Client'],
         ['Re-engineered\nBuilt for New Terrain', 'Discover Ooxme v4.0 system, designed for engineering, architectural, construction, contracting .. etc'],
-        ['The numbers speak\nfor the work', 'Real results that summarize what we’ve achieved across different businesses and brands.'],
-        ['Striking Designs\nFor Distinctive Projects', 'We design with an exceptional, precise, and remarkably clean approach that serves your goals and reflects the value of your projects.'],
-        ['Distinct Identities\nBuilt to Be Remembered', 'A selection of focused marks, shaped with clarity, character, and lasting recognition.'],
+        ['The numbers speak\nfor the work', 'Clear results reveal the value\nour work creates across sectors.'],
+        ['Striking Designs\nFor Distinctive Projects', 'Thoughtful design shaped with\nprecision to advance your goals.'],
+        ['Distinct Identities\nBuilt to Be Remembered', 'Distinct identities that make\nbrands clear, memorable, lasting.'],
         ['Let’s talk\nabout what’s next', 'A focused consultation to understand your business, identify the right direction, and define the next practical step.']
       ],
       menu: ['The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'],
@@ -115,9 +146,9 @@
       groups: [
         ['مرحبــا\nعميلنا القادم'],
         ['اعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
-        ['الارقام تتحدث\nعن العمل', 'نتائج حقيقية تلخص ما حققناه مع اعمال وعلامات مختلفة.'],
-        ['تصاميم ملفتة\nلمشاريع مميزة', 'نصمم بأسلوب استثنائي، دقيق، ونظيف للغاية بما يخدم أهدافكم ويعكس قيمة مشاريعكم.'],
-        ['هويات مميزة\nصممت لتبقى', 'مجموعة من العلامات المركزة، صممت بوضوح، وشخصية، وحضور راسخ.'],
+        ['الارقام تتحدث\nعن العمل', 'نتائج واضحة تكشف قيمة عملنا\nوتُبرز أثره في مختلف القطاعات.'],
+        ['تصاميم ملفتة\nلمشاريع مميزة', 'تصميم مدروس، ينفذ بدقة\nليخدم أهدافك ويعزز مشروعك.'],
+        ['هويات مميزة\nصممت لتبقى', 'هويات مميزة تجعل علامتك\nواضحة، راسخة، وسهلة التذكر.'],
         ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول الى الخطوة العملية التالية.']
       ],
       menu: ['إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'],
@@ -224,20 +255,17 @@
   let sectionFiveMobileGapFrame = 0;
   let portraitSectionLayoutTimer = 0;
   let finalScrollBufferFrame = 0;
-  let majorSectionSettleTimer = 0;
   let majorSectionSettleFrame = 0;
   let majorSectionSettleReleaseFrame = 0;
   let majorSectionSettleTarget = null;
   let majorSectionSettleOwnsScroll = false;
   let majorSectionPointerActive = false;
   let majorSectionSettleStableFrames = 0;
-  let discreteSectionTouch = null;
   let discreteSectionInputLocked = false;
   let discreteSectionUnlockTimer = 0;
   let flowFrame = 0;
   let metricCountFrame = 0;
   let metricsSectionActive = false;
-  let metricsAnimationStarted = false;
   let zSectionOneScrollFrame = 0;
   let zSectionOneLocked = false;
   let zSectionOneCompositionReady = false;
@@ -501,9 +529,8 @@
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDayMode ? '#FFFFFF' : '#000000');
   };
 
-  // /x always begins in English. Its language control remains a live,
-  // session-only choice and never reads a stored or cross-page preference.
-  const initialLanguage = 'en';
+  // Each fresh page load begins in Arabic; the language control remains live.
+  const initialLanguage = 'ar';
   applyLanguage(initialLanguage, { persist: false, emit: false });
   applyTheme('dark');
 
@@ -847,6 +874,7 @@
   };
 
   const setMetricCountsActive = (isActive) => {
+    if (metricsSectionActive === isActive) return;
     cancelMetricCount();
     metricsSectionActive = isActive;
     const values = numberMetricItems
@@ -859,15 +887,10 @@
 
     if (!isActive) {
       values.forEach(({ value, target }) => {
-        value.textContent = metricsAnimationStarted ? `${target}+` : '0+';
+        value.textContent = '0+';
       });
       return;
     }
-    if (metricsAnimationStarted) {
-      values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
-      return;
-    }
-    metricsAnimationStarted = true;
     if (reducedMotion.matches) {
       values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
       return;
@@ -886,6 +909,20 @@
     };
     metricCountFrame = window.requestAnimationFrame(step);
   };
+
+  numberMetricItems.forEach((metric) => {
+    const value = metric.querySelector('[data-s-metric-value]');
+    if (value) value.textContent = '0+';
+  });
+
+  if ('IntersectionObserver' in window && metricsMajorSection) {
+    const metricSectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.target === metricsMajorSection) setMetricCountsActive(entry.isIntersecting);
+      });
+    }, { threshold: 0.15 });
+    metricSectionObserver.observe(metricsMajorSection);
+  }
 
   const setFlowItemVisibility = (item, isVisible, duration) => {
     item.style.setProperty('--s-flow-duration', `${duration}ms`);
@@ -1140,8 +1177,6 @@
   );
 
   const cancelMajorSectionSettle = ({ stopNativeScroll = false } = {}) => {
-    window.clearTimeout(majorSectionSettleTimer);
-    majorSectionSettleTimer = 0;
     if (majorSectionSettleFrame) window.cancelAnimationFrame(majorSectionSettleFrame);
     if (majorSectionSettleReleaseFrame) window.cancelAnimationFrame(majorSectionSettleReleaseFrame);
     majorSectionSettleFrame = 0;
@@ -1230,13 +1265,6 @@
     discreteSectionUnlockTimer = window.setTimeout(() => { discreteSectionInputLocked = false; }, 800);
     window.scrollTo({ top: target, left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
     majorSectionSettleFrame = window.requestAnimationFrame(watchMajorSectionSettle);
-  };
-
-  const transitionMajorSection = (direction) => {
-    if (isZPage || !direction) return;
-    const current = getNearestMajorSectionIndex();
-    if (!current) return;
-    transitionToMajorSection(current.index + direction);
   };
 
   const pulseImageSurface = (frame) => {
@@ -1880,11 +1908,6 @@
   }, { capture: true, passive: true });
   document.addEventListener('touchstart', (event) => {
     beginMajorSectionInteraction();
-    if (!isZPage && !event.target.closest('[data-s-composer], [data-s-conversation]')) {
-      const touch = event.changedTouches[0];
-      if (touch) discreteSectionTouch = { id: touch.identifier, y: touch.clientY, moved: false };
-    }
-    const touch = event.changedTouches[0];
   }, { capture: true, passive: true });
   document.addEventListener('pointermove', (event) => {
     zFaceController?.move(event);
@@ -1892,12 +1915,7 @@
   }, { capture: true, passive: true });
   document.addEventListener('touchmove', (event) => {
     beginMajorSectionInteraction();
-    const discreteTouch = Array.from(event.changedTouches).find((item) => item.identifier === discreteSectionTouch?.id);
-    if (!isZPage && discreteTouch && discreteTouch.clientY !== discreteSectionTouch.y) {
-      discreteSectionTouch.moved = true;
-      event.preventDefault();
-    }
-  }, { capture: true, passive: false });
+  }, { capture: true, passive: true });
   ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach((eventName) => {
     document.addEventListener(eventName, (event) => {
       endMajorSectionInteraction();
@@ -1905,24 +1923,12 @@
         if (event.pointerType !== 'touch') {
         }
         zFaceController?.end(event, eventName === 'pointercancel');
-      } else {
-        const touch = Array.from(event.changedTouches).find((item) => item.identifier === discreteSectionTouch?.id);
-        if (eventName === 'touchend' && !isZPage && touch && discreteSectionTouch?.moved) {
-          const deltaY = touch.clientY - discreteSectionTouch.y;
-          if (Math.abs(deltaY) >= 36) transitionMajorSection(deltaY < 0 ? 1 : -1);
-        }
-        if (touch) discreteSectionTouch = null;
       }
     }, { passive: true });
   });
   window.addEventListener('wheel', (event) => {
     if (!isZPage) {
-      // Consume every wheel delta so precision-trackpad sub-threshold events
-      // cannot nudge the document into a partial section position.
-      event.preventDefault();
-      if (Math.abs(event.deltaY) >= 8) {
-        transitionMajorSection(event.deltaY > 0 ? 1 : -1);
-      }
+      cancelMajorSectionSettle({ stopNativeScroll: true });
       return;
     }
     cancelMajorSectionSettle({ stopNativeScroll: true });
@@ -1931,17 +1937,11 @@
       cancelZReleaseSettle({ stopNativeScroll: true });
       if (zSectionOneLocked && event.deltaY < 0) zEndpointReverseIntent = true;
     }
-  }, { passive: false });
+  }, { passive: true });
   window.addEventListener('keydown', (event) => {
+    if (!isZPage) return;
     if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) return;
     if (event.target instanceof Element && event.target.closest('input, textarea, [contenteditable="true"]')) return;
-    if (!isZPage) {
-      event.preventDefault();
-      if (event.key === 'Home') transitionMajorSection(-getNavigableMajorSections().length);
-      else if (event.key === 'End') transitionMajorSection(getNavigableMajorSections().length);
-      else transitionMajorSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
-      return;
-    }
     majorSectionPointerActive = false;
     cancelMajorSectionSettle({ stopNativeScroll: true });
     if (isZPage) {
@@ -2233,15 +2233,11 @@
     document.documentElement.classList.remove('s-x-initializing');
   };
 
-  const inactivityResetDelayMs = 30000;
-  let inactivityResetTimer = 0;
-
   const resetPageToInitialState = () => {
     cancelMajorSectionSettle({ stopNativeScroll: true });
     window.clearTimeout(discreteSectionUnlockTimer);
     discreteSectionUnlockTimer = 0;
     discreteSectionInputLocked = false;
-    discreteSectionTouch = null;
     majorSectionPointerActive = false;
     window.clearTimeout(portraitSectionLayoutTimer);
     portraitSectionLayoutTimer = 0;
@@ -2249,11 +2245,9 @@
     if (finalScrollBufferFrame) window.cancelAnimationFrame(finalScrollBufferFrame);
     portraitSectionLayoutFrame = 0;
     finalScrollBufferFrame = 0;
-    window.clearTimeout(inactivityResetTimer);
     window.clearTimeout(finalVisibleTimer);
     window.clearTimeout(finalResetTimer);
     window.clearTimeout(pendingFinalRevealTimer);
-    inactivityResetTimer = 0;
     finalVisibleTimer = 0;
     finalResetTimer = 0;
     pendingFinalRevealTimer = 0;
@@ -2305,19 +2299,7 @@
       }
       scheduleFlowSync();
     });
-    inactivityResetTimer = window.setTimeout(resetPageToInitialState, inactivityResetDelayMs);
   };
-
-  const noteInteraction = () => {
-    if (!initializationReady) return;
-    window.clearTimeout(inactivityResetTimer);
-    inactivityResetTimer = window.setTimeout(resetPageToInitialState, inactivityResetDelayMs);
-  };
-
-  ['pointerdown', 'mousemove', 'touchstart', 'click', 'keydown', 'input'].forEach((eventName) => {
-    document.addEventListener(eventName, noteInteraction, { passive: true });
-  });
-  window.addEventListener('scroll', noteInteraction, { passive: true });
 
   window.addEventListener('pageshow', () => {
     if (isZPage) {
@@ -2333,5 +2315,4 @@
     }
   });
   initializeGroupOne();
-  noteInteraction();
 })();

@@ -87,7 +87,7 @@
   language.addEventListener('click', () => applyLanguage(root.lang === 'ar' ? 'en' : 'ar'));
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false, emit: false }); });
   window.addEventListener('resize', () => syncCarousel(false), { passive: true });
-  applyLanguage('en', { persist: false, emit: false }); applyTheme('dark'); syncCarousel(false);
+  applyLanguage('ar', { persist: false, emit: false }); applyTheme('dark'); syncCarousel(false);
   requestAnimationFrame(() => syncCarousel(false));
   document.fonts?.ready.then(() => syncCarousel(false));
   root.classList.remove('s-x-initializing');

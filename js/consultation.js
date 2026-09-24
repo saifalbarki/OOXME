@@ -966,6 +966,6 @@
     }
   }, { passive: true });
   document.documentElement.classList.add('s-x-discrete-sections');
-  applyLanguage('en', { persist: false, emit: false }); applyTheme('dark'); establishClosedComposerBaseline();
+  applyLanguage('ar', { persist: false, emit: false }); applyTheme('dark'); establishClosedComposerBaseline();
   requestAnimationFrame(() => { renderBookingFlow(); restoreClosedSectionComposerBaseline(); document.documentElement.classList.remove('s-x-initializing'); void loadNearestBookingDays(); });
 })();

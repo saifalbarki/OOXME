@@ -69,7 +69,6 @@
   let menuCloseTimer = 0;
   let composerPulseFrame = 0;
   let menuPulseFrame = 0;
-  let inactivityTimer = 0;
   let faceController = null;
   let activeProduct = 0;
   let storeCarouselDrag = null;
@@ -357,7 +356,6 @@
   };
 
   const resetPage = () => {
-    clearTimeout(inactivityTimer);
     pulseFrames.forEach(cancelAnimationFrame);
     pulseFrames.clear();
     utilityPulseFrames.forEach(cancelAnimationFrame);
@@ -365,22 +363,15 @@
     menuFlashTimers.forEach(clearTimeout);
     menuFlashTimers.clear();
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
-    applyLanguage('en', { persist: false, emit: false });
+    applyLanguage('ar', { persist: false, emit: false });
     applyTheme('dark');
     setActiveCard(0);
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     initialize();
-    inactivityTimer = window.setTimeout(resetPage, 30000);
-  };
-
-  const noteInteraction = () => {
-    if (!initialized) return;
-    clearTimeout(inactivityTimer);
-    inactivityTimer = window.setTimeout(resetPage, 30000);
   };
 
   faceController = createFaceController();
-  applyLanguage('en', { persist: false, emit: false });
+  applyLanguage('ar', { persist: false, emit: false });
   applyTheme('dark');
 
   composer.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing'); });
@@ -473,7 +464,6 @@
   }, { passive: true }));
   window.addEventListener('resize', () => syncStoreCarousel(false), { passive: true });
 
-  ['pointerdown', 'mousemove', 'touchstart', 'click', 'keydown'].forEach((eventName) => document.addEventListener(eventName, noteInteraction, { passive: true }));
   window.addEventListener('pageshow', () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     initialize();
@@ -483,5 +473,4 @@
   root.classList.add('s-rpn-discrete-sections');
   setActiveCard(0);
   initialize();
-  noteInteraction();
 })();

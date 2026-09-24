@@ -340,7 +340,7 @@
   }, { passive: true });
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
-  applyLanguage('en', { persist: false });
+  applyLanguage('ar', { persist: false });
   featuredFontsReady.then(() => { if (root.lang === 'en') syncFeaturedGeometry('en'); });
   applyTheme('dark');
   requestAnimationFrame(() => {

@@ -166,7 +166,7 @@
   window.addEventListener('keydown', (event) => { if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return; event.preventDefault(); if (event.key === 'Home') transitionSection(-sections.length); else if (event.key === 'End') transitionSection(sections.length); else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1); }, { passive: false });
   window.addEventListener('resize', () => { const current = root.lang; captureEnglishFeaturedGeometry(); if (current !== 'en') applyLanguage(current, { persist: false }); measureServiceCardHeight(); syncServices(false); syncFinalText(); }, { passive: true });
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false }); });
-  root.lang = 'en'; root.dir = 'ltr'; setServiceCopy('en'); captureEnglishFeaturedGeometry(); applyLanguage('en', { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
+  root.lang = 'ar'; root.dir = 'rtl'; setServiceCopy('ar'); captureEnglishFeaturedGeometry(); applyLanguage('ar', { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
   requestAnimationFrame(() => syncServices(false));
