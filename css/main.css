@@ -3498,6 +3498,10 @@ body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy {
 
 body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy {
   z-index: 1;
+  display: block;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: none;
   bottom: calc(
     (var(--s-x) * 2)
     + var(--s-first-group-bottom-baseline)
@@ -3506,6 +3510,11 @@ body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy {
     + var(--s-x)
   );
   border-radius: var(--s-main-section-1-card-radius);
+}
+
+body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
 }
 
 body.s-page.s-page--main :is(

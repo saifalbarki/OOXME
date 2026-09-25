@@ -598,6 +598,9 @@
     const copy = pageCopy[language];
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    partnerNumberCard?.setAttribute('aria-label', language === 'ar'
+      ? 'تعرف على برنامج شركاء اوكسوم'
+      : 'Explore the OOXME Partner Program');
     sendLanguageUtility.classList.toggle('is-active', language === 'en');
     sendLanguageUtility.setAttribute('aria-pressed', String(language === 'en'));
     sendLanguageUtility.setAttribute('aria-label', language === 'en' ? copy.utilities.switchToArabic : copy.utilities.switchToEnglish);
@@ -1384,6 +1387,41 @@
       if (event.animationName === 's-page-composer-pulse') frame.classList.remove('is-pulsing');
     });
   });
+
+  if (partnerNumberCard) {
+    let spaceNavigationPending = false;
+    let spaceNavigationFallback = 0;
+    let finishSpaceNavigation = null;
+    partnerNumberCard.addEventListener('click', (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      if (spaceNavigationPending) return;
+      spaceNavigationPending = true;
+
+      const navigate = () => {
+        if (!spaceNavigationPending) return;
+        spaceNavigationPending = false;
+        window.clearTimeout(spaceNavigationFallback);
+        if (finishSpaceNavigation) partnerNumberCard.removeEventListener('animationend', finishSpaceNavigation);
+        window.location.assign(partnerNumberCard.href);
+      };
+
+      if (reducedMotion.matches) {
+        navigate();
+        return;
+      }
+
+      finishSpaceNavigation = (animationEvent) => {
+        if (animationEvent.target === partnerNumberCard
+          && animationEvent.animationName === 's-page-composer-pulse') navigate();
+      };
+      partnerNumberCard.addEventListener('animationend', finishSpaceNavigation);
+      spaceNavigationFallback = window.setTimeout(navigate, 260);
+      if (!partnerNumberCard.classList.contains('is-pulsing') && !imagePulseFrames.has(partnerNumberCard)) {
+        pulseImageSurface(partnerNumberCard);
+      }
+    });
+  }
 
   document.querySelectorAll('[data-s-image-arrow-route]').forEach((arrow) => {
     ['pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach((eventName) => {
