@@ -164,7 +164,8 @@
     storeCarouselTrack.classList.toggle('is-dragging', !animate);
     const gap = Number.parseFloat(getComputedStyle(storeCarouselTrack).columnGap) || 0;
     const centerOffset = (storeCarouselViewport.clientWidth / 2) - (card.offsetWidth / 2);
-    const position = rtl ? -centerOffset + (activeProduct * (card.offsetWidth + gap)) + dragOffset : centerOffset - (activeProduct * (card.offsetWidth + gap)) + dragOffset;
+    const visualIndex = rtl ? storeProductCards.length - 1 - activeProduct : activeProduct;
+    const position = centerOffset - (visualIndex * (card.offsetWidth + gap)) + dragOffset;
     storeCarouselTrack.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
     storeProductCards.forEach((item, index) => {
       const active = index === activeProduct;
@@ -212,10 +213,10 @@
       if (value) node.textContent = value;
     });
     nav.setAttribute('aria-label', copy.nav);
-    previousButton.setAttribute('aria-label', copy.previous);
-    nextButton.setAttribute('aria-label', copy.next);
-    carouselPrevious.setAttribute('aria-label', storeCopy[language].previous);
-    carouselNext.setAttribute('aria-label', storeCopy[language].next);
+    previousButton.setAttribute('aria-label', language === 'ar' ? copy.next : copy.previous);
+    nextButton.setAttribute('aria-label', language === 'ar' ? copy.previous : copy.next);
+    carouselPrevious.setAttribute('aria-label', language === 'ar' ? storeCopy[language].next : storeCopy[language].previous);
+    carouselNext.setAttribute('aria-label', language === 'ar' ? storeCopy[language].previous : storeCopy[language].next);
     addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME');
     submitButton.setAttribute('aria-label', copy.submit);
     languageUtility.classList.toggle('is-active', language === 'en');
@@ -424,13 +425,14 @@
     setActiveCard(index);
     pulseSurface(nav);
   }));
-  [[previousButton, -1], [nextButton, 1]].forEach(([button, step]) => button.addEventListener('click', () => {
+  [[previousButton, -1], [nextButton, 1]].forEach(([button, ltrStep]) => button.addEventListener('click', () => {
+    const step = root.lang === 'ar' ? -ltrStep : ltrStep;
     setActiveCard(activeCard + step);
     pulseSurface(nav);
   }));
   carouselNav.addEventListener('click', () => pulseSurface(carouselNav));
-  carouselPrevious.addEventListener('click', () => selectStoreProduct(activeProduct - 1));
-  carouselNext.addEventListener('click', () => selectStoreProduct(activeProduct + 1));
+  carouselPrevious.addEventListener('click', () => selectStoreProduct(activeProduct + (root.lang === 'ar' ? 1 : -1)));
+  carouselNext.addEventListener('click', () => selectStoreProduct(activeProduct + (root.lang === 'ar' ? -1 : 1)));
   page.querySelectorAll('.s-page__store-action').forEach((button) => button.addEventListener('click', (event) => event.preventDefault()));
   storeCarouselViewport.addEventListener('pointerdown', (event) => {
     if (event.target.closest('button')) return;

@@ -1149,38 +1149,6 @@ html.s-route.is-day-mode .s-page__square-logo-stage {
   color: #000000;
 }
 
-.s-page__square-logo-guides {
-  position: absolute;
-  z-index: 10;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.s-page__square-logo-guides line {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: .75;
-  vector-effect: non-scaling-stroke;
-  opacity: 0;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke-dashoffset 720ms cubic-bezier(.22, .61, .36, 1), opacity 520ms ease;
-}
-
-.s-page__square-logo-stage.is-visible .s-page__square-logo-guides line {
-  opacity: .13;
-  stroke-dashoffset: 0;
-  transition-delay: calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration) + 20ms);
-  animation: s-page-square-logo-guide-solidify 0s linear calc(var(--s-square-logo-last-delay) + var(--s-square-logo-motion-duration) + 760ms) forwards;
-}
-
-@keyframes s-page-square-logo-guide-solidify {
-  to { stroke-dasharray: none; }
-}
-
 .s-page__square-logo {
   position: absolute;
   z-index: 1;
@@ -1583,7 +1551,7 @@ html.s-route.is-day-mode body.s-page--main .s-page__major-section--section-6 .s-
   background: rgba(255, 255, 255, .48);
 }
 
-body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-stage::before {
+body.s-page:not(.s-page--rpn):not(.s-page--main) .s-page__major-section--section-6 .s-page__square-logo-stage::before {
   position: absolute;
   z-index: 0;
   inset: 0;
@@ -1616,10 +1584,6 @@ body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__logo-st
   top: 0;
   left: 0;
   z-index: 1;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__major-section--section-6 .s-page__square-logo-guides {
-  display: none;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__logo-strip-track,
@@ -3427,8 +3391,6 @@ html.s-route.is-day-mode body.s-page--main :is(.s-page__group-description, .s-pa
   [data-s-reveal] { opacity: 1; filter: none; clip-path: none; animation: none; transition: none; }
   .s-page__flow-media { transition: none; }
   .s-page__number-metric { transition: none; }
-  .s-page__square-logo-guides line { transition: none; }
-  .s-page__square-logo-stage.is-visible .s-page__square-logo-guides line { stroke-dasharray: none; animation: none; }
   .s-page__square-logo { transition: none; }
   .s-page__square-logo.is-pulsing img { animation: none; }
   .s-page__marquee-track { animation: none; }
@@ -3556,21 +3518,37 @@ body.s-page.s-page--main :is(
   text-align: center;
 }
 
-body.s-page.s-page--main :is(
-  .s-page__section-2-image-frame--section-1-copy,
-  .s-page__section-3-image-frame--section-1-copy
-) > .s-page__image-group {
-  border-radius: var(--s-composer-radius);
-  corner-shape: superellipse(2);
-}
-
 body.s-page.s-page--main [data-s-main-section-1-image-card] {
+  border: 1px solid var(--s-glass-stroke);
   border-radius: var(--s-composer-radius);
   corner-shape: superellipse(2);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition: none;
+  -webkit-backdrop-filter: blur(20px) saturate(125%);
+  backdrop-filter: blur(20px) saturate(125%);
+}
+
+html.s-route.is-day-mode body.s-page.s-page--main [data-s-main-section-1-image-card] {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .022), 0 1px 1px rgba(0, 0, 0, .012);
+}
+
+body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy[data-s-main-section-1-image-card] {
+  background: #6D28D9;
+}
+
+body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy[data-s-main-section-1-image-card] {
+  background: #0A84FF;
+}
+
+html.s-route.is-day-mode body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy[data-s-main-section-1-image-card] {
+  background: #6D28D9;
+}
+
+html.s-route.is-day-mode body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy[data-s-main-section-1-image-card] {
+  background: #0A84FF;
 }
 
 body.s-page.s-page--main [data-s-main-section-1-image-card].is-ready {
@@ -3653,7 +3631,7 @@ html.s-route.is-day-mode body.s-page.s-page--main :is(
   .s-page__section-2-image-frame--section-1-copy,
   .s-page__section-3-image-frame--section-1-copy
 ) .s-page__image-copy-main {
-  color: #111111;
+  color: #FFFFFF;
   -webkit-text-fill-color: currentColor;
 }
 
@@ -3661,5 +3639,34 @@ html.s-route.is-day-mode body.s-page.s-page--main :is(
   .s-page__section-2-image-frame--section-1-copy,
   .s-page__section-3-image-frame--section-1-copy
 ) .s-page__image-copy-supporting {
-  color: #666666;
+  color: #FFFFFF;
+}
+
+body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) > .s-page__image-copy > .s-page__image-copy-language {
+  box-sizing: border-box;
+  height: 100%;
+  justify-content: space-between;
+  padding-block: var(--s-x);
+}
+
+body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) > .s-page__image-copy > .s-page__image-copy-language > :is(
+  .s-page__image-copy-main,
+  .s-page__image-copy-supporting
+) {
+  position: static;
+  inset: auto;
+  margin: 0 !important;
+}
+
+body.s-page.s-page--main :is(
+  .s-page__section-2-image-frame--section-1-copy,
+  .s-page__section-3-image-frame--section-1-copy
+) > .s-page__image-copy > .s-page__image-copy-language > .s-page__image-copy-main {
+  padding-block: 0;
 }
