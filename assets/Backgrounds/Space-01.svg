@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="-225.135 -36 4040.63 4040.63" preserveAspectRatio="xMidYMid meet" overflow="hidden">
+  <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #0A84FF;
+      }
+    </style>
+  </defs>
+  <g id="space-01-rotating-composition">
+    <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 1795.18 1984.315" to="360 1795.18 1984.315" dur="32s" repeatCount="indefinite" calcMode="linear" />
+  <g id="_x3C_Radial_Repeat_x3E_">
+    <circle class="st0" cx="1795.18" cy="3397.12" r="571.52" transform="translate(-1876.3282 2264.3754) rotate(-45)"/>
+  </g>
+  <g id="_x3C_Radial_Repeat_x3E_1" data-name="_x3C_Radial_Repeat_x3E_">
+    <circle class="st0" cx="571.66" cy="2690.71" r="571.52"/>
+  </g>
+  <g id="_x3C_Radial_Repeat_x3E_2" data-name="_x3C_Radial_Repeat_x3E_">
+    <circle class="st0" cx="571.66" cy="1277.92" r="571.52"/>
+  </g>
+  <g id="_x3C_Radial_Repeat_x3E_3" data-name="_x3C_Radial_Repeat_x3E_">
+    <circle class="st0" cx="1795.18" cy="571.52" r="571.52" transform="translate(121.6733 1436.7761) rotate(-45)"/>
+  </g>
+  <g id="_x3C_Radial_Repeat_x3E_4" data-name="_x3C_Radial_Repeat_x3E_">
+    <circle class="st0" cx="3018.7" cy="1277.92" r="571.52"/>
+  </g>
+  <g id="_x3C_Radial_Repeat_x3E_5" data-name="_x3C_Radial_Repeat_x3E_">
+    <circle class="st0" cx="3018.7" cy="2690.72" r="571.52"/>
+  </g>
+  </g>
+</svg>
