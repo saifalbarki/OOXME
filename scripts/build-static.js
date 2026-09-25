@@ -9,7 +9,7 @@ const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-3
 const pageOutputs = {
   'main.html': 'index.html',
   'brand.html': 'service.html',
-  'rpn.html': 'space.html',
+  'space.html': 'space.html',
   'update.html': 'start.html',
   'consultation.html': 'scale.html',
   'store.html': 'store.html',

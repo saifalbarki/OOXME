@@ -1,4 +1,4 @@
-@import url('./rpn-base.css');
+@import url('./space-base.css');
 
 /* /rpn keeps the /x system intact; only the shared composer is re-anchored. */
 .s-page--rpn {
