@@ -81,6 +81,94 @@
     });
   }
 
+  const partnerNumberCard = page.classList.contains('s-page--main')
+    ? page.querySelector('.s-page__section-3-image-frame--section-1-copy')
+    : null;
+  const partnerNumberNodes = partnerNumberCard
+    ? Array.from(partnerNumberCard.querySelectorAll('.s-main-hero-number'))
+    : [];
+  const partnerNumberTarget = 500000;
+  const partnerNumberDurationMs = 1100;
+  let partnerNumberFrame = 0;
+  let partnerNumberCountHasRun = false;
+  const formatPartnerNumber = (value) => {
+    const rounded = Math.max(0, Math.min(partnerNumberTarget, Math.round(value)));
+    return rounded.toLocaleString('en-US').replace(/,/g, "'");
+  };
+  const setPartnerNumber = (value) => {
+    const text = formatPartnerNumber(value);
+    partnerNumberNodes.forEach((node) => { node.textContent = text; });
+  };
+  const cancelPartnerNumberAnimation = () => {
+    if (partnerNumberFrame) window.cancelAnimationFrame(partnerNumberFrame);
+    partnerNumberFrame = 0;
+  };
+  const setPartnerNumberDigits = (animate = true) => {
+    partnerNumberNodes.forEach((node) => {
+      node.classList.remove('is-digit-looping');
+      node.replaceChildren();
+      "500000".split('').forEach((digit, index) => {
+        const digitNode = document.createElement('span');
+        digitNode.className = 's-main-hero-digit';
+        digitNode.style.setProperty('--s-main-digit-delay', `${index * 250}ms`);
+        digitNode.textContent = digit;
+        node.appendChild(digitNode);
+        if (index === 2) {
+          const apostrophe = document.createElement('span');
+          apostrophe.className = 's-main-hero-apostrophe';
+          apostrophe.setAttribute('aria-hidden', 'true');
+          apostrophe.textContent = "'";
+          node.appendChild(apostrophe);
+        }
+      });
+    });
+    if (animate) {
+      window.requestAnimationFrame(() => {
+        partnerNumberNodes.forEach((node) => node.classList.add('is-digit-looping'));
+      });
+    }
+  };
+  const animatePartnerNumber = () => {
+    if (!partnerNumberNodes.length) return;
+    if (partnerNumberCountHasRun) return;
+    partnerNumberCountHasRun = true;
+    cancelPartnerNumberAnimation();
+    setPartnerNumber(0);
+    if (reducedMotion.matches) {
+      setPartnerNumber(partnerNumberTarget);
+      setPartnerNumberDigits(false);
+      return;
+    }
+    const startedAt = performance.now();
+    const step = (now) => {
+      const progress = Math.min(1, (now - startedAt) / partnerNumberDurationMs);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      setPartnerNumber(partnerNumberTarget * easedProgress);
+      if (progress < 1) {
+        partnerNumberFrame = window.requestAnimationFrame(step);
+      } else {
+        partnerNumberFrame = 0;
+        setPartnerNumber(partnerNumberTarget);
+        setPartnerNumberDigits();
+      }
+    };
+    partnerNumberFrame = window.requestAnimationFrame(step);
+  };
+  if (partnerNumberNodes.length) {
+    setPartnerNumber(0);
+    if ('IntersectionObserver' in window) {
+      const partnerNumberObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.target !== partnerNumberCard) return;
+          if (entry.isIntersecting) animatePartnerNumber();
+        });
+      }, { threshold: 0.15 });
+      partnerNumberObserver.observe(partnerNumberCard);
+    } else {
+      animatePartnerNumber();
+    }
+  }
+
   const maximumVisibleConversationMessages = 3;
   const replyDelayMs = 1000;
   const finalRevealDelayMs = 1600;

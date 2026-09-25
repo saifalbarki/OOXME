@@ -3476,10 +3476,16 @@ body.s-page.s-page--main [data-s-first-typewriter] {
   visibility: hidden !important;
 }
 
+body.s-page.s-page--main {
+  --s-main-section-1-bottom-card-height: calc((var(--s-x) * 2) + 28.8px);
+}
+
 body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy {
   position: absolute;
   z-index: 1;
   inset-inline: 0;
+  height: var(--s-main-section-1-bottom-card-height);
+  aspect-ratio: auto;
   bottom: calc(
     (var(--s-x) * 2)
     + var(--s-first-group-bottom-baseline)
@@ -3495,7 +3501,7 @@ body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy {
     (var(--s-x) * 2)
     + var(--s-first-group-bottom-baseline)
     + var(--s-section-2-bottom-baseline-correction, 0px)
-    + var(--s-rpn-image-block-size)
+    + var(--s-main-section-1-bottom-card-height)
     + var(--s-x)
   );
   border-radius: var(--s-composer-radius);
@@ -3536,7 +3542,7 @@ html.s-route.is-day-mode body.s-page.s-page--main [data-s-main-section-1-image-c
 }
 
 body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy[data-s-main-section-1-image-card] {
-  background: #6D28D9;
+  background: #0D0D0D;
 }
 
 body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy[data-s-main-section-1-image-card] {
@@ -3544,7 +3550,7 @@ body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy[data-s-m
 }
 
 html.s-route.is-day-mode body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy[data-s-main-section-1-image-card] {
-  background: #6D28D9;
+  background: #0D0D0D;
 }
 
 html.s-route.is-day-mode body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy[data-s-main-section-1-image-card] {
@@ -3669,4 +3675,74 @@ body.s-page.s-page--main :is(
   .s-page__section-3-image-frame--section-1-copy
 ) > .s-page__image-copy > .s-page__image-copy-language > .s-page__image-copy-main {
   padding-block: 0;
+}
+
+/* Keep the remaining two-line copy at the same bottom inset in the lower hero card. */
+body.s-page.s-page--main .s-main-hero-number {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
+}
+
+@keyframes s-main-number-digit-loop {
+  0%, 100% { transform: scale(1); }
+  10% { transform: scale(1.12); }
+  18% { transform: scale(1); }
+}
+
+body.s-page.s-page--main .s-main-hero-number.is-digit-looping {
+  white-space: nowrap;
+}
+
+body.s-page.s-page--main .s-main-hero-digit {
+  display: inline-block;
+  animation: s-main-number-digit-loop 1800ms cubic-bezier(.22, .61, .36, 1) infinite;
+  animation-delay: var(--s-main-digit-delay);
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.s-page.s-page--main .s-main-hero-digit {
+    animation: none;
+  }
+}
+
+/* Enlarge only the physical top-card Partner Program number; its top anchor remains unchanged. */
+body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy .s-main-hero-number {
+  display: inline-block;
+  font-size: clamp(48px, 12vw, 92px);
+  font-weight: 800;
+}
+
+/* Match the English number to the Arabic reference without changing Arabic. */
+body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy
+  .s-page__image-copy-language--en .s-main-hero-number {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: normal;
+}
+
+/* The physical bottom card uses one two-line Update text block anchored to the approved bottom inset. */
+body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy
+  > .s-page__image-copy > .s-page__image-copy-language {
+  justify-content: flex-end;
+}
+
+/* The two Main hero-card copy lines remain explicit in landscape as well. */
+@media (orientation: landscape) {
+  body.s-page.s-page--main :is(
+    .s-page__section-2-image-frame--section-1-copy,
+    .s-page__section-3-image-frame--section-1-copy
+  ) .s-page__image-copy-supporting {
+    white-space: normal;
+  }
+
+  body.s-page.s-page--main :is(
+    .s-page__section-2-image-frame--section-1-copy,
+    .s-page__section-3-image-frame--section-1-copy
+  ) .s-page__image-copy-supporting br {
+    display: initial;
+  }
 }
