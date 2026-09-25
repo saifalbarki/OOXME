@@ -22,12 +22,14 @@
   const storeCarouselViewport = page?.querySelector('[data-store-carousel-viewport]');
   const storeCarouselTrack = page?.querySelector('[data-store-carousel-track]');
   const storeProductCards = Array.from(page?.querySelectorAll('[data-store-product-card]') || []);
+  const descriptionNextButton = page?.querySelector('[data-rpn-next-card]');
+  const descriptionNextShell = page?.querySelector('[data-rpn-next-shell]');
   const menuLabels = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-label') || []);
   const menuItems = Array.from(composerMenu?.querySelectorAll('.s-page__composer-menu-item') || []);
 
   if (!page || !composer || !composerMenu || !sendUtilities
     || !themeUtility || !languageUtility || !addButton || !submitButton || !nav
-    || !previousButton || !nextButton || !carouselNav || !carouselPrevious || !carouselNext || !carouselCounter || !storeCarousel || !storeCarouselViewport || !storeCarouselTrack || storeProductCards.length !== 4 || navItems.length !== 4 || menuItems.length !== 5) return;
+    || !previousButton || !nextButton || !carouselNav || !carouselPrevious || !carouselNext || !carouselCounter || !storeCarousel || !storeCarouselViewport || !storeCarouselTrack || !descriptionNextButton || !descriptionNextShell || storeProductCards.length !== 4 || navItems.length !== 4 || menuItems.length !== 5) return;
 
   const brandMenuItem = menuItems[0];
   brandMenuItem.removeAttribute('href');
@@ -46,16 +48,16 @@
   };
   const storeCopy = {
     en: {
-      descriptionLabel: 'Description', descriptionTitle: 'OOXME Referral Partner Network', descriptionBody: 'A professional network connecting OOXME with companies and project owners through trusted business relationships. Partners share suitable opportunities and connect clients with our team, while OOXME handles evaluation, presentation, commercial discussions, and contracting.', descriptionSecondary: 'Applications open: 1 October 2026',
-      requirementsLabel: 'Requirements', requirementsOneTitle: 'Strong Relations', requirementsOneBody: 'Connect with business owners, project owners, managers, and decision-makers.', requirementsTwoTitle: 'Related Field', requirementsTwoBody: 'Work in, or have strong connections to, engineering, architecture, construction, or related sectors.', requirementsThreeTitle: 'OOXME Commitment', requirementsThreeBody: 'Follow OOXME’s approved referral process and professional communication standards.',
-      rewardsLabel: 'Rewards', rewardsOneTitle: '25% Commission', rewardsOneBody: 'Earned when a referred client signs a contract with OOXME.', rewardsTwoTitle: 'Client Discount', rewardsTwoBody: 'Available for clients referred through you when they sign a contract with OOXME.', rewardsThreeTitle: 'OOXME ID', rewardsThreeBody: 'Awarded after 2 successful referrals.', rewardsFourTitle: 'Internet Credit', rewardsFourBody: 'Awarded after 3 successful referrals.', rewardsFiveTitle: 'Transport Credit', rewardsFiveBody: 'Awarded after 4 successful referrals.', rewardsSixTitle: 'Formal Suit', rewardsSixBody: 'Awarded after 5 successful referrals.',
-      applyLabel: 'Apply', applyOneTitle: 'Applications Open', applyOneBody: 'Applications will open on the officially announced date.', applyTwoTitle: 'Who Can Apply', applyTwoBody: 'Professionals with strong business relationships, especially in engineering and related sectors.', applyThreeTitle: 'Selection', applyThreeBody: 'Applicants will be reviewed based on network quality, professional relevance, and commitment to the OOXME referral system.', sendEmail: 'Send Email', applyNow: 'Apply Now', previous: 'Previous card', next: 'Next card'
+      descriptionTitle: 'OOXME Partner Network', descriptionBody: 'A professional network connecting OOXME with companies and project owners through trusted business relationships. Partners share suitable opportunities and connect clients with our team, while OOXME handles evaluation, presentation, commercial discussions, and contracting.', descriptionSecondary: 'What Do You Get?',
+      requirementsLabel: 'Who Can Join?', requirementsOneTitle: 'Strong Connections', requirementsOneBody: 'Someone with a strong social and professional network of business owners, commercial activities, and decision-makers.', requirementsTwoTitle: 'Diverse Fields', requirementsTwoBody: 'You work in or have connections across our target fields including engineering, construction, architecture, and commercial sectors.', requirementsThreeTitle: 'High Professional Commitment', requirementsThreeBody: 'Following OOXME’s approved referral process and standards for professional communication and strong discipline.',
+      rewardsLabel: 'What Do You Get?', rewardsOneTitle: 'Instant, fixed 25% commission', rewardsOneBody: 'after every referral, awarded when the client signs a contract with OOXME.', rewardsTwoTitle: 'Client Discount', rewardsTwoBody: 'For clients you refer when they sign with OOXME.', rewardsThreeTitle: 'OOXME ID', rewardsThreeBody: 'Awarded after 2 successful referrals.', rewardsFourTitle: 'Internet Credit', rewardsFourBody: 'Awarded after 3 successful referrals.', rewardsFiveTitle: 'Transport Credit', rewardsFiveBody: 'Awarded after 4 successful referrals.', rewardsSixTitle: 'Formal Suit', rewardsSixBody: 'Awarded after 5 successful referrals.',
+      applyLabel: 'Apply', applyOneTitle: 'Applications Open', applyOneBody: 'Applications will open on 1 October 2026.', applyThreeTitle: 'Selection', applyThreeBody: 'Applicants will be reviewed based on network quality, professional relevance, and commitment to the OOXME referral system.', sendEmail: 'Send Email', applyNow: 'Apply Now', previous: 'Previous card', next: 'Next card'
     },
     ar: {
-      descriptionLabel: 'وصف', descriptionTitle: 'شبكة شركاء الاحالة لاوكسوم', descriptionBody: 'شبكة مهنية تربط اوكسوم بالشركات واصحاب المشاريع من خلال علاقات اعمال موثوقة. يشارك الشركاء الفرص المناسبة ويربطون العملاء بفريقنا، بينما تتولى اوكسوم التقييم والعرض والمناقشات التجارية والتعاقد.', descriptionSecondary: 'يبدأ التقديم: 1 أكتوبر 2026',
-      requirementsLabel: 'شروط التقديم', requirementsOneTitle: 'علاقات قوية', requirementsOneBody: 'التواصل مع اصحاب الاعمال والمشاريع والمديرين وصناع القرار.', requirementsTwoTitle: 'مجال ذو صلة', requirementsTwoBody: 'العمل في، او امتلاك علاقات قوية مع، الهندسة او العمارة او الانشاءات او القطاعات ذات الصلة.', requirementsThreeTitle: 'التزام اوكسوم', requirementsThreeBody: 'اتباع الية الاحالة المعتمدة لدى اوكسوم ومعايير التواصل المهني.',
-      rewardsLabel: 'المكافآت', rewardsOneTitle: 'عمولة 25%', rewardsOneBody: 'تمنح عند توقيع العميل المحال عقدا مع اوكسوم.', rewardsTwoTitle: 'خصم العميل', rewardsTwoBody: 'متاح للعملاء المحالين من خلالك عند توقيعهم عقدا مع اوكسوم.', rewardsThreeTitle: 'هوية اوكسوم', rewardsThreeBody: 'تمنح بعد احالتين ناجحتين.', rewardsFourTitle: 'رصيد الانترنت', rewardsFourBody: 'يمنح بعد 3 احالات ناجحة.', rewardsFiveTitle: 'رصيد النقل', rewardsFiveBody: 'يمنح بعد 4 احالات ناجحة.', rewardsSixTitle: 'بدلة رسمية', rewardsSixBody: 'تمنح بعد 5 احالات ناجحة.',
-      applyLabel: 'التقديم', applyOneTitle: 'فتح التقديم', applyOneBody: 'سيبدأ التقديم في الموعد المعلن رسميا.', applyTwoTitle: 'من يمكنه التقديم', applyTwoBody: 'المهنيون الذين يمتلكون علاقات اعمال قوية، خصوصا في الهندسة والقطاعات ذات الصلة.', applyThreeTitle: 'الاختيار', applyThreeBody: 'تتم مراجعة المتقدمين بناء على جودة شبكة العلاقات، والصلة المهنية، والالتزام بنظام الاحالة المعتمد لدى اوكسوم.', sendEmail: 'ارسال بريد', applyNow: 'قدم الان', previous: 'البطاقة السابقة', next: 'البطاقة التالية'
+      descriptionTitle: 'شبكة شركاء اوكسوم', descriptionBody: 'شبكة مهنية تربط اوكسوم بالشركات واصحاب المشاريع من خلال علاقات اعمال موثوقة. يشارك الشركاء الفرص المناسبة ويربطون العملاء بفريقنا، بينما تتولى اوكسوم التقييم والعرض والمناقشات التجارية والتعاقد.', descriptionSecondary: 'ما الذي تحصل عليه؟',
+      requirementsLabel: 'من يمكنه الانضمام؟', requirementsOneTitle: 'علاقات قوية', requirementsOneBody: 'شخص لديه دائرة علاقات اجتماعية ومهنية قوية مع اصحاب مشاريع وانشطة تجارية وصناع قرار.', requirementsTwoTitle: 'مجالات متنوعة', requirementsTwoBody: 'ان كنت تعمل في او تمتلك علاقات في المجالات المستهدفة منها الهندسة، الانشاءات، العمارة، والمجالات التجارية.', requirementsThreeTitle: 'التزام مهني عالي', requirementsThreeBody: 'اتباع آلية الاحالة المعتمدة لدى اوكسوم ومعايير التواصل المهني والانضباط العالي.',
+      rewardsLabel: 'ما الذي تحصل عليه؟', rewardsOneTitle: 'عمولة 25% فورية وثابتة', rewardsOneBody: 'بعد كل احالة، تمنح بعد توقيع العميل عقده مع اوكسوم', rewardsTwoTitle: 'خصم العميل', rewardsTwoBody: 'متاح لعملائك المحالين عند توقيعهم مع اوكسوم.', rewardsThreeTitle: 'هوية اوكسوم', rewardsThreeBody: 'تمنح بعد احالتين ناجحتين.', rewardsFourTitle: 'رصيد الانترنت', rewardsFourBody: 'يمنح بعد 3 احالات ناجحة.', rewardsFiveTitle: 'رصيد النقل', rewardsFiveBody: 'يمنح بعد 4 احالات ناجحة.', rewardsSixTitle: 'بدلة رسمية', rewardsSixBody: 'تمنح بعد 5 احالات ناجحة.',
+      applyLabel: 'التقديم', applyOneTitle: 'فتح التقديم', applyOneBody: 'سيبدأ التقديم في 1 أكتوبر 2026.', applyThreeTitle: 'الاختيار', applyThreeBody: 'تتم مراجعة المتقدمين بناء على جودة شبكة العلاقات، والصلة المهنية، والالتزام بنظام الاحالة المعتمد لدى اوكسوم.', sendEmail: 'ارسال بريد', applyNow: 'قدم الان', previous: 'البطاقة السابقة', next: 'البطاقة التالية'
     }
   };
 
@@ -377,6 +379,7 @@
 
   composer.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing'); });
   composerMenu.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') composerMenu.classList.remove('is-pulsing'); });
+  descriptionNextShell.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') descriptionNextShell.classList.remove('is-pulsing'); });
   nav.addEventListener('animationend', (event) => { if (event.animationName === 's-page-composer-menu-pulse') nav.classList.remove('is-pulsing'); });
   [themeUtility, languageUtility].forEach((control) => {
     control.addEventListener('pointerdown', () => pulseUtility(control), { passive: true });
@@ -401,6 +404,17 @@
   menuItems[0].addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
+  });
+  descriptionNextButton.addEventListener('pointerdown', () => {
+    pulseSurface(descriptionNextShell);
+    clearTimeout(menuFlashTimers.get(descriptionNextButton));
+    descriptionNextButton.classList.add('is-active');
+    menuFlashTimers.set(descriptionNextButton, window.setTimeout(() => descriptionNextButton.classList.remove('is-active'), 120));
+  }, { passive: true });
+  descriptionNextButton.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setActiveCard(activeCard + 1);
   });
   addButton.addEventListener('click', (event) => {
     event.stopPropagation();

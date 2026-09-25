@@ -3478,6 +3478,7 @@ body.s-page.s-page--main [data-s-first-typewriter] {
 
 body.s-page.s-page--main {
   --s-main-section-1-bottom-card-height: calc((var(--s-x) * 2) + 28.8px);
+  --s-main-section-1-card-radius: 36px;
 }
 
 body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy {
@@ -3504,7 +3505,7 @@ body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy {
     + var(--s-main-section-1-bottom-card-height)
     + var(--s-x)
   );
-  border-radius: var(--s-composer-radius);
+  border-radius: var(--s-main-section-1-card-radius);
 }
 
 body.s-page.s-page--main :is(
@@ -3526,7 +3527,7 @@ body.s-page.s-page--main :is(
 
 body.s-page.s-page--main [data-s-main-section-1-image-card] {
   border: 1px solid var(--s-glass-stroke);
-  border-radius: var(--s-composer-radius);
+  border-radius: var(--s-main-section-1-card-radius);
   corner-shape: superellipse(2);
   box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
   opacity: 0;
