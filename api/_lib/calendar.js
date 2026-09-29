@@ -4,6 +4,7 @@ const { bookingConfig } = require('./config');
 
 const offset = '+03:00';
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+const MINIMUM_BOOKING_LEAD_TIME_MS = 24 * 60 * 60 * 1000;
 
 const dateValue = (date, time = '12:00') => new Date(`${date}T${time}:00${offset}`);
 const validDate = (date) => datePattern.test(String(date || '')) && !Number.isNaN(dateValue(date).valueOf());
@@ -36,6 +37,9 @@ const eventRange = (date, time, duration) => {
     endIso: end.toISOString()
   };
 };
+const meetsMinimumBookingLeadTime = (start, now = Date.now()) => (
+  start instanceof Date && Number.isFinite(start.getTime()) && start.getTime() >= now + MINIMUM_BOOKING_LEAD_TIME_MS
+);
 
 const isBusy = (busy, start, end) => busy.some((entry) => (
   entry?.start && entry?.end && new Date(entry.start) < end && new Date(entry.end) > start
@@ -63,12 +67,11 @@ async function getBusy(timeMin, timeMax) {
 }
 
 const isBusinessDay = (date) => ![4, 5].includes(dateValue(date).getUTCDay());
-const availableTimes = (date, busy, duration, config) => {
+const availableTimes = (date, busy, duration, config, now = Date.now()) => {
   if (!isBusinessDay(date)) return [];
-  const now = new Date();
   return config.slots.filter((time) => {
     const range = eventRange(date, time, duration);
-    return range.start > now && !isBusy(busy, range.start, range.end);
+    return meetsMinimumBookingLeadTime(range.start, now) && !isBusy(busy, range.start, range.end);
   });
 };
 
@@ -161,5 +164,8 @@ module.exports = {
   createCalendarBooking,
   bookingId,
   eventRange,
+  meetsMinimumBookingLeadTime,
+  MINIMUM_BOOKING_LEAD_TIME_MS,
+  availableTimes,
   isBusy
 };

@@ -1,14 +1,12 @@
 const crypto = require('crypto');
-const fs = require('fs/promises');
-const path = require('path');
 const { query } = require('./db');
 
-const filePromoPath = path.join(__dirname, '..', '..', 'data', 'promos.json');
 const consultationPrices = new Map([[45, 30], [60, 50], [90, 75], [120, 100]]);
 const normalizePromoCode = (value) => String(value || '').trim().toUpperCase();
 const hashToken = (rawToken) => crypto.createHash('sha256').update(String(rawToken || '')).digest('hex');
 const hashOfferSession = (session) => crypto.createHash('sha256').update(String(session || '')).digest('hex');
 const money = (amount) => Math.round((Number(amount) + Number.EPSILON) * 100) / 100;
+const RESERVATION_TTL_MINUTES = 15;
 
 function getBasePrice({ serviceCode = 'consultation', durationMinutes } = {}) {
   const duration = Number(durationMinutes);
@@ -18,7 +16,7 @@ function getBasePrice({ serviceCode = 'consultation', durationMinutes } = {}) {
 }
 
 function calculateQuote(basePrice, { discountType, discountValue, currency }) {
-  if (discountType === 'fixed' && currency && currency !== basePrice.currency) {
+  if (discountType === 'fixed' && currency && currency.trim() !== basePrice.currency) {
     throw Object.assign(new Error('Promotion currency does not match the service currency'), { code: 'promotion_currency_mismatch' });
   }
   const raw = discountType === 'percentage'
@@ -35,47 +33,68 @@ function calculateQuote(basePrice, { discountType, discountValue, currency }) {
   };
 }
 
-async function loadPromoConfig(code) {
-  const source = JSON.parse(await fs.readFile(filePromoPath, 'utf8'));
-  if (!Array.isArray(source)) throw new Error('Invalid promo configuration');
-  const promo = source.find((entry) => normalizePromoCode(entry.code) === normalizePromoCode(code));
-  if (!promo) return null;
-  const discount = promo.discount || {};
-  const allowedDurations = promo.allowed_durations == null ? null : promo.allowed_durations.map(Number);
-  if (!promo.code || !['public_promo', 'private_offer'].includes(promo.type) || !['percentage', 'fixed'].includes(discount.type) || !Number.isFinite(Number(discount.value)) || Number(discount.value) < 0 || !Array.isArray(promo.source_restrictions) || (promo.expires_at && Number.isNaN(Date.parse(promo.expires_at))) || (promo.max_uses != null && (!Number.isInteger(Number(promo.max_uses)) || Number(promo.max_uses) < 0)) || (allowedDurations && allowedDurations.some((duration) => !Number.isInteger(duration) || duration <= 0))) {
-    throw new Error('Invalid promo configuration');
-  }
-  return {
-    ...promo,
-    code: normalizePromoCode(promo.code),
-    discount: { ...discount, value: Number(discount.value) },
-    allowed_durations: allowedDurations
-  };
+async function loadPromotion(code, execute = query) {
+  const result = await execute(
+    `SELECT id, code_normalized, status, campaign_source, starts_at, ends_at,
+            total_usage_limit, per_customer_limit, service_restrictions,
+            duration_restrictions, discount_type, discount_value, currency
+       FROM promotions WHERE code_normalized = $1`,
+    [normalizePromoCode(code)]
+  );
+  return result.rows[0] || null;
 }
 
-function validateConfigForRequest(promo, { source, serviceCode, durationMinutes }) {
-  if (!promo || !promo.active || !promo.source_restrictions.includes(source) || (promo.expires_at && Date.parse(promo.expires_at) < Date.now()) || (promo.allowed_durations && !promo.allowed_durations.includes(Number(durationMinutes)))) return null;
+function parseJsonArray(value) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string') {
+    try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : []; } catch (_) { return []; }
+  }
+  return [];
+}
+
+function validatePromotionForRequest(promo, { source = 'promo_input', serviceCode, durationMinutes }) {
+  if (!promo || promo.status !== 'active') return null;
+  const now = Date.now();
+  if ((promo.starts_at && new Date(promo.starts_at).getTime() > now) || (promo.ends_at && new Date(promo.ends_at).getTime() <= now)) return null;
+  if (promo.campaign_source && promo.campaign_source !== source) return null;
+  const services = parseJsonArray(promo.service_restrictions);
+  const durations = parseJsonArray(promo.duration_restrictions).map(Number);
+  if (services.length && !services.includes(serviceCode)) return null;
+  if (durations.length && !durations.includes(Number(durationMinutes))) return null;
   const quote = calculateQuote(getBasePrice({ serviceCode, durationMinutes }), {
-    discountType: promo.discount.type,
-    discountValue: promo.discount.value,
-    currency: promo.discount.currency
+    discountType: promo.discount_type,
+    discountValue: Number(promo.discount_value),
+    currency: promo.currency
   });
   return {
     valid: true,
-    type: promo.type === 'private_offer' ? 'offer_token' : 'file_promo',
-    promoCode: promo.code,
-    grantedDurationMinutes: promo.allowed_durations?.length === 1 ? promo.allowed_durations[0] : null,
-    bookingDefaults: promo.booking_defaults || null,
-    notificationMode: promo.notification_mode || 'final',
-    maxUses: promo.max_uses == null ? null : Number(promo.max_uses),
+    type: 'promotion',
+    promotionId: promo.id,
+    promoCode: promo.code_normalized,
+    maxUses: promo.total_usage_limit == null ? null : Number(promo.total_usage_limit),
     perCustomerLimit: promo.per_customer_limit == null ? null : Number(promo.per_customer_limit),
     quote
   };
 }
 
-async function validateFilePromotion({ promoCode, serviceCode = 'consultation', durationMinutes }) {
-  const promo = await loadPromoConfig(promoCode);
-  return validateConfigForRequest(promo, { source: 'promo_input', serviceCode, durationMinutes });
+async function ensurePromoUsageAvailable(promotion, execute, customerHash = null) {
+  const result = await execute(
+    `SELECT count(*) FILTER (
+              WHERE status = 'redeemed' OR (status = 'pending' AND reservation_expires_at > now())
+            )::int AS total,
+            count(*) FILTER (
+              WHERE customer_identity_hash = $2 AND
+                    (status = 'redeemed' OR (status = 'pending' AND reservation_expires_at > now()))
+            )::int AS customer
+       FROM promotion_redemptions WHERE promotion_id = $1`,
+    [promotion.promotionId, customerHash]
+  );
+  const counts = result.rows[0];
+  if ((promotion.maxUses !== null && counts.total >= promotion.maxUses) ||
+      (customerHash && promotion.perCustomerLimit !== null && counts.customer >= promotion.perCustomerLimit)) {
+    return { valid: false, error: 'promotion_limit_reached' };
+  }
+  return promotion;
 }
 
 async function validateOfferToken({ offerToken, offerSession, serviceCode = 'consultation', durationMinutes, execute = query }) {
@@ -87,39 +106,40 @@ async function validateOfferToken({ offerToken, offerSession, serviceCode = 'con
   );
   const token = result.rows[0];
   if (!token || token.service_code !== serviceCode || !offerSession || token.issued_session_hash !== hashOfferSession(offerSession)) return { valid: false, error: 'offer_unavailable' };
-  const promo = await loadPromoConfig(token.promo_code_normalized);
-  const validated = validateConfigForRequest(promo, { source: 'plan_cta', serviceCode, durationMinutes });
-  if (!validated || promo.type !== 'private_offer') return { valid: false, error: 'offer_unavailable' };
-  return { ...validated, offerTokenId: token.id, campaignSource: token.campaign_source };
+  const promo = await loadPromotion(token.promo_code_normalized, execute);
+  const validated = validatePromotionForRequest(promo, { source: 'plan_cta', serviceCode, durationMinutes });
+  if (!validated) return { valid: false, error: 'offer_unavailable' };
+  return { ...validated, type: 'offer_token', offerTokenId: token.id, campaignSource: token.campaign_source };
 }
 
 async function validatePromotionInput({ promoCode, offerToken, offerSession, serviceCode = 'consultation', durationMinutes, execute = query }) {
   if (promoCode && offerToken) return { valid: false, error: 'multiple_promotions_not_allowed' };
+  await execute(
+    `UPDATE promotion_redemptions
+        SET status = 'released', released_at = now()
+      WHERE status = 'pending' AND reservation_expires_at <= now()`
+  );
+  const basePrice = getBasePrice({ serviceCode, durationMinutes });
   const offer = await validateOfferToken({ offerToken, offerSession, serviceCode, durationMinutes, execute });
   if (offer) return offer.valid ? ensurePromoUsageAvailable(offer, execute) : offer;
   if (promoCode) {
-    const promotion = await validateFilePromotion({ promoCode, serviceCode, durationMinutes });
+    const promo = await loadPromotion(promoCode, execute);
+    const promotion = validatePromotionForRequest(promo, { source: 'promo_input', serviceCode, durationMinutes });
     return promotion ? ensurePromoUsageAvailable(promotion, execute) : { valid: false, error: 'promotion_unavailable' };
   }
-  return { valid: true, type: 'none', quote: calculateQuote(getBasePrice({ serviceCode, durationMinutes }), { discountType: 'fixed', discountValue: 0 }) };
-}
-
-async function ensurePromoUsageAvailable(promotion, execute) {
-  if (promotion.maxUses === null) return promotion;
-  const result = await execute(`SELECT count(*)::int AS total FROM file_promo_redemptions WHERE promo_code_normalized = $1 AND status IN ('pending', 'redeemed')`, [promotion.promoCode]);
-  return result.rows[0].total >= promotion.maxUses ? { valid: false, error: 'promotion_limit_reached' } : promotion;
+  return { valid: true, type: 'none', quote: calculateQuote(basePrice, { discountType: 'fixed', discountValue: 0 }) };
 }
 
 const validatePromoOrToken = ({ serviceId, ...input }) => validatePromotionInput({ ...input, serviceCode: serviceId || input.serviceCode || 'consultation' });
 
 module.exports = {
+  RESERVATION_TTL_MINUTES,
   calculateQuote,
   getBasePrice,
   hashOfferSession,
   hashToken,
-  loadPromoConfig,
+  loadPromotion,
   normalizePromoCode,
-  validateFilePromotion,
   validatePromoOrToken,
   validatePromotionInput
 };

@@ -37,7 +37,12 @@ async function googleFetch(url, options = {}) {
   });
   if (response.status === 204) return null;
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(`Google API request failed: ${body.error?.message || response.status}`);
+  if (!response.ok) {
+    const error = new Error(`Google API request failed: ${body.error?.message || response.status}`);
+    error.providerStatus = response.status;
+    error.providerCode = body.error?.status || body.error?.code || '';
+    throw error;
+  }
   return body;
 }
 

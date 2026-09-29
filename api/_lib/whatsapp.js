@@ -13,6 +13,7 @@ const e164Phone = (phone) => {
 const bookingConfirmationTemplate = 'ooxme_booking_confirmation';
 const legacyBookingTemplateContract = 'legacy3';
 const approvedSixVariableBookingTemplateContract = 'approved_six_v1';
+const consultationReminderTemplate = 'ooxme_consultation_reminder';
 
 async function sendWhatsAppText(to, body) {
   const recipient = normalizeRecipient(to);
@@ -80,4 +81,54 @@ async function sendYCloudBookingConfirmation(to, { reference, name, topic, date,
   return result;
 }
 
-module.exports = { sendWhatsAppText, sendYCloudBookingConfirmation, normalizeRecipient, e164Phone, yCloudBookingParameters, bookingTemplateContract, yCloudTemplateLanguage, legacyBookingTemplateContract, approvedSixVariableBookingTemplateContract, bookingConfirmationTemplate };
+async function sendYCloudConsultationReminder(to, { reminderId, externalId, reference, name, topic, date, time, duration, language, preparation, signal }) {
+  const recipient = normalizeRecipient(to);
+  if (!recipient) throw Object.assign(new Error('Reminder recipient is missing'), { permanent: true, providerCode: 'missing_recipient' });
+  let apiKey;
+  let configuredFrom;
+  try {
+    apiKey = required('YCLOUD_API_KEY');
+    configuredFrom = required('YCLOUD_WHATSAPP_FROM');
+  } catch (_) {
+    throw Object.assign(new Error('YCloud reminder integration is not configured'), { permanent: true, providerCode: 'ycloud_not_configured' });
+  }
+  const from = e164Phone(configuredFrom);
+  if (!from) throw Object.assign(new Error('YCLOUD_WHATSAPP_FROM is not a valid phone number'), { permanent: true, providerCode: 'invalid_sender' });
+  const templateLanguage = language === 'ar'
+    ? optional('YCLOUD_WHATSAPP_REMINDER_LANGUAGE_AR', 'ar')
+    : optional('YCLOUD_WHATSAPP_REMINDER_LANGUAGE', 'en_US');
+  const parameters = [name, reference, date, time, String(duration), topic, preparation];
+  let response;
+  try {
+    response = await fetch('https://api.ycloud.com/v2/whatsapp/messages/sendDirectly', {
+      method: 'POST',
+      headers: { 'X-API-Key': apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from,
+        to: e164Phone(recipient),
+        externalId: externalId || `ooxme-reminder-${reminderId}`,
+        type: 'template',
+        template: {
+          name: optional('YCLOUD_WHATSAPP_REMINDER_TEMPLATE', consultationReminderTemplate),
+          language: { code: templateLanguage, policy: 'deterministic' },
+          components: [{ type: 'body', parameters: parameters.map((text) => ({ type: 'text', text })) }]
+        }
+      }),
+      signal
+    });
+  } catch (error) {
+    error.outcomeUnknown = true;
+    throw error;
+  }
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(`YCloud reminder send failed: ${result.error?.message || result.message || response.status}`);
+    error.providerCode = result.error?.code || result.code || '';
+    error.providerStatus = response.status;
+    error.outcomeUnknown = response.status >= 500;
+    throw error;
+  }
+  return result;
+}
+
+module.exports = { sendWhatsAppText, sendYCloudBookingConfirmation, sendYCloudConsultationReminder, normalizeRecipient, e164Phone, yCloudBookingParameters, bookingTemplateContract, yCloudTemplateLanguage, legacyBookingTemplateContract, approvedSixVariableBookingTemplateContract, bookingConfirmationTemplate, consultationReminderTemplate };

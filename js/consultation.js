@@ -570,6 +570,8 @@
       if (error.message === 'slot_unavailable') bookingIdempotencyKey = '';
       bookingStatus = error.code === 'slot_unavailable'
         ? (bookingLanguage() === 'ar' ? 'هذا الوقت لم يعد متاحاً. اختر وقتاً آخر.' : 'This time is no longer available. Choose another.')
+        : error.code === 'booking_minimum_lead_time'
+          ? (bookingLanguage() === 'ar' ? 'يجب الحجز قبل موعد الاستشارة بـ 24 ساعة على الأقل.' : 'Bookings must be made at least 24 hours before the consultation.')
         : (bookingLanguage() === 'ar' ? 'تعذر تأكيد الحجز الآن.' : 'We could not confirm the booking right now.');
       renderSummary();
       throw error;

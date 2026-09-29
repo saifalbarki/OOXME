@@ -33,7 +33,7 @@ async function migrate() {
         throw error;
       }
     }
-    const tables = await client.query("SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ANY($1::text[]) ORDER BY tablename", [['bookings', 'booking_holds', 'file_promo_redemptions']]);
+    const tables = await client.query("SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ANY($1::text[]) ORDER BY tablename", [['bookings', 'booking_holds', 'promotions', 'promotion_redemptions', 'booking_reminders']]);
     console.log(`Verified tables: ${tables.rows.map((row) => row.tablename).join(', ') || 'none'}`);
   } finally {
     await client.query('SELECT pg_advisory_unlock(80455001)').catch(() => undefined);

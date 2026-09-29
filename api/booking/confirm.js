@@ -1,11 +1,11 @@
 const crypto = require('crypto');
 const { json, methodNotAllowed, readJson } = require('../_lib/http');
 const { bookingConfig } = require('../_lib/config');
-const { createCalendarBooking, bookingId } = require('../_lib/calendar');
+const { createCalendarBooking, bookingId, eventRange, meetsMinimumBookingLeadTime } = require('../_lib/calendar');
 const { storeBookingRecord } = require('../_lib/drive');
 const { sendBookingNotifications } = require('../_lib/messaging');
 const { query, withTransaction } = require('../_lib/db');
-const { normalizePromoCode, validatePromoOrToken } = require('../_lib/promo-engine');
+const { normalizePromoCode, validatePromoOrToken, RESERVATION_TTL_MINUTES } = require('../_lib/promo-engine');
 
 const validEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
@@ -72,16 +72,22 @@ async function reserveBooking(input, customer, config) {
        VALUES ($1, $2, 'consultation', $3, $4, 'active', now() + interval '10 minutes')`,
       [crypto.randomUUID(), booking.id, bounds.start, bounds.end]
     );
-    if (promotion.type === 'file_promo' || promotion.type === 'offer_token') {
+    if (promotion.type === 'promotion' || promotion.type === 'offer_token') {
       await execute('SELECT pg_advisory_xact_lock(hashtext($1))', [promotion.promoCode]);
+      await execute(
+        `UPDATE promotion_redemptions
+            SET status = 'released', released_at = now()
+          WHERE promotion_id = $1 AND status = 'pending' AND reservation_expires_at <= now()`,
+        [promotion.promotionId]
+      );
       const counts = await execute(
-        `SELECT count(*) FILTER (WHERE status IN ('pending', 'redeemed'))::int AS total,
-                count(*) FILTER (WHERE status IN ('pending', 'redeemed') AND customer_identity_hash = $2)::int AS customer
-           FROM file_promo_redemptions WHERE promo_code_normalized = $1`,
-        [promotion.promoCode, customerHash]
+        `SELECT count(*) FILTER (WHERE status = 'redeemed' OR (status = 'pending' AND reservation_expires_at > now()))::int AS total,
+                count(*) FILTER (WHERE customer_identity_hash = $2 AND (status = 'redeemed' OR (status = 'pending' AND reservation_expires_at > now())))::int AS customer
+           FROM promotion_redemptions WHERE promotion_id = $1`,
+        [promotion.promotionId, customerHash]
       );
       if ((promotion.maxUses !== null && counts.rows[0].total >= promotion.maxUses) || (promotion.perCustomerLimit !== null && counts.rows[0].customer >= promotion.perCustomerLimit)) throw bookingError('promotion_limit_reached');
-      await execute('INSERT INTO file_promo_redemptions (id, promo_code_normalized, booking_id, customer_identity_hash, status) VALUES ($1, $2, $3, $4, \'pending\')', [crypto.randomUUID(), promotion.promoCode, booking.id, customerHash]);
+      await execute('INSERT INTO promotion_redemptions (id, promotion_id, booking_id, customer_identity_hash, status, reservation_expires_at) VALUES ($1, $2, $3, $4, \'pending\', now() + ($5 * interval \'1 minute\'))', [crypto.randomUUID(), promotion.promotionId, booking.id, customerHash, RESERVATION_TTL_MINUTES]);
     }
     if (promotion.type === 'offer_token') {
       const held = await execute("UPDATE offer_tokens SET status = 'held', held_at = now(), customer_identity_hash = $2 WHERE id = $1 AND status = 'issued' AND expires_at > now() AND (customer_identity_hash IS NULL OR customer_identity_hash = $2) RETURNING id", [promotion.offerTokenId, customerHash]);
@@ -96,7 +102,7 @@ async function reserveBooking(input, customer, config) {
 async function releaseReservation(booking) {
   await withTransaction(async (client) => {
     await client.query("UPDATE booking_holds SET status = 'released', released_at = now() WHERE booking_id = $1 AND status = 'active'", [booking.id]);
-    await client.query("UPDATE file_promo_redemptions SET status = 'released', released_at = now() WHERE booking_id = $1 AND status = 'pending'", [booking.id]);
+    await client.query("UPDATE promotion_redemptions SET status = 'released', released_at = now() WHERE booking_id = $1 AND status = 'pending'", [booking.id]);
     await client.query("UPDATE offer_tokens SET status = 'issued', held_at = NULL WHERE consumed_booking_id IS NULL AND id = (SELECT offer_token_id FROM bookings WHERE id = $1)", [booking.id]);
     await client.query("UPDATE bookings SET status = 'failed', updated_at = now() WHERE id = $1", [booking.id]);
   });
@@ -106,8 +112,24 @@ async function finalizeReservation(booking, calendarEventId) {
   await withTransaction(async (client) => {
     await client.query("UPDATE bookings SET status = 'confirmed', calendar_event_id = $2, confirmed_at = now(), updated_at = now() WHERE id = $1", [booking.id, calendarEventId]);
     await client.query("UPDATE booking_holds SET status = 'confirmed' WHERE booking_id = $1 AND status = 'active'", [booking.id]);
-    await client.query("UPDATE file_promo_redemptions SET status = 'redeemed', redeemed_at = now() WHERE booking_id = $1 AND status = 'pending'", [booking.id]);
+    await client.query("UPDATE promotion_redemptions SET status = 'redeemed', redeemed_at = now(), reservation_expires_at = NULL WHERE booking_id = $1 AND status = 'pending'", [booking.id]);
     await client.query("UPDATE offer_tokens SET status = 'consumed', consumed_at = now(), consumed_booking_id = $1 WHERE id = (SELECT offer_token_id FROM bookings WHERE id = $1) AND status = 'held'", [booking.id]);
+    await client.query(
+      `INSERT INTO booking_reminders (id, booking_id, channel, due_at, scheduled_start_snapshot, next_attempt_at, external_id)
+       SELECT $2, b.id, 'email', b.scheduled_start - interval '5 hours', b.scheduled_start,
+              b.scheduled_start - interval '5 hours', $3
+         FROM bookings b WHERE b.id = $1
+       ON CONFLICT (booking_id, channel) DO NOTHING`,
+      [booking.id, crypto.randomUUID(), `ooxme-reminder-email-${booking.id}`]
+    );
+    await client.query(
+      `INSERT INTO booking_reminders (id, booking_id, channel, due_at, scheduled_start_snapshot, next_attempt_at, external_id)
+       SELECT $2, b.id, 'whatsapp', b.scheduled_start - interval '5 hours', b.scheduled_start,
+              b.scheduled_start - interval '5 hours', $3
+         FROM bookings b WHERE b.id = $1
+       ON CONFLICT (booking_id, channel) DO NOTHING`,
+      [booking.id, crypto.randomUUID(), `ooxme-reminder-whatsapp-${booking.id}`]
+    );
   });
 }
 
@@ -141,6 +163,9 @@ module.exports = async (request, response) => {
     const existing = await findBookingByIdempotencyKey(input.idempotencyKey);
     if (existing?.status === 'confirmed') return json(response, 200, bookingResponse(existing, null, {}, true));
     if (existing) return json(response, 409, { error: 'booking_in_progress' });
+    if (!meetsMinimumBookingLeadTime(eventRange(input.date, input.time, duration).start)) {
+      throw bookingError('booking_minimum_lead_time');
+    }
     reservation = await reserveBooking(input, customer, config);
     const event = await createCalendarBooking(reservation.booking);
     reservation.booking.calendarEventId = event.id;
@@ -163,7 +188,7 @@ module.exports = async (request, response) => {
     console.error('booking confirmation failed', error.message);
     const duplicateIdempotencyKey = error.code === '23505' && error.constraint === 'bookings_idempotency_key_unique';
     const errorCode = duplicateIdempotencyKey ? 'booking_in_progress' : error.code || 'booking_unavailable';
-    const status = ['slot_unavailable', 'promotion_limit_reached', 'offer_unavailable', 'promotion_unavailable', 'booking_in_progress'].includes(errorCode)
+    const status = ['slot_unavailable', 'booking_minimum_lead_time', 'promotion_limit_reached', 'offer_unavailable', 'promotion_unavailable', 'booking_in_progress'].includes(errorCode)
       ? 409
       : (errorCode === 'invalid_booking' || errorCode === 'unsupported_price' ? 400 : 503);
     return json(response, status, { error: errorCode });
