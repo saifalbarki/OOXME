@@ -7,9 +7,6 @@
   "functions": {
     "api/**/*.js": { "maxDuration": 30 }
   },
-  "crons": [
-    { "path": "/api/cron/consultation-reminders", "schedule": "* * * * *" }
-  ],
   "rewrites": [
     { "source": "/service", "destination": "/service.html" },
     { "source": "/space", "destination": "/space.html" },
