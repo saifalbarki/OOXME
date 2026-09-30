@@ -980,6 +980,8 @@
     metricCountFrame = 0;
   };
 
+  let metricCountsHasRun = false;
+  let metricCountsCompleted = false;
   const setMetricCountsActive = (isActive) => {
     if (metricsSectionActive === isActive) return;
     cancelMetricCount();
@@ -993,13 +995,21 @@
       .filter(Boolean);
 
     if (!isActive) {
-      values.forEach(({ value, target }) => {
-        value.textContent = '0+';
-      });
+      if (metricCountsHasRun && !metricCountsCompleted) {
+        values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
+        metricCountsCompleted = true;
+      }
       return;
     }
+    if (metricCountsCompleted || metricCountsHasRun) {
+      values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
+      metricCountsCompleted = true;
+      return;
+    }
+    metricCountsHasRun = true;
     if (reducedMotion.matches) {
       values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
+      metricCountsCompleted = true;
       return;
     }
 
@@ -1012,7 +1022,10 @@
         value.textContent = `${Math.round(target * easedProgress)}+`;
       });
       if (progress < 1) metricCountFrame = window.requestAnimationFrame(step);
-      else metricCountFrame = 0;
+      else {
+        metricCountFrame = 0;
+        metricCountsCompleted = true;
+      }
     };
     metricCountFrame = window.requestAnimationFrame(step);
   };
