@@ -1,0 +1,72 @@
+/* Shared Master Panel header behavior, loaded after each route stylesheet. */
+html.s-route { scrollbar-gutter: stable; }
+
+body.s-page .s-page__add { grid-column: 1; }
+body.s-page .s-page__submit { grid-column: 3; }
+
+html[dir="ltr"] body.s-page .s-page__add { grid-column: 3 !important; }
+html[dir="ltr"] body.s-page .s-page__submit { grid-column: 1 !important; }
+body.s-page:not(.s-page--rpn) .s-page__add,
+body.s-page:not(.s-page--rpn) .s-page__input-label,
+body.s-page:not(.s-page--rpn) .s-page__submit {
+  grid-row: 1 !important;
+}
+body.s-page:not(.s-page--rpn) .s-page__input-label { grid-column: 2 !important; }
+
+body.s-page:not(.s-page--rpn) .s-page__composer-menu {
+  width: min(72vw, 300px) !important;
+  text-align: start;
+}
+
+html[dir="ltr"] body.s-page:not(.s-page--rpn) .s-page__composer-menu {
+  left: 0 !important;
+  right: auto !important;
+  margin-left: 0 !important;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__composer-menu {
+  left: auto !important;
+  right: 0 !important;
+  margin-left: 0 !important;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
+  direction: inherit;
+  text-align: start;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__send-utilities {
+  width: max-content !important;
+  top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) * .5)) !important;
+  bottom: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: calc(var(--s-x) * .5);
+  align-items: center !important;
+  transform: none !important;
+}
+
+html[dir="ltr"] body.s-page:not(.s-page--rpn) .s-page__send-utilities {
+  left: 8px !important;
+  right: auto !important;
+  direction: ltr;
+}
+
+html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__send-utilities {
+  left: auto !important;
+  right: 8px !important;
+  direction: rtl;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__composer-menu-label {
+  text-align: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.s-page .s-page__composer-menu,
+  body.s-page .s-page__composer-menu-item,
+  body.s-page .s-page__submit .s-page__x-top-bar-line {
+    scroll-behavior: auto;
+    transition-duration: .01ms !important;
+  }
+}

@@ -20,13 +20,14 @@ if (process.env.NODE_ENV !== 'production' && typeof process.loadEnvFile === 'fun
 
 const pageRoutes = {
   '/': 'main.html',
-  '/service': 'brand.html',
+  '/bm': 'brand.html',
   '/space': 'space.html',
-  '/start': 'update.html',
-  '/scale': 'consultation.html',
+  '/update': 'update.html',
+  '/consultation': 'consultation.html',
   '/store': 'store.html',
-  '/system': 'os.html'
+  '/os': 'os.html'
 };
+const legacyRoutes = { '/service': '/bm', '/start': '/update', '/scale': '/consultation', '/system': '/os', '/rpn': '/space' };
 const publicRoots = ['assets', 'css', 'js', 'public'];
 const publicRootFiles = new Set(['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest']);
 const apiRoutes = {
@@ -121,6 +122,11 @@ const server = http.createServer((request, response) => {
   const requestPath = decodeURIComponent(requestUrl.pathname);
   if (apiRoutes[requestPath]) {
     void handleApiRequest(request, response, requestUrl);
+    return;
+  }
+  if (legacyRoutes[requestPath]) {
+    response.writeHead(308, { Location: `${legacyRoutes[requestPath]}${requestUrl.search}`, 'Cache-Control': 'no-cache' });
+    response.end();
     return;
   }
   const page = pageRoutes[requestPath];

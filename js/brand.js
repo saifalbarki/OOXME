@@ -20,8 +20,8 @@
   const sections = [...page?.querySelectorAll('[data-s-major-section]') || []];
   if (!page || !composer || !menu || !utilities || !submit || !theme || !language || !input || !view || !content || sections.length !== 2 || serviceCards.length !== 4 || !serviceViewport || !serviceTrack || !servicePrevious || !serviceNext || !serviceCounter) return;
   const copy = {
-    en: { menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'], title: 'What is Brand Management?', description: 'A premium brand management service built to strengthen positioning, improve business performance, and create a clearer, more scalable brand through strategy, content, sales, customer experience, and growth.', secondary: "Iraq's one and only brand management", secondaryCompact: '#1 Iraq', ask: 'Ask ooxme', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode', view: 'View' },
-    ar: { menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'], title: 'ما هي ادارة العلامة التجارية؟', description: 'خدمة متميزة لادارة العلامة التجارية، صممت لتعزيز مكانتها وتحسين اداء الاعمال وبناء علامة اوضح واكثر قابلية للتوسع من خلال الاستراتيجية والمحتوى والمبيعات وتجربة العميل والنمو.', secondary: 'ادارة العلامة التجارية الواحد والوحيد في العراق', secondaryCompact: '#الاول_بالعراق', ask: 'اسأل اوكسوم', submit: 'ارسال السؤال', language: 'Switch to English', day: 'التبديل الى الوضع النهاري', dark: 'التبديل الى الوضع الداكن', view: 'عرض' }
+    en: { menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'], title: 'What is Brand Management?', description: 'A premium brand management service built to strengthen positioning, improve business performance, and create a clearer, more scalable brand through strategy, content, sales, customer experience, and growth.', secondary: "Iraq's one and only brand management", secondaryCompact: '#1 Iraq', ask: 'Ask ooxme', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode', view: 'View' },
+    ar: { menu: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'], title: 'ما هي ادارة العلامة التجارية؟', description: 'خدمة متميزة لادارة العلامة التجارية، صممت لتعزيز مكانتها وتحسين اداء الاعمال وبناء علامة اوضح واكثر قابلية للتوسع من خلال الاستراتيجية والمحتوى والمبيعات وتجربة العميل والنمو.', secondary: 'ادارة العلامة التجارية الواحد والوحيد في العراق', secondaryCompact: '#الاول_بالعراق', ask: 'اسأل اوكسوم', submit: 'ارسال السؤال', language: 'Switch to English', day: 'التبديل الى الوضع النهاري', dark: 'التبديل الى الوضع الداكن', view: 'عرض' }
   };
   const serviceCopy = {
     en: [
@@ -132,7 +132,7 @@
     const wrapsBesideButton = lineHeight > 0 && finalText.getBoundingClientRect().height > (lineHeight * 1.1);
     if (wrapsBesideButton || card.getBoundingClientRect().top < safeTop) finalText.textContent = labels.secondaryCompact;
   };
-  const setMenu = (open) => { menu.classList.toggle('is-open', open); utilities.classList.toggle('is-open', open); menu.setAttribute('aria-hidden', String(!open)); utilities.setAttribute('aria-hidden', String(!open)); };
+  const setMenu = (open) => window.OOXMEHeader?.setMenuOpen(open);
   const applyLanguage = (next, { persist = true } = {}) => {
     const current = next === 'ar' ? 'ar' : 'en';
     const labels = copy[current];
@@ -166,7 +166,7 @@
   window.addEventListener('keydown', (event) => { if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return; event.preventDefault(); if (event.key === 'Home') transitionSection(-sections.length); else if (event.key === 'End') transitionSection(sections.length); else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1); }, { passive: false });
   window.addEventListener('resize', () => { const current = root.lang; captureEnglishFeaturedGeometry(); if (current !== 'en') applyLanguage(current, { persist: false }); measureServiceCardHeight(); syncServices(false); syncFinalText(); }, { passive: true });
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false }); });
-  root.lang = 'ar'; root.dir = 'rtl'; setServiceCopy('ar'); captureEnglishFeaturedGeometry(); applyLanguage('ar', { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
+  const initialLanguage = root.lang === 'en' ? 'en' : 'ar'; setServiceCopy(initialLanguage); captureEnglishFeaturedGeometry(); applyLanguage(initialLanguage, { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
   requestAnimationFrame(() => syncServices(false));

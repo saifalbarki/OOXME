@@ -5,7 +5,6 @@
   const content = document.querySelector('.s-page__content');
   const composer = document.querySelector('[data-s-composer]');
   const composerMenu = document.querySelector('[data-s-composer-menu]');
-  const composerMenuPanel = document.querySelector('[data-s-composer-menu-panel]');
   const sendUtilities = document.querySelector('[data-s-send-utilities]');
   const sendStatusUtility = document.querySelector('[data-s-utility="status"]');
   const sendThemeUtility = document.querySelector('[data-s-utility="theme"]');
@@ -216,7 +215,7 @@
         ['Distinct Identities\nBuilt to Be Remembered', 'Distinct identities that make\nbrands clear, memorable, lasting.'],
         ['Let’s talk\nabout what’s next', 'A focused consultation to understand your business, identify the right direction, and define the next practical step.']
       ],
-      menu: ['The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'],
+      menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'],
       inputPlaceholder: 'Type...',
       ask: 'Ask ooxme',
       addContext: 'Add context',
@@ -239,7 +238,7 @@
         ['هويات مميزة\nصممت لتبقى', 'هويات مميزة تجعل علامتك\nواضحة، راسخة، وسهلة التذكر.'],
         ['لنتحدث\nعن خطوتك القادمة', 'استشارة مركزة لفهم عملك، تحديد الاتجاه المناسب، والوصول الى الخطوة العملية التالية.']
       ],
-      menu: ['إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'],
+      menu: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'],
       inputPlaceholder: 'اكتب...',
       ask: 'اسأل اوكسوم',
       addContext: 'اضف سياقًا',
@@ -320,7 +319,6 @@
   let zFaceController = null;
   const secondaryNavPulseFrames = new Map();
   let composerMenuPulseFrame = 0;
-  let composerMenuCloseTimer = 0;
   let addFlashTimer = 0;
   const menuItemFlashTimers = new Map();
   const sendUtilityPulseFrames = new Map();
@@ -621,7 +619,7 @@
   };
 
   // Each fresh page load begins in Arabic; the language control remains live.
-  const initialLanguage = 'ar';
+  const initialLanguage = document.documentElement.lang === 'en' ? 'en' : 'ar';
   applyLanguage(initialLanguage, { persist: false, emit: false });
   applyTheme('dark');
 
@@ -630,42 +628,13 @@
   );
 
   const setComposerMenuOpen = (isOpen) => {
-    window.clearTimeout(composerMenuCloseTimer);
-    composerMenuCloseTimer = 0;
-    if (isOpen) {
-      composer.style.setProperty('--s-composer-menu-height', `${composerMenu.offsetHeight}px`);
-      composerMenu.classList.add('is-open');
-      composerMenu.setAttribute('aria-hidden', 'false');
-      if (!isZPage) setSendUtilitiesOpen(true);
-      if (isZPage) {
-        composerMenuPanel?.classList.add('is-open');
-        composerMenuPanel?.setAttribute('aria-hidden', 'false');
-      }
-      return;
-    }
-
-    const menuWasOpen = composerMenu.classList.contains('is-open');
-    if (isZPage) {
-      composerMenuPanel?.classList.remove('is-open');
-      composerMenuPanel?.setAttribute('aria-hidden', 'true');
-    }
-    if (!menuWasOpen) {
-      composerMenu.setAttribute('aria-hidden', 'true');
-      if (!isZPage) setSendUtilitiesOpen(false);
-      return;
-    }
-
-    composerMenuCloseTimer = window.setTimeout(() => {
-      composerMenuCloseTimer = 0;
-      composerMenu.classList.remove('is-open');
-      composerMenu.setAttribute('aria-hidden', 'true');
-      if (!isZPage) setSendUtilitiesOpen(false);
-    }, 60);
+    window.OOXMEHeader?.setMenuOpen(isOpen);
   };
 
   const setSendUtilitiesOpen = (isOpen) => {
     sendUtilities.classList.toggle('is-open', isOpen);
     sendUtilities.setAttribute('aria-hidden', String(!isOpen));
+    sendUtilities.inert = !isOpen;
   };
 
   const setSendUtilityAvailability = (isAvailable) => {
@@ -678,7 +647,6 @@
     window.clearTimeout(addFlashTimer);
     addRotated = false;
     addButton.classList.remove('is-rotated', 'is-active');
-    if (isZPage) submitButton.classList.remove('is-active');
     setComposerMenuOpen(false);
     setSendUtilitiesOpen(false);
     if (activeTemporaryUi === 'menu' || activeTemporaryUi === 'utilities') activeTemporaryUi = 'none';
@@ -808,7 +776,7 @@
   });
   submitButton.addEventListener('pointerdown', (event) => event.preventDefault());
 
-  [addButton, composerMenu, composerMenuPanel, sendUtilities].filter(Boolean).forEach((control) => {
+  [addButton, composerMenu, sendUtilities].forEach((control) => {
     control.addEventListener('pointerdown', (event) => event.stopPropagation());
     control.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
   });
@@ -818,8 +786,17 @@
   composer.addEventListener('pointerdown', (event) => {
     if (event.target === composer) pulseComposer();
   }, { passive: true });
-  composerMenu.addEventListener('click', (event) => event.stopPropagation());
-  composerMenuPanel?.addEventListener('click', (event) => event.stopPropagation());
+  composerMenu.addEventListener('click', (event) => {
+    const contactLink = event.target.closest('[data-s-menu-key="contact"]');
+    if (contactLink) {
+      event.preventDefault();
+      const contactSection = majorSections.find((section) => section.matches('.s-page__major-section--contact'));
+      const contactIndex = contactSection ? getNavigableMajorSections().indexOf(contactSection) : -1;
+      activateTemporaryUi('none');
+      if (contactIndex >= 0) transitionToMajorSection(contactIndex);
+    }
+    event.stopPropagation();
+  });
   sendUtilities.addEventListener('click', (event) => event.stopPropagation());
   composerMenuItems.forEach((item) => {
     const label = item.querySelector('.s-page__composer-menu-label')?.textContent.trim();
@@ -829,45 +806,19 @@
       item.querySelector('svg')?.remove();
     }
   });
-  composerMenuItems.forEach((item, index) => {
-    item.addEventListener('pointerdown', () => {
-      pulseComposerMenu();
-      window.clearTimeout(menuItemFlashTimers.get(item));
-      item.classList.add('is-active');
-      menuItemFlashTimers.set(item, window.setTimeout(() => item.classList.remove('is-active'), 120));
-    }, { passive: true });
-    if (index === 0 && item.getAttribute('aria-disabled') !== 'true') {
-      item.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        activateTemporaryUi('none');
-        window.location.assign('/service');
-      });
-    }
-    if (item.dataset.sMenuTarget === 'consultation' && item.getAttribute('aria-disabled') !== 'true') {
-      item.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        activateTemporaryUi('none');
-        window.location.assign('/scale');
-      });
-    }
-    if (item.dataset.sMenuTarget === 'contact' && item.getAttribute('aria-disabled') !== 'true') {
-      item.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        activateTemporaryUi('none');
-        const contactSection = majorSections.find((section) => section.matches('.s-page__major-section--contact'));
-        const contactIndex = contactSection ? getNavigableMajorSections().indexOf(contactSection) : -1;
-        if (contactIndex >= 0) transitionToMajorSection(contactIndex);
-      });
-    }
-  });
+  composerMenu.addEventListener('pointerdown', (event) => {
+    const item = event.target.closest('.s-page__composer-menu-item');
+    if (!item || item.disabled) return;
+    pulseComposerMenu();
+    window.clearTimeout(menuItemFlashTimers.get(item));
+    item.classList.add('is-active');
+    menuItemFlashTimers.set(item, window.setTimeout(() => item.classList.remove('is-active'), 120));
+  }, { passive: true });
 
   document.querySelector('[data-s-contact-consultation-cta]')?.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
-    window.location.assign('/scale');
+    window.location.assign('/consultation');
   });
 
   addButton.addEventListener('click', (event) => {
@@ -1707,7 +1658,7 @@
     menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });
     input.placeholder = copy.inputPlaceholder;
     inputLabel.textContent = copy.ask;
-    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME');
+    addButton.setAttribute('aria-label', language === 'ar' ? 'شخصية اوكسوم' : 'OOXME character');
     submitButton.setAttribute('aria-label', copy.submitQuestion);
     conversation.setAttribute('aria-label', copy.conversation);
     if (conversationFinal.classList.contains('is-visible')) {
@@ -2436,7 +2387,17 @@
       // /x deliberately treats every entry as a new visit instead.
       resetPageToInitialState();
       window.requestAnimationFrame(() => {
-        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        const navigateToContact = window.location.hash === '#contact'
+          || new URLSearchParams(window.location.search).get('section') === 'contact';
+        if (!navigateToContact) {
+          window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+          return;
+        }
+        document.fonts.ready.then(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+          const contactSection = majorSections.find((section) => section.matches('.s-page__major-section--contact'));
+          const contactIndex = contactSection ? getNavigableMajorSections().indexOf(contactSection) : -1;
+          if (contactIndex >= 0) transitionToMajorSection(contactIndex);
+        })));
       });
     }
   });

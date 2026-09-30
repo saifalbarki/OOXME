@@ -28,7 +28,7 @@
 
   const copy = {
     en: {
-      menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'],
+      menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'],
       ask: 'Ask ooxme', add: 'Add context', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode',
       featuredHeroNumber: '1000', featuredHeroWord: 'Key', featuredLabel: 'Premium Product', featuredName: '1000 Key', featuredCategory: 'Applied E-Book', featuredDescription: 'A book that brings together 1000 keys to the success of any project, divided within OOXME hidden files for managing commercial projects.', featuredPreviousPrice: '$99', featuredPrice: '$49',
       productOneName: 'Project Planner', productOneCategory: 'Digital File', productOneDescription: 'A practical planning system for organizing projects, tasks, priorities, and execution.', productOnePrice: '$19', productTwoName: 'Business Model Kit', productTwoCategory: 'Business Toolkit', productTwoDescription: 'A structured toolkit for reviewing business models, offers, operations, and growth opportunities.', productTwoPrice: '$39', productThreeName: 'Content System', productThreeCategory: 'Content Toolkit', productThreeDescription: 'A practical framework for planning, organizing, and maintaining consistent brand content.', productThreePrice: '$24', productFourName: 'Custom Brand Pack', productFourCategory: 'Custom Product', productFourDescription: 'A tailored set of brand files prepared around your business needs and priorities.', productFourPrice: 'Custom', view: 'View',
@@ -36,7 +36,7 @@
       previous: 'Previous product', next: 'Next product'
     },
     ar: {
-      menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'],
+      menu: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'],
       ask: 'اسأل اوكسوم', add: 'اضف سياقًا', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode',
       featuredHeroNumber: '1000', featuredHeroWord: 'مفتاح', featuredLabel: 'منتج مميز ', featuredName: '1000 مفتاح', featuredCategory: 'كتاب الكتروني تطبيقي', featuredDescription: 'كتاب يجمع 1000 مفتاح لنجاح اي مشروع مقسمة ضمن ملفات اوكسوم المخفية لإدارة المشاريع التجارية', featuredPreviousPrice: '$99', featuredPrice: '$49',
       productOneName: 'مخطط المشروع', productOneCategory: 'ملف رقمي', productOneDescription: 'نظام عملي لتنظيم المشاريع والمهام والاولويات والتنفيذ.', productOnePrice: '$19', productTwoName: 'حزمة نموذج العمل', productTwoCategory: 'ادوات اعمال', productTwoDescription: 'حزمة منظمة لمراجعة نموذج العمل والعروض والعمليات وفرص النمو.', productTwoPrice: '$39', productThreeName: 'نظام المحتوى', productThreeCategory: 'ادوات محتوى', productThreeDescription: 'اطار عملي لتخطيط وتنظيم واستمرار محتوى العلامة التجارية.', productThreePrice: '$24', productFourName: 'حزمة علامة مخصصة', productFourCategory: 'منتج مخصص', productFourDescription: 'مجموعة ملفات علامة تجارية مخصصة حسب احتياجات واولويات عملك.', productFourPrice: 'مخصص', view: 'عرض',
@@ -72,25 +72,7 @@
     if (featuredEnglishRows) featuredCopy.style.gridTemplateRows = featuredEnglishRows;
   };
 
-  const setMenuOpen = (open) => {
-    clearTimeout(menuTimer);
-    if (open) {
-      composer.style.setProperty('--s-composer-menu-height', `${menu.offsetHeight}px`);
-      menu.classList.add('is-open');
-      utilities.classList.add('is-open');
-      submit.classList.add('is-active');
-      menu.setAttribute('aria-hidden', 'false');
-      utilities.setAttribute('aria-hidden', 'false');
-      return;
-    }
-    submit.classList.remove('is-active');
-    menuTimer = setTimeout(() => {
-      menu.classList.remove('is-open');
-      utilities.classList.remove('is-open');
-      menu.setAttribute('aria-hidden', 'true');
-      utilities.setAttribute('aria-hidden', 'true');
-    }, 60);
-  };
+  const setMenuOpen = (open) => window.OOXMEHeader?.setMenuOpen(open);
 
   const updateInputLanguage = () => {
     const arabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(input.value);
@@ -134,7 +116,7 @@
     });
     page.querySelectorAll('.s-page__composer-menu-label').forEach((node, index) => { node.textContent = labels.menu[index]; });
     page.querySelector('.s-page__input-label .s-page__visually-hidden').textContent = labels.ask;
-    addButton.setAttribute('aria-label', labels.add);
+    addButton.setAttribute('aria-label', language === 'ar' ? 'شخصية اوكسوم' : 'OOXME character');
     submit.setAttribute('aria-label', labels.submit);
     languageButton.setAttribute('aria-label', labels.language);
     languageButton.setAttribute('aria-pressed', String(language === 'en'));
@@ -271,9 +253,8 @@
   addButton.addEventListener('click', (event) => { event.stopPropagation(); setMenuOpen(false); });
   themeButton.addEventListener('click', (event) => { event.stopPropagation(); applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'); });
   languageButton.addEventListener('click', (event) => { event.stopPropagation(); requestLanguageChange(root.lang === 'ar' ? 'en' : 'ar'); });
-  menuItems.forEach((item, index) => {
+  menuItems.forEach((item) => {
     item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true });
-    if (index === 0 && item.getAttribute('aria-disabled') !== 'true') item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/service'); });
   });
   page.querySelectorAll('.s-page__store-action').forEach((button) => button.addEventListener('click', (event) => event.preventDefault()));
   previousProduct.addEventListener('click', () => selectProduct(activeProduct - 1));
@@ -330,17 +311,12 @@
     else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
   }, { passive: false });
   window.addEventListener('resize', () => {
-    if (root.lang === 'ar') {
-      applyLanguage('en', { persist: false });
-      applyLanguage('ar', { persist: false });
-    } else {
-      applyLanguage('en', { persist: false });
-    }
+    applyLanguage(root.lang === 'en' ? 'en' : 'ar', { persist: false });
     syncCarousel(false);
   }, { passive: true });
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
-  applyLanguage('ar', { persist: false });
+  applyLanguage(root.lang === 'en' ? 'en' : 'ar', { persist: false });
   featuredFontsReady.then(() => { if (root.lang === 'en') syncFeaturedGeometry('en'); });
   applyTheme('dark');
   requestAnimationFrame(() => {

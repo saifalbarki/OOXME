@@ -4,7 +4,6 @@
   const page = document.querySelector('.s-page--update');
   const composer = page?.querySelector('[data-s-composer]');
   const menu = page?.querySelector('[data-s-composer-menu]');
-  const menuPanel = page?.querySelector('[data-s-composer-menu-panel]');
   const utilities = page?.querySelector('[data-s-send-utilities]');
   const face = page?.querySelector('.s-page__add');
   const submit = page?.querySelector('.s-page__x-top-bar-submit');
@@ -17,9 +16,9 @@
   const previous = page?.querySelector('[data-update-prev]');
   const next = page?.querySelector('[data-update-next]');
   const counter = page?.querySelector('[data-update-counter]');
-  if (!page || !composer || !menu || !menuPanel || !utilities || !face || !submit || !theme || !language || !input || cards.length !== 6 || !viewport || !track || !previous || !next || !counter) return;
+  if (!page || !composer || !menu || !utilities || !face || !submit || !theme || !language || !input || cards.length !== 6 || !viewport || !track || !previous || !next || !counter) return;
 
-  const menuCopy = { en: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'], ar: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'] };
+  const menuCopy = { en: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'], ar: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'] };
   const utilityCopy = { en: { submit: 'Submit question', previous: 'Previous card', next: 'Next card', nav: 'Card navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' }, ar: { submit: 'ارسال السؤال', previous: 'البطاقة السابقة', next: 'البطاقة التالية', nav: 'التنقل بين البطاقات', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' } };
   const cardCopy = {
     en: [
@@ -67,12 +66,12 @@
       card.querySelector('[data-update-copy="title"]').textContent = copy.title;
       card.querySelector('[data-update-copy="description"]').textContent = copy.description;
     });
-    face.setAttribute('aria-label', current === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME'); submit.setAttribute('aria-label', utility.submit); language.classList.toggle('is-active', current === 'en'); language.setAttribute('aria-pressed', String(current === 'en')); language.setAttribute('aria-label', current === 'en' ? utility.toArabic : utility.toEnglish); previous.setAttribute('aria-label', utility.previous); next.setAttribute('aria-label', utility.next); page.querySelector('[data-update-carousel-nav]').setAttribute('aria-label', utility.nav);
+    face.setAttribute('aria-label', current === 'ar' ? 'شخصية اوكسوم' : 'OOXME character'); submit.setAttribute('aria-label', utility.submit); language.classList.toggle('is-active', current === 'en'); language.setAttribute('aria-pressed', String(current === 'en')); language.setAttribute('aria-label', current === 'en' ? utility.toArabic : utility.toEnglish); previous.setAttribute('aria-label', utility.previous); next.setAttribute('aria-label', utility.next); page.querySelector('[data-update-carousel-nav]').setAttribute('aria-label', utility.nav);
     syncCarousel(false);
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: current } }));
   };
   const applyTheme = (nextTheme) => { const day = nextTheme === 'day'; root.classList.toggle('is-day-mode', day); theme.classList.toggle('is-active', !day); theme.setAttribute('aria-pressed', String(!day)); theme.setAttribute('aria-label', day ? utilityCopy[root.lang === 'ar' ? 'ar' : 'en'].toDark : utilityCopy[root.lang === 'ar' ? 'ar' : 'en'].toDay); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000'); };
-  const setMenu = (open) => { menu.classList.toggle('is-open', open); menuPanel.classList.toggle('is-open', open); utilities.classList.toggle('is-open', open); menu.setAttribute('aria-hidden', String(!open)); menuPanel.setAttribute('aria-hidden', String(!open)); utilities.setAttribute('aria-hidden', String(!open)); };
+  const setMenu = (open) => window.OOXMEHeader?.setMenuOpen(open);
 
   previous.addEventListener('click', () => selectCard(activeCard - 1));
   next.addEventListener('click', () => selectCard(activeCard + 1));
@@ -80,14 +79,13 @@
   viewport.addEventListener('pointermove', (event) => { if (!drag || event.pointerId !== drag.id) return; drag.delta = event.clientX - drag.startX; syncCarousel(false, drag.delta); });
   const finishDrag = (event) => { if (!drag || event.pointerId !== drag.id) return; const delta = drag.delta; drag = null; if (Math.abs(delta) >= 42) selectCard(activeCard + ((delta < 0 ? 1 : -1) * (root.lang === 'ar' ? -1 : 1))); else syncCarousel(); };
   viewport.addEventListener('pointerup', finishDrag); viewport.addEventListener('pointercancel', finishDrag);
-  face.addEventListener('click', () => window.location.assign('/'));
   composer.addEventListener('submit', (event) => { event.preventDefault(); setMenu(!menu.classList.contains('is-open')); });
   document.addEventListener('pointerdown', (event) => { if (menu.classList.contains('is-open') && !composer.contains(event.target)) setMenu(false); }, { passive: true });
   theme.addEventListener('click', () => applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'));
   language.addEventListener('click', () => applyLanguage(root.lang === 'ar' ? 'en' : 'ar'));
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false, emit: false }); });
   window.addEventListener('resize', () => syncCarousel(false), { passive: true });
-  applyLanguage('ar', { persist: false, emit: false }); applyTheme('dark'); syncCarousel(false);
+  applyLanguage(root.lang === 'en' ? 'en' : 'ar', { persist: false, emit: false }); applyTheme('dark'); syncCarousel(false);
   requestAnimationFrame(() => syncCarousel(false));
   document.fonts?.ready.then(() => syncCarousel(false));
   root.classList.remove('s-x-initializing');

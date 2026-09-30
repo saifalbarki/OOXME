@@ -8,12 +8,12 @@ const directories = ['assets', 'css', 'js', 'public'];
 const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest'];
 const pageOutputs = {
   'main.html': 'index.html',
-  'brand.html': 'service.html',
+  'brand.html': 'bm.html',
   'space.html': 'space.html',
-  'update.html': 'start.html',
-  'consultation.html': 'scale.html',
+  'update.html': 'update.html',
+  'consultation.html': 'consultation.html',
   'store.html': 'store.html',
-  'os.html': 'system.html'
+  'os.html': 'os.html'
 };
 
 if (!fs.existsSync(sourceRoot)) {

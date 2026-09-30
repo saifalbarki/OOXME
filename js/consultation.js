@@ -37,25 +37,15 @@
   if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !theme || !language || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || sections.length !== 2) return;
 
   const copy = {
-    en: { menu: ['The Brand Management', 'The Gallery', 'The Consultation', 'The Store', 'Contact'], ask: 'Ask ooxme', add: 'Add context', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' },
-    ar: { menu: ['إدارة العلامة التجارية', 'المعرض', 'الاستشارة', 'المتجر', 'تواصل'], ask: 'اسأل اوكسوم', add: 'اضف سياقًا', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' }
+    en: { menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'], ask: 'Ask ooxme', add: 'OOXME character', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' },
+    ar: { menu: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'], ask: 'اسأل اوكسوم', add: 'شخصية اوكسوم', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' }
   };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let menuTimer = 0, locked = false, unlockTimer = 0, transitionSettleTimer = 0, touch = null;
   let closedComposerFrameHeight = 0, closedComposerBottom = 0, keyboardSyncFrame = 0, appliedKeyboardOffset = 0, keyboardViewportRevision = 0;
   let keyboardBaselineViewportHeight = 0, keyboardSessionScrollY = null, keyboardSessionActive = false, keyboardOpen = false;
 
-  const setMenuOpen = (open) => {
-    clearTimeout(menuTimer);
-    if (open) {
-      composer.style.setProperty('--s-composer-menu-height', `${menu.offsetHeight}px`);
-      menu.classList.add('is-open'); utilities.classList.add('is-open'); submit.classList.add('is-active');
-      menu.setAttribute('aria-hidden', 'false'); utilities.setAttribute('aria-hidden', 'false');
-      return;
-    }
-    submit.classList.remove('is-active');
-    menuTimer = setTimeout(() => { menu.classList.remove('is-open'); utilities.classList.remove('is-open'); menu.setAttribute('aria-hidden', 'true'); utilities.setAttribute('aria-hidden', 'true'); }, 60);
-  };
+  const setMenuOpen = (open) => window.OOXMEHeader?.setMenuOpen(open);
   const updateInputLanguage = () => {
     const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(input.value);
     input.lang = isArabic ? 'ar' : 'en'; input.dir = isArabic ? 'rtl' : 'ltr'; input.classList.toggle('is-english-input', !isArabic);
@@ -937,7 +927,7 @@
   theme.addEventListener('click', (event) => { event.stopPropagation(); applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day'); });
   language.addEventListener('pointerdown', (event) => { event.preventDefault(); event.stopPropagation(); });
   language.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); toggleSectionComposerLanguage(); });
-  menuItems.forEach((item, index) => { item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true }); if (index === 0 && item.getAttribute('aria-disabled') !== 'true') item.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); setMenuOpen(false); window.location.assign('/service'); }); });
+  menuItems.forEach((item) => { item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true }); });
   document.addEventListener('pointerdown', (event) => {
     if (!composer.contains(event.target)) setMenuOpen(false);
     if (!sectionComposer.contains(event.target) && document.activeElement === sectionInput) sectionInput.blur();
@@ -968,6 +958,6 @@
     }
   }, { passive: true });
   document.documentElement.classList.add('s-x-discrete-sections');
-  applyLanguage('ar', { persist: false, emit: false }); applyTheme('dark'); establishClosedComposerBaseline();
+  applyLanguage(document.documentElement.lang === 'en' ? 'en' : 'ar', { persist: false, emit: false }); applyTheme('dark'); establishClosedComposerBaseline();
   requestAnimationFrame(() => { renderBookingFlow(); restoreClosedSectionComposerBaseline(); document.documentElement.classList.remove('s-x-initializing'); void loadNearestBookingDays(); });
 })();

@@ -1,4 +1,26 @@
 (() => {
+  const root = document.documentElement;
+  const languageStorageKey = 'ooxme-language';
+  const readLanguage = () => {
+    try {
+      const saved = window.localStorage.getItem(languageStorageKey);
+      return saved === 'ar' || saved === 'en' ? saved : '';
+    } catch { return ''; }
+  };
+  const applyLanguage = (language, emit = true) => {
+    const current = language === 'ar' ? 'ar' : 'en';
+    if (root.lang !== current) root.lang = current;
+    if (root.dir !== (current === 'ar' ? 'rtl' : 'ltr')) root.dir = current === 'ar' ? 'rtl' : 'ltr';
+    try { if (window.localStorage.getItem(languageStorageKey) !== current) window.localStorage.setItem(languageStorageKey, current); } catch { /* Storage may be unavailable. */ }
+    if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: current } }));
+  };
+  const savedLanguage = readLanguage();
+  if (savedLanguage) applyLanguage(savedLanguage, false);
+  else {
+    const initial = root.lang === 'en' ? 'en' : 'ar';
+    applyLanguage(initial, false);
+  }
+
   const composer = document.querySelector('[data-s-composer]');
   const addButton = composer?.querySelector('.s-page__add');
   const submitButton = composer?.querySelector('button[type="submit"]');
@@ -8,92 +30,174 @@
     composer.classList.remove('is-pulsing');
     requestAnimationFrame(() => composer.classList.add('is-pulsing'));
   };
-
   composer.addEventListener('animationend', (event) => {
     if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing');
   });
-  [addButton, submitButton].forEach((control) => {
-    control.addEventListener('pointerdown', pulse, { passive: true });
-  });
-  composer.addEventListener('pointerdown', (event) => {
-    if (event.target === composer) pulse();
-  }, { passive: true });
-  addButton.addEventListener('click', (event) => {
-    event.stopPropagation();
-    window.location.assign('/');
-  });
+  [addButton, submitButton].forEach((control) => control.addEventListener('pointerdown', pulse, { passive: true }));
+  composer.addEventListener('pointerdown', (event) => { if (event.target === composer) pulse(); }, { passive: true });
 
   const menu = composer.querySelector('[data-s-composer-menu]');
-  const menuItems = menu ? [...menu.querySelectorAll('.s-page__composer-menu-item')] : [];
-  const menuLabels = {
-    en: {
-      brand: 'The Brand Management',
-      gallery: 'The Gallery',
-      store: 'The Store',
-      consultation: 'The Consultation',
-      contact: 'Contact'
-    },
-    ar: {
-      brand: 'إدارة العلامة التجارية',
-      gallery: 'المعرض',
-      store: 'المتجر',
-      consultation: 'الاستشارة',
-      contact: 'تواصل'
-    }
-  };
-  const keyForLabel = (label) => {
-    const value = label.trim();
-    if (value === 'The Brand Management' || value === 'إدارة العلامة التجارية') return 'brand';
-    if (value === 'The Gallery' || value === 'المعرض') return 'gallery';
-    if (value === 'The Store' || value === 'المتجر') return 'store';
-    if (value === 'The Consultation' || value === 'الاستشارة') return 'consultation';
-    if (value === 'Contact' || value === 'تواصل') return 'contact';
-    return '';
+  const utilities = composer.querySelector('[data-s-send-utilities]');
+  const keyForLabel = (label) => ({
+    'The Brand Management': 'brand', 'إدارة العلامة التجارية': 'brand',
+    'The Gallery': 'gallery', 'المعرض': 'gallery',
+    'The Store': 'store', 'المتجر': 'store',
+    'The Consultation': 'consultation', 'الاستشارة': 'consultation',
+    Contact: 'contact', 'تواصل': 'contact'
+  })[label.trim()] || '';
+  const itemForKey = (key, href, disabled = false) => {
+    const item = document.createElement(disabled ? 'button' : 'a');
+    item.className = 's-page__composer-menu-item';
+    item.dataset.sMenuKey = key;
+    if (disabled) {
+      item.type = 'button';
+      item.disabled = true;
+      item.setAttribute('aria-disabled', 'true');
+    } else item.href = href;
+    const label = document.createElement('span');
+    label.className = 's-page__composer-menu-label';
+    item.append(label);
+    return item;
   };
   const normalizeMenu = () => {
-    if (!menuItems.length) return;
-    menuItems.forEach((item) => {
+    if (!menu) return;
+    menu.setAttribute('role', 'navigation');
+    menu.setAttribute('aria-label', root.lang === 'ar' ? 'التنقل الرئيسي' : 'Main navigation');
+    const found = new Map();
+    [...menu.querySelectorAll('.s-page__composer-menu-item')].forEach((item) => {
       const label = item.querySelector('.s-page__composer-menu-label');
-      if (!label) return;
-      const key = item.dataset.sMenuKey || keyForLabel(label.textContent);
-      if (!key) return;
-      item.dataset.sMenuKey = key;
-      if (key === 'consultation') {
-        item.dataset.sMenuTarget = 'consultation';
-        item.removeAttribute('aria-disabled');
-        item.querySelector('svg')?.remove();
-      }
-      if (key === 'store') item.dataset.sMenuTarget = 'store';
+      const key = item.dataset.sMenuKey || keyForLabel(label?.textContent || '');
+      if (key) found.set(key, item);
     });
-    const order = ['brand', 'gallery', 'store', 'consultation', 'contact'];
-    [...menuItems]
-      .sort((a, b) => order.indexOf(a.dataset.sMenuKey) - order.indexOf(b.dataset.sMenuKey))
-      .forEach((item) => menu.appendChild(item));
-    const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
-    menuItems.forEach((item) => {
-      const label = item.querySelector('.s-page__composer-menu-label');
+
+    const items = [
+      itemForKey('home', '/'),
+      itemForKey('brand', '', true),
+      itemForKey('gallery', '', true),
+      itemForKey('store', '', true),
+      itemForKey('consultation', '/consultation'),
+      itemForKey('contact', document.body.classList.contains('s-page--main') ? '#contact' : '/?section=contact')
+    ];
+    const language = root.lang === 'en' ? 'en' : 'ar';
+    const menuLabels = {
+      en: { home: 'Home', brand: 'The Brand Management', gallery: 'The Gallery', store: 'The Store', consultation: 'The Consultation', contact: 'Contact' },
+      ar: { home: 'الرئيسية', brand: 'إدارة العلامة التجارية', gallery: 'المعرض', store: 'المتجر', consultation: 'الاستشارة', contact: 'تواصل' }
+    };
+    items.forEach((item) => {
       const key = item.dataset.sMenuKey;
-      if (label && menuLabels[language][key]) label.textContent = menuLabels[language][key];
+      const oldItem = found.get(key);
+      const lock = oldItem?.querySelector('.s-page__x-menu-lock');
+      if (lock && (key === 'brand' || key === 'gallery')) item.append(lock.cloneNode(true));
+      if (key === 'store') {
+        const storeLock = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        storeLock.setAttribute('class', 's-page__x-menu-lock');
+        storeLock.setAttribute('viewBox', '0 0 16 16');
+        storeLock.setAttribute('aria-hidden', 'true');
+        storeLock.setAttribute('focusable', 'false');
+        const shackle = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        shackle.setAttribute('class', 's-page__x-menu-lock-shackle');
+        shackle.setAttribute('d', 'M4.5 7V4.75a3.5 3.5 0 0 1 7 0V7');
+        const body = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        body.setAttribute('class', 's-page__x-menu-lock-body');
+        body.setAttribute('x', '2.5'); body.setAttribute('y', '7'); body.setAttribute('width', '11'); body.setAttribute('height', '7'); body.setAttribute('rx', '1.5');
+        storeLock.append(shackle, body);
+        item.append(storeLock);
+      }
+      item.querySelector('.s-page__composer-menu-label').textContent = menuLabels[language][key];
     });
+    menu.replaceChildren(...items);
   };
-  normalizeMenu();
-  window.setTimeout(normalizeMenu, 0);
-  window.setTimeout(normalizeMenu, 100);
-  window.addEventListener('load', normalizeMenu, { once: true });
-  window.addEventListener('ooxme-language-change', () => window.setTimeout(normalizeMenu, 0));
-  composer.querySelector('[data-s-utility="language"]')?.addEventListener('click', () => window.setTimeout(normalizeMenu, 50), { passive: true });
-  menuItems.forEach((item) => {
-    item.addEventListener('click', (event) => {
-      const target = item.dataset.sMenuTarget;
-      if (target !== 'consultation' && target !== 'store') return;
-      event.preventDefault();
-      event.stopPropagation();
-      window.location.assign(target === 'consultation' ? '/scale' : '/store');
+
+  let closeTimer = 0;
+  let menuExpanded = false;
+  const updateMenuTriggerLabel = () => {
+    const labels = root.lang === 'ar'
+      ? { open: 'فتح قائمة التنقل', close: 'إغلاق قائمة التنقل' }
+      : { open: 'Open navigation menu', close: 'Close navigation menu' };
+    submitButton.setAttribute('aria-label', menuExpanded ? labels.close : labels.open);
+  };
+  const setMenuOpen = (open) => {
+    window.clearTimeout(closeTimer);
+    menuExpanded = open;
+    if (open) {
+      normalizeMenu();
+      composer.style.setProperty('--s-composer-menu-height', `${menu?.offsetHeight || 0}px`);
+      menu?.classList.add('is-open');
+      menu?.setAttribute('aria-hidden', 'false');
+      if (menu) menu.inert = false;
+      utilities?.classList.add('is-open');
+      utilities?.setAttribute('aria-hidden', 'false');
+      if (utilities) utilities.inert = false;
+      submitButton.classList.add('is-active');
+      submitButton.setAttribute('aria-expanded', 'true');
+      updateMenuTriggerLabel();
+      return;
+    }
+    submitButton.classList.remove('is-active');
+    submitButton.setAttribute('aria-expanded', 'false');
+    updateMenuTriggerLabel();
+    closeTimer = window.setTimeout(() => {
+      menu?.classList.remove('is-open');
+      menu?.setAttribute('aria-hidden', 'true');
+      if (menu) menu.inert = true;
+      utilities?.classList.remove('is-open');
+      utilities?.setAttribute('aria-hidden', 'true');
+      if (utilities) utilities.inert = true;
+      closeTimer = 0;
+    }, 60);
+  };
+  window.OOXMEHeader = { setMenuOpen, normalizeMenu };
+
+  if (menu) {
+    menu.id ||= 'ooxme-primary-menu';
+    submitButton.setAttribute('aria-controls', menu.id);
+    submitButton.setAttribute('aria-expanded', 'false');
+    menu.inert = true;
+    if (utilities) utilities.inert = true;
+    normalizeMenu();
+    menu.addEventListener('pointerdown', (event) => {
+      const item = event.target.closest('.s-page__composer-menu-item');
+      if (!item || item.disabled) return;
+      item.classList.add('is-active');
+      window.setTimeout(() => item.classList.remove('is-active'), 120);
+    }, { passive: true });
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || !menu.classList.contains('is-open')) return;
+      setMenuOpen(false);
+      submitButton.focus({ preventScroll: true });
     });
+  }
+  const updateAddLabel = () => addButton.setAttribute('aria-label', root.lang === 'ar' ? 'شخصية اوكسوم' : 'OOXME character');
+  updateAddLabel();
+  updateMenuTriggerLabel();
+  window.setTimeout(updateMenuTriggerLabel, 0);
+  addButton.addEventListener('click', (event) => {
+    event.stopPropagation();
   });
+  document.addEventListener('pointerdown', (event) => {
+    if (composer.contains(event.target)) return;
+    setMenuOpen(false);
+  }, { passive: true });
+  window.addEventListener('resize', () => { if (menu?.classList.contains('is-open')) setMenuOpen(true); }, { passive: true });
+
+  const persistCurrentLanguage = () => {
+    const current = root.lang === 'en' ? 'en' : 'ar';
+    try { window.localStorage.setItem(languageStorageKey, current); } catch { /* Storage may be unavailable. */ }
+    root.dir = current === 'ar' ? 'rtl' : 'ltr';
+    updateAddLabel();
+    updateMenuTriggerLabel();
+    normalizeMenu();
+    window.setTimeout(updateMenuTriggerLabel, 0);
+  };
+  new MutationObserver(persistCurrentLanguage).observe(root, { attributes: true, attributeFilter: ['lang'] });
+  window.addEventListener('storage', (event) => {
+    if (event.key !== languageStorageKey || !['ar', 'en'].includes(event.newValue)) return;
+    applyLanguage(event.newValue);
+  });
+  window.addEventListener('ooxme-language-change', persistCurrentLanguage);
 })();
 
-// Main's OXO face controller is shared by every non-Main active page.
+// Keep the shared OXO face gaze and settle motion on every non-home route.
 (() => {
   if (document.body.classList.contains('s-page--main')) return;
   const addButton = document.querySelector('[data-s-composer] .s-page__add');

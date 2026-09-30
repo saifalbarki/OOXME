@@ -8,11 +8,18 @@
     "api/**/*.js": { "maxDuration": 30 }
   },
   "rewrites": [
-    { "source": "/service", "destination": "/service.html" },
+    { "source": "/bm", "destination": "/bm.html" },
     { "source": "/space", "destination": "/space.html" },
-    { "source": "/start", "destination": "/start.html" },
-    { "source": "/scale", "destination": "/scale.html" },
-    { "source": "/store", "destination": "/store.html" }
-    ,{ "source": "/system", "destination": "/system.html" }
+    { "source": "/update", "destination": "/update.html" },
+    { "source": "/consultation", "destination": "/consultation.html" },
+    { "source": "/store", "destination": "/store.html" },
+    { "source": "/os", "destination": "/os.html" }
+  ],
+  "redirects": [
+    { "source": "/service", "destination": "/bm", "permanent": true },
+    { "source": "/start", "destination": "/update", "permanent": true },
+    { "source": "/scale", "destination": "/consultation", "permanent": true },
+    { "source": "/system", "destination": "/os", "permanent": true },
+    { "source": "/rpn", "destination": "/space", "permanent": true }
   ]
 }

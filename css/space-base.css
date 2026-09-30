@@ -899,14 +899,14 @@ top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) 
   transform: translateX(-50%);
 }
 
-body.s-page :is(.s-page__composer-menu, .s-page__composer-menu-panel, .s-page__send-utilities),
-body.s-page :is(.s-page__composer-menu.is-open, .s-page__composer-menu-panel.is-open, .s-page__send-utilities.is-open) {
+body.s-page :is(.s-page__composer-menu, .s-page__send-utilities),
+body.s-page :is(.s-page__composer-menu.is-open, .s-page__send-utilities.is-open) {
 opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
 }
 
-body.s-page :is(.s-page__composer-menu.is-open, .s-page__composer-menu-panel.is-open, .s-page__send-utilities.is-open) {
+body.s-page :is(.s-page__composer-menu.is-open, .s-page__send-utilities.is-open) {
 visibility: visible !important;
   pointer-events: auto !important;
 }

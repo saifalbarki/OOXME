@@ -37,12 +37,7 @@
   let menuOpen = false;
   const setMenuOpen = (open) => {
     menuOpen = Boolean(open);
-    submitButton.classList.toggle('is-active', menuOpen);
-    composerMenu.classList.toggle('is-open', menuOpen);
-    composerMenu.setAttribute('aria-hidden', String(!menuOpen));
-    sendUtilities.classList.toggle('is-open', menuOpen);
-    sendUtilities.setAttribute('aria-hidden', String(!menuOpen));
-    if (menuOpen) composer.style.setProperty('--s-composer-menu-height', `${composerMenu.offsetHeight}px`);
+    window.OOXMEHeader?.setMenuOpen(menuOpen);
   };
 
   const updateThemeLabel = () => {
@@ -64,7 +59,7 @@
     root.lang = language;
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
     const copy = utilityCopy[language];
-    addButton.setAttribute('aria-label', language === 'ar' ? 'الذهاب الى اوكسوم' : 'Go to OOXME');
+    addButton.setAttribute('aria-label', language === 'ar' ? 'شخصية اوكسوم' : 'OOXME character');
     submitButton.setAttribute('aria-label', copy.submit);
     languageUtility.classList.toggle('is-active', language === 'en');
     languageUtility.setAttribute('aria-pressed', String(language === 'en'));

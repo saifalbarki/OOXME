@@ -87,6 +87,7 @@
 html[dir="rtl"] { --ooxme-language-font-scale: var(--ooxme-arabic-font-scale); }
 .ooxme-language-english { font-family: var(--font-english) !important; direction: ltr; }
 .ooxme-language-arabic { font-family: var(--font-arabic) !important; direction: rtl; }
+.s-page__composer-menu-item:disabled { cursor: not-allowed; }
 
 @media (max-aspect-ratio: 4 / 3) {
   :root {
