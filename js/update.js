@@ -86,7 +86,13 @@
     const rtl = root.lang === 'ar';
     const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
     const centerOffset = (viewport.clientWidth / 2) - (card.offsetWidth / 2);
-    const position = rtl ? -(track.scrollWidth - card.offsetWidth - centerOffset) + (activeCard * (card.offsetWidth + gap)) + dragOffset : centerOffset - (activeCard * (card.offsetWidth + gap)) + dragOffset;
+    const step = card.offsetWidth + gap;
+    const firstPosition = rtl ? -(track.scrollWidth - card.offsetWidth - centerOffset) : centerOffset;
+    const lastPosition = rtl ? firstPosition + ((cards.length - 1) * step) : centerOffset - ((cards.length - 1) * step);
+    const requestedPosition = (rtl ? firstPosition + (activeCard * step) : centerOffset - (activeCard * step)) + dragOffset;
+    const trackMin = Math.min(firstPosition, lastPosition);
+    const trackMax = Math.max(firstPosition, lastPosition);
+    const position = Math.min(trackMax, Math.max(trackMin, requestedPosition));
     track.classList.toggle('is-dragging', !animate);
     track.style.transform = `translate3d(${position.toFixed(2)}px, 0, 0)`;
     cards.forEach((item, index) => { const active = index === activeCard; item.classList.toggle('is-active', active); item.setAttribute('aria-current', String(active)); item.dir = root.lang === 'ar' ? 'rtl' : 'ltr'; item.lang = root.lang === 'ar' ? 'ar' : 'en'; });
@@ -122,10 +128,25 @@
 
   previous.addEventListener('click', () => selectCard(activeCard - 1));
   next.addEventListener('click', () => selectCard(activeCard + 1));
-  viewport.addEventListener('pointerdown', (event) => { if (event.target.closest('button')) return; event.preventDefault(); drag = { id: event.pointerId, startX: event.clientX, delta: 0 }; viewport.setPointerCapture?.(event.pointerId); syncCarousel(false); });
+  viewport.addEventListener('pointerdown', (event) => {
+    if (event.isPrimary === false || event.target.closest('button') || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    event.preventDefault();
+    drag = { id: event.pointerId, startX: event.clientX, delta: 0 };
+    viewport.setPointerCapture?.(event.pointerId);
+    syncCarousel(false);
+  });
   viewport.addEventListener('pointermove', (event) => { if (!drag || event.pointerId !== drag.id) return; drag.delta = event.clientX - drag.startX; syncCarousel(false, drag.delta); });
-  const finishDrag = (event) => { if (!drag || event.pointerId !== drag.id) return; const delta = drag.delta; drag = null; if (Math.abs(delta) >= 42) selectCard(activeCard + ((delta < 0 ? 1 : -1) * (root.lang === 'ar' ? -1 : 1))); else syncCarousel(); };
-  viewport.addEventListener('pointerup', finishDrag); viewport.addEventListener('pointercancel', finishDrag);
+  const finishDrag = (event, commit) => {
+    if (!drag || event.pointerId !== drag.id) return;
+    const { id, delta } = drag;
+    drag = null;
+    if (viewport.hasPointerCapture?.(id)) viewport.releasePointerCapture?.(id);
+    if (commit && Math.abs(delta) >= 42) selectCard(activeCard + ((delta < 0 ? 1 : -1) * (root.lang === 'ar' ? -1 : 1)));
+    else syncCarousel();
+  };
+  viewport.addEventListener('pointerup', (event) => finishDrag(event, true));
+  viewport.addEventListener('pointercancel', (event) => finishDrag(event, false));
+  viewport.addEventListener('lostpointercapture', (event) => finishDrag(event, false));
   composer.addEventListener('submit', (event) => { event.preventDefault(); setMenu(!menu.classList.contains('is-open')); });
   document.addEventListener('pointerdown', (event) => { if (menu.classList.contains('is-open') && !composer.contains(event.target)) setMenu(false); }, { passive: true });
   theme.addEventListener('click', () => applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'));

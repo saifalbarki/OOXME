@@ -61,9 +61,9 @@ body.s-page--update .update-art--store .store-bag { transform-box: view-box; tra
 body.s-page--update .update-art--store .store-bag-handle { fill: none; stroke: color-mix(in srgb, var(--s-update-art-accent) 82%, white); stroke-width: 2; stroke-linecap: round; }
 body.s-page--update .update-art--store .store-bag-body { fill: color-mix(in srgb, var(--s-update-art-accent) 12%, transparent); stroke: color-mix(in srgb, var(--s-update-art-accent) 82%, white); stroke-width: 2; }
 body.s-page--update .update-art--store .store-bag-body-top { fill: none; stroke: color-mix(in srgb, var(--s-update-art-accent) 82%, white); stroke-width: 2; stroke-linecap: round; }
-body.s-page--update .update-art--publish { overflow: clip; contain: paint; touch-action: pan-y; }
+body.s-page--update .update-art--publish { overflow: clip; contain: paint; pointer-events: none; }
 body.s-page--update .update-art--publish svg { overflow: clip; }
-body.s-page--update .update-art--publish .publish-stream { transform-box: view-box; pointer-events: none; }
+body.s-page--update .update-art--publish .publish-stream { transform-box: view-box; }
 body.s-page--update .update-art--publish .publish-card rect { fill: color-mix(in srgb, var(--s-update-art-accent) 14%, transparent); stroke: color-mix(in srgb, var(--s-update-art-accent) 72%, white); stroke-width: 1.4; }
 body.s-page--update .update-art--publish .publish-card path { fill: none; stroke: color-mix(in srgb, var(--s-update-art-accent) 73%, white); stroke-width: 1.5; stroke-linecap: round; }
 html[dir="rtl"] body.s-page--update .s-page__rpn-card-image > .s-page__store-image-placeholder { transform: scaleX(-1); }
