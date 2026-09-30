@@ -658,6 +658,9 @@
     const copy = pageCopy[language];
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    page.querySelector('.s-page__section-2-image-frame--section-1-copy[href]')?.setAttribute('aria-label', language === 'ar'
+      ? 'افتح تحديث اوكسوم'
+      : 'Open the OOXME update');
     partnerNumberCard?.setAttribute('aria-label', language === 'ar'
       ? 'تعرف على برنامج شركاء اوكسوم'
       : 'Explore the OOXME Partner Program');
@@ -1401,22 +1404,23 @@
     });
   });
 
-  if (partnerNumberCard) {
-    let spaceNavigationPending = false;
-    let spaceNavigationFallback = 0;
-    let finishSpaceNavigation = null;
-    partnerNumberCard.addEventListener('click', (event) => {
-      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  document.querySelectorAll('[data-s-main-section-1-image-card][href]').forEach((card) => {
+    let navigationPending = false;
+    let navigationFallback = 0;
+    let finishNavigation = null;
+    card.addEventListener('click', (event) => {
+      if ((event.button !== undefined && event.button !== 0)
+        || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
-      if (spaceNavigationPending) return;
-      spaceNavigationPending = true;
+      if (navigationPending) return;
+      navigationPending = true;
 
       const navigate = () => {
-        if (!spaceNavigationPending) return;
-        spaceNavigationPending = false;
-        window.clearTimeout(spaceNavigationFallback);
-        if (finishSpaceNavigation) partnerNumberCard.removeEventListener('animationend', finishSpaceNavigation);
-        window.location.assign(partnerNumberCard.href);
+        if (!navigationPending) return;
+        navigationPending = false;
+        window.clearTimeout(navigationFallback);
+        if (finishNavigation) card.removeEventListener('animationend', finishNavigation);
+        window.location.assign(card.href);
       };
 
       if (reducedMotion.matches) {
@@ -1424,17 +1428,15 @@
         return;
       }
 
-      finishSpaceNavigation = (animationEvent) => {
-        if (animationEvent.target === partnerNumberCard
+      finishNavigation = (animationEvent) => {
+        if (animationEvent.target === card
           && animationEvent.animationName === 's-page-composer-pulse') navigate();
       };
-      partnerNumberCard.addEventListener('animationend', finishSpaceNavigation);
-      spaceNavigationFallback = window.setTimeout(navigate, 260);
-      if (!partnerNumberCard.classList.contains('is-pulsing') && !imagePulseFrames.has(partnerNumberCard)) {
-        pulseImageSurface(partnerNumberCard);
-      }
+      card.addEventListener('animationend', finishNavigation);
+      navigationFallback = window.setTimeout(navigate, 260);
+      if (!card.classList.contains('is-pulsing') && !imagePulseFrames.has(card)) pulseImageSurface(card);
     });
-  }
+  });
 
   document.querySelectorAll('[data-s-image-arrow-route]').forEach((arrow) => {
     ['pointerdown', 'pointerup', 'touchstart', 'touchend'].forEach((eventName) => {

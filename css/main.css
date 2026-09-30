@@ -3446,6 +3446,13 @@ body.s-page.s-page--main .s-page__major-section {
   margin-block: 0;
 }
 
+/* The lower first-section action intentionally overlaps the next frame. Keep
+   that action surface above the following section's paint layer so its link
+   remains reachable without changing either section's geometry. */
+body.s-page.s-page--main > .s-page__content > .s-page__section > .s-page__major-section:first-child {
+  z-index: 2;
+}
+
 body.s-page.s-page--main .s-page__flow-group + .s-page__flow-group {
   margin-top: var(--space-gap-standard);
 }
