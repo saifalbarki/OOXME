@@ -15,6 +15,12 @@ const pageOutputs = {
   'store.html': 'store.html',
   'os.html': 'os.html'
 };
+const analyticsSnippet = `
+    <!-- Vercel Web Analytics: official static HTML integration -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>`;
 
 if (!fs.existsSync(sourceRoot)) {
   throw new Error('Expected website source directory is missing.');
@@ -25,7 +31,14 @@ fs.mkdirSync(output, { recursive: true });
 
 for (const name of fs.readdirSync(sourceRoot)) {
   if (pageOutputs[name]) {
-    fs.copyFileSync(path.join(sourceRoot, name), path.join(output, pageOutputs[name]));
+    const source = fs.readFileSync(path.join(sourceRoot, name), 'utf8');
+    const destination = source.includes('/_vercel/insights/script.js')
+      ? source
+      : source.replace('</head>', `${analyticsSnippet}\n  </head>`);
+    if (destination === source && !source.includes('/_vercel/insights/script.js')) {
+      throw new Error(`Unable to add Vercel Web Analytics to ${name}: </head> was not found.`);
+    }
+    fs.writeFileSync(path.join(output, pageOutputs[name]), destination);
   }
 }
 
