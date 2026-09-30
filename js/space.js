@@ -117,8 +117,8 @@
     const applicationSurface = page.querySelector('.space-application__surface');
     const faqSection = page.querySelector('.space-faq');
     const firstSectionLast = visibleTextBounds('.space-details__description');
-    // The logo's approved bottom margin is 3X; derive X from its computed length.
-    const spaceX = Number.parseFloat(getComputedStyle(spaceMark).marginBottom) / 3;
+    // The logo's approved bottom margin is 4X; derive X from its computed length.
+    const spaceX = Number.parseFloat(getComputedStyle(spaceMark).marginBottom) / 4;
     const spaceGap = spaceX * 4
       * (window.matchMedia('(orientation: portrait)').matches ? 2 : 1);
 

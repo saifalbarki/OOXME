@@ -932,11 +932,6 @@
     if (!composer.contains(event.target)) setMenuOpen(false);
     if (!sectionComposer.contains(event.target) && document.activeElement === sectionInput) sectionInput.blur();
   }, { passive: true });
-  document.addEventListener('touchstart', (event) => { if (event.target.closest('[data-s-composer], [data-s-consultation-composer], [data-s-consultation-choice-tray]')) return; const item = event.changedTouches[0]; if (item) touch = { id: item.identifier, y: item.clientY }; }, { capture: true, passive: true });
-  document.addEventListener('touchmove', (event) => { const item = Array.from(event.changedTouches).find((candidate) => candidate.identifier === touch?.id); if (item && item.clientY !== touch.y) event.preventDefault(); }, { capture: true, passive: false });
-  document.addEventListener('touchend', (event) => { const item = Array.from(event.changedTouches).find((candidate) => candidate.identifier === touch?.id); if (item && Math.abs(item.clientY - touch.y) >= 36) transition(item.clientY < touch.y ? 1 : -1); if (item) touch = null; }, { capture: true, passive: true });
-  window.addEventListener('wheel', (event) => { event.preventDefault(); if (Math.abs(event.deltaY) >= 8) transition(event.deltaY > 0 ? 1 : -1); }, { passive: false });
-  window.addEventListener('keydown', (event) => { if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return; event.preventDefault(); if (event.key === 'Home') transition(-sections.length); else if (event.key === 'End') transition(sections.length); else transition([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1); }, { passive: false });
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
       scheduleSectionComposerKeyboard();

@@ -28,6 +28,68 @@
   const sectionTwoTextGroups = Array.from(document.querySelectorAll('[data-s-section-2-text]'));
   const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
   const getNavigableMajorSections = () => majorSections.filter((section) => getComputedStyle(section).display !== 'none');
+  const mainVisibleContentSelectors = [
+    ['.s-page__section-2-image-frame--section-1-copy', '.s-page__section-3-image-frame--section-1-copy'],
+    ['.s-page__group--section-4 .s-page__group-title', '.s-page__group--section-4 .s-page__group-description', '.s-page__number-metric'],
+    ['.s-page__flow-group--section-5-text .s-page__group-title', '.s-page__flow-group--section-5-text .s-page__group-description', '.s-page__closed-notice--section-5', '.s-page__marquee--section-5'],
+    ['.s-page__flow-group--section-6-text .s-page__group-title', '.s-page__flow-group--section-6-text .s-page__group-description', '.s-page__closed-notice--section-6', '.s-page__square-logo-stage'],
+    ['.s-page__contact-consultation', '.s-page__contact-separator', '.s-page__contact-button', '.s-page__legal-link', '.s-page__rights-copy']
+  ];
+  let mainSpacingFrame = 0;
+  const scheduleMainContentSpacing = () => {
+    if (!page?.classList.contains('s-page--main') || mainSpacingFrame) return;
+    mainSpacingFrame = window.requestAnimationFrame(() => {
+      mainSpacingFrame = 0;
+      const readBounds = (section, selectors) => {
+        const rects = selectors.flatMap((selector) => Array.from(section.querySelectorAll(selector)))
+          .filter((element) => {
+            const style = getComputedStyle(element);
+            return style.display !== 'none' && style.visibility !== 'hidden';
+          })
+          .map((element) => element.getBoundingClientRect())
+          .filter((rect) => rect.width > 0 && rect.height > 0);
+        if (!rects.length) return null;
+        return {
+          top: Math.min(...rects.map((rect) => rect.top + window.scrollY)),
+          bottom: Math.max(...rects.map((rect) => rect.bottom + window.scrollY))
+        };
+      };
+      const groups = majorSections
+        .filter((section) => getComputedStyle(section).display !== 'none')
+        .map((section) => {
+          const selectorSet = section.classList.contains('s-page__major-section--section-4') ? mainVisibleContentSelectors[1]
+            : section.classList.contains('s-page__major-section--section-5') ? mainVisibleContentSelectors[2]
+              : section.classList.contains('s-page__major-section--section-6') ? mainVisibleContentSelectors[3]
+                : section.classList.contains('s-page__major-section--contact') ? mainVisibleContentSelectors[4]
+                  : section.classList.contains('s-page__major-section--transition-frame')
+                    ? (section.classList.contains('s-page__major-section--section-2') || section.classList.contains('s-page__major-section--section-3') ? [] : mainVisibleContentSelectors[0]) : [];
+          const bounds = readBounds(section, selectorSet);
+          return bounds ? { section, selectors: selectorSet, ...bounds } : null;
+        })
+        .filter(Boolean);
+      if (groups.length < 2) return;
+      const description = document.querySelector('.s-page__contact-consultation-text .s-page__group-description');
+      const x = description ? parseFloat(getComputedStyle(description).marginTop) * 2 : 16;
+      // /space uses the major content gap of 4X in landscape and 8X in
+      // portrait. Keep the homepage on that same responsive cadence.
+      const targetGap = x * 4 * (window.matchMedia('(orientation: portrait)').matches ? 2 : 1);
+      groups[0].section.style.marginBlockStart = '0px';
+      for (let index = 1; index < groups.length; index += 1) {
+        const previous = readBounds(groups[index - 1].section, groups[index - 1].selectors);
+        const next = readBounds(groups[index].section, groups[index].selectors);
+        if (!previous || !next) continue;
+        const currentMargin = Number.parseFloat(getComputedStyle(groups[index].section).marginBlockStart) || 0;
+        groups[index].section.style.marginBlockStart = `${currentMargin + targetGap - (next.top - previous.bottom)}px`;
+      }
+      const finalGroup = groups[groups.length - 1];
+      // Margins above the final frame move its content after the first
+      // measurement, so read the final bounds again before setting the tail.
+      const finalBounds = readBounds(finalGroup.section, finalGroup.selectors);
+      const finalContentBottom = finalBounds?.bottom || 0;
+      const frameBottom = finalGroup.section.getBoundingClientRect().bottom + window.scrollY;
+      finalGroup.section.style.marginBlockEnd = `${x - (frameBottom - finalContentBottom)}px`;
+    });
+  };
   const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
   const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
     .filter((item) => item !== imageCopy && item !== imageMedia);
@@ -1668,6 +1730,7 @@
     }
     setRevealLineDelays();
     scheduleLocalizedGeometry();
+    scheduleMainContentSpacing();
   };
   applyPageCopy(document.documentElement.lang === 'ar' ? 'ar' : 'en');
   document.fonts?.ready.then(() => {
@@ -1676,6 +1739,7 @@
       sectionTwoBaselineCorrectionLocked = false;
       scheduleLocalizedGeometry();
       schedulePortraitSectionLayout();
+      scheduleMainContentSpacing();
     }
   });
   if (isZPage) firstGroup.classList.add('is-visible');
@@ -1688,6 +1752,12 @@
   flowGroups.forEach((group) => group.setAttribute('aria-hidden', 'true'));
   scheduleFlowSync();
   schedulePortraitSectionLayout();
+  scheduleMainContentSpacing();
+  window.addEventListener('load', scheduleMainContentSpacing, { once: true });
+  document.querySelectorAll('[data-s-main-section-1-image-card]').forEach((card) => {
+    new MutationObserver(scheduleMainContentSpacing).observe(card, { attributes: true, attributeFilter: ['class'] });
+  });
+  document.querySelectorAll('img').forEach((image) => image.addEventListener('load', scheduleMainContentSpacing, { once: true }));
   window.addEventListener('load', () => {
     if (!isZPage) {
       schedulePortraitSectionLayout();
@@ -2177,6 +2247,7 @@
   }
 
   const handleViewportGeometryChange = () => {
+    scheduleMainContentSpacing();
     const nextWidth = document.documentElement.clientWidth;
     const nextOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
     const layoutWidthChanged = Math.abs(nextWidth - localizedGeometryWidth) > .5;
@@ -2378,19 +2449,22 @@
     });
   };
 
-  window.addEventListener('pageshow', () => {
+  window.addEventListener('pageshow', (event) => {
+    const navigateToContact = window.location.hash === '#contact'
+      || new URLSearchParams(window.location.search).get('section') === 'contact';
+    // The initial page has already been initialized below. Re-running the
+    // reset and scrollTo(0) here races the first user gesture and makes the
+    // opening scroll feel stuck. Keep the reset for BFCache/history restores.
+    if (!event.persisted && !navigateToContact) return;
     if (isZPage) {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       initializeGroupOne();
     } else {
       // A history restore can preserve both scroll position and the live DOM.
       // /x deliberately treats every entry as a new visit instead.
-      resetPageToInitialState();
+      if (event.persisted) resetPageToInitialState();
       window.requestAnimationFrame(() => {
-        const navigateToContact = window.location.hash === '#contact'
-          || new URLSearchParams(window.location.search).get('section') === 'contact';
         if (!navigateToContact) {
-          window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
           return;
         }
         document.fonts.ready.then(() => window.requestAnimationFrame(() => window.requestAnimationFrame(() => {

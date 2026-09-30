@@ -3423,8 +3423,52 @@ body.s-page.s-page--main [data-s-first-typewriter] {
 }
 
 body.s-page.s-page--main {
+  --space-gap-tight: calc(var(--s-x) * .5);
+  --space-gap-standard: var(--s-x);
   --s-main-section-1-bottom-card-height: calc((var(--s-x) * 2) + 28.8px);
   --s-main-section-1-card-radius: 36px;
+}
+
+/* Retain each original homepage composition; JS positions the later groups by
+   their visible content bounds while leaving each group's internals untouched. */
+body.s-page.s-page--main > .s-page__content {
+  padding-bottom: 0;
+}
+
+/* Keep the document as the homepage's only vertical scroll container. Using
+   horizontal `hidden` here implicitly creates a second body scrollport. */
+body.s-page.s-page--main {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+body.s-page.s-page--main .s-page__major-section {
+  margin-block: 0;
+}
+
+body.s-page.s-page--main .s-page__flow-group + .s-page__flow-group {
+  margin-top: var(--space-gap-standard);
+}
+
+body.s-page.s-page--main .s-page__flow-group--logos {
+  margin-bottom: var(--space-gap-standard);
+}
+
+body.s-page.s-page--main .s-page__numbers-metrics {
+  gap: var(--space-gap-standard);
+}
+
+body.s-page.s-page--main .s-page__major-section > .s-page__closed-notice {
+  gap: var(--space-gap-tight);
+}
+
+body.s-page.s-page--main .s-page__image-copy-main + .s-page__image-copy-supporting,
+body.s-page.s-page--main .s-page__image-copy-supporting + .s-page__image-copy-supporting {
+  margin-top: var(--space-gap-tight) !important;
+}
+
+body.s-page.s-page--main .s-page__section-4-metric-copy {
+  gap: var(--space-gap-tight);
 }
 
 body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy {

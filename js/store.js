@@ -55,7 +55,6 @@
   let sectionSettleStableFrames = 0;
   let sectionScrollResumeTimer = 0;
   let menuTimer = 0;
-  let sectionTouch = null;
   let carouselDrag = null;
   let featuredEnglishRows = '';
   const featuredFontsReady = document.fonts?.ready || Promise.resolve();
@@ -283,33 +282,11 @@
 
   document.addEventListener('pointerdown', (event) => { if (!composer.contains(event.target)) setMenuOpen(false); }, { passive: true });
   document.addEventListener('pointerdown', () => cancelSectionSettle({ stopNativeScroll: true }), { capture: true, passive: true });
-  document.addEventListener('touchstart', (event) => {
-    if (event.target.closest('[data-s-composer], [data-store-carousel]')) return;
-    const item = event.changedTouches[0];
-    if (item) sectionTouch = { id: item.identifier, y: item.clientY };
-  }, { capture: true, passive: true });
-  document.addEventListener('touchmove', (event) => {
-    const item = Array.from(event.changedTouches).find((candidate) => candidate.identifier === sectionTouch?.id);
-    if (item && item.clientY !== sectionTouch.y) event.preventDefault();
-  }, { capture: true, passive: false });
-  document.addEventListener('touchend', (event) => {
-    const item = Array.from(event.changedTouches).find((candidate) => candidate.identifier === sectionTouch?.id);
-    if (item && Math.abs(item.clientY - sectionTouch.y) >= 36) transitionSection(item.clientY < sectionTouch.y ? 1 : -1);
-    if (item) sectionTouch = null;
-  }, { capture: true, passive: true });
-  window.addEventListener('wheel', (event) => { event.preventDefault(); if (Math.abs(event.deltaY) >= 8) transitionSection(event.deltaY > 0 ? 1 : -1); }, { passive: false });
   window.addEventListener('scroll', () => {
-    if (sectionSettleTarget !== null || sectionTouch) return;
+    if (sectionSettleTarget !== null) return;
     window.clearTimeout(sectionScrollResumeTimer);
     sectionScrollResumeTimer = window.setTimeout(settleToNearestSection, 90);
   }, { passive: true });
-  window.addEventListener('keydown', (event) => {
-    if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return;
-    event.preventDefault();
-    if (event.key === 'Home') transitionSection(-sections.length);
-    else if (event.key === 'End') transitionSection(sections.length);
-    else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1);
-  }, { passive: false });
   window.addEventListener('resize', () => {
     applyLanguage(root.lang === 'en' ? 'en' : 'ar', { persist: false });
     syncCarousel(false);

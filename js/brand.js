@@ -86,7 +86,6 @@
   let sectionLocked = false;
   let sectionUnlockTimer = 0;
   let sectionSettleTimer = 0;
-  let sectionTouch = null;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const sectionReferenceY = () => Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
   const activeSectionIndex = () => sections.reduce((closest, section, index) => { const distance = Math.abs(section.getBoundingClientRect().top - sectionReferenceY()); return !closest || distance < closest.distance ? { index, distance } : closest; }, null)?.index ?? 0;
@@ -159,11 +158,6 @@
   theme.addEventListener('click', () => applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'));
   language.addEventListener('click', () => applyLanguage(root.lang === 'ar' ? 'en' : 'ar'));
   view.addEventListener('click', (event) => { event.preventDefault(); transitionSection(1); });
-  document.addEventListener('touchstart', (event) => { if (event.target.closest('[data-s-composer], [data-brand-carousel]')) return; const item = event.changedTouches[0]; if (item) sectionTouch = { id: item.identifier, y: item.clientY }; }, { capture: true, passive: true });
-  document.addEventListener('touchmove', (event) => { const item = [...event.changedTouches].find((candidate) => candidate.identifier === sectionTouch?.id); if (item && item.clientY !== sectionTouch.y) event.preventDefault(); }, { capture: true, passive: false });
-  document.addEventListener('touchend', (event) => { const item = [...event.changedTouches].find((candidate) => candidate.identifier === sectionTouch?.id); if (item && Math.abs(item.clientY - sectionTouch.y) >= 36) transitionSection(item.clientY < sectionTouch.y ? 1 : -1); if (item) sectionTouch = null; }, { capture: true, passive: true });
-  window.addEventListener('wheel', (event) => { event.preventDefault(); if (Math.abs(event.deltaY) >= 8) transitionSection(event.deltaY > 0 ? 1 : -1); }, { passive: false });
-  window.addEventListener('keydown', (event) => { if (![' ', 'ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End'].includes(event.key) || event.target.closest('input, textarea, [contenteditable="true"]')) return; event.preventDefault(); if (event.key === 'Home') transitionSection(-sections.length); else if (event.key === 'End') transitionSection(sections.length); else transitionSection([' ', 'ArrowDown', 'PageDown'].includes(event.key) ? 1 : -1); }, { passive: false });
   window.addEventListener('resize', () => { const current = root.lang; captureEnglishFeaturedGeometry(); if (current !== 'en') applyLanguage(current, { persist: false }); measureServiceCardHeight(); syncServices(false); syncFinalText(); }, { passive: true });
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false }); });
   const initialLanguage = root.lang === 'en' ? 'en' : 'ar'; setServiceCopy(initialLanguage); captureEnglishFeaturedGeometry(); applyLanguage(initialLanguage, { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
