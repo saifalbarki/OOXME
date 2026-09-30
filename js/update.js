@@ -40,6 +40,45 @@
   };
   let activeCard = 0;
   let drag = null;
+  const viewedCards = new Set();
+  const entranceTimers = new Map();
+  const positionOuterConsultDots = () => {
+    const dots = page.querySelectorAll('.consult-dots-outer .consult-dot');
+    const startAngle = -Math.PI / 2;
+    dots.forEach((dot, index) => {
+      const angle = startAngle + (index * 2 * Math.PI / 3);
+      dot.setAttribute('cx', String(180 + (84 * Math.cos(angle))));
+      dot.setAttribute('cy', String(120 + (84 * Math.sin(angle))));
+    });
+  };
+  const entranceDurations = [1500, 1400, 1400, 1600, 1400, 4286];
+
+  const completeEntrance = (card) => {
+    const art = card.querySelector('.update-art');
+    if (!art) return;
+    const index = Number(card.dataset.updateCardIndex);
+    window.clearTimeout(entranceTimers.get(index));
+    entranceTimers.delete(index);
+    art.classList.remove('is-entering');
+    art.classList.add('is-constructed', 'is-looping');
+  };
+
+  const activateCardAnimation = (card) => {
+    const art = card.querySelector('.update-art');
+    if (!art) return;
+    const index = Number(card.dataset.updateCardIndex);
+    if (viewedCards.has(index)) {
+      art.classList.remove('is-entering');
+      art.classList.add('is-constructed', 'is-looping');
+      return;
+    }
+    viewedCards.add(index);
+    art.classList.remove('is-constructed', 'is-looping');
+    art.classList.add('is-entering');
+    entranceTimers.set(index, window.setTimeout(() => {
+      if (art.classList.contains('is-entering')) completeEntrance(card);
+    }, entranceDurations[index]));
+  };
 
   const syncCarousel = (animate = true, dragOffset = 0) => {
     const card = cards[activeCard];
@@ -55,8 +94,16 @@
     previous.disabled = activeCard === 0;
     next.disabled = activeCard === cards.length - 1;
   };
-  const selectCard = (index) => { activeCard = Math.max(0, Math.min(cards.length - 1, index)); syncCarousel(); };
-  const applyLanguage = (nextLanguage, { persist = true, emit = true } = {}) => {
+  const selectCard = (index) => {
+    const nextCard = Math.max(0, Math.min(cards.length - 1, index));
+    if (nextCard === activeCard) return;
+    const previousCard = cards[activeCard];
+    if (previousCard.querySelector('.update-art')?.classList.contains('is-entering')) completeEntrance(previousCard);
+    activeCard = nextCard;
+    syncCarousel();
+    activateCardAnimation(cards[activeCard]);
+  };
+  const applyLanguage = (nextLanguage, { emit = true } = {}) => {
     const current = nextLanguage === 'ar' ? 'ar' : 'en';
     const utility = utilityCopy[current];
     root.lang = current; root.dir = current === 'ar' ? 'rtl' : 'ltr'; input.lang = current; input.dir = current === 'ar' ? 'rtl' : 'ltr';
@@ -75,7 +122,7 @@
 
   previous.addEventListener('click', () => selectCard(activeCard - 1));
   next.addEventListener('click', () => selectCard(activeCard + 1));
-  viewport.addEventListener('pointerdown', (event) => { if (event.target.closest('button')) return; drag = { id: event.pointerId, startX: event.clientX, delta: 0 }; viewport.setPointerCapture?.(event.pointerId); syncCarousel(false); });
+  viewport.addEventListener('pointerdown', (event) => { if (event.target.closest('button')) return; event.preventDefault(); drag = { id: event.pointerId, startX: event.clientX, delta: 0 }; viewport.setPointerCapture?.(event.pointerId); syncCarousel(false); });
   viewport.addEventListener('pointermove', (event) => { if (!drag || event.pointerId !== drag.id) return; drag.delta = event.clientX - drag.startX; syncCarousel(false, drag.delta); });
   const finishDrag = (event) => { if (!drag || event.pointerId !== drag.id) return; const delta = drag.delta; drag = null; if (Math.abs(delta) >= 42) selectCard(activeCard + ((delta < 0 ? 1 : -1) * (root.lang === 'ar' ? -1 : 1))); else syncCarousel(); };
   viewport.addEventListener('pointerup', finishDrag); viewport.addEventListener('pointercancel', finishDrag);
@@ -83,9 +130,9 @@
   document.addEventListener('pointerdown', (event) => { if (menu.classList.contains('is-open') && !composer.contains(event.target)) setMenu(false); }, { passive: true });
   theme.addEventListener('click', () => applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'));
   language.addEventListener('click', () => applyLanguage(root.lang === 'ar' ? 'en' : 'ar'));
-  window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false, emit: false }); });
+  window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { emit: false }); });
   window.addEventListener('resize', () => syncCarousel(false), { passive: true });
-  applyLanguage(root.lang === 'en' ? 'en' : 'ar', { persist: false, emit: false }); applyTheme('dark'); syncCarousel(false);
+  applyLanguage(root.lang === 'en' ? 'en' : 'ar', { emit: false }); applyTheme('dark'); positionOuterConsultDots(); syncCarousel(false); activateCardAnimation(cards[activeCard]);
   requestAnimationFrame(() => syncCarousel(false));
   document.fonts?.ready.then(() => syncCarousel(false));
   root.classList.remove('s-x-initializing');
