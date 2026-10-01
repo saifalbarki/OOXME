@@ -21,6 +21,7 @@ if (process.env.NODE_ENV !== 'production' && typeof process.loadEnvFile === 'fun
 const pageRoutes = {
   '/': 'main.html',
   '/bm': 'brand.html',
+  '/gallery': 'gallery.html',
   '/space': 'space.html',
   '/update': 'update.html',
   '/consultation': 'consultation.html',

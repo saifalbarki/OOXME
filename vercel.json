@@ -9,6 +9,7 @@
   },
   "rewrites": [
     { "source": "/bm", "destination": "/bm.html" },
+    { "source": "/gallery", "destination": "/gallery.html" },
     { "source": "/space", "destination": "/space.html" },
     { "source": "/update", "destination": "/update.html" },
     { "source": "/consultation", "destination": "/consultation.html" },

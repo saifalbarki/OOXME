@@ -34,7 +34,8 @@
   const successOverlayTitle = page?.querySelector('[data-s-consultation-success-title]');
   const successOverlayInstruction = page?.querySelector('[data-s-consultation-success-instruction]');
   const menuItems = Array.from(page?.querySelectorAll('.s-page__composer-menu-item') || []);
-  if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !theme || !language || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || sections.length !== 2) return;
+  const consultationPricing = globalThis.OOXME_CONSULTATION_PRICING;
+  if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !theme || !language || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
 
   const copy = {
     en: { menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'], ask: 'Ask ooxme', add: 'OOXME character', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' },
@@ -108,7 +109,7 @@
     en: { full: 'Booking received successfully', short: 'Received successfully' },
     ar: { full: 'تم استلام حجزك بنجاح', short: 'استلم بنجاح' }
   };
-  const consultationPrices = new Map([[45, 30], [60, 50], [90, 75], [120, 100]]);
+  const consultationPrices = new Map(Object.entries(consultationPricing.durations).map(([duration, prices]) => [Number(duration), prices.base]));
   const bookingAvailability = { days: [], timesByDate: new Map(), loadingDays: false, loadingDate: '' };
   let discountCode = '';
   let discountQuote = null;
@@ -267,7 +268,25 @@
   };
   const answerFor = (stepId) => booking.answers.find((item) => item.step === stepId);
   const selectedDuration = () => Number(answerFor('duration')?.choice || answerFor('duration')?.value || 0);
-  const currentQuote = () => discountQuote && Number(discountQuote.durationMinutes) === selectedDuration() ? discountQuote : null;
+  const launchQuoteForDuration = (duration) => {
+    const prices = consultationPricing.durations[duration];
+    if (!prices) return null;
+    return {
+      baseAmount: prices.base,
+      discountAmount: prices.base - prices.launch,
+      finalAmount: prices.launch,
+      currency: consultationPricing.currency,
+      durationMinutes: duration,
+      serviceCode: consultationPricing.serviceCode,
+      discountType: 'percentage',
+      discountValue: consultationPricing.launchDiscountPercent
+    };
+  };
+  const currentQuote = () => {
+    const duration = selectedDuration();
+    if (discountCode) return discountQuote && Number(discountQuote.durationMinutes) === duration ? discountQuote : null;
+    return launchQuoteForDuration(duration);
+  };
   const formatMoney = (value) => Number.isFinite(Number(value)) ? `$${Number(value).toFixed(0)}` : '—';
   const renderSummary = () => {
     const language = bookingLanguage();
@@ -278,9 +297,12 @@
       title: 'Consultation Summary', topic: 'Consultation topic', day: 'Selected day', time: 'Selected time', duration: 'Selected duration', pricing: 'Pricing', base: 'Base Price', discount: 'Discount Amount', total: 'Final Total', discountCode: 'Discount Code', discountInput: 'Discount code', placeholder: 'Not selected', codePlaceholder: 'Enter code', apply: 'Apply', applied: 'Discount Applied', applying: 'Checking…', payment: 'Payment', paymentMethod: 'Payment method', zainCash: 'Zain Cash', qi: 'SuperQi', pay: 'Confirm', booking: 'Confirming booking…', bookingError: 'We could not confirm the booking right now.'
     };
     const valueFor = (stepId) => { const answer = answerFor(stepId); return answer ? resolveChoice(answer, language) : labels.placeholder; };
-    const duration = selectedDuration();
-    const baseAmount = currentQuote()?.baseAmount ?? consultationPrices.get(duration);
     const quote = currentQuote();
+    const duration = selectedDuration();
+    const baseAmount = quote?.baseAmount ?? consultationPrices.get(duration);
+    if (quote?.discountType === 'percentage' && Number.isFinite(Number(quote.discountValue))) {
+      labels.discount = ar ? `الخصم (${Number(quote.discountValue)}٪)` : `Discount (${Number(quote.discountValue)}%)`;
+    }
     const discountAmount = quote ? quote.discountAmount : 0;
     const finalAmount = quote ? quote.finalAmount : baseAmount;
     summary.querySelector('[data-s-summary-title]').textContent = labels.title;

@@ -16,18 +16,32 @@ body.s-page:not(.s-page--rpn) .s-page__input-label { grid-column: 2 !important; 
 body.s-page:not(.s-page--rpn) .s-page__composer-menu {
   width: min(72vw, 300px) !important;
   text-align: start;
+  margin-inline: 0 !important;
 }
 
 html[dir="ltr"] body.s-page:not(.s-page--rpn) .s-page__composer-menu {
   left: 0 !important;
   right: auto !important;
   margin-left: 0 !important;
+  transform: translateX(calc(-8px + var(--s-composer-menu-edge-shift, 0px))) !important;
 }
 
 html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__composer-menu {
   left: auto !important;
   right: 0 !important;
   margin-left: 0 !important;
+  transform: translateX(calc(8px + var(--s-composer-menu-edge-shift, 0px))) !important;
+}
+
+html[dir] body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
+  transform: translateX(var(--s-composer-menu-edge-shift, 0px)) !important;
+  opacity: 1;
+  transition: opacity .26s ease-in-out, transform .26s ease-in-out, visibility 0s linear 0s;
+}
+
+body.s-page:not(.s-page--rpn) .s-page__composer-menu {
+  will-change: transform, opacity;
+  transition: opacity .26s ease-in-out, transform .26s ease-in-out, visibility 0s linear .26s;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {

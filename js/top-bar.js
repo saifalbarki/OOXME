@@ -26,6 +26,11 @@
   const submitButton = composer?.querySelector('button[type="submit"]');
   if (!composer || !addButton || !submitButton) return;
 
+  const unreadIndicator = submitButton.querySelector('.s-page__notification-indicator') || document.createElement('span');
+  unreadIndicator.className = 's-page__notification-indicator';
+  unreadIndicator.setAttribute('aria-hidden', 'true');
+  if (!unreadIndicator.parentElement) submitButton.append(unreadIndicator);
+
   const pulse = () => {
     composer.classList.remove('is-pulsing');
     requestAnimationFrame(() => composer.classList.add('is-pulsing'));
@@ -40,22 +45,158 @@
   const utilities = composer.querySelector('[data-s-send-utilities]');
   const themeUtility = composer.querySelector('[data-s-utility="theme"]');
   const languageUtility = composer.querySelector('[data-s-utility="language"]');
-  const keyForLabel = (label) => ({
-    'The Brand Management': 'brand', 'إدارة العلامة التجارية': 'brand',
-    'The Gallery': 'gallery', 'المعرض': 'gallery',
-    'The Store': 'store', 'المتجر': 'store',
-    'The Consultation': 'consultation', 'الاستشارة': 'consultation',
-    Contact: 'contact', 'تواصل': 'contact'
-  })[label.trim()] || '';
-  const itemForKey = (key, href, disabled = false) => {
-    const item = document.createElement(disabled ? 'button' : 'a');
+  const notificationReadStateKey = 'ooxme-notification-read-state';
+  const notificationId = 'homepage-gallery-announcement-v1';
+  const readNotificationState = () => {
+    try {
+      const stored = JSON.parse(window.localStorage.getItem(notificationReadStateKey) || '{}');
+      return stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {};
+    } catch { return {}; }
+  };
+  const writeNotificationState = (state) => {
+    try { window.localStorage.setItem(notificationReadStateKey, JSON.stringify(state)); } catch { /* Storage may be unavailable. */ }
+  };
+  const isNotificationRead = (id) => Boolean(readNotificationState()[id]);
+  const setNotificationRead = (id, isRead) => {
+    const state = readNotificationState();
+    if (isRead) state[id] = true;
+    else delete state[id];
+    writeNotificationState(state);
+  };
+  const pageFadeTargets = [...document.querySelectorAll(
+    'body.s-page--main > .s-page__content, body.s-page--main > .s-page__conversation, body.s-page--main > .s-page__conversation-final'
+  )];
+  const setPageMenuState = (isOpen) => {
+    if (!document.body.classList.contains('s-page--main')) return;
+    document.body.classList.toggle('is-menu-open', isOpen);
+    pageFadeTargets.forEach((target) => {
+      if ('inert' in target) target.inert = isOpen;
+    });
+  };
+  let measuredMenuWidth = window.innerWidth;
+  let menuGeometryMeasured = false;
+  let menuEdgeMeasured = false;
+  let menuDotMeasured = false;
+  const measureMenuGeometry = () => {
+    if (!menu || menuGeometryMeasured) return;
+    const lowerSectionOneCard = document.querySelector(
+      '.s-page__section-2-image-frame--section-1-copy[data-s-main-section-1-image-card]'
+    );
+    if (!lowerSectionOneCard) return;
+    const menuTop = menu.getBoundingClientRect().top;
+    const lowerCardBottom = lowerSectionOneCard.getBoundingClientRect().bottom;
+    const menuHeight = Math.max(0, lowerCardBottom - menuTop);
+    if (!menuHeight) return;
+    composer.style.setProperty('--s-composer-menu-height', `${menuHeight}px`);
+    menuGeometryMeasured = true;
+  };
+  const measureMenuEdge = () => {
+    if (!menu || menuEdgeMeasured) return;
+    const topBarBounds = composer.getBoundingClientRect();
+    // Measure the menu's untransformed containing block. Reading the menu's
+    // rect during its opening transition would include an intermediate slide
+    // and feed that temporary position back into the edge correction.
+    const menuParentBounds = menu.offsetParent?.getBoundingClientRect() || topBarBounds;
+    const edgeDelta = root.dir === 'rtl'
+      ? topBarBounds.right - menuParentBounds.right
+      : topBarBounds.left - menuParentBounds.left;
+    composer.style.setProperty('--s-composer-menu-edge-shift', `${edgeDelta}px`);
+    menuEdgeMeasured = true;
+  };
+  const measureMenuDotAlignment = () => {
+    if (!menu || menuDotMeasured) return;
+    const topBarX = submitButton.getBoundingClientRect();
+    const menuBounds = menu.getBoundingClientRect();
+    const eyeCircle = composer.querySelector('.s-page__x-top-bar-eyes circle');
+    const eyeBounds = eyeCircle?.getBoundingClientRect();
+    const dotDiameter = eyeBounds?.width || 7.4;
+    const xCenter = topBarX.left + (topBarX.width / 2);
+    const menuEdge = root.dir === 'rtl' ? menuBounds.right : menuBounds.left;
+    const dotRadius = dotDiameter / 2;
+    const dotLeadingGap = Math.max(0, (root.dir === 'rtl' ? menuEdge - xCenter : xCenter - menuEdge) - dotRadius);
+    const menuContentInset = 9;
+    composer.style.setProperty('--s-composer-menu-dot-diameter', `${dotDiameter}px`);
+    composer.style.setProperty('--s-composer-menu-dot-gap', `${dotLeadingGap}px`);
+    composer.style.setProperty('--s-composer-menu-dot-item-padding', `${Math.max(0, dotLeadingGap + dotRadius - menuContentInset)}px`);
+    menuDotMeasured = true;
+  };
+  const createMenuIcon = (kind = 'dot') => {
+    const icon = document.createElement('span');
+    icon.classList.add('s-page__composer-menu-icon');
+    icon.setAttribute('aria-hidden', 'true');
+    if (kind === 'arrow') {
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      arrow.setAttribute('class', 's-page__composer-menu-icon-arrow');
+      arrow.setAttribute('viewBox', '0 0 11 16');
+      arrow.setAttribute('fill', 'none');
+      arrow.setAttribute('focusable', 'false');
+      arrow.setAttribute('aria-hidden', 'true');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M2.5 3.5 7.5 8 2.5 12.5');
+      arrow.append(path);
+      icon.append(arrow);
+      return icon;
+    }
+    const dot = document.createElement('span');
+    dot.className = 's-page__composer-menu-icon-dot';
+    dot.setAttribute('aria-hidden', 'true');
+    icon.append(dot);
+    return icon;
+  };
+  let notificationRead = isNotificationRead(notificationId);
+  const syncNotificationIndicator = ({ pulse: shouldPulse = false } = {}) => {
+    unreadIndicator.classList.toggle('is-hidden', notificationRead);
+    if (!notificationRead && shouldPulse) {
+      unreadIndicator.classList.remove('is-pulsing');
+      requestAnimationFrame(() => unreadIndicator.classList.add('is-pulsing'));
+    }
+  };
+  syncNotificationIndicator({ pulse: true });
+  const menuMotionDuration = 260;
+  const createNotification = () => {
+    const notification = document.createElement('button');
+    notification.type = 'button';
+    notification.className = 's-page__composer-menu-notification';
+    notification.dataset.sMenuKey = 'notification';
+    notification.dataset.sNotificationId = notificationId;
+    notification.dataset.sNotificationIndex = '0';
+    if (notificationRead) notification.classList.add('is-read');
+    const divider = document.createElement('span');
+    divider.className = 's-page__composer-menu-notification-divider';
+    divider.dataset.sNotificationIndex = '0';
+    divider.setAttribute('aria-hidden', 'true');
+    const titleRow = document.createElement('span');
+    titleRow.className = 's-page__composer-menu-notification-title-row';
+    titleRow.append(createMenuIcon());
+    const title = document.createElement('span');
+    title.className = 's-page__composer-menu-notification-title';
+    const description = document.createElement('span');
+    description.className = 's-page__composer-menu-notification-description';
+    titleRow.append(title);
+    const content = document.createElement('span');
+    content.className = 's-page__composer-menu-notification-content';
+    content.append(titleRow, description);
+    notification.append(content);
+    const language = root.lang === 'en' ? 'en' : 'ar';
+    title.textContent = language === 'en' ? 'Seen Our Gallery?' : 'هل رأيتم معرض اعمالنا؟';
+    description.textContent = language === 'en'
+      ? 'Our gallery is now live, featuring selected brands and identities we’ve created.'
+      : 'افتتحنا اليوم معرض اعمالنا، لتشاهدوا مجموعة من العلامات والهويات التي عملنا عليها.';
+    return { divider, notification };
+  };
+  const itemForKey = (key, href, disabled = false, buttonOnly = false) => {
+    const isAction = key === 'language' || key === 'appearance';
+    const item = document.createElement(disabled || isAction || buttonOnly ? 'button' : 'a');
     item.className = 's-page__composer-menu-item';
     item.dataset.sMenuKey = key;
-    if (disabled) {
+    if (disabled || isAction || buttonOnly) {
       item.type = 'button';
-      item.disabled = true;
-      item.setAttribute('aria-disabled', 'true');
+      if (disabled) {
+        item.disabled = true;
+        item.setAttribute('aria-disabled', 'true');
+      }
     } else item.href = href;
+    if (!isAction) item.append(createMenuIcon('arrow'));
     const label = document.createElement('span');
     label.className = 's-page__composer-menu-label';
     item.append(label);
@@ -65,52 +206,41 @@
     if (!menu) return;
     menu.setAttribute('role', 'navigation');
     menu.setAttribute('aria-label', root.lang === 'ar' ? 'التنقل الرئيسي' : 'Main navigation');
-    const found = new Map();
-    [...menu.querySelectorAll('.s-page__composer-menu-item')].forEach((item) => {
-      const label = item.querySelector('.s-page__composer-menu-label');
-      const key = item.dataset.sMenuKey || keyForLabel(label?.textContent || '');
-      if (key) found.set(key, item);
-    });
-
     const items = [
       itemForKey('home', '/'),
-      itemForKey('brand', '', true),
-      itemForKey('gallery', '', true),
-      itemForKey('store', '', true),
+      itemForKey('brand', '/bm'),
+      itemForKey('gallery', '/gallery'),
+      itemForKey('store', '', false, true),
       itemForKey('consultation', '/consultation'),
-      itemForKey('contact', document.body.classList.contains('s-page--main') ? '#contact' : '/?section=contact')
+      itemForKey('contact', document.body.classList.contains('s-page--main') ? '#contact' : '/?section=contact'),
+      itemForKey('language'),
+      itemForKey('appearance')
     ];
     const language = root.lang === 'en' ? 'en' : 'ar';
     const menuLabels = {
-      en: { home: 'Home', brand: 'The Brand Management', gallery: 'The Gallery', store: 'The Store', consultation: 'The Consultation', contact: 'Contact' },
-      ar: { home: 'الرئيسية', brand: 'إدارة العلامة التجارية', gallery: 'المعرض', store: 'المتجر', consultation: 'الاستشارة', contact: 'تواصل' }
+      en: { home: 'Home', brand: 'Brand Management', gallery: 'Gallery', store: 'Store', consultation: 'Consultation', contact: 'Contact', language: 'Language', appearance: 'Appearance' },
+      ar: { home: 'الرئيسية', brand: 'إدارة العلامة التجارية', gallery: 'المعرض', store: 'المتجر', consultation: 'الاستشارة', contact: 'تواصل', language: 'اللغة', appearance: 'المظهر' }
     };
     items.forEach((item) => {
       const key = item.dataset.sMenuKey;
-      const oldItem = found.get(key);
-      const lock = oldItem?.querySelector('.s-page__x-menu-lock');
-      if (lock && (key === 'brand' || key === 'gallery')) item.append(lock.cloneNode(true));
-      if (key === 'store') {
-        const storeLock = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        storeLock.setAttribute('class', 's-page__x-menu-lock');
-        storeLock.setAttribute('viewBox', '0 0 16 16');
-        storeLock.setAttribute('aria-hidden', 'true');
-        storeLock.setAttribute('focusable', 'false');
-        const shackle = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        shackle.setAttribute('class', 's-page__x-menu-lock-shackle');
-        shackle.setAttribute('d', 'M4.5 7V4.75a3.5 3.5 0 0 1 7 0V7');
-        const body = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        body.setAttribute('class', 's-page__x-menu-lock-body');
-        body.setAttribute('x', '2.5'); body.setAttribute('y', '7'); body.setAttribute('width', '11'); body.setAttribute('height', '7'); body.setAttribute('rx', '1.5');
-        storeLock.append(shackle, body);
-        item.append(storeLock);
-      }
       item.querySelector('.s-page__composer-menu-label').textContent = menuLabels[language][key];
     });
-    menu.replaceChildren(...items);
+    const optionList = document.createElement('div');
+    optionList.className = 's-page__composer-menu-options';
+    optionList.append(...items);
+    const notificationArea = document.createElement('div');
+    notificationArea.className = 's-page__composer-menu-notification-area';
+    const notificationParts = createNotification();
+    notificationArea.append(notificationParts.divider, notificationParts.notification);
+    menu.replaceChildren(optionList, notificationArea);
+  };
+  const markNotificationUnread = () => {
+    notificationRead = false;
+    setNotificationRead(notificationId, false);
+    syncNotificationIndicator({ pulse: true });
+    normalizeMenu();
   };
 
-  let closeTimer = 0;
   let menuExpanded = false;
   const updateMenuTriggerLabel = () => {
     const labels = root.lang === 'ar'
@@ -118,38 +248,41 @@
       : { open: 'Open navigation menu', close: 'Close navigation menu' };
     submitButton.setAttribute('aria-label', menuExpanded ? labels.close : labels.open);
   };
+  const updateMenuLayoutMode = () => {
+    if (!menu) return;
+    const options = menu.querySelector('.s-page__composer-menu-options');
+    if (!options) return;
+    menu.classList.remove('is-two-column');
+    if (options.scrollHeight > options.clientHeight + 1) menu.classList.add('is-two-column');
+  };
   const setMenuOpen = (open) => {
-    window.clearTimeout(closeTimer);
     menuExpanded = open;
     if (open) {
       normalizeMenu();
-      composer.style.setProperty('--s-composer-menu-height', `${menu?.offsetHeight || 0}px`);
+      setPageMenuState(true);
       menu?.classList.add('is-open');
       menu?.setAttribute('aria-hidden', 'false');
       if (menu) menu.inert = false;
-      utilities?.classList.add('is-open');
-      utilities?.setAttribute('aria-hidden', 'false');
-      if (utilities) utilities.inert = false;
+      measureMenuGeometry();
+      requestAnimationFrame(() => {
+        measureMenuEdge();
+        requestAnimationFrame(measureMenuDotAlignment);
+        requestAnimationFrame(updateMenuLayoutMode);
+      });
       submitButton.classList.add('is-active');
       submitButton.setAttribute('aria-expanded', 'true');
       updateMenuTriggerLabel();
       return;
     }
+    setPageMenuState(false);
     submitButton.classList.remove('is-active');
     submitButton.setAttribute('aria-expanded', 'false');
     updateMenuTriggerLabel();
-    composer.style.removeProperty('--s-composer-menu-height');
-    closeTimer = window.setTimeout(() => {
-      menu?.classList.remove('is-open');
-      menu?.setAttribute('aria-hidden', 'true');
-      if (menu) menu.inert = true;
-      utilities?.classList.remove('is-open');
-      utilities?.setAttribute('aria-hidden', 'true');
-      if (utilities) utilities.inert = true;
-      closeTimer = 0;
-    }, 60);
+    menu?.classList.remove('is-open');
+    menu?.setAttribute('aria-hidden', 'true');
+    if (menu) menu.inert = true;
   };
-  window.OOXMEHeader = { setMenuOpen, normalizeMenu };
+  window.OOXMEHeader = { setMenuOpen, normalizeMenu, markNotificationUnread };
 
   if (menu) {
     menu.id ||= 'ooxme-primary-menu';
@@ -159,11 +292,90 @@
     if (utilities) utilities.inert = true;
     normalizeMenu();
     menu.addEventListener('pointerdown', (event) => {
+      const notification = event.target.closest('.s-page__composer-menu-notification');
+      if (notification) {
+        notification.classList.add('is-active');
+        window.setTimeout(() => notification.classList.remove('is-active'), 120);
+        return;
+      }
       const item = event.target.closest('.s-page__composer-menu-item');
       if (!item || item.disabled) return;
+      if (item.dataset.sMenuKey === 'store') return;
       item.classList.add('is-active');
       window.setTimeout(() => item.classList.remove('is-active'), 120);
     }, { passive: true });
+    menu.addEventListener('click', (event) => {
+      const notification = event.target.closest('.s-page__composer-menu-notification');
+      if (notification) {
+        event.preventDefault();
+        event.stopPropagation();
+        notificationRead = true;
+        setNotificationRead(notificationId, true);
+        syncNotificationIndicator();
+        notification.classList.add('is-read');
+        setMenuOpen(false);
+        const gallery = document.querySelector('[data-s-gallery-preview]');
+        if (gallery) {
+          const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          let focused = false;
+          const restartPreview = () => {
+            if (focused) return;
+            focused = true;
+            window.OOXMEGalleryPreview?.restart?.();
+          };
+          const focusGallery = () => {
+            gallery.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
+            if (reducedMotion) restartPreview();
+            else {
+              gallery.addEventListener('scrollend', restartPreview, { once: true });
+              window.setTimeout(restartPreview, 600);
+            }
+          };
+          window.setTimeout(focusGallery, menuMotionDuration);
+        } else {
+          // The notification always targets the Homepage Gallery Preview.
+          // On internal routes, complete the shared menu close before routing
+          // so the destination uses the Homepage's own section geometry.
+          window.setTimeout(() => window.location.assign('/?section=gallery'), menuMotionDuration);
+        }
+        return;
+      }
+      const item = event.target.closest('.s-page__composer-menu-item');
+      const action = item?.dataset.sMenuKey;
+      if (!item || item.disabled) return;
+      if (['language', 'appearance'].includes(action)) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (action === 'language') languageUtility?.click();
+        else themeUtility?.click();
+        return;
+      }
+      if (action === 'store') {
+        event.preventDefault();
+        event.stopPropagation();
+        const arrow = item.querySelector('.s-page__composer-menu-icon-arrow');
+        if (arrow) {
+          arrow.getAnimations().forEach((animation) => animation.cancel());
+          arrow.animate([
+            { translate: '0 0' },
+            { translate: '4px 0' },
+            { translate: '-4px 0' },
+            { translate: '2px 0' },
+            { translate: '0 0' }
+          ], { duration: 220, easing: 'ease-in-out', fill: 'none' });
+        }
+        return;
+      }
+      if (!(item instanceof HTMLAnchorElement) || !item.href) {
+        setMenuOpen(false);
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      setMenuOpen(false);
+      const destination = item.href;
+      window.setTimeout(() => window.location.assign(destination), menuMotionDuration);
+    });
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape' || !menu.classList.contains('is-open')) return;
       setMenuOpen(false);
@@ -182,16 +394,36 @@
     if (composer.contains(event.target)) return;
     setMenuOpen(false);
   }, { passive: true });
-  window.addEventListener('resize', () => { if (menu?.classList.contains('is-open')) setMenuOpen(true); }, { passive: true });
+  window.addEventListener('resize', () => {
+    if (window.innerWidth === measuredMenuWidth) return;
+    measuredMenuWidth = window.innerWidth;
+    menuGeometryMeasured = false;
+    menuEdgeMeasured = false;
+    menuDotMeasured = false;
+    if (menu?.classList.contains('is-open')) setMenuOpen(true);
+    requestAnimationFrame(updateMenuLayoutMode);
+  }, { passive: true });
 
   const persistCurrentLanguage = () => {
     const current = root.lang === 'en' ? 'en' : 'ar';
     try { window.localStorage.setItem(languageStorageKey, current); } catch { /* Storage may be unavailable. */ }
     root.dir = current === 'ar' ? 'rtl' : 'ltr';
+    menuEdgeMeasured = false;
+    menuDotMeasured = false;
     updateAddLabel();
     updateMenuTriggerLabel();
+  requestAnimationFrame(() => requestAnimationFrame(measureMenuGeometry));
     normalizeMenu();
     window.setTimeout(updateMenuTriggerLabel, 0);
+    if (menu?.classList.contains('is-open')) {
+      requestAnimationFrame(() => {
+        measureMenuEdge();
+        requestAnimationFrame(() => {
+          measureMenuDotAlignment();
+          updateMenuLayoutMode();
+        });
+      });
+    }
   };
   new MutationObserver(persistCurrentLanguage).observe(root, { attributes: true, attributeFilter: ['lang'] });
   window.addEventListener('storage', (event) => {

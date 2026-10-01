@@ -6,6 +6,7 @@
   const composer = document.querySelector('[data-s-composer]');
   const composerMenu = document.querySelector('[data-s-composer-menu]');
   const sendUtilities = document.querySelector('[data-s-send-utilities]');
+  const sendStatusUtility = document.querySelector('[data-s-utility="status"]');
   const sendThemeUtility = document.querySelector('[data-s-utility="theme"]');
   const sendLanguageUtility = document.querySelector('[data-s-utility="language"]');
   const addButton = document.querySelector('.s-page__add');
@@ -13,88 +14,102 @@
   const submitButton = composer?.querySelector('button[type="submit"]');
   const logoParticleField = document.querySelector('[data-s-logo-particles]');
   const logoParticleCanvas = document.querySelector('[data-s-logo-particle-canvas]');
+  const imageFrame = document.querySelector('[data-s-image-frame]');
+  const imageCopy = document.querySelector('[data-s-image-copy]');
+  const imageMedia = imageFrame?.querySelector('[data-s-flow-item]');
+  const numbersMetrics = document.querySelector('[data-s-numbers-metrics]');
+  const metricsMajorSection = numbersMetrics?.closest('[data-s-major-section]');
+  const numberMetricItems = Array.from(document.querySelectorAll('[data-s-number-metric]'));
+  const squareLogoStage = document.querySelector('[data-s-square-logo-stage]');
   const firstGroup = document.querySelector('[data-s-first-group]');
+  const firstTypewriterTitle = document.querySelector('[data-s-first-typewriter]');
+  const firstTypewriterOutput = document.querySelector('[data-s-first-typewriter-output]');
   const nextImageTextGroup = document.querySelector('[data-s-copy-group="1"]');
   const sectionTwoTextGroups = Array.from(document.querySelectorAll('[data-s-section-2-text]'));
-  const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]'));
+  const majorSections = Array.from(document.querySelectorAll('[data-s-major-section]:not([data-s-gallery-preview])'));
   const galleryPreview = document.querySelector('[data-s-gallery-preview]');
   const getNavigableMajorSections = () => majorSections.filter((section) => getComputedStyle(section).display !== 'none');
+  const mainVisibleContentSelectors = [
+    ['.s-page__section-2-image-frame--section-1-copy', '.s-page__section-3-image-frame--section-1-copy'],
+    ['.s-page__group--section-4 .s-page__group-title', '.s-page__group--section-4 .s-page__group-description', '.s-page__number-metric'],
+    ['.s-page__flow-group--section-5-text .s-page__group-title', '.s-page__flow-group--section-5-text .s-page__group-description', '.s-page__closed-notice--section-5', '.s-page__marquee--section-5'],
+    ['.s-page__flow-group--section-6-text .s-page__group-title', '.s-page__flow-group--section-6-text .s-page__group-description', '.s-page__closed-notice--section-6', '.s-page__square-logo-stage'],
+    ['.s-page__contact-consultation', '.s-page__contact-separator', '.s-page__contact-button', '.s-page__legal-link', '.s-page__rights-copy']
+  ];
   let mainSpacingFrame = 0;
   const scheduleMainContentSpacing = () => {
     if (!page?.classList.contains('s-page--main') || mainSpacingFrame) return;
     mainSpacingFrame = window.requestAnimationFrame(() => {
       mainSpacingFrame = 0;
-      const x = Number.parseFloat(getComputedStyle(content).paddingInlineStart) || 16;
-      const sectionOne = majorSections[0];
-      const gallery = document.querySelector('[data-s-gallery-preview]');
-      const contact = document.querySelector('.s-page__major-section--contact');
-      const visibleBounds = (elements) => elements.map((element) => element.getBoundingClientRect())
-        .filter((rect) => rect.width > 0 && rect.height > 0);
-      if (!sectionOne || !gallery || !contact) return;
+      const readBounds = (section, selectors) => {
+        const rects = selectors.flatMap((selector) => Array.from(section.querySelectorAll(selector)))
+          .filter((element) => {
+            const style = getComputedStyle(element);
+            return style.display !== 'none' && style.visibility !== 'hidden';
+          })
+          .map((element) => element.getBoundingClientRect())
+          .filter((rect) => rect.width > 0 && rect.height > 0);
+        if (!rects.length) return null;
+        return {
+          top: Math.min(...rects.map((rect) => rect.top + window.scrollY)),
+          bottom: Math.max(...rects.map((rect) => rect.bottom + window.scrollY))
+        };
+      };
+      const groups = majorSections
+        .filter((section) => getComputedStyle(section).display !== 'none')
+        .map((section) => {
+          const selectorSet = section.classList.contains('s-page__major-section--section-4') ? mainVisibleContentSelectors[1]
+            : section.classList.contains('s-page__major-section--section-5') ? mainVisibleContentSelectors[2]
+              : section.classList.contains('s-page__major-section--section-6') ? mainVisibleContentSelectors[3]
+                : section.classList.contains('s-page__major-section--contact') ? mainVisibleContentSelectors[4]
+                  : section.classList.contains('s-page__major-section--transition-frame')
+                    ? (section.classList.contains('s-page__major-section--section-2') || section.classList.contains('s-page__major-section--section-3') ? [] : mainVisibleContentSelectors[0]) : [];
+          const bounds = readBounds(section, selectorSet);
+          return bounds ? { section, selectors: selectorSet, ...bounds } : null;
+        })
+        .filter(Boolean);
+      if (groups.length < 2) return;
+      const description = document.querySelector('.s-page__contact-consultation-text .s-page__group-description');
+      const x = description ? parseFloat(getComputedStyle(description).marginTop) * 2 : 16;
+      // /space uses the major content gap of 4X in landscape and 8X in
+      // portrait. Keep the homepage on that same responsive cadence.
+      const targetGap = x * 4 * (window.matchMedia('(orientation: portrait)').matches ? 2 : 1);
+      groups[0].section.style.marginBlockStart = '0px';
+      for (let index = 1; index < groups.length; index += 1) {
+        const previous = readBounds(groups[index - 1].section, groups[index - 1].selectors);
+        const next = readBounds(groups[index].section, groups[index].selectors);
+        if (!previous || !next) continue;
+        const currentMargin = Number.parseFloat(getComputedStyle(groups[index].section).marginBlockStart) || 0;
+        groups[index].section.style.marginBlockStart = `${currentMargin + targetGap - (next.top - previous.bottom)}px`;
+      }
+      const finalGroup = groups[groups.length - 1];
+      // Margins above the final frame move its content after the first
+      // measurement, so read the final bounds again before setting the tail.
+      const finalBounds = readBounds(finalGroup.section, finalGroup.selectors);
+      const finalContentBottom = finalBounds?.bottom || 0;
+      const frameBottom = finalGroup.section.getBoundingClientRect().bottom + window.scrollY;
+      finalGroup.section.style.marginBlockEnd = `${x - (frameBottom - finalContentBottom)}px`;
 
-      gallery.style.marginBlockStart = '0px';
-      contact.style.marginBlockStart = '0px';
-      const sectionOneVisibleBounds = visibleBounds(
-        Array.from(sectionOne.querySelectorAll('[data-s-main-section-1-image-card]'))
-      );
-      if (!sectionOneVisibleBounds.length) return;
-      const sectionOneBottom = Math.max(...sectionOneVisibleBounds.map((rect) => rect.bottom + window.scrollY));
-      const galleryStage = gallery.querySelector('[data-s-gallery-preview-action]');
-      const galleryTop = galleryStage.getBoundingClientRect().top + window.scrollY;
-      gallery.style.marginBlockStart = `${8 * x - (galleryTop - sectionOneBottom)}px`;
-
-      const activeCopy = gallery.querySelector('.s-page__gallery-preview-copy > div:not([aria-hidden="true"])') || gallery.querySelector('.s-page__gallery-preview-copy > div');
-      const cta = activeCopy?.querySelector('.s-page__gallery-preview-cta');
-      const consultationCta = contact.querySelector('[data-s-contact-consultation-cta]');
-      const consultationDotField = contact.querySelector('[data-s-consultation-dot-field]');
-      const consultationText = contact.querySelector('.s-page__contact-consultation-text');
-      if (consultationCta && consultationDotField) {
-        const consultationFieldWidth = consultationCta.getBoundingClientRect().width;
-        const consultationDotDiameter = 14.8;
-        const originalGridStep = consultationFieldWidth / 8;
-        const originalRowGap = Math.max(0, originalGridStep - consultationDotDiameter);
-        const consultationFieldHeight = (consultationDotDiameter * 3) + (originalRowGap * 2);
-        consultationDotField.style.setProperty('--s-consultation-dot-size', `${consultationFieldWidth}px`);
-        consultationDotField.style.setProperty('--s-consultation-dot-height', `${consultationFieldHeight}px`);
-        const formationCenterX = consultationFieldWidth / 2;
-        const formationCenterY = consultationFieldHeight / 2;
-        consultationDotField.querySelectorAll('.s-page__consultation-dot').forEach((dot) => {
-          const row = Number(dot.dataset.dotRow) || 0;
-          dot.style.setProperty('--dot-top', `${(consultationDotDiameter / 2) + (row * (consultationDotDiameter + originalRowGap))}px`);
-          const formationIndex = Number(dot.dataset.formationIndex);
-          if (Number.isInteger(formationIndex)) {
-            const formationColumn = (formationIndex % 3) - 1;
-            const formationRow = Math.floor(formationIndex / 3) - 1;
-            dot.style.setProperty('--formation-left', `${formationCenterX + (formationColumn * originalGridStep)}px`);
-            dot.style.setProperty('--formation-top', `${formationCenterY + (formationRow * originalGridStep)}px`);
-          }
-        });
-        if (consultationText) {
-          const contactRect = contact.getBoundingClientRect();
-          const textRect = consultationText.getBoundingClientRect();
-          const fieldHeight = consultationDotField.getBoundingClientRect().height;
-          consultationDotField.style.setProperty(
-            '--s-consultation-dot-top',
-            `${textRect.top - contactRect.top - fieldHeight - x}px`
-          );
+      // The Gallery Preview is intentionally outside the locked major-section
+      // manager. Reserve the same major-group cadence before the next visible
+      // homepage composition so the new content cannot overlap existing work.
+      const galleryPreviewSection = document.querySelector('[data-s-gallery-preview]');
+      const firstVisibleAfterGallery = majorSections.find((section) => section.classList.contains('s-page__major-section--section-4'));
+      if (galleryPreviewSection && firstVisibleAfterGallery) {
+        const galleryBottom = galleryPreviewSection.getBoundingClientRect().bottom + window.scrollY;
+        const nextTop = firstVisibleAfterGallery.getBoundingClientRect().top + window.scrollY;
+        const galleryGap = x * 4 * (window.matchMedia('(orientation: portrait)').matches ? 2 : 1);
+        const overlapCorrection = Math.max(0, galleryBottom + galleryGap - nextTop);
+        if (overlapCorrection > 0) {
+          const currentMargin = Number.parseFloat(getComputedStyle(firstVisibleAfterGallery).marginBlockStart) || 0;
+          firstVisibleAfterGallery.style.marginBlockStart = `${currentMargin + overlapCorrection}px`;
         }
-      }
-      if (cta && consultationCta) {
-        const consultationRect = consultationCta.getBoundingClientRect();
-        cta.style.inlineSize = `${consultationRect.width}px`;
-        cta.style.translate = '50% 0';
-        const positionedRect = cta.getBoundingClientRect();
-        const centerOffset = ((consultationRect.left + consultationRect.right) - (positionedRect.left + positionedRect.right)) / 2;
-        cta.style.translate = `calc(50% + ${centerOffset}px) 0`;
-      }
-      const consultationStart = consultationDotField || contact.querySelector('[data-s-contact-consultation] .s-page__contact-consultation-text .s-page__group-title');
-      if (cta && consultationStart) {
-        const ctaBottom = cta.getBoundingClientRect().bottom + window.scrollY;
-        const consultationTop = consultationStart.getBoundingClientRect().top + window.scrollY;
-        contact.style.marginBlockStart = `${8 * x - (consultationTop - ctaBottom)}px`;
       }
     });
   };
+  const flowGroups = Array.from(document.querySelectorAll('[data-s-flow-group]'));
+  const flowItems = flowGroups.flatMap((group) => Array.from(group.querySelectorAll('[data-s-flow-item]')))
+    .filter((item) => item !== imageCopy && item !== imageMedia);
   const localizedGroups = Array.from(document.querySelectorAll('[data-s-copy-group]'))
     .sort((first, second) => Number(first.dataset.sCopyGroup) - Number(second.dataset.sCopyGroup));
   const conversation = document.querySelector('[data-s-conversation]');
@@ -111,348 +126,80 @@
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   document.documentElement.classList.add('s-x-discrete-sections', 's-main-free-scroll');
 
-  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !localizedGroups.length) return;
-
-  // Homepage ordinary content uses one shared reveal. The Gallery card stage
-  // and Consultation dot field keep their dedicated motion systems.
-  const homepageRevealTargets = [
-    galleryPreview?.querySelector('.s-page__gallery-preview-copy')
-  ].filter(Boolean);
-  homepageRevealTargets.forEach((target) => target.classList.add('s-page__home-reveal'));
-  if (homepageRevealTargets.length) {
-    if (reducedMotion.matches || !('IntersectionObserver' in window)) {
-      homepageRevealTargets.forEach((target) => target.classList.add('is-home-revealed'));
-    } else {
-      const homepageRevealObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-home-revealed');
-          observer.unobserve(entry.target);
-        });
-      }, { threshold: 0.15 });
-      homepageRevealTargets.forEach((target) => homepageRevealObserver.observe(target));
-    }
-  }
-
-  const consultationDotField = document.querySelector('[data-s-consultation-dot-field]');
-  const consultationText = document.querySelector('[data-s-contact-consultation] .s-page__contact-consultation-text');
-  const consultationGroup = document.querySelector('.s-page__flow-group--section-8-contact');
-  if (consultationDotField && consultationText) {
-    const consultationAction = consultationGroup?.querySelector('.s-page__contact-consultation-action');
-    const consultationSeparator = consultationGroup?.querySelector('.s-page__contact-separator');
-    const consultationRemainder = [
-      ...Array.from(consultationGroup?.querySelectorAll('.s-page__contact-button, .s-page__legal-link, .s-page__rights-copy') || [])
-    ].filter(Boolean);
-    const revealContactRemainder = () => {
-      consultationRemainder.forEach((element) => element.classList.add('is-contact-revealed'));
-    };
-    // Three-row source grid: nine columns, three evenly spaced rows.
-    // These fixed indices intentionally keep the red activation pattern
-    // irregular without introducing runtime randomness.
-    const selectedDotIndices = [18, 10, 2, 21, 4, 14, 24, 7, 8];
-    const selectedDots = [];
-    const initialFieldWidth = consultationGroup?.querySelector('[data-s-contact-consultation-cta]')?.getBoundingClientRect().width || 220;
-    const initialRowGap = Math.max(0, (initialFieldWidth / 8) - 14.8);
-    for (let index = 0; index < 27; index += 1) {
-      const dot = document.createElement('span');
-      const gridX = index % 9;
-      const gridY = Math.floor(index / 9);
-      dot.className = 's-page__consultation-dot';
-      dot.dataset.dotRow = String(gridY);
-      dot.style.setProperty('--dot-left', `${gridX * 12.5}%`);
-      dot.style.setProperty('--dot-top', `${(14.8 / 2) + (gridY * (14.8 + initialRowGap))}px`);
-      const selectedIndex = selectedDotIndices.indexOf(index);
-      if (selectedIndex >= 0) {
-        dot.classList.add('is-selected');
-        dot.dataset.formationIndex = String(selectedIndex);
-        dot.style.setProperty('--blue-wave-delay', `${[140, 70, 140, 70, 0, 70, 140, 70, 140][selectedIndex]}ms`);
-        selectedDots.push(dot);
-      }
-      consultationDotField.append(dot);
-    }
-    scheduleMainContentSpacing();
-
-    consultationText.classList.add('is-dot-pending');
-    // Contact controls are independent of the Consultation dot timeline.
-    // Make them available immediately so direct Contact navigation never waits
-    // for the title, CTA, or dot sequence.
-    revealContactRemainder();
-
-    const wait = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
-    const nextFrame = () => new Promise((resolve) => window.requestAnimationFrame(resolve));
-    const waitForTransition = (element, properties, fallback) => new Promise((resolve) => {
-      let settled = false;
-      const finish = () => {
-        if (settled) return;
-        settled = true;
-        element.removeEventListener('transitionend', onEnd);
-        window.clearTimeout(timeout);
-        resolve();
-      };
-      const onEnd = (event) => {
-        if (event.target === element && properties.includes(event.propertyName)) finish();
-      };
-      const timeout = window.setTimeout(finish, fallback);
-      element.addEventListener('transitionend', onEnd);
-    });
-
-    const showConsultationTitle = () => {
-      consultationText.classList.add('is-title-revealed');
-    };
-    const showConsultationDescription = () => {
-      consultationText.classList.add('is-description-revealed');
-    };
-    const showConsultationRemainder = () => {
-      consultationDotField.classList.add('is-complete');
-      consultationText.classList.remove('is-dot-pending');
-      consultationText.classList.add('is-dot-revealed');
-      consultationAction?.classList.add('is-consultation-revealed');
-    };
-    const showConsultationSeparator = () => {
-      consultationSeparator?.classList.add('is-consultation-revealed');
-    };
-
-    const redIntervals = [150, 125, 105, 90, 78, 67, 57, 49, 42];
-    const blueOrder = [4, 1, 2, 5, 8, 7, 6, 3, 0];
-    const runDotTimeline = async () => {
-      consultationDotField.dataset.dotStage = 'red';
-      let activeRedDot = null;
-      for (let index = 0; index < selectedDots.length; index += 1) {
-        const dot = selectedDots[index];
-        activeRedDot?.classList.remove('is-red-active');
-        dot.classList.add('is-red');
-        dot.classList.add('is-red-active');
-        activeRedDot = dot;
-        await nextFrame();
-        dot.classList.add('is-red-settled');
-        await waitForTransition(dot, ['transform'], 180);
-        if (index < selectedDots.length - 1) await wait(redIntervals[index]);
-      }
-
-      consultationDotField.dataset.dotStage = 'moving';
-      selectedDots.forEach((dot) => dot.classList.remove('is-red-active'));
-      consultationDotField.classList.add('is-organizing', 'is-gathering');
-      await waitForTransition(selectedDots[0], ['top', 'left'], 620);
-
-      consultationDotField.dataset.dotStage = 'red-hold';
-      await wait(220);
-
-      consultationDotField.dataset.dotStage = 'blue';
-      let activeBlueDot = null;
-      for (let index = 0; index < blueOrder.length; index += 1) {
-        const dot = selectedDots[blueOrder[index]];
-        activeBlueDot?.classList.remove('is-blue-active');
-        dot.classList.add('is-blue');
-        dot.classList.add('is-blue-active');
-        activeBlueDot = dot;
-        if (index === 0) showConsultationTitle();
-        if (index === 3) showConsultationDescription();
-        await nextFrame();
-        dot.classList.add('is-blue-settled');
-        await waitForTransition(dot, ['transform', 'background-color'], 280);
-        dot.classList.remove('is-red');
-        if (index < blueOrder.length - 1) await wait([130, 110, 95, 82, 70, 60, 52, 45][index]);
-      }
-      selectedDots.forEach((dot) => dot.classList.remove('is-blue-active'));
-      consultationDotField.classList.add('is-blue-finishing-wave');
-      consultationDotField.dataset.dotStage = 'complete';
-      showConsultationRemainder();
-      if (consultationAction) await waitForTransition(consultationAction, ['opacity'], 520);
-      showConsultationSeparator();
-    };
-
-    let consultationAnimationStarted = false;
-    let consultationRevealCandidate = false;
-    let consultationScrollSettleTimer = 0;
-    const scheduleConsultationReveal = () => {
-      window.clearTimeout(consultationScrollSettleTimer);
-      consultationScrollSettleTimer = window.setTimeout(() => {
-        consultationScrollSettleTimer = 0;
-        if (consultationRevealCandidate) startConsultationDotAnimation();
-      }, 450);
-    };
-    const handleConsultationScroll = () => {
-      if (consultationRevealCandidate && !consultationAnimationStarted) scheduleConsultationReveal();
-    };
-    const handleConsultationScrollEnd = () => {
-      if (consultationRevealCandidate && !consultationAnimationStarted) startConsultationDotAnimation();
-    };
-    const startConsultationDotAnimation = () => {
-      if (consultationAnimationStarted) return;
-      consultationAnimationStarted = true;
-      window.clearTimeout(consultationScrollSettleTimer);
-      window.removeEventListener('scroll', handleConsultationScroll);
-      window.removeEventListener('scrollend', handleConsultationScrollEnd);
-      if (reducedMotion.matches) {
-        consultationDotField.dataset.dotStage = 'complete';
-        consultationDotField.classList.add('is-complete', 'is-organizing', 'is-gathering');
-        selectedDots.forEach((dot) => dot.classList.add('is-blue', 'is-blue-settled'));
-        showConsultationTitle();
-        showConsultationDescription();
-        showConsultationRemainder();
-        showConsultationSeparator();
-        return;
-      }
-      runDotTimeline();
-    };
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver((entries, observer) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        consultationRevealCandidate = true;
-        scheduleConsultationReveal();
-        observer.disconnect();
-      }, { threshold: 0.75, rootMargin: '0px' }).observe(consultationDotField);
-      window.addEventListener('scroll', handleConsultationScroll, { passive: true });
-      window.addEventListener('scrollend', handleConsultationScrollEnd, { passive: true });
-    } else {
-      startConsultationDotAnimation();
-    }
-  }
+  if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !imageFrame || !imageMedia || !imageCopy || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !flowGroups.length || !flowItems.length || !localizedGroups.length) return;
 
   if (galleryPreview) {
     const previewStage = galleryPreview.querySelector('[data-s-gallery-preview-action]');
     const previewCards = Array.from(galleryPreview.querySelectorAll('[data-s-gallery-card]'));
     const previewSets = [
-      ['assets/projects/alfares/10.png', 'assets/projects/alfares/01.png', 'assets/projects/alfares/11.png'],
-      ['assets/projects/alsebteen/10.png', 'assets/projects/alsebteen/03.png', 'assets/projects/alsebteen/11.png'],
-      ['assets/projects/velvet/10.png', 'assets/projects/velvet/01.png', 'assets/projects/velvet/11.png'],
-      ['assets/projects/zone/10.png', 'assets/projects/zone/04.png', 'assets/projects/zone/11.png'],
-      ['assets/projects/sda alrwaq/10.png', 'assets/projects/sda alrwaq/02.png', 'assets/projects/sda alrwaq/11.png']
+      ['assets/projects/alfares/04.png', 'assets/projects/alfares/11.png', 'assets/projects/alfares/10.png'],
+      ['assets/projects/alsebteen/01.png', 'assets/projects/alsebteen/11.png', 'assets/projects/alsebteen/10.png'],
+      ['assets/projects/velvet/01.png', 'assets/projects/velvet/11.png', 'assets/projects/velvet/10.png'],
+      ['assets/projects/zone/04.png', 'assets/projects/zone/11.png', 'assets/projects/zone/10.png'],
+      ['assets/projects/sda alrwaq/04.png', 'assets/projects/sda alrwaq/11.png', 'assets/projects/sda alrwaq/10.png']
     ];
-    const previewImageCache = new Map();
-    const previewDurations = {
-      reveal: 260,
-      open: 420,
-      hold: 500,
-      close: 420
-    };
-    const previewCycleDuration = previewDurations.reveal
-      + previewDurations.open
-      + previewDurations.hold
-      + previewDurations.close;
+    const previewSources = previewSets.flat();
+    const previewTimers = new Set();
     let previewSetIndex = 0;
     let previewStarted = false;
     let previewActive = false;
-    let previewTimer = 0;
-    let previewRunToken = 0;
-    let previewPulseFrame = 0;
-    let previewNextReady = null;
-    let previewPreloadTimer = 0;
 
-    const waitForPreviewImage = (src) => {
-      if (previewImageCache.has(src)) return previewImageCache.get(src);
+    previewSources.forEach((src) => {
       const image = new Image();
       image.decoding = 'async';
-      const promise = new Promise((resolve) => {
-        const finish = () => {
-          Promise.resolve(typeof image.decode === 'function' ? image.decode() : undefined)
-            .catch(() => {})
-            .then(resolve);
-        };
-        image.addEventListener('load', finish, { once: true });
-        image.addEventListener('error', finish, { once: true });
-        image.src = src;
-        if (image.complete) finish();
-      });
-      previewImageCache.set(src, promise);
-      return promise;
+      image.src = src;
+    });
+
+    const clearPreviewTimers = () => {
+      previewTimers.forEach((timer) => window.clearTimeout(timer));
+      previewTimers.clear();
     };
-    const preloadPreviewSet = (index) => Promise.all(previewSets[index].map(waitForPreviewImage));
-    const clearPreviewTimer = () => {
-      if (previewTimer) window.clearTimeout(previewTimer);
-      previewTimer = 0;
-      if (previewPreloadTimer) window.clearTimeout(previewPreloadTimer);
-      previewPreloadTimer = 0;
+    const schedulePreview = (callback, delay) => {
+      const timer = window.setTimeout(() => {
+        previewTimers.delete(timer);
+        callback();
+      }, delay);
+      previewTimers.add(timer);
     };
-    const queuePreview = (callback, delay, token) => {
-      clearPreviewTimer();
-      previewTimer = window.setTimeout(() => {
-        previewTimer = 0;
-        if (token === previewRunToken && previewActive) callback(token);
-      }, reducedMotion.matches ? 0 : delay);
-    };
-    const setPreviewSources = (setIndex) => {
+    const swapPreviewSet = () => {
+      previewSetIndex = (previewSetIndex + 1) % previewSets.length;
       previewCards.forEach((card, index) => {
         const image = card.querySelector('img');
-        if (image && image.src !== new URL(previewSets[setIndex][index], document.baseURI).href) {
-          image.src = previewSets[setIndex][index];
-        }
+        if (image) image.src = previewSets[previewSetIndex][index];
       });
     };
-    const decodePreviewCards = () => Promise.all(previewCards.map((card) => {
-      const image = card.querySelector('img');
-      if (!image) return Promise.resolve();
-      if (typeof image.decode === 'function') return image.decode().catch(() => {});
-      return image.complete
-        ? Promise.resolve()
-        : new Promise((resolve) => image.addEventListener('load', resolve, { once: true }));
-    }));
-    const hidePreviewImmediately = () => {
-      clearPreviewTimer();
-      previewRunToken += 1;
-      previewStage.classList.remove('is-cycling', 'is-fully-hidden');
-      previewNextReady = null;
-    };
-    const beginReveal = async (token) => {
-      if (!previewActive || token !== previewRunToken) return;
-      await preloadPreviewSet(previewSetIndex);
-      if (!previewActive || token !== previewRunToken) return;
-      setPreviewSources(previewSetIndex);
-      await decodePreviewCards();
-      if (!previewActive || token !== previewRunToken) return;
-      previewStage.classList.remove('is-fully-hidden');
-      previewStage.classList.add('is-cycling');
-      previewNextReady = null;
-      previewPreloadTimer = window.setTimeout(() => {
-        previewPreloadTimer = 0;
-        if (previewActive && token === previewRunToken) {
-          previewNextReady = preloadPreviewSet((previewSetIndex + 1) % previewSets.length);
-        }
-      }, reducedMotion.matches ? 0 : previewDurations.reveal + previewDurations.open);
-      queuePreview(beginSwap, previewCycleDuration, token);
-    };
-    const beginSwap = async (token) => {
-      if (!previewActive || token !== previewRunToken) return;
-      const nextIndex = (previewSetIndex + 1) % previewSets.length;
-      previewStage.classList.remove('is-cycling');
-      previewStage.classList.add('is-fully-hidden');
-      await (previewNextReady || preloadPreviewSet(nextIndex));
-      if (!previewActive || token !== previewRunToken) return;
-      previewSetIndex = nextIndex;
-      setPreviewSources(previewSetIndex);
-      await decodePreviewCards();
-      if (!previewActive || token !== previewRunToken) return;
-      previewStage.classList.remove('is-fully-hidden');
-      previewNextReady = null;
-      beginReveal(token);
+    const runPreviewCycle = () => {
+      if (!previewActive || reducedMotion.matches) return;
+      previewStage.classList.add('is-open');
+      schedulePreview(() => {
+        if (!previewActive) return;
+        previewStage.classList.remove('is-open');
+        schedulePreview(() => {
+          if (!previewActive) return;
+          swapPreviewSet();
+          runPreviewCycle();
+        }, 760);
+      }, 1550);
     };
     const startPreview = () => {
-      if (!previewActive) {
-        previewActive = true;
-        const token = ++previewRunToken;
-        preloadPreviewSet(previewSetIndex).then(() => {
-          if (previewActive && token === previewRunToken) beginReveal(token);
-        });
-      }
+      if (previewStarted) return;
       previewStarted = true;
+      previewStage.classList.add('is-visible');
+      previewActive = true;
+      schedulePreview(runPreviewCycle, reducedMotion.matches ? 0 : 520);
     };
     const stopPreview = () => {
       previewActive = false;
-      hidePreviewImmediately();
-    };
-    window.OOXMEGalleryPreview = {
-      restart: () => {
-        previewSetIndex = 0;
-        previewStarted = false;
-        stopPreview();
-        startPreview();
-      }
+      clearPreviewTimers();
+      previewStage.classList.remove('is-open');
     };
     if ('IntersectionObserver' in window) {
       const previewObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             startPreview();
+            previewActive = true;
+            if (!reducedMotion.matches && !previewStage.classList.contains('is-open') && !previewTimers.size) runPreviewCycle();
           } else if (previewStarted) {
             stopPreview();
           }
@@ -462,19 +209,12 @@
     } else {
       startPreview();
     }
-    const pulsePreviewStage = () => {
-      if (reducedMotion.matches) return;
-      if (previewPulseFrame) window.cancelAnimationFrame(previewPulseFrame);
-      previewStage.classList.remove('is-pulsing');
-      previewPulseFrame = window.requestAnimationFrame(() => {
-        previewPulseFrame = 0;
-        previewStage.classList.add('is-pulsing');
-      });
-    };
-    previewStage.addEventListener('pointerdown', pulsePreviewStage, { passive: true });
-    previewStage.addEventListener('animationend', (event) => {
-      if (event.animationName === 's-page-composer-pulse') previewStage.classList.remove('is-pulsing');
+    [previewStage, ...galleryPreview.querySelectorAll('.s-page__gallery-preview-cta')].forEach((target) => {
+      target.addEventListener('pointerdown', () => target.classList.add('is-pressed'), { passive: true });
+      target.addEventListener('pointerup', () => target.classList.remove('is-pressed'), { passive: true });
+      target.addEventListener('pointercancel', () => target.classList.remove('is-pressed'), { passive: true });
     });
+    previewStage.addEventListener('click', () => { window.location.href = '/gallery'; });
   }
 
   const mainSectionOneImageCards = page.classList.contains('s-page--main')
@@ -601,6 +341,10 @@
   const finalRevealDelayMs = 1600;
   const finalMessageDurationMs = 10000;
   const finalFadeOutDurationMs = 320;
+  const metricCountDurationMs = 900;
+  const flowBaselineDurationMs = 1000;
+  const flowMinimumDurationMs = 520;
+  const flowThresholdHysteresisPx = 8;
   const englishReplies = [
     'Sorry, we don’t reply to messages for free.',
     'Hmm... it seems you didn’t read the previous message.',
@@ -632,14 +376,14 @@
   const pageCopy = {
     en: {
       groups: [
-        [],
+        ['Welcome\nOur Next Client'],
         ['Re-engineered\nBuilt for New Terrain', 'Discover Ooxme v4.0 system, designed for engineering, architectural, construction, contracting .. etc'],
         ['The numbers speak\nfor the work', 'Clear results reveal the value\nour work creates across sectors.'],
         ['Striking Designs\nFor Distinctive Projects', 'Thoughtful design shaped with\nprecision to advance your goals.'],
         ['Distinct Identities\nBuilt to Be Remembered', 'Distinct identities that make\nbrands clear, memorable, lasting.'],
         ['Let’s talk\nabout what’s next', 'A focused consultation to understand your business, identify the right direction, and define the next practical step.']
       ],
-      menu: ['Home', 'Brand Management', 'Gallery', 'Store', 'Consultation', 'Contact'],
+      menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'],
       inputPlaceholder: 'Type...',
       ask: 'Ask ooxme',
       addContext: 'Add context',
@@ -655,7 +399,7 @@
     },
     ar: {
       groups: [
-        [],
+        ['مرحبــا\nعميلنا القادم'],
         ['اعادة هندسة\nبني لتضاريس جديدة', 'تعرف على التحديث الرابع لنظام عمل اوكسوم، المخصص للمشاريع الهندسية، المعمارية، الانشائية والمقاولات وشبيهاتها'],
         ['الارقام تتحدث\nعن العمل', 'نتائج واضحة تكشف قيمة عملنا\nوتُبرز أثره في مختلف القطاعات.'],
         ['تصاميم ملفتة\nلمشاريع مميزة', 'تصميم مدروس، ينفذ بدقة\nليخدم أهدافك ويعزز مشروعك.'],
@@ -678,6 +422,60 @@
     }
   };
   const getGroupCopy = (language, groupIndex) => pageCopy[language].groups[groupIndex];
+  const firstTypewriterPhrases = {
+    en: ['Welcome', 'To OOXME', "Iraq's one and only brand management"],
+    ar: ['مرحبـــا', 'فيـ اوكسوم', 'ادارة العلامة التجارية الواحد والوحيد في العراق']
+  };
+  let firstTypewriterTimer = 0;
+  let firstTypewriterRun = 0;
+  const startFirstTypewriter = () => {
+    if (isZPage || !firstTypewriterTitle || !firstTypewriterOutput) return;
+    window.clearTimeout(firstTypewriterTimer);
+    firstTypewriterRun += 1;
+    const run = firstTypewriterRun;
+    const language = document.documentElement.lang === 'ar' ? 'ar' : 'en';
+    const phrases = firstTypewriterPhrases[language];
+    let phraseIndex = 0;
+    firstTypewriterTitle.lang = language;
+    firstTypewriterTitle.dir = 'ltr';
+    firstTypewriterOutput.lang = language;
+    firstTypewriterOutput.dir = language === 'ar' ? 'rtl' : 'ltr';
+    firstTypewriterOutput.textContent = '';
+    firstTypewriterTitle.classList.add('is-typewriter-prelude');
+
+    const schedule = (callback, delay) => {
+      firstTypewriterTimer = window.setTimeout(() => {
+        if (run === firstTypewriterRun) callback();
+      }, delay);
+    };
+
+    const typePhrase = () => {
+      const phrase = phrases[phraseIndex];
+      let characterIndex = 0;
+      firstTypewriterTitle.classList.remove('is-typewriter-prelude');
+      const typeCharacter = () => {
+        characterIndex += 1;
+        firstTypewriterOutput.textContent = phrase.slice(0, characterIndex);
+        if (characterIndex < phrase.length) return schedule(typeCharacter, 52);
+        schedule(erasePhrase, 520);
+      };
+      schedule(typeCharacter, 52);
+    };
+
+    const erasePhrase = () => {
+      const eraseCharacter = () => {
+        const current = firstTypewriterOutput.textContent;
+        firstTypewriterOutput.textContent = current.slice(0, -1);
+        if (current.length > 1) return schedule(eraseCharacter, 32);
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        schedule(typePhrase, 180);
+      };
+      schedule(eraseCharacter, 32);
+    };
+
+    // The cursor blinks exactly twice before the first phrase begins.
+    schedule(typePhrase, 1000);
+  };
   let keyboardFrame = 0;
   let firstGroupBaselineFrame = 0;
   let firstGroupBaselineLocked = false;
@@ -688,9 +486,14 @@
   let zActiveContentIndex = 0;
   let zFaceController = null;
   const secondaryNavPulseFrames = new Map();
+  let composerMenuPulseFrame = 0;
   let addFlashTimer = 0;
+  const menuItemFlashTimers = new Map();
   const sendUtilityPulseFrames = new Map();
+  const marqueeItemPulseFrames = new Map();
+  const squareLogoPulseFrames = new Map();
   const imagePulseFrames = new Map();
+  const lockedNoticeShakeFrames = new Map();
   const pendingReplyTimers = new Set();
   let addRotated = false;
   let initializationReady = false;
@@ -703,6 +506,7 @@
   let pendingFinalRevealTimer = 0;
   let localizedGeometryFrame = 0;
   let portraitSectionLayoutFrame = 0;
+  let sectionFiveMobileGapFrame = 0;
   let portraitSectionLayoutTimer = 0;
   let finalScrollBufferFrame = 0;
   let majorSectionSettleFrame = 0;
@@ -713,6 +517,9 @@
   let majorSectionSettleStableFrames = 0;
   let discreteSectionInputLocked = false;
   let discreteSectionUnlockTimer = 0;
+  let flowFrame = 0;
+  let metricCountFrame = 0;
+  let metricsSectionActive = false;
   let zSectionOneScrollFrame = 0;
   let zSectionOneLocked = false;
   let zSectionOneCompositionReady = false;
@@ -741,14 +548,23 @@
   let zSecondaryNavOverflowFrame = 0;
   let zSecondaryNavAlignmentFrame = 0;
   let zSecondaryNavIndicatorReadyFrame = 0;
+  let imageCopyRevealTimer = 0;
+  let flowVisibleCount = 0;
+  let flowTargetCount = 0;
+  let lastFlowScrollY = window.scrollY;
+  let lastFlowScrollTime = performance.now();
   let lastPageScrollTime = performance.now();
+  let flowScrollVelocity = 0;
   let localizedGeometryWidth = document.documentElement.clientWidth;
   let localizedGeometryOrientation = window.matchMedia('(orientation: portrait)').matches ? 'portrait' : 'landscape';
   let pauseLogoParticleForScroll = () => {};
+  const flowCrossed = flowItems.map(() => false);
   let conversationVisible = true;
   let activeTemporaryUi = 'none';
   const composerControls = Array.from(composer.querySelectorAll('button, input'));
   const inputLabel = composer.querySelector('.s-page__visually-hidden');
+  const composerMenuItems = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-item'));
+  const menuLabels = Array.from(composerMenu.querySelectorAll('.s-page__composer-menu-label'));
   document.querySelectorAll('[data-s-legal-placeholder]').forEach((link) => {
     link.addEventListener('click', (event) => event.preventDefault());
   });
@@ -948,8 +764,6 @@
     const copy = pageCopy[language];
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-    document.querySelector('.s-page__gallery-preview-copy--ar')?.setAttribute('aria-hidden', String(language !== 'ar'));
-    document.querySelector('.s-page__gallery-preview-copy--en')?.setAttribute('aria-hidden', String(language !== 'en'));
     page.querySelector('.s-page__section-2-image-frame--section-1-copy[href]')?.setAttribute('aria-label', language === 'ar'
       ? 'افتح تحديث اوكسوم'
       : 'Open the OOXME update');
@@ -995,7 +809,7 @@
   };
 
   const setSendUtilityAvailability = (isAvailable) => {
-    [sendThemeUtility, sendLanguageUtility].filter(Boolean).forEach((control) => {
+    [sendStatusUtility, sendThemeUtility, sendLanguageUtility].filter(Boolean).forEach((control) => {
       control.disabled = !isAvailable;
     });
   };
@@ -1023,6 +837,20 @@
     if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing');
   });
 
+  const pulseComposerMenu = () => {
+    if (!initializationReady) return;
+    if (composerMenuPulseFrame) window.cancelAnimationFrame(composerMenuPulseFrame);
+    composerMenu.classList.remove('is-pulsing');
+    composerMenuPulseFrame = window.requestAnimationFrame(() => {
+      composerMenuPulseFrame = 0;
+      composerMenu.classList.add('is-pulsing');
+    });
+  };
+
+  composerMenu.addEventListener('animationend', (event) => {
+    if (event.animationName === 's-page-composer-menu-pulse') composerMenu.classList.remove('is-pulsing');
+  });
+
   const pulseSendUtility = (control) => {
     const pendingFrame = sendUtilityPulseFrames.get(control);
     if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
@@ -1034,10 +862,83 @@
     sendUtilityPulseFrames.set(control, frame);
   };
 
-  [sendThemeUtility, sendLanguageUtility].filter(Boolean).forEach((control) => {
+  const pulseMarqueeItem = (image) => {
+    const pendingFrame = marqueeItemPulseFrames.get(image);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    image.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      marqueeItemPulseFrames.delete(image);
+      image.classList.add('is-pulsing');
+    });
+    marqueeItemPulseFrames.set(image, frame);
+  };
+
+  document.querySelectorAll('.s-page__marquee').forEach((marquee) => {
+    marquee.addEventListener('pointerdown', (event) => {
+      const image = event.target.closest('.s-page__marquee img');
+      if (image && marquee.contains(image)) pulseMarqueeItem(image);
+    }, { passive: true });
+    marquee.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-marquee-item-pulse' && event.target.matches('.s-page__marquee img')) {
+        event.target.classList.remove('is-pulsing');
+      }
+    });
+
+    const images = Array.from(marquee.querySelectorAll('img'));
+    const settleImage = (image) => {
+      if (image.complete) return image.decode?.().catch(() => {}) || Promise.resolve();
+      return new Promise((resolve) => {
+        image.addEventListener('load', resolve, { once: true });
+        image.addEventListener('error', resolve, { once: true });
+      });
+    };
+    Promise.all(images.map(settleImage)).then(() => marquee.classList.add('is-marquee-ready'));
+  });
+
+  const pulseSquareLogo = (logo) => {
+    const pendingFrame = squareLogoPulseFrames.get(logo);
+    if (pendingFrame) window.cancelAnimationFrame(pendingFrame);
+    logo.classList.remove('is-pulsing');
+    const frame = window.requestAnimationFrame(() => {
+      squareLogoPulseFrames.delete(logo);
+      logo.classList.add('is-pulsing');
+    });
+    squareLogoPulseFrames.set(logo, frame);
+  };
+
+  const prepareSectionSixLogoStrip = () => {
+    if (!squareLogoStage || squareLogoStage.dataset.sLogoStripReady === 'true') return;
+    const logos = Array.from(squareLogoStage.querySelectorAll('.s-page__square-logo'));
+    if (!logos.length) return;
+    const track = document.createElement('div');
+    const firstSet = document.createElement('div');
+    const duplicateSet = document.createElement('div');
+    track.className = 's-page__logo-strip-track';
+    firstSet.className = 's-page__logo-strip-set';
+    duplicateSet.className = 's-page__logo-strip-set';
+    duplicateSet.setAttribute('aria-hidden', 'true');
+    logos.forEach((logo) => firstSet.append(logo));
+    Array.from(firstSet.children).forEach((logo) => duplicateSet.append(logo.cloneNode(true)));
+    track.append(firstSet, duplicateSet);
+    squareLogoStage.append(track);
+    squareLogoStage.dataset.sLogoStripReady = 'true';
+  };
+
+  prepareSectionSixLogoStrip();
+
+  squareLogoStage?.addEventListener('pointerdown', (event) => {
+    const logo = event.target.closest('.s-page__square-logo');
+    if (logo && squareLogoStage.contains(logo)) pulseSquareLogo(logo);
+  }, { passive: true });
+  squareLogoStage?.addEventListener('animationend', (event) => {
+    if (event.animationName !== 's-page-square-logo-pulse') return;
+    event.target.closest('.s-page__square-logo')?.classList.remove('is-pulsing');
+  });
+
+  [sendStatusUtility, sendThemeUtility, sendLanguageUtility].filter(Boolean).forEach((control) => {
     control.addEventListener('pointerdown', () => pulseSendUtility(control), { passive: true });
     control.addEventListener('animationend', (event) => {
-      if (event.animationName === 's-page-send-utility-pulse') control.classList.remove('is-pulsing');
+      if (event.animationName === 's-page-composer-menu-pulse') control.classList.remove('is-pulsing');
     });
   });
 
@@ -1068,31 +969,28 @@
     event.stopPropagation();
   });
   sendUtilities.addEventListener('click', (event) => event.stopPropagation());
+  composerMenuItems.forEach((item) => {
+    const label = item.querySelector('.s-page__composer-menu-label')?.textContent.trim();
+    if (label === 'The Consultation') {
+      item.dataset.sMenuTarget = 'consultation';
+      item.removeAttribute('aria-disabled');
+      item.querySelector('svg')?.remove();
+    }
+  });
+  composerMenu.addEventListener('pointerdown', (event) => {
+    const item = event.target.closest('.s-page__composer-menu-item');
+    if (!item || item.disabled) return;
+    pulseComposerMenu();
+    window.clearTimeout(menuItemFlashTimers.get(item));
+    item.classList.add('is-active');
+    menuItemFlashTimers.set(item, window.setTimeout(() => item.classList.remove('is-active'), 120));
+  }, { passive: true });
+
   document.querySelector('[data-s-contact-consultation-cta]')?.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
     window.location.assign('/consultation');
   });
-
-  const contactButtons = Array.from(document.querySelectorAll('[data-s-contact]'));
-  let pressedContactButton = null;
-  const clearContactPress = () => {
-    pressedContactButton?.classList.remove('is-pressing');
-    pressedContactButton = null;
-  };
-  contactButtons.forEach((button) => {
-    button.addEventListener('pointerdown', (event) => {
-      if (event.button !== undefined && event.button !== 0) return;
-      clearContactPress();
-      pressedContactButton = button;
-      button.classList.add('is-pressing');
-    }, { passive: true });
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach((eventName) => {
-      button.addEventListener(eventName, clearContactPress, { passive: true });
-    });
-  });
-  window.addEventListener('scroll', clearContactPress, { passive: true });
-  window.addEventListener('blur', clearContactPress, { passive: true });
 
   addButton.addEventListener('click', (event) => {
     event.stopPropagation();
@@ -1142,10 +1040,165 @@
     }, { threshold: 0.15 })
     : null;
 
+  const getFlowDuration = (item) => {
+    if (reducedMotion.matches) return 0;
+    const minimumDuration = item.dataset.sFlowKind === 'text'
+      ? 720
+      : flowMinimumDurationMs;
+    return Math.round(Math.max(
+      minimumDuration,
+      flowBaselineDurationMs - Math.min(flowBaselineDurationMs - minimumDuration, flowScrollVelocity * 180)
+    ));
+  };
+
+  const getVisibleFlowDuration = (item, rect) => (
+    rect.bottom >= window.innerHeight * -.25 && rect.top <= window.innerHeight * 1.25
+      ? getFlowDuration(item)
+      : 0
+  );
+
+  const syncFlowGroupState = (group) => {
+    const hasVisibleItem = Array.from(group.querySelectorAll('[data-s-flow-item]'))
+      .some((item) => item.classList.contains('is-visible'));
+    group.classList.toggle('is-visible', hasVisibleItem);
+    group.setAttribute('aria-hidden', String(!hasVisibleItem));
+  };
+
+  const setImageCopyVisibility = (isVisible) => {
+    window.clearTimeout(imageCopyRevealTimer);
+    imageCopyRevealTimer = 0;
+    if (isZPage) {
+      imageCopy.classList.toggle('is-visible', isVisible);
+      imageCopy.setAttribute('aria-hidden', String(!isVisible));
+      return;
+    }
+    if (!isVisible) {
+      imageCopy.classList.remove('is-visible');
+      imageCopy.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    imageCopy.classList.add('is-visible');
+    imageCopy.setAttribute('aria-hidden', 'false');
+  };
+
+  const cancelMetricCount = () => {
+    if (metricCountFrame) window.cancelAnimationFrame(metricCountFrame);
+    metricCountFrame = 0;
+  };
+
+  let metricCountsHasRun = false;
+  let metricCountsCompleted = false;
+  const setMetricCountsActive = (isActive) => {
+    if (metricsSectionActive === isActive) return;
+    cancelMetricCount();
+    metricsSectionActive = isActive;
+    const values = numberMetricItems
+      .map((metric) => {
+        const value = metric.querySelector('[data-s-metric-value]');
+        const target = Number(value?.dataset.sMetricTarget);
+        return value && Number.isFinite(target) ? { value, target } : null;
+      })
+      .filter(Boolean);
+
+    if (!isActive) {
+      if (metricCountsHasRun && !metricCountsCompleted) {
+        values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
+        metricCountsCompleted = true;
+      }
+      return;
+    }
+    if (metricCountsCompleted || metricCountsHasRun) {
+      values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
+      metricCountsCompleted = true;
+      return;
+    }
+    metricCountsHasRun = true;
+    if (reducedMotion.matches) {
+      values.forEach(({ value, target }) => { value.textContent = `${target}+`; });
+      metricCountsCompleted = true;
+      return;
+    }
+
+    values.forEach(({ value }) => { value.textContent = '0+'; });
+    const startedAt = performance.now();
+    const step = (now) => {
+      const progress = Math.min(1, (now - startedAt) / metricCountDurationMs);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      values.forEach(({ value, target }) => {
+        value.textContent = `${Math.round(target * easedProgress)}+`;
+      });
+      if (progress < 1) metricCountFrame = window.requestAnimationFrame(step);
+      else {
+        metricCountFrame = 0;
+        metricCountsCompleted = true;
+      }
+    };
+    metricCountFrame = window.requestAnimationFrame(step);
+  };
+
+  numberMetricItems.forEach((metric) => {
+    const value = metric.querySelector('[data-s-metric-value]');
+    if (value) value.textContent = '0+';
+  });
+
+  if ('IntersectionObserver' in window && metricsMajorSection) {
+    const metricSectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.target === metricsMajorSection) setMetricCountsActive(entry.isIntersecting);
+      });
+    }, { threshold: 0.15 });
+    metricSectionObserver.observe(metricsMajorSection);
+  }
+
+  const setFlowItemVisibility = (item, isVisible, duration) => {
+    item.style.setProperty('--s-flow-duration', `${duration}ms`);
+    item.classList.toggle('is-visible', isVisible);
+    item.setAttribute('aria-hidden', String(!isVisible));
+    if (item === imageMedia) setImageCopyVisibility(isVisible);
+    syncFlowGroupState(item.closest('[data-s-flow-group]'));
+  };
+
+  const syncFlowTarget = () => {
+    flowFrame = 0;
+    const composerTop = composer.getBoundingClientRect().top;
+    const itemRects = flowItems.map((item) => item.getBoundingClientRect());
+    itemRects.forEach((itemRect, index) => {
+      flowCrossed[index] = flowCrossed[index]
+        ? itemRect.top <= composerTop + flowThresholdHysteresisPx
+        : itemRect.top <= composerTop;
+    });
+    let crossedCount = 0;
+    while (crossedCount < flowCrossed.length && flowCrossed[crossedCount]) crossedCount += 1;
+    flowTargetCount = crossedCount > 0
+      ? Math.min(flowItems.length, crossedCount + 1)
+      : 0;
+
+    // Geometry is read above as one batch. Apply every required visibility change
+    // in this same frame so fast scrolling cannot leave lower sections queued behind.
+    if (flowVisibleCount < flowTargetCount) {
+      for (let index = flowVisibleCount; index < flowTargetCount; index += 1) {
+        setFlowItemVisibility(flowItems[index], true, getVisibleFlowDuration(flowItems[index], itemRects[index]));
+      }
+    } else if (flowVisibleCount > flowTargetCount) {
+      for (let index = flowVisibleCount - 1; index >= flowTargetCount; index -= 1) {
+        setFlowItemVisibility(flowItems[index], false, getVisibleFlowDuration(flowItems[index], itemRects[index]));
+      }
+    }
+    flowVisibleCount = flowTargetCount;
+    flowScrollVelocity *= .72;
+  };
+
+  const scheduleFlowSync = () => {
+    if (flowFrame) return;
+    flowFrame = window.requestAnimationFrame(syncFlowTarget);
+  };
+
   // Each composition keeps its first Text Group untouched; only its final item gains free space.
   const portraitSectionCompositions = [
-    { first: firstGroup, last: logoParticleField, type: 'anchored' }
-  ];
+    { first: firstGroup, last: logoParticleField, type: 'anchored' },
+    { first: document.querySelector('[data-s-copy-group="3"]'), last: document.querySelector('.s-page__flow-group--strips') },
+    { first: document.querySelector('[data-s-copy-group="4"]'), last: document.querySelector('.s-page__flow-group--logos') },
+  ].filter(({ first, last }) => first && last);
 
   const resetPortraitSectionLayout = ({ preserveFinalSettleSpace = false } = {}) => {
     document.documentElement.style.removeProperty('--s-portrait-measured-x');
@@ -1210,13 +1263,56 @@
     finalScrollBufferFrame = window.requestAnimationFrame(syncFinalScrollBuffer);
   };
 
+  // Safari can expand the narrow Section 5 copy when its description wraps,
+  // while the shared text-group box keeps its reserved height. Measure the
+  // painted gap against Section 6 after layout and correct only Section 5 on
+  // coarse portrait devices.
+  const syncSectionFiveMobileGap = () => {
+    sectionFiveMobileGapFrame = 0;
+    const sectionFive = document.querySelector('.s-page__major-section--section-5');
+    const sectionSix = document.querySelector('.s-page__major-section--section-6');
+    const sectionFiveText = sectionFive?.querySelector('.s-page__flow-text');
+    if (!sectionFive || !sectionSix || !sectionFiveText) return;
+
+    const isMobilePortrait = document.body.classList.contains('s-page--main')
+      && window.matchMedia('(orientation: portrait)').matches
+      && window.matchMedia('(pointer: coarse)').matches;
+    if (!isMobilePortrait) {
+      sectionFiveText.style.removeProperty('bottom');
+      return;
+    }
+
+    const sectionFiveDescription = sectionFive.querySelector('.s-page__group-description');
+    const sectionFiveNotice = sectionFive.querySelector('.s-page__closed-notice');
+    const sectionSixDescription = sectionSix.querySelector('.s-page__group-description');
+    const sectionSixNotice = sectionSix.querySelector('.s-page__closed-notice');
+    if (!sectionFiveDescription || !sectionFiveNotice || !sectionSixDescription || !sectionSixNotice) return;
+
+    const referenceGap = sectionSixNotice.getBoundingClientRect().top
+      - sectionSixDescription.getBoundingClientRect().bottom;
+    const renderedGap = sectionFiveNotice.getBoundingClientRect().top
+      - sectionFiveDescription.getBoundingClientRect().bottom;
+    const delta = referenceGap - renderedGap;
+    if (Math.abs(delta) <= .25) return;
+
+    const currentBottom = Number.parseFloat(getComputedStyle(sectionFiveText).bottom) || 0;
+    sectionFiveText.style.bottom = `${(currentBottom + delta).toFixed(3)}px`;
+  };
+
+  const scheduleSectionFiveMobileGap = () => {
+    if (sectionFiveMobileGapFrame) return;
+    sectionFiveMobileGapFrame = window.requestAnimationFrame(syncSectionFiveMobileGap);
+  };
+
   const syncPortraitSectionLayout = () => {
     portraitSectionLayoutFrame = 0;
     const isPortrait = window.matchMedia('(orientation: portrait)').matches;
     if (!isPortrait) {
       syncConversationInputBounds();
       resetPortraitSectionLayout();
+      scheduleFlowSync();
       scheduleFirstGroupBaseline();
+      scheduleSectionFiveMobileGap();
       return;
     }
 
@@ -1278,7 +1374,9 @@
     });
 
     scheduleFinalScrollBuffer();
+    scheduleFlowSync();
     scheduleFirstGroupBaseline();
+    scheduleSectionFiveMobileGap();
   };
 
   const schedulePortraitSectionLayout = () => {
@@ -1321,6 +1419,7 @@
   const finishMajorSectionSettle = () => {
     if (majorSectionSettleFrame) window.cancelAnimationFrame(majorSectionSettleFrame);
     majorSectionSettleFrame = 0;
+    syncMetricCountsWithActiveSection();
     majorSectionSettleTarget = null;
     majorSectionSettleStableFrames = 0;
     // Keep ownership through the browser's final smooth-scroll event. Releasing on
@@ -1356,6 +1455,13 @@
     }, null);
   };
 
+  const syncMetricCountsWithActiveSection = () => {
+    const current = getNearestMajorSectionIndex();
+    const activeSection = current ? getNavigableMajorSections()[current.index] : null;
+    const isMetricsSection = activeSection === metricsMajorSection;
+    if (isMetricsSection !== metricsSectionActive) setMetricCountsActive(isMetricsSection);
+  };
+
   const transitionToMajorSection = (targetIndex) => {
     if (isZPage || majorSectionSettleTarget !== null || discreteSectionInputLocked) return;
     const navigableSections = getNavigableMajorSections();
@@ -1363,6 +1469,9 @@
     if (!current) return;
     const boundedTargetIndex = Math.max(0, Math.min(navigableSections.length - 1, targetIndex));
     if (boundedTargetIndex === current.index) return;
+    if (navigableSections[boundedTargetIndex] !== metricsMajorSection && metricsSectionActive) {
+      setMetricCountsActive(false);
+    }
     const referenceY = getMajorSectionReferenceY();
     const scrollY = window.scrollY;
     const targetRect = navigableSections[boundedTargetIndex].getBoundingClientRect();
@@ -1459,11 +1568,60 @@
     });
   });
 
+  const triggerLockedNoticeShake = (notice) => {
+    const pending = lockedNoticeShakeFrames.get(notice);
+    if (pending) window.cancelAnimationFrame(pending);
+    notice.classList.remove('is-locked-shaking');
+    lockedNoticeShakeFrames.set(notice, window.requestAnimationFrame(() => {
+      lockedNoticeShakeFrames.delete(notice);
+      notice.classList.add('is-locked-shaking');
+    }));
+  };
+
+  document.querySelectorAll('.s-page__closed-notice:not(.s-page__closed-notice--section-7):not(.s-page__contact-offer)').forEach((notice) => {
+    [notice, notice.nextElementSibling].filter(Boolean).forEach((target) => {
+      target.addEventListener('pointerdown', () => triggerLockedNoticeShake(notice), { passive: true });
+    });
+    notice.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-locked-notice-shake') notice.classList.remove('is-locked-shaking');
+    });
+  });
+
   const noteFlowScroll = () => {
     const now = performance.now();
     lastPageScrollTime = now;
+    const nextScrollY = window.scrollY;
+    const elapsed = Math.max(1, now - lastFlowScrollTime);
+    const instantaneousVelocity = Math.abs(nextScrollY - lastFlowScrollY) / elapsed;
+    flowScrollVelocity = (flowScrollVelocity * .35) + (instantaneousVelocity * .65);
+    lastFlowScrollY = nextScrollY;
+    lastFlowScrollTime = now;
     pauseLogoParticleForScroll();
     if (portraitSectionLayoutTimer) scheduleStablePortraitSectionLayout();
+    scheduleFlowSync();
+  };
+
+  const resetFlowRevealState = () => {
+    window.clearTimeout(imageCopyRevealTimer);
+    setMetricCountsActive(false);
+    if (flowFrame) window.cancelAnimationFrame(flowFrame);
+    flowFrame = 0;
+    flowVisibleCount = 0;
+    flowTargetCount = 0;
+    flowScrollVelocity = 0;
+    lastFlowScrollY = 0;
+    lastFlowScrollTime = performance.now();
+    flowCrossed.fill(false);
+    flowItems.forEach((item) => {
+      item.classList.remove('is-visible');
+      item.setAttribute('aria-hidden', 'true');
+      item.style.removeProperty('--s-flow-duration');
+    });
+    setImageCopyVisibility(false);
+    flowGroups.forEach((group) => {
+      group.classList.remove('is-visible');
+      group.setAttribute('aria-hidden', 'true');
+    });
   };
 
   const setLocalizedText = (element, value) => {
@@ -1576,7 +1734,8 @@
     if (!contact) return;
     [
       contact.querySelector('.s-page__group-title'),
-      contact.querySelector('.s-page__group-description')
+      contact.querySelector('.s-page__group-description'),
+      contact.querySelector('.s-page__contact-offer')
     ].filter(Boolean).forEach((box) => {
       const copies = Array.from(box.querySelectorAll('[lang]'));
       if (copies.length < 2) return;
@@ -1589,26 +1748,6 @@
       copies.forEach((copy, index) => { copy.style.display = originalDisplays[index]; });
       if (height) box.style.height = `${Math.ceil(height)}px`;
     });
-  };
-
-  const syncGalleryPreviewCopyGeometry = () => {
-    const gallery = document.querySelector('[data-s-gallery-preview]');
-    if (!gallery) return;
-    const copies = Array.from(gallery.querySelectorAll('.s-page__gallery-preview-copy > div'));
-    const originalParentDisplays = copies.map((copy) => copy.style.display);
-    copies.forEach((copy) => { copy.style.display = 'block'; });
-    ['.s-page__gallery-preview-title', '.s-page__gallery-preview-description'].forEach((selector) => {
-      const nodes = copies.map((copy) => copy.querySelector(selector)).filter(Boolean);
-      const originalDisplays = nodes.map((node) => node.style.display);
-      let height = 0;
-      nodes.forEach((activeNode) => {
-        nodes.forEach((node) => { node.style.display = node === activeNode ? 'block' : 'none'; });
-        height = Math.max(height, activeNode.getBoundingClientRect().height);
-      });
-      nodes.forEach((node, index) => { node.style.display = originalDisplays[index]; });
-      if (height) nodes.forEach((node) => { node.style.height = `${Math.ceil(height)}px`; });
-    });
-    copies.forEach((copy, index) => { copy.style.display = originalParentDisplays[index]; });
   };
 
   // The original /x Composer used the layout viewport's bottom edge. Keep that
@@ -1664,13 +1803,13 @@
     syncFirstGroupTextGeometry();
     syncSectionTwoCopyGeometry();
     syncContactSectionCopyGeometry();
-    syncGalleryPreviewCopyGeometry();
     groupElements.forEach((elements, groupIndex) => {
       const englishGroup = getGroupCopy('en', groupIndex);
       const arabicGroup = getGroupCopy('ar', groupIndex);
       if (!englishGroup || !arabicGroup) return;
       elements.forEach((element, elementIndex) => {
         element.style.height = '';
+        if (groupIndex === 0 && elementIndex === 0 && firstTypewriterTitle) return;
         const height = Math.max(
           measureLocalizedTextHeight(element, englishGroup[elementIndex], 'en'),
           measureLocalizedTextHeight(element, arabicGroup[elementIndex], 'ar')
@@ -1678,6 +1817,7 @@
         if (height) element.style.height = `${Math.ceil(height)}px`;
       });
     });
+    scheduleFlowSync();
     schedulePortraitSectionLayout();
     scheduleFirstGroupBaseline();
   };
@@ -1693,9 +1833,12 @@
       const localizedGroup = getGroupCopy(language, groupIndex);
       if (!localizedGroup) return;
       elements.forEach((element, elementIndex) => {
+        if (!isZPage && groupIndex === 0 && elementIndex === 0 && firstTypewriterTitle) return;
         setLocalizedText(element, localizedGroup[elementIndex]);
       });
     });
+    startFirstTypewriter();
+    menuLabels.forEach((label, index) => { label.textContent = copy.menu[index]; });
     input.placeholder = copy.inputPlaceholder;
     inputLabel.textContent = copy.ask;
     addButton.setAttribute('aria-label', language === 'ar' ? 'شخصية اوكسوم' : 'OOXME character');
@@ -1718,16 +1861,17 @@
       scheduleLocalizedGeometry();
       schedulePortraitSectionLayout();
       scheduleMainContentSpacing();
-      if (new URLSearchParams(window.location.search).get('section') === 'gallery' && galleryPreview) {
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => galleryPreview.scrollIntoView({ behavior: 'auto', block: 'center' }));
-        });
-      }
     }
   });
   if (isZPage) firstGroup.classList.add('is-visible');
   else if (firstGroupObserver) firstGroupObserver.observe(firstGroup);
   else firstGroup.classList.add('is-visible');
+  if (isZPage) {
+    imageMedia.classList.add('is-visible');
+    setImageCopyVisibility(true);
+  }
+  flowGroups.forEach((group) => group.setAttribute('aria-hidden', 'true'));
+  scheduleFlowSync();
   schedulePortraitSectionLayout();
   scheduleMainContentSpacing();
   window.addEventListener('load', scheduleMainContentSpacing, { once: true });
@@ -1997,7 +2141,7 @@
     addButton.classList.toggle('is-rotated', addRotated);
     submitButton.classList.toggle('is-active', menuIsActive);
     setComposerMenuOpen(menuIsActive);
-    setSendUtilitiesOpen(next === 'utilities');
+    setSendUtilitiesOpen(next === 'utilities' || menuIsActive);
     setConversationVisibility(next === 'chat');
 
     if ((next === 'menu' || next === 'utilities') && document.activeElement === input) input.blur();
@@ -2309,8 +2453,10 @@
     initializationReady = false;
     if (keyboardFrame) window.cancelAnimationFrame(keyboardFrame);
     if (composerPulseFrame) window.cancelAnimationFrame(composerPulseFrame);
+    if (composerMenuPulseFrame) window.cancelAnimationFrame(composerMenuPulseFrame);
     keyboardFrame = 0;
     composerPulseFrame = 0;
+    composerMenuPulseFrame = 0;
     if (isZPage) {
       cancelZReleaseSettle({ stopNativeScroll: true });
       zReleasePointerActive = false;
@@ -2350,6 +2496,7 @@
     composer.classList.remove('is-pulsing');
     lastKeyboardOverlap = 0;
     updateKeyboardOffset();
+    startFirstTypewriter();
     initializationReady = true;
     syncConversationInputBounds();
     document.documentElement.classList.remove('s-x-initializing');
@@ -2377,14 +2524,23 @@
     pendingReplyTimers.clear();
     sendUtilityPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     sendUtilityPulseFrames.clear();
+    marqueeItemPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    marqueeItemPulseFrames.clear();
+    squareLogoPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    squareLogoPulseFrames.clear();
     imagePulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     imagePulseFrames.clear();
+    lockedNoticeShakeFrames.forEach((frame) => window.cancelAnimationFrame(frame));
+    lockedNoticeShakeFrames.clear();
     document.querySelectorAll('.is-locked-shaking').forEach((notice) => notice.classList.remove('is-locked-shaking'));
     secondaryNavPulseFrames.forEach((frame) => window.cancelAnimationFrame(frame));
     secondaryNavPulseFrames.clear();
+    menuItemFlashTimers.forEach((timer) => window.clearTimeout(timer));
+    menuItemFlashTimers.clear();
     document.querySelectorAll('.is-pulsing').forEach((element) => element.classList.remove('is-pulsing'));
     composerMenu.querySelectorAll('.is-active').forEach((element) => element.classList.remove('is-active'));
     groups.forEach((group) => group.classList.remove('is-visible'));
+    resetFlowRevealState();
     conversation.replaceChildren();
     conversationFinal.classList.remove('is-visible');
     conversationFinal.setAttribute('aria-hidden', 'true');
@@ -2406,6 +2562,11 @@
     initializeGroupOne();
     window.requestAnimationFrame(() => {
       firstGroup.classList.add('is-visible');
+      if (isZPage) {
+        imageMedia.classList.add('is-visible');
+        setImageCopyVisibility(true);
+      }
+      scheduleFlowSync();
     });
   };
 

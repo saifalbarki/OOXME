@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 const { query } = require('./db');
+const consultationPricing = require('../../js/consultation-pricing');
 
-const consultationPrices = new Map([[45, 30], [60, 50], [90, 75], [120, 100]]);
+const consultationPrices = new Map(Object.entries(consultationPricing.durations).map(([duration, prices]) => [Number(duration), prices.base]));
 const normalizePromoCode = (value) => String(value || '').trim().toUpperCase();
 const hashToken = (rawToken) => crypto.createHash('sha256').update(String(rawToken || '')).digest('hex');
 const hashOfferSession = (session) => crypto.createHash('sha256').update(String(session || '')).digest('hex');
@@ -12,7 +13,7 @@ function getBasePrice({ serviceCode = 'consultation', durationMinutes } = {}) {
   const duration = Number(durationMinutes);
   const amount = serviceCode === 'consultation' ? consultationPrices.get(duration) : undefined;
   if (amount === undefined) throw Object.assign(new Error('Unsupported service or consultation duration'), { code: 'unsupported_price' });
-  return { amount, currency: 'USD', durationMinutes: duration, serviceCode };
+  return { amount, currency: consultationPricing.currency, durationMinutes: duration, serviceCode };
 }
 
 function calculateQuote(basePrice, { discountType, discountValue, currency }) {
@@ -29,8 +30,17 @@ function calculateQuote(basePrice, { discountType, discountValue, currency }) {
     finalAmount: money(basePrice.amount - discountAmount),
     currency: basePrice.currency,
     durationMinutes: basePrice.durationMinutes,
-    serviceCode: basePrice.serviceCode
+    serviceCode: basePrice.serviceCode,
+    discountType,
+    discountValue: Number(discountValue)
   };
+}
+
+function getLaunchQuote({ serviceCode = 'consultation', durationMinutes } = {}) {
+  return calculateQuote(getBasePrice({ serviceCode, durationMinutes }), {
+    discountType: 'percentage',
+    discountValue: consultationPricing.launchDiscountPercent
+  });
 }
 
 async function loadPromotion(code, execute = query) {
@@ -119,7 +129,6 @@ async function validatePromotionInput({ promoCode, offerToken, offerSession, ser
         SET status = 'released', released_at = now()
       WHERE status = 'pending' AND reservation_expires_at <= now()`
   );
-  const basePrice = getBasePrice({ serviceCode, durationMinutes });
   const offer = await validateOfferToken({ offerToken, offerSession, serviceCode, durationMinutes, execute });
   if (offer) return offer.valid ? ensurePromoUsageAvailable(offer, execute) : offer;
   if (promoCode) {
@@ -127,7 +136,7 @@ async function validatePromotionInput({ promoCode, offerToken, offerSession, ser
     const promotion = validatePromotionForRequest(promo, { source: 'promo_input', serviceCode, durationMinutes });
     return promotion ? ensurePromoUsageAvailable(promotion, execute) : { valid: false, error: 'promotion_unavailable' };
   }
-  return { valid: true, type: 'none', quote: calculateQuote(basePrice, { discountType: 'fixed', discountValue: 0 }) };
+  return { valid: true, type: 'none', quote: getLaunchQuote({ serviceCode, durationMinutes }) };
 }
 
 const validatePromoOrToken = ({ serviceId, ...input }) => validatePromotionInput({ ...input, serviceCode: serviceId || input.serviceCode || 'consultation' });
@@ -136,6 +145,7 @@ module.exports = {
   RESERVATION_TTL_MINUTES,
   calculateQuote,
   getBasePrice,
+  getLaunchQuote,
   hashOfferSession,
   hashToken,
   loadPromotion,
