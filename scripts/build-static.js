@@ -5,10 +5,11 @@ const root = path.resolve(__dirname, '..');
 const sourceRoot = root;
 const output = path.join(root, 'dist');
 const directories = ['assets', 'css', 'js', 'public'];
-const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest'];
+const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest', 'robots.txt', 'sitemap.xml'];
 const pageOutputs = {
   'main.html': 'index.html',
   'brand.html': 'bm.html',
+  'gallery.html': 'gallery.html',
   'space.html': 'space.html',
   'update.html': 'update.html',
   'consultation.html': 'consultation.html',
@@ -22,9 +23,24 @@ const analyticsSnippet = `
     </script>
     <script defer src="/_vercel/insights/script.js"></script>`;
 
+const readPngDimensions = (filePath) => {
+  const header = fs.readFileSync(filePath).subarray(16, 24);
+  return { width: header.readUInt32BE(0), height: header.readUInt32BE(4) };
+};
+
+const writeProjectManifest = (projectPath) => {
+  const assets = fs.readdirSync(projectPath)
+    .filter((name) => /^\d+\.png$/i.test(name))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map((name) => ({ name, ...readPngDimensions(path.join(projectPath, name)) }));
+  fs.writeFileSync(path.join(projectPath, 'manifest.json'), `${JSON.stringify({ project: path.basename(projectPath), assets }, null, 2)}\n`);
+};
+
 if (!fs.existsSync(sourceRoot)) {
   throw new Error('Expected website source directory is missing.');
 }
+
+writeProjectManifest(path.join(sourceRoot, 'assets', 'projects', 'alfares'));
 
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(output, { recursive: true });
