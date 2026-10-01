@@ -38,6 +38,8 @@
 
   const menu = composer.querySelector('[data-s-composer-menu]');
   const utilities = composer.querySelector('[data-s-send-utilities]');
+  const themeUtility = composer.querySelector('[data-s-utility="theme"]');
+  const languageUtility = composer.querySelector('[data-s-utility="language"]');
   const keyForLabel = (label) => ({
     'The Brand Management': 'brand', 'إدارة العلامة التجارية': 'brand',
     'The Gallery': 'gallery', 'المعرض': 'gallery',
@@ -136,6 +138,7 @@
     submitButton.classList.remove('is-active');
     submitButton.setAttribute('aria-expanded', 'false');
     updateMenuTriggerLabel();
+    composer.style.removeProperty('--s-composer-menu-height');
     closeTimer = window.setTimeout(() => {
       menu?.classList.remove('is-open');
       menu?.setAttribute('aria-hidden', 'true');
@@ -173,6 +176,7 @@
   window.setTimeout(updateMenuTriggerLabel, 0);
   addButton.addEventListener('click', (event) => {
     event.stopPropagation();
+    setMenuOpen(false);
   });
   document.addEventListener('pointerdown', (event) => {
     if (composer.contains(event.target)) return;
@@ -195,6 +199,53 @@
     applyLanguage(event.newValue);
   });
   window.addEventListener('ooxme-language-change', persistCurrentLanguage);
+
+  // Non-home routes use the same shared header controls; their page scripts
+  // remain responsible only for page content and interaction.
+  if (!document.body.classList.contains('s-page--main')) {
+    const utilityCopy = {
+      en: { language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' },
+      ar: { language: 'التبديل الى الانجليزية', day: 'التبديل الى الوضع النهاري', dark: 'التبديل الى الوضع الداكن' }
+    };
+    const updateRouteUtilities = () => {
+      const labels = utilityCopy[root.lang === 'en' ? 'en' : 'ar'];
+      composer.querySelector('.s-page__composer-input')?.setAttribute('placeholder', root.lang === 'ar' ? 'اسأل اوكسوم' : 'Ask ooxme');
+      composer.querySelector('.s-page__composer-input')?.setAttribute('lang', root.lang);
+      composer.querySelector('.s-page__composer-input')?.setAttribute('dir', root.lang === 'ar' ? 'rtl' : 'ltr');
+      languageUtility?.classList.toggle('is-active', root.lang === 'en');
+      languageUtility?.setAttribute('aria-pressed', String(root.lang === 'en'));
+      languageUtility?.setAttribute('aria-label', labels.language);
+      themeUtility?.setAttribute('aria-label', root.classList.contains('is-day-mode') ? labels.dark : labels.day);
+    };
+    const applyRouteTheme = (next) => {
+      const day = next === 'day';
+      root.classList.toggle('is-day-mode', day);
+      themeUtility?.classList.toggle('is-active', !day);
+      themeUtility?.setAttribute('aria-pressed', String(!day));
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000');
+      updateRouteUtilities();
+    };
+    composer.addEventListener('submit', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setMenuOpen(!menu?.classList.contains('is-open'));
+    });
+    themeUtility?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      applyRouteTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day');
+    });
+    languageUtility?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      applyLanguage(root.lang === 'ar' ? 'en' : 'ar');
+      updateRouteUtilities();
+    });
+    window.addEventListener('ooxme-language-change', updateRouteUtilities);
+    applyRouteTheme('dark');
+  }
+  // The homepage clears this bootstrap state from its page controller. The
+  // shared header owns that same lifecycle for standalone routes so the OXO
+  // circle and interaction transitions are not left in their init state.
+  if (!document.body.classList.contains('s-page--main')) root.classList.remove('s-x-initializing');
 })();
 
 // Keep the shared OXO face gaze and settle motion on every non-home route.

@@ -1,0 +1,15 @@
+{
+  "assets": [
+    { "name": "01.png", "width": 2175, "height": 2175 },
+    { "name": "02.png", "width": 2175, "height": 2175 },
+    { "name": "03.png", "width": 2175, "height": 2175 },
+    { "name": "04.png", "width": 2175, "height": 2175 },
+    { "name": "05.png", "width": 2175, "height": 2175 },
+    { "name": "06.png", "width": 2175, "height": 2175 },
+    { "name": "07.png", "width": 2175, "height": 2175 },
+    { "name": "08.png", "width": 2176, "height": 2175 },
+    { "name": "09.png", "width": 2175, "height": 2175 },
+    { "name": "10.png", "width": 2175, "height": 2175 },
+    { "name": "11.png", "width": 2175, "height": 2175 }
+  ]
+}
