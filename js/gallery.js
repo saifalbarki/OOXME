@@ -437,7 +437,7 @@
     const rearOneScale = .9;
     const rearTwoScale = .82 / .9;
     const startRotate = Math.max(-3.5, Math.min(3.5, startX * .018));
-    const duration = 640;
+    const duration = 500;
     const startTime = performance.now();
     const token = ++motionToken;
     motionMode = 'transition';
@@ -484,7 +484,7 @@
   const scheduleAdvance = (direction = 'left') => {
     if (busy || !assets.length) return;
     busy = true;
-    window.setTimeout(() => runAdvance(direction, 0, 0, .982), 0);
+    void runAdvance(direction, 0, 0, .982);
   };
   const cancelDrag = () => {
     if (!order[0] || motionMode !== 'dragging') return;
@@ -494,7 +494,7 @@
     const token = ++motionToken;
     const frame = (now) => {
       if (token !== motionToken) return;
-      const progress = Math.min(1, (now - started) / 260);
+      const progress = Math.min(1, (now - started) / 220);
       const eased = 1 - ((1 - progress) ** 3);
       setCardTransform(order[0], mix(start.x, 0, eased), mix(start.y, 0, eased), mix(start.scale, 1, eased), mix(start.rotate, 0, eased), 1);
       if (progress < 1) { motionFrame = requestAnimationFrame(frame); return; }
