@@ -4,14 +4,12 @@
   font-weight: 100 599;
   font-display: swap;
 }
-
 @font-face {
   font-family: OOXMESFPro;
   src: url('../assets/fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
   font-weight: 600 900;
   font-display: swap;
 }
-
 @font-face {
   font-family: OOXMEScript;
   src: url('../assets/fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
@@ -82,7 +80,6 @@ body.s-page {
 html[lang="ar"] body.s-page,
 html[lang="ar"] .s-page__group-title,
 html[lang="ar"] .s-page__group-description,
-html[lang="ar"] .s-page__composer-menu-item,
 html[lang="ar"] .s-page__composer-input {
   font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
 }
@@ -1746,7 +1743,6 @@ html[dir="rtl"] .s-page__reveal-line {
   --s-composer-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
   --s-composer-backdrop: blur(20px) saturate(125%);
   --s-composer-menu-width: min(76vw, 340px);
-  --s-composer-menu-height: 222px;
   --s-composer-height: 48px;
   --s-control-stagger: .06s;
   position: fixed;
@@ -1848,99 +1844,6 @@ html[lang="ar"] .s-page__composer-input:placeholder-shown {
   text-align: right;
 }
 
-.s-page__composer-menu {
-  --s-menu-radius: 28px;
-  --s-menu-inset: 8px;
-  --s-menu-active-radius: 20px;
-  position: absolute;
-  bottom: calc(100% + (var(--s-x) * 2));
-  left: 16.5px;
-  display: flex;
-  width: var(--s-composer-menu-width);
-  margin: 0;
-  padding: var(--s-menu-inset);
-  flex-direction: column;
-  gap: 6px;
-  border: 1px solid var(--s-composer-stroke);
-  border-radius: var(--s-menu-radius);
-  background: var(--s-composer-surface);
-  box-shadow: var(--s-composer-shadow);
-  color: #000000;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(6px);
-  visibility: hidden;
-  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
-  -webkit-backdrop-filter: var(--s-composer-backdrop);
-  backdrop-filter: var(--s-composer-backdrop);
-}
-
-html[dir="rtl"] .s-page__composer-menu {
-  direction: rtl;
-}
-
-.s-page__composer-menu.is-open {
-  opacity: 1;
-  pointer-events: auto;
-  transform: none;
-  visibility: visible;
-  transition-delay: 0s;
-}
-
-.s-page__composer-menu-item {
-  position: relative;
-  display: flex;
-  width: 100%;
-  height: 36px;
-  min-height: 36px;
-  margin: 0;
-  padding: 0 8px;
-  align-items: center;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: 400 16px/1.2 OOXMEScript, Arial, sans-serif;
-  letter-spacing: normal;
-  text-align: center;
-  appearance: none;
-  cursor: pointer;
-  text-decoration: none;
-  z-index: 0;
-}
-
-.s-page__composer-menu-item.is-active {
-  background: transparent;
-}
-
-.s-page__composer-menu-item::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  border-radius: var(--s-menu-active-radius);
-  background: rgba(255, 255, 255, .14);
-  content: "";
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .18s ease;
-}
-
-.s-page__composer-menu-item.is-active::before {
-  opacity: 1;
-}
-
-.s-page__composer-menu-item:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 4px;
-}
-
-html.s-route.is-day-mode .s-page__composer-menu {
-  color: #000000;
-}
-
-html.s-route.is-day-mode .s-page__composer-menu-item::before {
-  background: rgba(0, 0, 0, .055);
-}
-
 .s-page__icon-button,
 .s-page__submit {
   position: relative;
@@ -2025,127 +1928,6 @@ html.s-route.is-day-mode .s-page__add.is-active {
   transform-box: fill-box;
 }
 
-.s-page__send-utilities {
-  position: absolute;
-  right: 8px;
-  bottom: calc(100% + (var(--s-x) * 2));
-  display: flex;
-  gap: calc(var(--s-x) * .5);
-  flex-direction: column;
-  align-items: center;
-  pointer-events: none;
-  visibility: hidden;
-  transition: visibility 0s linear .24s;
-}
-
-.s-page__send-utilities.is-open {
-  pointer-events: auto;
-  visibility: visible;
-  transition-delay: 0s;
-}
-
-.s-page__send-utility {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  margin: 0;
-  padding: 0;
-  place-items: center;
-  border: 1px solid var(--s-composer-stroke);
-  border-radius: 50%;
-  background: var(--s-composer-surface);
-  box-shadow: var(--s-composer-shadow);
-  -webkit-backdrop-filter: var(--s-composer-backdrop);
-  backdrop-filter: var(--s-composer-backdrop);
-  cursor: pointer;
-  appearance: none;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-  /* The button itself is the pulse surface; its indicator inherits this motion. */
-  transform-box: border-box;
-  transform-origin: 50% 50%;
-  opacity: 0;
-  transform: translateY(6px) scale(.97);
-  transition: opacity .18s ease, transform .18s ease;
-  transition-delay: 0s;
-}
-
-.s-page__send-utility:active {
-  background: var(--s-composer-surface);
-}
-
-.s-page__send-utility:nth-child(2) {
-  transition-delay: var(--s-control-stagger);
-}
-
-.s-page__send-utility:nth-child(3) {
-  transition-delay: .12s;
-}
-
-.s-page__send-utilities.is-open .s-page__send-utility {
-  opacity: 1;
-  transform: none;
-  transition-delay: var(--s-control-stagger);
-}
-
-.s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
-  transition-delay: var(--s-control-stagger);
-}
-
-.s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
-  transition-delay: 0s;
-}
-
-.s-page__send-utility-inner {
-  display: block;
-  width: 13px;
-  height: 13px;
-  border: 1.7px solid #111111;
-  border-radius: 50%;
-  background: transparent;
-  transition: background-color .18s ease, border-color .18s ease;
-  /* State only: this element never owns the utility tap pulse. */
-  transform: none;
-  animation: none;
-}
-
-.s-page__send-utility.is-active .s-page__send-utility-inner {
-  border-color: #111111;
-  background: #111111;
-}
-
-html.s-route.is-day-mode .s-page__send-utility-inner {
-  border-color: #111111;
-}
-
-html.s-route.is-day-mode .s-page__send-utility.is-active .s-page__send-utility-inner {
-  border-color: #111111;
-  background: #111111;
-}
-
-html.s-route:not(.is-day-mode) .s-page__composer-menu,
-html.s-route:not(.is-day-mode) .s-page__composer-input,
-html.s-route:not(.is-day-mode) .s-page__icon-button {
-  color: #FFFFFF;
-}
-
-html.s-route:not(.is-day-mode) .s-page__composer-input {
-  caret-color: #FFFFFF;
-}
-
-html.s-route:not(.is-day-mode) .s-page__composer-input::placeholder {
-  color: rgba(255, 255, 255, .58);
-}
-
-html.s-route:not(.is-day-mode) .s-page__send-utility-inner {
-  border-color: #FFFFFF;
-}
-
-html.s-route:not(.is-day-mode) .s-page__send-utility.is-active .s-page__send-utility-inner {
-  border-color: #FFFFFF;
-  background: #FFFFFF;
-}
-
 .s-page__icon-button:focus-visible,
 .s-page__submit:focus-visible {
   outline: 2px solid #0b0b0b;
@@ -2175,27 +1957,9 @@ html.s-route.is-day-mode .s-page__composer .s-page__submit:active {
   animation: s-page-composer-pulse .18s ease-out;
 }
 
-.s-page__composer-menu.is-pulsing {
-  animation: s-page-composer-menu-pulse .18s ease-out;
-}
-
-.s-page__send-utility.is-pulsing {
-  animation: s-page-send-utility-pulse .18s ease-out;
-}
-
 @keyframes s-page-composer-pulse {
   0%, 100% { transform: scale(1); }
   45% { transform: scale(1.015); }
-}
-
-@keyframes s-page-composer-menu-pulse {
-  0%, 100% { transform: translateY(0) scale(1); }
-  45% { transform: translateY(0) scale(1.015); }
-}
-
-@keyframes s-page-send-utility-pulse {
-  0%, 100% { transform: translateY(0) scale(1); }
-  45% { transform: translateY(0) scale(1.09); }
 }
 
 .s-page__visually-hidden {
@@ -2359,243 +2123,6 @@ body.s-page:not(.s-page--rpn) .s-page__number-metric {
   transition: none !important;
 }
 
-/* /x uses the approved /rpn Top Bar geometry while retaining its own controls. */
-body.s-page:not(.s-page--rpn) .s-page__composer {
-  top: var(--s-x);
-  bottom: auto;
-  left: var(--s-x);
-  width: calc(100% - (var(--s-x) * 2));
-  max-width: none;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
-  opacity: 1 !important;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__input-label {
-  opacity: 0;
-  pointer-events: none;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__add {
-  grid-column: 1;
-  width: 32px;
-  height: 32px;
-  background: #080808;
-  color: #FFFFFF;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__add > span {
-  display: none;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__add.is-active,
-html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__add.is-active {
-  width: 32px;
-  height: 32px;
-  background: #080808 !important;
-  color: #FFFFFF;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__x-top-bar-eyes {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 26px;
-  height: 26px;
-  overflow: visible;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transform: translate(-50%, -50%);
-}
-
-body.s-page:not(.s-page--rpn) .s-page__x-face-eyes {
-  fill: currentColor;
-  stroke: none;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__submit {
-  grid-column: 3;
-  background: transparent !important;
-  color: #FFFFFF;
-}
-
-html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__submit {
-  color: #111111;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__submit .s-page__submit-icon {
-  stroke-width: 2.12;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__x-top-bar-line {
-  transform-box: fill-box;
-  transform-origin: center;
-  transition: transform .24s cubic-bezier(.22, .61, .36, 1);
-}
-
-/* Exact /rpn two-line menu-control state treatment, scoped to /x's existing
-   submit control so its own submit/menu handlers remain the source of state. */
-body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active {
-  width: 32px;
-  height: 32px;
-  background: rgba(255, 255, 255, .14) !important;
-}
-
-html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active {
-  background: rgba(0, 0, 0, .055) !important;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active .s-page__x-top-bar-line--top {
-  transform: translateY(4px) rotate(45deg);
-}
-
-body.s-page:not(.s-page--rpn) .s-page__x-top-bar-submit.is-active .s-page__x-top-bar-line--bottom {
-  transform: translateY(-4px) rotate(-45deg);
-}
-
-/* Keep /x's invisible temporary surfaces reachable beneath the top bar. */
-body.s-page:not(.s-page--rpn) .s-page__composer-menu {
-  top: calc(100% + var(--s-x) + 1px);
-  right: 0;
-  bottom: auto;
-  left: 0;
-  width: var(--s-composer-menu-width);
-  transform: none;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
-  transform: none;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__send-utilities {
-  top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) * .5));
-  right: auto;
-  bottom: auto;
-  left: 50%;
-  width: max-content;
-  flex-direction: row;
-  gap: calc(var(--s-x) * .5);
-  transform: translateX(-50%);
-}
-
-body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu, .s-page__send-utilities),
-body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu.is-open, .s-page__send-utilities.is-open) {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-
-/* Opened /x surfaces remain invisible but retain their original controls. */
-body.s-page:not(.s-page--rpn) :is(.s-page__composer-menu.is-open, .s-page__send-utilities.is-open) {
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-
-/* The two-line Top Bar control opens /x's primary Composer menu. The prior
-   visibility-only rule intentionally hid every revealed surface, including
-   this menu; restore only the menu's existing open presentation. */
-body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
-  opacity: 1 !important;
-}
-
-/* /x uses the current /rpn Composer menu system: its five locked entries,
-   physical menu alignment, and Theme/Language utility treatment. */
-body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
-  padding-inline-start: 14px;
-  padding-inline-end: 8.5px;
-  text-align: left;
-}
-
-html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
-  text-align: right;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__composer-menu-label {
-  text-align: inherit;
-}
-
-/* /x menu labels use the First Text Group title role exactly; the menu's
-   existing alignment and control geometry remain owned by the rules above. */
-body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
-  color: #FFFFFF;
-  font-family: OOXMEScript, Arial, sans-serif;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-html[lang="ar"] body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
-  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
-}
-
-html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
-  color: #111111;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__x-menu-lock {
-  display: block;
-  flex: 0 0 auto;
-  width: 13px;
-  height: 13px;
-  margin-inline-start: auto;
-  overflow: visible;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__x-menu-lock-body {
-  fill: currentColor;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__x-menu-lock-shackle {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.12;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open {
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__send-utility {
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(-10px);
-  transition: opacity .56s cubic-bezier(.22, .61, .36, 1), filter .56s cubic-bezier(.22, .61, .36, 1), transform .56s cubic-bezier(.22, .61, .36, 1);
-  transition-delay: 0s;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__send-utility {
-  transition-duration: .28s, .28s, .28s;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility {
-  opacity: 1;
-  filter: blur(0);
-  transform: none;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(1) {
-  transition-delay: .36s;
-}
-
-body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
-  transition-delay: .50s;
-}
-
-html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(2) {
-  transition-delay: .50s;
-}
-
-html[dir="rtl"] body.s-page:not(.s-page--rpn) .s-page__send-utilities.is-open .s-page__send-utility:nth-child(3) {
-  transition-delay: .36s;
-}
-
 /* The /x v4 pair uses the current /rpn image-section geometry while retaining
    its own asset, copy, flow reveal, and section architecture. */
 body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .s-page__flow-text {
@@ -2661,19 +2188,6 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) [data-s-copy-group="1"] .
   .s-page__composer,
   .s-page__icon-button,
   .s-page__submit,
-  .s-page__composer-menu { transition: none; }
-  .s-page__send-utilities { transition: none; }
-  .s-page__send-utility { transition: none; }
-  .s-page__send-utility-inner { transition: none; }
   .s-page__add > span { transition: none; }
   .s-page__composer.is-pulsing { animation: none; }
-  .s-page__composer-menu.is-pulsing { animation: none; }
-  .s-page__send-utility.is-pulsing { animation: none; }
-}
-
-/* Center the menu on the composer bar without changing its vertical position. */
-body.s-page:not(.s-page--rpn) .s-page__composer-menu {
-  left: 50%;
-  right: auto;
-  margin-left: calc(var(--s-composer-menu-width) / -2);
 }

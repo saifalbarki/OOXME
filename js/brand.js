@@ -3,11 +3,6 @@
   const root = document.documentElement;
   const page = document.querySelector('.s-page--brand-management');
   const composer = page?.querySelector('[data-s-composer]');
-  const menu = page?.querySelector('[data-s-composer-menu]');
-  const utilities = page?.querySelector('[data-s-send-utilities]');
-  const submit = page?.querySelector('.s-page__x-top-bar-submit');
-  const theme = page?.querySelector('[data-s-utility="theme"]');
-  const language = page?.querySelector('[data-s-utility="language"]');
   const input = page?.querySelector('.s-page__composer-input');
   const view = page?.querySelector('[data-brand-view]');
   const serviceCards = [...page?.querySelectorAll('[data-brand-service-card]') || []];
@@ -18,7 +13,7 @@
   const serviceCounter = page?.querySelector('[data-brand-counter]');
   const content = page?.querySelector('.s-page__content');
   const sections = [...page?.querySelectorAll('[data-s-major-section]') || []];
-  if (!page || !composer || !menu || !utilities || !submit || !theme || !language || !input || !view || !content || sections.length !== 2 || serviceCards.length !== 4 || !serviceViewport || !serviceTrack || !servicePrevious || !serviceNext || !serviceCounter) return;
+  if (!page || !composer || !input || !view || !content || sections.length !== 2 || serviceCards.length !== 4 || !serviceViewport || !serviceTrack || !servicePrevious || !serviceNext || !serviceCounter) return;
   const copy = {
     en: { menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'], title: 'What is Brand Management?', description: 'A premium brand management service built to strengthen positioning, improve business performance, and create a clearer, more scalable brand through strategy, content, sales, customer experience, and growth.', secondary: "Iraq's one and only brand management", secondaryCompact: '#1 Iraq', ask: 'Ask ooxme', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode', view: 'View' },
     ar: { menu: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'], title: 'ما هي ادارة العلامة التجارية؟', description: 'خدمة متميزة لادارة العلامة التجارية، صممت لتعزيز مكانتها وتحسين اداء الاعمال وبناء علامة اوضح واكثر قابلية للتوسع من خلال الاستراتيجية والمحتوى والمبيعات وتجربة العميل والنمو.', secondary: 'ادارة العلامة التجارية الواحد والوحيد في العراق', secondaryCompact: '#الاول_بالعراق', ask: 'اسأل اوكسوم', submit: 'ارسال السؤال', language: 'Switch to English', day: 'التبديل الى الوضع النهاري', dark: 'التبديل الى الوضع الداكن', view: 'عرض' }
@@ -131,36 +126,32 @@
     const wrapsBesideButton = lineHeight > 0 && finalText.getBoundingClientRect().height > (lineHeight * 1.1);
     if (wrapsBesideButton || card.getBoundingClientRect().top < safeTop) finalText.textContent = labels.secondaryCompact;
   };
-  const setMenu = (open) => window.OOXMEHeader?.setMenuOpen(open);
   const applyLanguage = (next, { persist = true } = {}) => {
     const current = next === 'ar' ? 'ar' : 'en';
     const labels = copy[current];
     root.lang = current; root.dir = current === 'ar' ? 'rtl' : 'ltr';
-    page.querySelectorAll('.s-page__composer-menu-label').forEach((node, index) => { node.textContent = labels.menu[index]; });
     page.querySelector('[data-brand-copy="title"]').textContent = labels.title;
     page.querySelector('[data-brand-copy="description"]').textContent = labels.description;
     page.querySelector('[data-brand-copy="secondary"]').textContent = labels.secondary;
     serviceCards.forEach((card) => { const item = serviceCopy[current][Number(card.dataset.brandServiceIndex)]; card.querySelector('[data-brand-service-copy="title"]').textContent = item.title; card.querySelector('[data-brand-service-copy="description"]').textContent = item.description; card.querySelectorAll('[data-brand-service-copy="list"] li').forEach((node, index) => { node.textContent = item.list[index]; }); });
     page.querySelector('.s-page__visually-hidden').textContent = labels.ask;
-    submit.setAttribute('aria-label', labels.submit); language.setAttribute('aria-label', labels.language); language.setAttribute('aria-pressed', String(current === 'en')); language.classList.toggle('is-active', current === 'en'); theme.setAttribute('aria-label', root.classList.contains('is-day-mode') ? labels.dark : labels.day); view.textContent = labels.view; input.lang = current; input.dir = current === 'ar' ? 'rtl' : 'ltr';
+    view.textContent = labels.view; input.lang = current; input.dir = current === 'ar' ? 'rtl' : 'ltr';
     syncServices(false);
     syncFinalText();
   };
-  const applyTheme = (next) => { const day = next === 'day'; const labels = copy[root.lang === 'ar' ? 'ar' : 'en']; root.classList.toggle('is-day-mode', day); theme.classList.toggle('is-active', !day); theme.setAttribute('aria-pressed', String(!day)); theme.setAttribute('aria-label', day ? labels.dark : labels.day); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000'); };
   servicePrevious.addEventListener('click', () => selectService(activeService + (root.lang === 'ar' ? 1 : -1)));
   serviceNext.addEventListener('click', () => selectService(activeService + (root.lang === 'ar' ? -1 : 1)));
   serviceViewport.addEventListener('pointerdown', (event) => { if (event.target.closest('button')) return; serviceDrag = { id: event.pointerId, startX: event.clientX, delta: 0 }; serviceViewport.setPointerCapture?.(event.pointerId); syncServices(false); });
   serviceViewport.addEventListener('pointermove', (event) => { if (!serviceDrag || event.pointerId !== serviceDrag.id) return; serviceDrag.delta = event.clientX - serviceDrag.startX; syncServices(false, serviceDrag.delta); });
   const finishServiceDrag = (event) => { if (!serviceDrag || event.pointerId !== serviceDrag.id) return; const delta = serviceDrag.delta; serviceDrag = null; if (Math.abs(delta) >= 42) { const forward = root.lang === 'ar' ? delta > 0 : delta < 0; selectService(activeService + (forward ? 1 : -1)); } else syncServices(); };
   serviceViewport.addEventListener('pointerup', finishServiceDrag); serviceViewport.addEventListener('pointercancel', finishServiceDrag);
-  composer.addEventListener('submit', (event) => { event.preventDefault(); setMenu(!menu.classList.contains('is-open')); });
-  document.addEventListener('pointerdown', (event) => { if (menu.classList.contains('is-open') && !composer.contains(event.target)) setMenu(false); }, { passive: true });
-  theme.addEventListener('click', () => applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'));
-  language.addEventListener('click', () => applyLanguage(root.lang === 'ar' ? 'en' : 'ar'));
+  window.addEventListener('ooxme-language-change', (event) => {
+    if (event.detail?.language) applyLanguage(event.detail.language, { persist: false });
+  });
   view.addEventListener('click', (event) => { event.preventDefault(); transitionSection(1); });
   window.addEventListener('resize', () => { const current = root.lang; captureEnglishFeaturedGeometry(); if (current !== 'en') applyLanguage(current, { persist: false }); measureServiceCardHeight(); syncServices(false); syncFinalText(); }, { passive: true });
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { persist: false }); });
-  const initialLanguage = root.lang === 'en' ? 'en' : 'ar'; setServiceCopy(initialLanguage); captureEnglishFeaturedGeometry(); applyLanguage(initialLanguage, { persist: false }); applyTheme('dark'); measureServiceCardHeight(); syncServices(false);
+  const initialLanguage = root.lang === 'en' ? 'en' : 'ar'; setServiceCopy(initialLanguage); captureEnglishFeaturedGeometry(); applyLanguage(initialLanguage, { persist: false }); measureServiceCardHeight(); syncServices(false);
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   root.classList.add('s-x-discrete-sections');
   requestAnimationFrame(() => syncServices(false));

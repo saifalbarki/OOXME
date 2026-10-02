@@ -64,32 +64,53 @@
     writeNotificationState(state);
   };
   const pageFadeTargets = [...document.querySelectorAll(
-    'body.s-page--main > .s-page__content, body.s-page--main > .s-page__conversation, body.s-page--main > .s-page__conversation-final'
+    'body.s-page--main > .s-page__content > *, body.s-page--main > .s-page__conversation > *, body.s-page--main > .s-page__conversation-final > *, body.s-page--gallery > .s-page__content > *, body.s-page--space > .s-page__content > *, body.s-page--update > .s-page__content > *, body.s-page--consultation > .s-page__content > *, body.s-page--os > .s-page__content > *, body.s-page--store > .s-page__content > *, body.s-page--brand-management > .s-page__content > *'
   )];
+  let pageScrollLocked = false;
+  let lockedScrollX = 0;
+  let lockedScrollY = 0;
+  const lockPageScroll = () => {
+    if (pageScrollLocked) return;
+    lockedScrollX = window.scrollX;
+    lockedScrollY = window.scrollY;
+    document.documentElement.classList.add('is-homepage-menu-scroll-locked');
+    document.body.classList.add('is-homepage-menu-scroll-locked');
+    pageScrollLocked = true;
+  };
+  const unlockPageScroll = () => {
+    if (!pageScrollLocked) return;
+    document.documentElement.classList.remove('is-homepage-menu-scroll-locked');
+    document.body.classList.remove('is-homepage-menu-scroll-locked');
+    pageScrollLocked = false;
+    if (window.scrollX !== lockedScrollX || window.scrollY !== lockedScrollY) {
+      window.scrollTo({ left: lockedScrollX, top: lockedScrollY, behavior: 'auto' });
+    }
+  };
   const setPageMenuState = (isOpen) => {
-    if (!document.body.classList.contains('s-page--main')) return;
+    const isHomepageMenuPage = document.body.classList.contains('s-page--main')
+      || document.body.classList.contains('s-page--gallery')
+      || document.body.classList.contains('s-page--space')
+      || document.body.classList.contains('s-page--update')
+      || document.body.classList.contains('s-page--consultation')
+      || document.body.classList.contains('s-page--os')
+      || document.body.classList.contains('s-page--store')
+      || document.body.classList.contains('s-page--brand-management');
+    if (!isHomepageMenuPage) return;
     document.body.classList.toggle('is-menu-open', isOpen);
-    pageFadeTargets.forEach((target) => {
-      if ('inert' in target) target.inert = isOpen;
-    });
+    if (isOpen) lockPageScroll();
+    else unlockPageScroll();
+    // Store owns native scroll-snap section navigation. Its section root must
+    // remain interactive while the shared menu is open; the existing direct
+    // dimming/pointer-events rules still prevent accidental page interaction.
+    if (!document.body.classList.contains('s-page--store')) {
+      pageFadeTargets.forEach((target) => {
+        if ('inert' in target) target.inert = isOpen;
+      });
+    }
   };
   let measuredMenuWidth = window.innerWidth;
-  let menuGeometryMeasured = false;
   let menuEdgeMeasured = false;
   let menuDotMeasured = false;
-  const measureMenuGeometry = () => {
-    if (!menu || menuGeometryMeasured) return;
-    const lowerSectionOneCard = document.querySelector(
-      '.s-page__section-2-image-frame--section-1-copy[data-s-main-section-1-image-card]'
-    );
-    if (!lowerSectionOneCard) return;
-    const menuTop = menu.getBoundingClientRect().top;
-    const lowerCardBottom = lowerSectionOneCard.getBoundingClientRect().bottom;
-    const menuHeight = Math.max(0, lowerCardBottom - menuTop);
-    if (!menuHeight) return;
-    composer.style.setProperty('--s-composer-menu-height', `${menuHeight}px`);
-    menuGeometryMeasured = true;
-  };
   const measureMenuEdge = () => {
     if (!menu || menuEdgeMeasured) return;
     const topBarBounds = composer.getBoundingClientRect();
@@ -228,11 +249,14 @@
     const optionList = document.createElement('div');
     optionList.className = 's-page__composer-menu-options';
     optionList.append(...items);
+    const spaceOption = document.createElement('div');
+    spaceOption.className = 's-page__composer-menu-space-option';
+    spaceOption.setAttribute('aria-hidden', 'true');
     const notificationArea = document.createElement('div');
     notificationArea.className = 's-page__composer-menu-notification-area';
     const notificationParts = createNotification();
     notificationArea.append(notificationParts.divider, notificationParts.notification);
-    menu.replaceChildren(optionList, notificationArea);
+    menu.replaceChildren(optionList, spaceOption, notificationArea);
   };
   const markNotificationUnread = () => {
     notificationRead = false;
@@ -253,7 +277,23 @@
     const options = menu.querySelector('.s-page__composer-menu-options');
     if (!options) return;
     menu.classList.remove('is-two-column');
-    if (options.scrollHeight > options.clientHeight + 1) menu.classList.add('is-two-column');
+    menu.style.removeProperty('width');
+    const menuTop = menu.getBoundingClientRect().top;
+    const singleColumnHeight = menu.getBoundingClientRect().height;
+    const availableHeight = Math.max(0, window.innerHeight - menuTop - 8);
+    if (singleColumnHeight <= availableHeight) return;
+
+    menu.classList.add('is-two-column');
+
+    // The labels are intentionally nowrap. If the available Top Bar width
+    // cannot contain both columns, keep a valid single-column menu instead
+    // of squeezing or overflowing the two-column layout.
+    const labelsFit = [...options.querySelectorAll('.s-page__composer-menu-label')]
+      .every((label) => label.scrollWidth <= label.clientWidth + 1);
+    if (!labelsFit) {
+      menu.classList.remove('is-two-column');
+      menu.style.removeProperty('width');
+    }
   };
   const setMenuOpen = (open) => {
     menuExpanded = open;
@@ -263,7 +303,6 @@
       menu?.classList.add('is-open');
       menu?.setAttribute('aria-hidden', 'false');
       if (menu) menu.inert = false;
-      measureMenuGeometry();
       requestAnimationFrame(() => {
         measureMenuEdge();
         requestAnimationFrame(measureMenuDotAlignment);
@@ -394,13 +433,25 @@
     if (composer.contains(event.target)) return;
     setMenuOpen(false);
   }, { passive: true });
+  const preventHomepageMenuScroll = (event) => {
+    if (pageScrollLocked) event.preventDefault();
+  };
+  document.addEventListener('wheel', preventHomepageMenuScroll, { passive: false });
+  document.addEventListener('touchmove', preventHomepageMenuScroll, { passive: false });
+  let measuredMenuHeight = window.innerHeight;
   window.addEventListener('resize', () => {
-    if (window.innerWidth === measuredMenuWidth) return;
+    const widthChanged = window.innerWidth !== measuredMenuWidth;
+    const heightChanged = window.innerHeight !== measuredMenuHeight;
+    if (!widthChanged && !heightChanged) return;
     measuredMenuWidth = window.innerWidth;
-    menuGeometryMeasured = false;
+    measuredMenuHeight = window.innerHeight;
     menuEdgeMeasured = false;
     menuDotMeasured = false;
-    if (menu?.classList.contains('is-open')) setMenuOpen(true);
+    requestAnimationFrame(updateMenuLayoutMode);
+  }, { passive: true });
+  window.addEventListener('orientationchange', () => {
+    menuEdgeMeasured = false;
+    menuDotMeasured = false;
     requestAnimationFrame(updateMenuLayoutMode);
   }, { passive: true });
 
@@ -412,7 +463,6 @@
     menuDotMeasured = false;
     updateAddLabel();
     updateMenuTriggerLabel();
-  requestAnimationFrame(() => requestAnimationFrame(measureMenuGeometry));
     normalizeMenu();
     window.setTimeout(updateMenuTriggerLabel, 0);
     if (menu?.classList.contains('is-open')) {

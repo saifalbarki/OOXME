@@ -2,13 +2,6 @@
   'use strict';
   const root = document.documentElement;
   const page = document.querySelector('.s-page--update');
-  const composer = page?.querySelector('[data-s-composer]');
-  const menu = page?.querySelector('[data-s-composer-menu]');
-  const utilities = page?.querySelector('[data-s-send-utilities]');
-  const face = page?.querySelector('.s-page__add');
-  const submit = page?.querySelector('.s-page__x-top-bar-submit');
-  const theme = page?.querySelector('[data-s-utility="theme"]');
-  const language = page?.querySelector('[data-s-utility="language"]');
   const input = page?.querySelector('.s-page__composer-input');
   const cards = [...page?.querySelectorAll('[data-update-card]') || []];
   const viewport = page?.querySelector('[data-update-carousel-viewport]');
@@ -16,10 +9,8 @@
   const previous = page?.querySelector('[data-update-prev]');
   const next = page?.querySelector('[data-update-next]');
   const counter = page?.querySelector('[data-update-counter]');
-  if (!page || !composer || !menu || !utilities || !face || !submit || !theme || !language || !input || cards.length !== 6 || !viewport || !track || !previous || !next || !counter) return;
+  if (!page || !input || cards.length !== 6 || !viewport || !track || !previous || !next || !counter) return;
 
-  const menuCopy = { en: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'], ar: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'] };
-  const utilityCopy = { en: { submit: 'Submit question', previous: 'Previous card', next: 'Next card', nav: 'Card navigation', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' }, ar: { submit: 'ارسال السؤال', previous: 'البطاقة السابقة', next: 'البطاقة التالية', nav: 'التنقل بين البطاقات', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' } };
   const cardCopy = {
     en: [
       { title: 'Reengineered', description: 'We rebuilt the OOXME operating system for engineering, construction, contracting, and related sectors, with more precise management and execution.' },
@@ -111,20 +102,15 @@
   };
   const applyLanguage = (nextLanguage, { emit = true } = {}) => {
     const current = nextLanguage === 'ar' ? 'ar' : 'en';
-    const utility = utilityCopy[current];
     root.lang = current; root.dir = current === 'ar' ? 'rtl' : 'ltr'; input.lang = current; input.dir = current === 'ar' ? 'rtl' : 'ltr';
-    page.querySelectorAll('.s-page__composer-menu-label').forEach((label, index) => { label.textContent = menuCopy[current][index]; });
     cards.forEach((card) => {
       const copy = cardCopy[current][Number(card.dataset.updateCardIndex)];
       card.querySelector('[data-update-copy="title"]').textContent = copy.title;
       card.querySelector('[data-update-copy="description"]').textContent = copy.description;
     });
-    face.setAttribute('aria-label', current === 'ar' ? 'شخصية اوكسوم' : 'OOXME character'); submit.setAttribute('aria-label', utility.submit); language.classList.toggle('is-active', current === 'en'); language.setAttribute('aria-pressed', String(current === 'en')); language.setAttribute('aria-label', current === 'en' ? utility.toArabic : utility.toEnglish); previous.setAttribute('aria-label', utility.previous); next.setAttribute('aria-label', utility.next); page.querySelector('[data-update-carousel-nav]').setAttribute('aria-label', utility.nav);
     syncCarousel(false);
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: current } }));
   };
-  const applyTheme = (nextTheme) => { const day = nextTheme === 'day'; root.classList.toggle('is-day-mode', day); theme.classList.toggle('is-active', !day); theme.setAttribute('aria-pressed', String(!day)); theme.setAttribute('aria-label', day ? utilityCopy[root.lang === 'ar' ? 'ar' : 'en'].toDark : utilityCopy[root.lang === 'ar' ? 'ar' : 'en'].toDay); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000'); };
-  const setMenu = (open) => window.OOXMEHeader?.setMenuOpen(open);
 
   previous.addEventListener('click', () => selectCard(activeCard - 1));
   next.addEventListener('click', () => selectCard(activeCard + 1));
@@ -147,13 +133,9 @@
   viewport.addEventListener('pointerup', (event) => finishDrag(event, true));
   viewport.addEventListener('pointercancel', (event) => finishDrag(event, false));
   viewport.addEventListener('lostpointercapture', (event) => finishDrag(event, false));
-  composer.addEventListener('submit', (event) => { event.preventDefault(); setMenu(!menu.classList.contains('is-open')); });
-  document.addEventListener('pointerdown', (event) => { if (menu.classList.contains('is-open') && !composer.contains(event.target)) setMenu(false); }, { passive: true });
-  theme.addEventListener('click', () => applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'));
-  language.addEventListener('click', () => applyLanguage(root.lang === 'ar' ? 'en' : 'ar'));
   window.addEventListener('ooxme-language-change', (event) => { if (event.detail?.language && event.detail.language !== root.lang) applyLanguage(event.detail.language, { emit: false }); });
   window.addEventListener('resize', () => syncCarousel(false), { passive: true });
-  applyLanguage(root.lang === 'en' ? 'en' : 'ar', { emit: false }); applyTheme('dark'); positionOuterConsultDots(); syncCarousel(false); activateCardAnimation(cards[activeCard]);
+  applyLanguage(root.lang === 'en' ? 'en' : 'ar', { emit: false }); positionOuterConsultDots(); syncCarousel(false); activateCardAnimation(cards[activeCard]);
   requestAnimationFrame(() => syncCarousel(false));
   document.fonts?.ready.then(() => syncCarousel(false));
   root.classList.remove('s-x-initializing');

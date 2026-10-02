@@ -1,6 +1,7 @@
 @import url("./main.css");
 
-body.s-page--os, body.s-page--os * { font-family: OOXMEEnglish, Arial, sans-serif; }
+/* Keep the shared Top Bar / Side Menu typography authoritative. */
+body.s-page--os { font-family: OOXMEEnglish, Arial, sans-serif; }
 body.s-page--os { touch-action:manipulation; }
 
 body.s-page--os { --s-os-card-limit: 340px; --s-os-card-width: min(76vw, var(--s-os-card-limit)); --s-os-card-padding:calc(var(--s-x) * .65); --s-os-final-card-padding:var(--s-os-card-padding); --s-os-card-gap:calc(var(--s-x) * .42); --s-os-final-divider-space:4px; --s-os-surface: rgba(255,255,255,.12); --s-os-surface-strong: rgba(255,255,255,.16); --s-os-muted: rgba(255,255,255,.58); --s-os-green: #62d99a; --s-os-amber: #f4c76b; --s-os-red: #ff7f7f; --s-os-baseline-gap: calc((var(--s-x) * 2) + var(--s-first-group-bottom-baseline) + 0.12px); }

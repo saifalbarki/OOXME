@@ -1,39 +1,28 @@
-@import url('./space-base.css');
-
 .s-page--space {
   --space-gap-tight: calc(var(--s-x) * .5);
   --space-gap-standard: var(--s-x);
   --space-gap-logo-top: calc(var(--s-x) * 3);
   --space-gap-major: calc(var(--s-x) * 4);
   --space-copy-line-height: 18px;
-  --space-side-menu-width: min(76vw, 340px);
+}
+
+/* Let the route background provide the page color. The Space body itself
+   must not paint a separate bottom/footer layer beneath the content. */
+html.s-route:has(body.s-page--space) body.s-page--space {
+  background-color: transparent !important;
+  background-image: none !important;
 }
 
 @media (orientation: portrait) and (max-width: 600px) {
   html.s-route:has(body.s-page--space) {
     background-color: #000000;
-    background-image: linear-gradient(
-      to bottom,
-      #000000 0 calc(100% - env(safe-area-inset-bottom, 0px)),
-      #0A84FF calc(100% - env(safe-area-inset-bottom, 0px)) 100%
-    );
+    background-image: none;
   }
 
   html.s-route.is-day-mode:has(body.s-page--space) {
     background-color: #FFFFFF;
-    background-image: linear-gradient(
-      to bottom,
-      #FFFFFF 0 calc(100% - env(safe-area-inset-bottom, 0px)),
-      #0A84FF calc(100% - env(safe-area-inset-bottom, 0px)) 100%
-    );
+    background-image: none;
   }
-}
-
-/* Center the Space side menu on the viewport, independent of its full-width top bar. */
-body.s-page.s-page--space .s-page__composer-menu {
-  left: 50%;
-  right: auto;
-  margin-left: calc(var(--s-composer-menu-width) / -2);
 }
 
 body.s-page.s-page--space .space-details__frame {
@@ -43,6 +32,18 @@ body.s-page.s-page--space .space-details__frame {
   max-height: none;
   overflow: visible;
   padding: var(--space-gap-logo-top) var(--space-gap-standard) 0;
+}
+
+/* Space dims its existing content elements only; the shared menu and top bar
+   remain outside this state. */
+body.s-page.s-page--space > .s-page__content > * {
+  opacity: 1;
+  transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
+}
+
+body.s-page.s-page--space.is-menu-open > .s-page__content > * {
+  opacity: .5;
+  pointer-events: none;
 }
 
 body.s-page.s-page--space .space-details__frame--hero {

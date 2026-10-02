@@ -5,15 +5,11 @@
   const page = document.querySelector('.s-page--store');
   const content = page?.querySelector('.s-page__content');
   const composer = page?.querySelector('[data-s-composer]');
-  const menu = page?.querySelector('[data-s-composer-menu]');
-  const utilities = page?.querySelector('[data-s-send-utilities]');
   const addButton = page?.querySelector('.s-page__add');
   const input = page?.querySelector('.s-page__composer-input');
   const submit = composer?.querySelector('button[type="submit"]');
-  const themeButton = page?.querySelector('[data-s-utility="theme"]');
   const languageButton = page?.querySelector('[data-s-utility="language"]');
   const sections = Array.from(page?.querySelectorAll('[data-s-major-section]') || []);
-  const menuItems = Array.from(page?.querySelectorAll('.s-page__composer-menu-item') || []);
   const carousel = page?.querySelector('[data-store-carousel]');
   const carouselViewport = page?.querySelector('[data-store-carousel-viewport]');
   const carouselTrack = page?.querySelector('[data-store-carousel-track]');
@@ -24,7 +20,7 @@
   const featuredCard = page?.querySelector('.s-page__store-featured-card');
   const featuredCopy = featuredCard?.querySelector('.s-page__store-card-copy');
 
-  if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !themeButton || !languageButton || sections.length !== 3 || !carousel || !carouselViewport || !carouselTrack || productCards.length !== 4 || !previousProduct || !nextProduct || !carouselStatus) return;
+  if (!page || !content || !composer || !addButton || !input || !submit || !languageButton || sections.length !== 3 || !carousel || !carouselViewport || !carouselTrack || productCards.length !== 4 || !previousProduct || !nextProduct || !carouselStatus) return;
 
   const copy = {
     en: {
@@ -58,7 +54,6 @@
   let carouselDrag = null;
   let featuredEnglishRows = '';
   const featuredFontsReady = document.fonts?.ready || Promise.resolve();
-  let languageSwitchPending = false;
 
   const syncFeaturedGeometry = (language) => {
     if (!featuredCard || !featuredCopy) return;
@@ -70,8 +65,6 @@
     }
     if (featuredEnglishRows) featuredCopy.style.gridTemplateRows = featuredEnglishRows;
   };
-
-  const setMenuOpen = (open) => window.OOXMEHeader?.setMenuOpen(open);
 
   const updateInputLanguage = () => {
     const arabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(input.value);
@@ -128,28 +121,9 @@
     syncCarousel(false);
   };
 
-  const requestLanguageChange = (next) => {
-    if (languageSwitchPending) return;
-    if (!document.fonts || document.fonts.status === 'loaded') {
-      applyLanguage(next);
-      return;
-    }
-    languageSwitchPending = true;
-    featuredFontsReady.then(() => {
-      syncFeaturedGeometry('en');
-      applyLanguage(next);
-    }).finally(() => { languageSwitchPending = false; });
-  };
-
-  const applyTheme = (next) => {
-    const day = next === 'day';
-    const labels = copy[root.lang === 'ar' ? 'ar' : 'en'];
-    root.classList.toggle('is-day-mode', day);
-    themeButton.classList.toggle('is-active', !day);
-    themeButton.setAttribute('aria-pressed', String(!day));
-    themeButton.setAttribute('aria-label', day ? labels.dark : labels.day);
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000');
-  };
+  window.addEventListener('ooxme-language-change', (event) => {
+    if (event.detail?.language) applyLanguage(event.detail.language, { persist: false });
+  });
 
   const sectionReferenceY = () => Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
   const activeSectionIndex = () => sections.reduce((closest, section, index) => {
@@ -247,14 +221,7 @@
     requestAnimationFrame(render);
   };
 
-  composer.addEventListener('submit', (event) => { event.preventDefault(); setMenuOpen(!menu.classList.contains('is-open')); });
   input.addEventListener('input', updateInputLanguage);
-  addButton.addEventListener('click', (event) => { event.stopPropagation(); setMenuOpen(false); });
-  themeButton.addEventListener('click', (event) => { event.stopPropagation(); applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day'); });
-  languageButton.addEventListener('click', (event) => { event.stopPropagation(); requestLanguageChange(root.lang === 'ar' ? 'en' : 'ar'); });
-  menuItems.forEach((item) => {
-    item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true });
-  });
   page.querySelectorAll('.s-page__store-action').forEach((button) => button.addEventListener('click', (event) => event.preventDefault()));
   previousProduct.addEventListener('click', () => selectProduct(activeProduct - 1));
   nextProduct.addEventListener('click', () => selectProduct(activeProduct + 1));
@@ -280,7 +247,6 @@
   carouselViewport.addEventListener('pointerup', finishCarouselDrag);
   carouselViewport.addEventListener('pointercancel', finishCarouselDrag);
 
-  document.addEventListener('pointerdown', (event) => { if (!composer.contains(event.target)) setMenuOpen(false); }, { passive: true });
   document.addEventListener('pointerdown', () => cancelSectionSettle({ stopNativeScroll: true }), { capture: true, passive: true });
   window.addEventListener('scroll', () => {
     if (sectionSettleTarget !== null) return;
@@ -295,7 +261,6 @@
   root.classList.add('s-x-discrete-sections');
   applyLanguage(root.lang === 'en' ? 'en' : 'ar', { persist: false });
   featuredFontsReady.then(() => { if (root.lang === 'en') syncFeaturedGeometry('en'); });
-  applyTheme('dark');
   requestAnimationFrame(() => {
     syncCarousel(false);
     root.classList.remove('s-x-initializing');

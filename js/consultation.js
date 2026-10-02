@@ -3,13 +3,8 @@
   const page = document.querySelector('.s-page--consultation');
   const content = page?.querySelector('.s-page__content');
   const composer = page?.querySelector('[data-s-composer]');
-  const menu = page?.querySelector('[data-s-composer-menu]');
-  const utilities = page?.querySelector('[data-s-send-utilities]');
   const addButton = page?.querySelector('.s-page__add');
   const input = page?.querySelector('.s-page__composer-input');
-  const submit = composer?.querySelector('button[type="submit"]');
-  const theme = page?.querySelector('[data-s-utility="theme"]');
-  const language = page?.querySelector('[data-s-utility="language"]');
   const sections = Array.from(page?.querySelectorAll('[data-s-major-section]') || []);
   const sectionComposerUnit = page?.querySelector('[data-s-consultation-composer-unit]');
   const sectionComposer = page?.querySelector('[data-s-consultation-composer]');
@@ -33,20 +28,18 @@
   const successOverlayState = page?.querySelector('[data-s-consultation-success-state]');
   const successOverlayTitle = page?.querySelector('[data-s-consultation-success-title]');
   const successOverlayInstruction = page?.querySelector('[data-s-consultation-success-instruction]');
-  const menuItems = Array.from(page?.querySelectorAll('.s-page__composer-menu-item') || []);
   const consultationPricing = globalThis.OOXME_CONSULTATION_PRICING;
-  if (!page || !content || !composer || !menu || !utilities || !addButton || !input || !submit || !theme || !language || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
+  if (!page || !content || !composer || !addButton || !input || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
 
   const copy = {
-    en: { menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'], ask: 'Ask ooxme', add: 'OOXME character', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' },
-    ar: { menu: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'], ask: 'اسأل اوكسوم', add: 'شخصية اوكسوم', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode' }
+    en: { ask: 'Ask ooxme', add: 'OOXME character', language: 'Switch to Arabic' },
+    ar: { ask: 'اسأل اوكسوم', add: 'شخصية اوكسوم', language: 'Switch to English' }
   };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let menuTimer = 0, locked = false, unlockTimer = 0, transitionSettleTimer = 0, touch = null;
   let closedComposerFrameHeight = 0, closedComposerBottom = 0, keyboardSyncFrame = 0, appliedKeyboardOffset = 0, keyboardViewportRevision = 0;
   let keyboardBaselineViewportHeight = 0, keyboardSessionScrollY = null, keyboardSessionActive = false, keyboardOpen = false;
 
-  const setMenuOpen = (open) => window.OOXMEHeader?.setMenuOpen(open);
   const updateInputLanguage = () => {
     const isArabic = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/u.test(input.value);
     input.lang = isArabic ? 'ar' : 'en'; input.dir = isArabic ? 'rtl' : 'ltr'; input.classList.toggle('is-english-input', !isArabic);
@@ -627,13 +620,11 @@
     sectionInputValidationStep = '';
     addBookingAnswer(step, value);
   };
-  const applyLanguage = (next, { clearSectionInput = false, placeSectionCaret = false } = {}) => {
+  const applyLanguage = (next, { clearSectionInput = false, placeSectionCaret = false, emit = true } = {}) => {
     const current = next === 'ar' ? 'ar' : 'en', labels = copy[current];
     document.documentElement.lang = current; document.documentElement.dir = current === 'ar' ? 'rtl' : 'ltr';
-    window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: current } }));
-    page.querySelectorAll('.s-page__composer-menu-label').forEach((label, index) => { label.textContent = labels.menu[index]; });
-    page.querySelector('.s-page__visually-hidden').textContent = labels.ask; addButton.setAttribute('aria-label', labels.add); submit.setAttribute('aria-label', labels.submit);
-    language.classList.toggle('is-active', current === 'en'); language.setAttribute('aria-pressed', String(current === 'en')); language.setAttribute('aria-label', labels.language);
+    if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: current } }));
+    page.querySelector('.s-page__visually-hidden').textContent = labels.ask; addButton.setAttribute('aria-label', labels.add);
     sectionLanguage.classList.toggle('is-active', current === 'en'); sectionLanguage.setAttribute('aria-pressed', String(current === 'en')); sectionLanguage.setAttribute('aria-label', labels.language);
     updateInputLanguage();
     renderBookingFlow({ clearSectionInput, placeSectionCaret });
@@ -644,10 +635,6 @@
       clearSectionInput: true,
       placeSectionCaret: wasFocused
     });
-  };
-  const applyTheme = (next) => {
-    const day = next === 'day', labels = copy[document.documentElement.lang === 'ar' ? 'ar' : 'en'];
-    document.documentElement.classList.toggle('is-day-mode', day); theme.classList.toggle('is-active', !day); theme.setAttribute('aria-pressed', String(!day)); theme.setAttribute('aria-label', day ? labels.dark : labels.day); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000');
   };
   const referenceY = () => Number.parseFloat(getComputedStyle(content).paddingTop) || 0;
   const activeIndex = () => sections.reduce((closest, section, index) => { const distance = Math.abs(section.getBoundingClientRect().top - referenceY()); return !closest || distance < closest.distance ? { index, distance } : closest; }, null)?.index ?? 0;
@@ -795,7 +782,6 @@
     requestAnimationFrame(render);
   };
 
-  composer.addEventListener('submit', (event) => { event.preventDefault(); setMenuOpen(!menu.classList.contains('is-open')); });
   composer.addEventListener('pointerdown', (event) => { if (event.target === composer) composer.classList.add('is-pulsing'); }, { passive: true });
   composer.addEventListener('animationend', () => composer.classList.remove('is-pulsing'));
   input.addEventListener('input', updateInputLanguage);
@@ -945,13 +931,10 @@
   });
   sectionLanguage.addEventListener('pointerdown', (event) => { event.preventDefault(); event.stopPropagation(); });
   sectionLanguage.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); toggleSectionComposerLanguage(); });
-  addButton.addEventListener('click', (event) => { event.stopPropagation(); setMenuOpen(false); });
-  theme.addEventListener('click', (event) => { event.stopPropagation(); applyTheme(document.documentElement.classList.contains('is-day-mode') ? 'dark' : 'day'); });
-  language.addEventListener('pointerdown', (event) => { event.preventDefault(); event.stopPropagation(); });
-  language.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); toggleSectionComposerLanguage(); });
-  menuItems.forEach((item) => { item.addEventListener('pointerdown', () => { item.classList.add('is-active'); setTimeout(() => item.classList.remove('is-active'), 120); }, { passive: true }); });
+  window.addEventListener('ooxme-language-change', (event) => {
+    if (event.detail?.language) applyLanguage(event.detail.language, { emit: false });
+  });
   document.addEventListener('pointerdown', (event) => {
-    if (!composer.contains(event.target)) setMenuOpen(false);
     if (!sectionComposer.contains(event.target) && document.activeElement === sectionInput) sectionInput.blur();
   }, { passive: true });
   if (window.visualViewport) {
@@ -975,6 +958,6 @@
     }
   }, { passive: true });
   document.documentElement.classList.add('s-x-discrete-sections');
-  applyLanguage(document.documentElement.lang === 'en' ? 'en' : 'ar', { persist: false, emit: false }); applyTheme('dark'); establishClosedComposerBaseline();
+  applyLanguage(document.documentElement.lang === 'en' ? 'en' : 'ar', { emit: false }); establishClosedComposerBaseline();
   requestAnimationFrame(() => { renderBookingFlow(); restoreClosedSectionComposerBaseline(); document.documentElement.classList.remove('s-x-initializing'); void loadNearestBookingDays(); });
 })();

@@ -19,6 +19,11 @@ body.s-page:not(.s-page--rpn) .s-page__composer-menu {
   margin-inline: 0 !important;
 }
 
+body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-two-column {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
 html[dir="ltr"] body.s-page:not(.s-page--rpn) .s-page__composer-menu {
   left: 0 !important;
   right: auto !important;
@@ -51,7 +56,7 @@ body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {
 
 body.s-page:not(.s-page--rpn) .s-page__send-utilities {
   width: max-content !important;
-  top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) * .5)) !important;
+  top: calc(100% + var(--s-x) + 1px) !important;
   bottom: auto !important;
   display: flex !important;
   flex-direction: column !important;

@@ -4,13 +4,7 @@
   const root = document.documentElement;
   const page = document.querySelector('.s-page--space');
   const composer = page?.querySelector('[data-s-composer]');
-  const composerMenu = composer?.querySelector('[data-s-composer-menu]');
-  const sendUtilities = composer?.querySelector('[data-s-send-utilities]');
-  const themeUtility = composer?.querySelector('[data-s-utility="theme"]');
-  const languageUtility = composer?.querySelector('[data-s-utility="language"]');
   const emailAction = page?.querySelector('.space-application__button[data-s-contact="email"]');
-  const addButton = composer?.querySelector('.s-page__add');
-  const submitButton = composer?.querySelector('button[type="submit"]');
   const numberNode = page?.querySelector('[data-space-hero-number]');
   const spaceMark = page?.querySelector('.space-details__mark');
   const pulseTargets = [
@@ -18,13 +12,7 @@
   ];
   const faq = page?.querySelector('.space-faq');
 
-  if (!page || !composer || !composerMenu || !sendUtilities || !themeUtility
-    || !languageUtility || !addButton || !submitButton || !numberNode) return;
-
-  const utilityCopy = {
-    en: { submit: 'Submit question', toArabic: 'Switch to Arabic', toDay: 'Switch to Day Mode', toDark: 'Switch to Dark Mode' },
-    ar: { submit: 'ارسال السؤال', toEnglish: 'Switch to English', toDay: 'التبديل الى الوضع النهاري', toDark: 'التبديل الى الوضع الداكن' }
-  };
+  if (!page || !composer || !numberNode) return;
 
   const updateEmailAction = () => {
     if (!emailAction) return;
@@ -34,45 +22,7 @@
     emailAction.href = `mailto:hello@ooxme.com?subject=${encodeURIComponent(subject)}`;
   };
 
-  let menuOpen = false;
-  const setMenuOpen = (open) => {
-    menuOpen = Boolean(open);
-    window.OOXMEHeader?.setMenuOpen(menuOpen);
-  };
-
-  const updateThemeLabel = () => {
-    const copy = utilityCopy[root.lang === 'ar' ? 'ar' : 'en'];
-    themeUtility.setAttribute('aria-label', root.classList.contains('is-day-mode') ? copy.toDark : copy.toDay);
-  };
-
-  const applyTheme = (theme) => {
-    const day = theme === 'day';
-    root.classList.toggle('is-day-mode', day);
-    themeUtility.classList.toggle('is-active', !day);
-    themeUtility.setAttribute('aria-pressed', String(!day));
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', day ? '#FFFFFF' : '#000000');
-    updateThemeLabel();
-  };
-
-  const applyLanguage = (next, { emit = true } = {}) => {
-    const language = next === 'ar' ? 'ar' : 'en';
-    root.lang = language;
-    root.dir = language === 'ar' ? 'rtl' : 'ltr';
-    const copy = utilityCopy[language];
-    addButton.setAttribute('aria-label', language === 'ar' ? 'شخصية اوكسوم' : 'OOXME character');
-    submitButton.setAttribute('aria-label', copy.submit);
-    languageUtility.classList.toggle('is-active', language === 'en');
-    languageUtility.setAttribute('aria-pressed', String(language === 'en'));
-    languageUtility.setAttribute('aria-label', language === 'en' ? copy.toArabic : copy.toEnglish);
-    updateThemeLabel();
-    updateEmailAction();
-    if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language } }));
-  };
-
-  window.addEventListener('ooxme-language-change', (event) => {
-    const language = event.detail?.language;
-    if (language && language !== root.lang) applyLanguage(language, { emit: false });
-  });
+  window.addEventListener('ooxme-language-change', updateEmailAction);
 
   const numberTarget = 500000;
   const numberDurationMs = 1100;
@@ -212,9 +162,7 @@
     numberFrame = requestAnimationFrame(step);
   };
 
-  applyLanguage(root.lang === 'ar' ? 'ar' : 'en', { emit: false });
-  applyTheme('dark');
-  setMenuOpen(false);
+  updateEmailAction();
   pulseTargets.forEach((target) => {
     target.addEventListener('pointerdown', () => {
       target.classList.remove('is-pulsing');
@@ -234,23 +182,6 @@
   } else {
     animateNumber();
   }
-
-  composer.addEventListener('submit', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setMenuOpen(!menuOpen);
-  });
-  document.addEventListener('pointerdown', (event) => {
-    if (!composer.contains(event.target)) setMenuOpen(false);
-  }, { passive: true });
-  themeUtility.addEventListener('click', (event) => {
-    event.stopPropagation();
-    applyTheme(root.classList.contains('is-day-mode') ? 'dark' : 'day');
-  });
-  languageUtility.addEventListener('click', (event) => {
-    event.stopPropagation();
-    applyLanguage(root.lang === 'ar' ? 'en' : 'ar');
-  });
 
   requestAnimationFrame(() => root.classList.remove('s-x-initializing'));
 })();

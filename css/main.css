@@ -147,32 +147,83 @@ html.s-x-initializing .s-page__submit:active {
   padding-bottom: calc(156px + env(safe-area-inset-bottom) + var(--s-keyboard-offset, 0px));
 }
 
-body.s-page.s-page--main > :is(.s-page__content, .s-page__conversation, .s-page__conversation-final) {
+body.s-page.s-page--main > .s-page__content > *,
+body.s-page.s-page--main > .s-page__conversation > *,
+body.s-page.s-page--main > .s-page__conversation-final > * {
   opacity: 1;
   transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
 }
 
-body.s-page.s-page--main.is-menu-open > :is(.s-page__content, .s-page__conversation, .s-page__conversation-final) {
-  pointer-events: none;
-}
-
-body.s-page.s-page--main::before {
-  position: fixed;
-  z-index: 19;
-  inset: 0;
-  background: rgba(0, 0, 0, .5);
-  content: "";
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .26s ease-in-out;
-}
-
-body.s-page.s-page--main.is-menu-open::before {
+body.s-page.s-page--gallery > .s-page__content > * {
   opacity: 1;
+  transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
 }
 
-html.s-route.is-day-mode body.s-page.s-page--main::before {
-  background: rgba(255, 255, 255, .5);
+body.s-page.s-page--update > .s-page__content > * {
+  opacity: 1;
+  transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
+}
+
+body.s-page.s-page--consultation > .s-page__content > * {
+  opacity: 1;
+  transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
+}
+
+body.s-page.s-page--os > .s-page__content > * {
+  opacity: 1;
+  transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
+}
+
+body.s-page.s-page--store > .s-page__content > * {
+  opacity: 1;
+  transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
+}
+
+body.s-page.s-page--brand-management > .s-page__content > * {
+  opacity: 1;
+  transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
+}
+
+body.s-page.s-page--main.is-menu-open > .s-page__content > *,
+body.s-page.s-page--main.is-menu-open > .s-page__conversation > *,
+body.s-page.s-page--main.is-menu-open > .s-page__conversation-final > * {
+  opacity: .5;
+  pointer-events: none;
+}
+
+body.s-page.s-page--gallery.is-menu-open > .s-page__content > * {
+  opacity: .5;
+  pointer-events: none;
+}
+
+body.s-page.s-page--update.is-menu-open > .s-page__content > * {
+  opacity: .5;
+  pointer-events: none;
+}
+
+body.s-page.s-page--consultation.is-menu-open > .s-page__content > * {
+  opacity: .5;
+  pointer-events: none;
+}
+
+body.s-page.s-page--os.is-menu-open > .s-page__content > * {
+  opacity: .5;
+  pointer-events: none;
+}
+
+body.s-page.s-page--store.is-menu-open > .s-page__content > * {
+  opacity: .5;
+  pointer-events: none;
+}
+
+body.s-page.s-page--brand-management.is-menu-open > .s-page__content > * {
+  opacity: .5;
+  pointer-events: none;
+}
+
+html.is-homepage-menu-scroll-locked,
+html.is-homepage-menu-scroll-locked body.s-page:is(.s-page--main, .s-page--gallery, .s-page--update, .s-page--consultation, .s-page--os, .s-page--store, .s-page--brand-management) {
+  overscroll-behavior: none;
 }
 
 .s-page__group {
@@ -2510,8 +2561,6 @@ html.s-route.is-day-mode .s-page__conversation-final-copy {
   --s-composer-backdrop: blur(20px) saturate(125%);
   --s-menu-control-stroke-width: 2.12;
   --s-composer-menu-width: min(76vw, 340px);
-  /* Fixed from the rendered menu-top to Section 1 lower-card baseline: 548px. */
-  --s-composer-menu-height: 548px;
   --s-composer-height: 48px;
   --s-control-stagger: .06s;
   position: fixed;
@@ -2624,9 +2673,9 @@ html[lang="ar"] .s-page__composer-input:placeholder-shown {
   width: var(--s-composer-menu-width);
   max-width: 100%;
   box-sizing: border-box;
-  height: var(--s-composer-menu-height);
-  min-height: var(--s-composer-menu-height);
-  max-height: var(--s-composer-menu-height);
+  height: auto;
+  min-height: 0;
+  max-height: none;
   margin: 0;
   padding: var(--s-menu-inset);
   flex-direction: column;
@@ -2652,15 +2701,45 @@ html[dir="rtl"] .s-page__composer-menu {
 .s-page__composer-menu-options {
   display: grid;
   min-height: 0;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   grid-template-columns: minmax(0, 1fr);
   grid-auto-rows: 36px;
   gap: 6px;
   align-content: start;
 }
 
+.s-page__composer-menu-space-option {
+  width: 100%;
+  height: 36px;
+  min-height: 36px;
+  margin-top: 6px;
+  flex: 0 0 36px;
+  pointer-events: none;
+}
+
 .s-page__composer-menu.is-two-column .s-page__composer-menu-options {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Two columns need the full Top Bar content width; the menu remains bounded
+   by the composer itself and therefore cannot extend past its edges. */
+.s-page__composer-menu.is-two-column {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Once expanded, remove the legacy left/right over-constraint so the runtime
+   width can reach the Top Bar boundary without being collapsed by absolute
+   positioning rules inherited by older page stylesheets. */
+body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-two-column {
+  right: 0;
+  left: auto;
+  max-width: none;
+}
+
+html[dir="ltr"] body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-two-column {
+  right: auto;
+  left: 0;
 }
 
 .s-page__composer-menu.is-open {
@@ -2691,6 +2770,7 @@ html[dir="rtl"] .s-page__composer-menu {
   text-decoration: none;
   z-index: 0;
   padding-inline-start: var(--s-composer-menu-dot-item-padding, 7px);
+  white-space: nowrap;
 }
 
 .s-page__composer-menu-icon {
@@ -2842,7 +2922,8 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__composer-menu-no
 .s-page__composer-menu.is-two-column .s-page__composer-menu-notification-area::before {
   display: block;
   grid-column: 1 / -1;
-  width: 100%;
+  width: calc(100% - (var(--s-composer-menu-dot-item-padding, 7px) * 2));
+  justify-self: center;
 }
 
 .s-page__composer-menu-notification-area .s-page__composer-menu-notification-divider {
@@ -2885,7 +2966,7 @@ html.s-route.is-day-mode body.s-page:not(.s-page--rpn) .s-page__composer-menu-no
 }
 
 .s-page__composer-menu.is-two-column .s-page__composer-menu-notification-area .s-page__composer-menu-notification-divider {
-  width: 100%;
+  width: calc(100% - (var(--s-composer-menu-dot-item-padding, 7px) * 2));
 }
 
 .s-page__composer-menu-notification-content {
@@ -3526,8 +3607,18 @@ body.s-page:not(.s-page--rpn) .s-page__composer-menu {
   width: var(--s-composer-menu-width);
 }
 
+body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-two-column {
+  right: 0;
+  left: auto;
+}
+
+html[dir="ltr"] body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-two-column {
+  right: auto;
+  left: 0;
+}
+
 body.s-page:not(.s-page--rpn) .s-page__send-utilities {
-  top: calc(100% + var(--s-x) + 1px + var(--s-composer-menu-height) + (var(--s-x) * .5));
+  top: calc(100% + var(--s-x) + 1px);
   right: auto;
   bottom: auto;
   left: 50%;
@@ -3779,8 +3870,16 @@ html.s-route.is-day-mode body.s-page--main :is(.s-page__group-description, .s-pa
   .s-page__submit,
   .s-page__composer-menu,
   .s-page__send-utilities,
-  body.s-page.s-page--main > :is(.s-page__content, .s-page__conversation, .s-page__conversation-final),
-  body.s-page.s-page--main::before { transition: none; }
+  body.s-page.s-page--main > .s-page__content > *,
+  body.s-page.s-page--main > .s-page__conversation > *,
+  body.s-page.s-page--main > .s-page__conversation-final > *,
+  body.s-page.s-page--gallery > .s-page__content > *,
+  body.s-page.s-page--space > .s-page__content > *,
+  body.s-page.s-page--update > .s-page__content > *,
+  body.s-page.s-page--consultation > .s-page__content > *,
+  body.s-page.s-page--os > .s-page__content > *,
+  body.s-page.s-page--store > .s-page__content > *,
+  body.s-page.s-page--brand-management > .s-page__content > * { transition: none; }
   .s-page__send-utility { transition: none; }
   .s-page__send-utility-inner { transition: none; }
   .s-page__add > span { transition: none; }
