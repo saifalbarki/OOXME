@@ -274,6 +274,19 @@
   const readyAssets = new Map();
   let geometryWidth = 0;
   let stableDeckSize = 0;
+  const cancelMotionFrame = () => {
+    if (!motionFrame) return;
+    window.cancelAnimationFrame(motionFrame);
+    motionFrame = 0;
+  };
+  const invalidateMotion = () => {
+    cancelMotionFrame();
+    motionToken += 1;
+  };
+  const releasePointer = (pointerId) => {
+    if (pointerId == null || !deck.hasPointerCapture?.(pointerId)) return;
+    deck.releasePointerCapture?.(pointerId);
+  };
   const setDragStyle = (x = 0, y = 0, scale = 1) => {
     const rotate = Math.max(-3.5, Math.min(3.5, x * .018));
     dragMotion = { x, y, scale, rotate };
@@ -367,12 +380,25 @@
     image.decoding = 'async';
     image.width = asset.width;
     image.height = asset.height;
-    const promise = new Promise((resolve) => {
-      const finish = () => resolve();
+    const promise = new Promise((resolve, reject) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+      const fail = () => {
+        if (settled) return;
+        settled = true;
+        reject(new Error(`Gallery asset failed to load: ${asset.src}`));
+      };
       image.addEventListener('load', finish, { once: true });
-      image.addEventListener('error', finish, { once: true });
+      image.addEventListener('error', fail, { once: true });
       image.src = asset.src;
-      if (image.complete) finish();
+      if (image.complete) {
+        if (image.naturalWidth > 0) finish();
+        else fail();
+      }
     });
     readyAssets.set(index, promise);
     return promise;
@@ -386,12 +412,13 @@
     if (image.getAttribute('src') !== asset.src) image.src = asset.src;
     image.width = asset.width;
     image.height = asset.height;
-    if (image.decode) await image.decode().catch(() => {});
+    if (image.decode) await image.decode();
+    if (image.complete && image.naturalWidth === 0) throw new Error(`Gallery image is unavailable: ${asset.src}`);
   };
   const preloadNeighbors = () => {
     [order[3], order[4], order[order.length - 1], order[order.length - 2]]
       .filter(Boolean)
-      .forEach((card) => preloadAsset(Number(card.dataset.assetIndex)));
+      .forEach((card) => { void preloadAsset(Number(card.dataset.assetIndex)).catch(() => {}); });
   };
   const renderStack = () => {
     if (!assets.length || order.length < 3) return;
@@ -416,14 +443,47 @@
     syncGeometry();
     deck.setAttribute('aria-label', root.lang === 'ar' ? `عرض صورة ${copy.ar.title} التالية` : `View next ${copy.en.title} project image`);
   };
+  const stabilizeStack = () => {
+    invalidateMotion();
+    pointer = null;
+    busy = false;
+    motionMode = 'idle';
+    dragMotion = { x: 0, y: 0, scale: 1, rotate: 0 };
+    suppressNextClick = false;
+    renderStack();
+  };
+  const ensureCardReadyWithTimeout = async (card, timeout = 4500) => {
+    let timer = 0;
+    try {
+      await Promise.race([
+        ensureCardReady(card),
+        new Promise((_, reject) => {
+          timer = window.setTimeout(() => reject(new Error('Gallery asset readiness timed out')), timeout);
+        })
+      ]);
+    } finally {
+      if (timer) window.clearTimeout(timer);
+    }
+  };
   const runAdvance = async (direction = 'left', startX = 0, startY = 0, startScale = 1) => {
     if (!assets.length || order.length < 3 || !busy || !['idle', 'dragging'].includes(motionMode)) return;
     const outgoing = order[0];
     const oldRearOne = order[1];
     const oldRearTwo = order[2];
     const nextRear = order[3];
-    if (!nextRear) { busy = false; return; }
-    await ensureCardReady(nextRear);
+    const token = ++motionToken;
+    motionMode = 'preparing';
+    if (!nextRear) {
+      stabilizeStack();
+      return;
+    }
+    try {
+      await ensureCardReadyWithTimeout(nextRear);
+    } catch (error) {
+      stabilizeStack();
+      return;
+    }
+    if (token !== motionToken || !busy || motionMode !== 'preparing') return;
     const nextPrimary = oldRearOne;
     const nextPrimaryAsset = assets[Number(nextPrimary.dataset.assetIndex)];
     setDescription(root.lang, nextPrimaryAsset?.name || activeAssetName, true);
@@ -439,7 +499,6 @@
     const startRotate = Math.max(-3.5, Math.min(3.5, startX * .018));
     const duration = 500;
     const startTime = performance.now();
-    const token = ++motionToken;
     motionMode = 'transition';
 
     setCardPosition(outgoing, 'primary');
@@ -473,8 +532,11 @@
         motionFrame = requestAnimationFrame(frame);
         return;
       }
+      motionFrame = 0;
       order = [...order.slice(1), order[0]];
       motionMode = 'idle';
+      dragMotion = { x: 0, y: 0, scale: 1, rotate: 0 };
+      suppressNextClick = false;
       renderStack();
       preloadNeighbors();
       busy = false;
@@ -484,10 +546,11 @@
   const scheduleAdvance = (direction = 'left') => {
     if (busy || !assets.length) return;
     busy = true;
-    void runAdvance(direction, 0, 0, .982);
+    void runAdvance(direction, 0, 0, .982).catch(() => stabilizeStack());
   };
   const cancelDrag = () => {
     if (!order[0] || motionMode !== 'dragging') return;
+    cancelMotionFrame();
     motionMode = 'canceling';
     const start = { ...dragMotion };
     const started = performance.now();
@@ -498,7 +561,10 @@
       const eased = 1 - ((1 - progress) ** 3);
       setCardTransform(order[0], mix(start.x, 0, eased), mix(start.y, 0, eased), mix(start.scale, 1, eased), mix(start.rotate, 0, eased), 1);
       if (progress < 1) { motionFrame = requestAnimationFrame(frame); return; }
+      motionFrame = 0;
       motionMode = 'idle';
+      dragMotion = { x: 0, y: 0, scale: 1, rotate: 0 };
+      suppressNextClick = false;
       renderStack();
     };
     motionFrame = requestAnimationFrame(frame);
@@ -513,8 +579,9 @@
     scheduleAdvance(['ArrowLeft', 'ArrowUp'].includes(event.key) ? 'right' : 'left');
   });
   deck.addEventListener('pointerdown', (event) => {
-    if (busy || pointer || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    if (busy || pointer || motionMode !== 'idle' || (event.pointerType === 'mouse' && event.button !== 0)) return;
     pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false, axis: null };
+    deck.setPointerCapture?.(event.pointerId);
     suppressNextClick = false;
   });
   deck.addEventListener('pointermove', (event) => {
@@ -530,7 +597,6 @@
         suppressNextClick = true;
         return;
       }
-      deck.setPointerCapture?.(event.pointerId);
       motionMode = 'dragging';
       setDragStyle(0, 0, .982);
     }
@@ -541,25 +607,35 @@
   }, { passive: false });
   const finishPointer = (event, cancelled = false) => {
     if (!pointer || event.pointerId !== pointer.id) return;
+    const pointerId = pointer.id;
     const dx = event.clientX - pointer.x;
     const dy = event.clientY - pointer.y;
     const moved = pointer.moved || dx !== 0 || dy !== 0;
     const axis = pointer.axis;
     pointer = null;
+    releasePointer(pointerId);
     if (!moved || axis !== 'horizontal') {
-      motionMode = 'idle';
+      stabilizeStack();
       return;
     }
+    if (cancelled) { suppressNextClick = false; cancelDrag(); return; }
     suppressNextClick = true;
-    if (cancelled) { cancelDrag(); return; }
     if (busy) return;
     busy = true;
     const releaseScale = .982;
     setDragStyle(dx, 0, releaseScale);
-    runAdvance(dx < 0 ? 'left' : 'right', dx, dy, releaseScale);
+    void runAdvance(dx < 0 ? 'left' : 'right', dx, 0, releaseScale).catch(() => stabilizeStack());
   };
   deck.addEventListener('pointerup', finishPointer);
   deck.addEventListener('pointercancel', (event) => finishPointer(event, true));
+  deck.addEventListener('lostpointercapture', (event) => {
+    if (!pointer || event.pointerId !== pointer.id) return;
+    const wasHorizontal = pointer.axis === 'horizontal';
+    pointer = null;
+    suppressNextClick = false;
+    if (wasHorizontal && motionMode === 'dragging') cancelDrag();
+    else stabilizeStack();
+  });
   window.addEventListener('resize', () => {
     syncGeometry();
     syncTextFrame();
@@ -631,7 +707,7 @@
           page.querySelectorAll('[data-gallery-reveal]').forEach((node) => revealObserver.observe(node));
         }
         else revealOnce();
-      });
+      }).catch(() => stabilizeStack());
     })
     .catch(() => {});
   });
