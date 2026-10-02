@@ -270,8 +270,12 @@
   let motionToken = 0;
   let motionMode = 'idle';
   let hasRevealed = false;
+  let interactionReady = false;
+  let revealSettleTimer = 0;
+  let transitionWatchdog = 0;
   let dragMotion = { x: 0, y: 0, scale: 1, rotate: 0 };
   const readyAssets = new Map();
+  const decodedCards = new WeakSet();
   let geometryWidth = 0;
   let stableDeckSize = 0;
   const cancelMotionFrame = () => {
@@ -279,8 +283,14 @@
     window.cancelAnimationFrame(motionFrame);
     motionFrame = 0;
   };
+  const clearTransitionWatchdog = () => {
+    if (!transitionWatchdog) return;
+    window.clearTimeout(transitionWatchdog);
+    transitionWatchdog = 0;
+  };
   const invalidateMotion = () => {
     cancelMotionFrame();
+    clearTransitionWatchdog();
     motionToken += 1;
   };
   const releasePointer = (pointerId) => {
@@ -400,25 +410,48 @@
         else fail();
       }
     });
-    readyAssets.set(index, promise);
-    return promise;
+    const retryablePromise = promise.catch((error) => {
+      if (readyAssets.get(index) === retryablePromise) readyAssets.delete(index);
+      throw error;
+    });
+    readyAssets.set(index, retryablePromise);
+    return retryablePromise;
   };
   const ensureCardReady = async (card) => {
     const index = Number(card.dataset.assetIndex);
     const asset = assets[index];
     if (!asset) return;
-    await preloadAsset(index);
     const image = card.querySelector('img');
-    if (image.getAttribute('src') !== asset.src) image.src = asset.src;
-    image.width = asset.width;
-    image.height = asset.height;
-    if (image.decode) await image.decode();
-    if (image.complete && image.naturalWidth === 0) throw new Error(`Gallery image is unavailable: ${asset.src}`);
+    if (decodedCards.has(card) && image.getAttribute('src') === asset.src && image.complete && image.naturalWidth > 0) return;
+    try {
+      await preloadAsset(index);
+      if (image.getAttribute('src') !== asset.src) image.src = asset.src;
+      image.width = asset.width;
+      image.height = asset.height;
+      if (image.decode) {
+        try { await image.decode(); }
+        catch (error) {
+          // decode() can reject under memory pressure even when the loaded
+          // image is still drawable. Only a genuinely unavailable image fails.
+          if (!image.complete || image.naturalWidth === 0) throw error;
+        }
+      }
+      if (image.complete && image.naturalWidth === 0) throw new Error(`Gallery image is unavailable: ${asset.src}`);
+      decodedCards.add(card);
+    } catch (error) {
+      readyAssets.delete(index);
+      throw error;
+    }
   };
   const preloadNeighbors = () => {
     [order[3], order[4], order[order.length - 1], order[order.length - 2]]
       .filter(Boolean)
-      .forEach((card) => { void preloadAsset(Number(card.dataset.assetIndex)).catch(() => {}); });
+      .forEach((card) => { void ensureCardReady(card).catch(() => {}); });
+  };
+  const isCardReady = (card) => {
+    const asset = assets[Number(card?.dataset.assetIndex)];
+    const image = card?.querySelector('img');
+    return Boolean(asset && image && decodedCards.has(card) && image.getAttribute('src') === asset.src && image.complete && image.naturalWidth > 0);
   };
   const renderStack = () => {
     if (!assets.length || order.length < 3) return;
@@ -452,6 +485,18 @@
     suppressNextClick = false;
     renderStack();
   };
+  const completeTransition = (token) => {
+    if (token !== motionToken || motionMode !== 'transition') return;
+    cancelMotionFrame();
+    clearTransitionWatchdog();
+    order = [...order.slice(1), order[0]];
+    motionMode = 'idle';
+    dragMotion = { x: 0, y: 0, scale: 1, rotate: 0 };
+    suppressNextClick = false;
+    renderStack();
+    preloadNeighbors();
+    busy = false;
+  };
   const ensureCardReadyWithTimeout = async (card, timeout = 4500) => {
     let timer = 0;
     try {
@@ -477,29 +522,44 @@
       stabilizeStack();
       return;
     }
-    try {
-      await ensureCardReadyWithTimeout(nextRear);
-    } catch (error) {
-      stabilizeStack();
-      return;
+    // A detached preload is not enough for the visible stack: assigning and
+    // decoding the queued card can still take time on mobile. Never leave the
+    // outgoing card at its release transform while that work is pending.
+    const startFromRest = !isCardReady(nextRear);
+    if (startFromRest) {
+      setCardTransform(outgoing, 0, 0, 1, 0, 1);
+      dragMotion = { x: 0, y: 0, scale: 1, rotate: 0 };
+    }
+    if (!isCardReady(nextRear)) {
+      try {
+        await ensureCardReadyWithTimeout(nextRear);
+      } catch (error) {
+        stabilizeStack();
+        return;
+      }
     }
     if (token !== motionToken || !busy || motionMode !== 'preparing') return;
     const nextPrimary = oldRearOne;
     const nextPrimaryAsset = assets[Number(nextPrimary.dataset.assetIndex)];
     setDescription(root.lang, nextPrimaryAsset?.name || activeAssetName, true);
 
+    const transitionStartX = startFromRest ? 0 : startX;
+    const transitionStartY = startFromRest ? 0 : startY;
+    const transitionStartScale = startFromRest ? 1 : startScale;
+
     const outgoingRect = outgoing.getBoundingClientRect();
     const exitDistance = direction === 'left'
-      ? -(outgoingRect.left - startX + outgoingRect.width)
-      : window.innerWidth - (outgoingRect.left - startX);
+      ? -(outgoingRect.left - transitionStartX + outgoingRect.width)
+      : window.innerWidth - (outgoingRect.left - transitionStartX);
     const tail = Number(getComputedStyle(deck).getPropertyValue('--gallery-tail-height').replace('px', '')) || 10;
     const outgoingWidth = outgoingRect.width;
     const rearOneScale = .9;
     const rearTwoScale = .82 / .9;
-    const startRotate = Math.max(-3.5, Math.min(3.5, startX * .018));
+    const startRotate = Math.max(-3.5, Math.min(3.5, transitionStartX * .018));
     const duration = 500;
     const startTime = performance.now();
     motionMode = 'transition';
+    transitionWatchdog = window.setTimeout(() => completeTransition(token), duration + 180);
 
     setCardPosition(outgoing, 'primary');
     setCardPosition(oldRearOne, 'primary');
@@ -517,7 +577,7 @@
       const progress = Math.min(1, (now - startTime) / duration);
       if (progress < .58) {
         const phase = ease(progress / .58);
-        setCardTransform(outgoing, lerp(startX, exitDistance, phase), lerp(startY, 0, phase), lerp(startScale, .985, phase), lerp(startRotate, direction === 'left' ? -3 : 3, phase), 1);
+        setCardTransform(outgoing, lerp(transitionStartX, exitDistance, phase), lerp(transitionStartY, 0, phase), lerp(transitionStartScale, .985, phase), lerp(startRotate, direction === 'left' ? -3 : 3, phase), 1);
       } else {
         if (outgoing.style.zIndex !== '1') outgoing.style.zIndex = '1';
         const phase = ease((progress - .58) / .42);
@@ -532,14 +592,7 @@
         motionFrame = requestAnimationFrame(frame);
         return;
       }
-      motionFrame = 0;
-      order = [...order.slice(1), order[0]];
-      motionMode = 'idle';
-      dragMotion = { x: 0, y: 0, scale: 1, rotate: 0 };
-      suppressNextClick = false;
-      renderStack();
-      preloadNeighbors();
-      busy = false;
+      completeTransition(token);
     };
     motionFrame = requestAnimationFrame(frame);
   };
@@ -570,16 +623,18 @@
     motionFrame = requestAnimationFrame(frame);
   };
   deck.addEventListener('click', () => {
+    if (!interactionReady) return;
     if (suppressNextClick) { suppressNextClick = false; return; }
     scheduleAdvance('left');
   });
   deck.addEventListener('keydown', (event) => {
     if (!['ArrowRight', 'ArrowDown', 'Enter', ' ', 'ArrowLeft', 'ArrowUp'].includes(event.key)) return;
     event.preventDefault();
+    if (!interactionReady) return;
     scheduleAdvance(['ArrowLeft', 'ArrowUp'].includes(event.key) ? 'right' : 'left');
   });
   deck.addEventListener('pointerdown', (event) => {
-    if (busy || pointer || motionMode !== 'idle' || (event.pointerType === 'mouse' && event.button !== 0)) return;
+    if (!interactionReady || busy || pointer || motionMode !== 'idle' || (event.pointerType === 'mouse' && event.button !== 0)) return;
     pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, moved: false, axis: null };
     deck.setPointerCapture?.(event.pointerId);
     suppressNextClick = false;
@@ -618,6 +673,12 @@
       stabilizeStack();
       return;
     }
+    const swipeThreshold = Math.max(32, Math.min(96, deck.getBoundingClientRect().width * .12));
+    if (Math.abs(dx) < swipeThreshold) {
+      suppressNextClick = true;
+      cancelDrag();
+      return;
+    }
     if (cancelled) { suppressNextClick = false; cancelDrag(); return; }
     suppressNextClick = true;
     if (busy) return;
@@ -645,8 +706,30 @@
     if (hasRevealed) return;
     hasRevealed = true;
     page.dataset.galleryRevealed = 'true';
+    deck.dataset.galleryInteractionReady = 'false';
     page.querySelectorAll('[data-gallery-reveal]').forEach((node) => node.classList.add('is-visible'));
     revealObserver?.disconnect();
+    window.clearTimeout(revealSettleTimer);
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      interactionReady = true;
+      deck.dataset.galleryInteractionReady = 'true';
+      return;
+    }
+    revealSettleTimer = window.setTimeout(() => {
+      interactionReady = true;
+      deck.dataset.galleryInteractionReady = 'true';
+    }, 760);
+  };
+  const markInitializationError = (error) => {
+    page.dataset.galleryState = 'error';
+    interactionReady = false;
+    deck.dataset.galleryInteractionReady = 'false';
+    deck.dataset.galleryState = 'error';
+    deck.setAttribute('aria-disabled', 'true');
+    deck.setAttribute('tabindex', '-1');
+    deck.setAttribute('aria-label', root.lang === 'ar' ? 'تعذر تحميل معرض الصور' : 'Gallery unavailable');
+    page.querySelectorAll('[data-gallery-reveal]').forEach((node) => node.classList.add('is-visible'));
+    if (error) console.error('[Gallery] Initialization failed', error);
   };
   const revealObserver = 'IntersectionObserver' in window
     ? new IntersectionObserver((entries) => {
@@ -671,6 +754,7 @@
         ...preferredAssets,
         ...manifestAssets.filter((asset) => !preferredOrder.includes(asset.name))
       ];
+      if (assets.length < 3) throw new Error(`Gallery manifest is missing usable assets for ${projectKey}`);
       cards = layers.slice();
       cards.forEach((card, index) => {
         card.dataset.assetIndex = String(index);
@@ -707,8 +791,8 @@
           page.querySelectorAll('[data-gallery-reveal]').forEach((node) => revealObserver.observe(node));
         }
         else revealOnce();
-      }).catch(() => stabilizeStack());
+      }).catch((error) => markInitializationError(error));
     })
-    .catch(() => {});
+    .catch((error) => markInitializationError(error));
   });
 })();
