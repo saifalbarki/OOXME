@@ -1,38 +1,685 @@
 <!doctype html>
-<html class="s-route s-x-initializing" lang="ar" dir="rtl">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" />
-    <title>ooxme system</title>
-    <link rel="canonical" href="https://ooxme.com/os" />
-    <link rel="icon" href="/assets/logo/Favicon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/assets/logo/Favicon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <link rel="preload" href="assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf" as="font" type="font/ttf" crossorigin />
-    <link rel="stylesheet" href="css/tokens.css" />
-    <link rel="stylesheet" href="css/os.css" />
-    <link rel="stylesheet" href="css/header.css" />
-    <script src="js/top-bar.js" defer></script>
-    <script src="js/os.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title></title>
+    <style>
+      :root {
+        --os-outer-gap: max(18px, calc((100vw - 660px) / 4));
+        --x-spacing: var(--os-outer-gap);
+        --os-viewport-height: 100dvh;
+        --os-top-control-size: 32px;
+        --os-handle-visual-offset: 14px;
+        --os-handle-clearance: calc(var(--os-outer-gap) * 3);
+        --os-open-top: calc(var(--os-outer-gap) + var(--os-top-control-size) + var(--os-handle-clearance) + var(--os-handle-visual-offset));
+        --os-open-height: max(0px, calc(var(--os-viewport-height) - var(--os-outer-gap) - var(--os-open-top)));
+        --os-closed-height: min(calc(var(--x-spacing) * 5), var(--os-open-height));
+        --os-font-en: "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --os-font-ar: "SF Arabic Rounded", "SF Arabic", "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --os-font-family: var(--os-font-en);
+        --os-weight-regular: 400;
+        --os-weight-ui: 500;
+        --os-weight-medium: 500;
+        --os-weight-semibold: 600;
+        --os-weight-bold: 700;
+        --os-page-background: #fff;
+        --os-panel-background: #F1F3F7;
+        --os-panel-color: #000;
+        --os-control-background: var(--os-panel-background);
+        --os-control-color: var(--os-panel-color);
+      }
+      html[dir="rtl"] { --os-font-family: var(--os-font-ar); }
+      html[data-theme="dark"] {
+        --os-page-background: #000;
+        --os-panel-background: #161616;
+        --os-panel-color: #f5f5f5;
+        --os-control-background: var(--os-panel-background);
+        --os-control-color: var(--os-panel-color);
+      }
+      @supports not (height: 100dvh) { :root { --os-viewport-height: 100vh; } }
+      html, body { width: 100%; height: 100%; min-height: var(--os-viewport-height); margin: 0; overflow: hidden; overscroll-behavior: none; background-color: var(--os-page-background); touch-action: manipulation; transition: background-color .24s ease, color .24s ease; }
+      body { height: var(--os-viewport-height); color: var(--os-control-color); font-family: var(--os-font-family); font-weight: var(--os-weight-ui); }
+      body:not(.os-authenticated) > :not(.os-auth-gate) { display: none !important; }
+      .os-auth-gate { position: fixed; inset: 0; display: grid; place-items: center; padding: var(--os-outer-gap); background: var(--os-page-background); color: var(--os-control-color); }
+      .os-auth-gate[hidden] { display: none; }
+      .os-auth-form { display: grid; width: min(280px, 100%); gap: 10px; }
+      .os-auth-title { margin: 0 0 4px; font: 500 16px/1 var(--os-font-family); text-align: center; }
+      .os-auth-form input { box-sizing: border-box; width: 100%; min-height: 38px; padding: 0 13px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: 14px; outline: 0; background: transparent; color: var(--os-control-color); font: 500 16px/1 var(--os-font-family); -webkit-tap-highlight-color: transparent; }
+      .os-auth-form button { min-height: 38px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--os-control-color) 8%, transparent); color: inherit; cursor: pointer; font: 500 11px/1 var(--os-font-family); -webkit-tap-highlight-color: transparent; }
+      .os-auth-error { min-height: 12px; color: #c44; font: 400 10px/1.2 var(--os-font-family); text-align: center; }
+      .os-control-view { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; overflow: auto; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
+      .os-control-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+      .os-control-row { display: flex; justify-content: space-between; gap: 12px; padding: 0 0 10px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); }
+      .os-control-muted { color: color-mix(in srgb, var(--os-panel-color) 54%, transparent); }
+      .os-control-action { border: 0; border-radius: 999px; padding: 7px 12px; background: color-mix(in srgb, var(--os-panel-color) 10%, transparent); color: inherit; font: inherit; }
+      .os-edge-control, .os-panel-handle { -webkit-tap-highlight-color: transparent; }
+      .os-edge-control { position: fixed; top: var(--os-outer-gap); z-index: 6; display: grid; width: 32px; height: 32px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: var(--os-control-background); color: var(--os-control-color); cursor: pointer; font: 500 20px/1 var(--os-font-family); }
+      .os-edge-control--left { left: var(--os-outer-gap); }
+      .os-edge-control--right { right: var(--os-outer-gap); }
+      .os-side-menu { --os-menu-radius: 31px; position: fixed; top: calc(var(--os-outer-gap) + 40px); left: var(--os-outer-gap); z-index: 5; display: grid; width: min(190px, calc(100vw - (var(--os-outer-gap) * 2))); gap: 6px; padding: 10px 12px; overflow-y: auto; overscroll-behavior: contain; border: 0; border-radius: var(--os-menu-radius); background: var(--os-control-background); color: var(--os-control-color); opacity: 0; pointer-events: none; transform: translateX(-8px); transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background-color .24s ease; visibility: hidden; }
+      .os-side-menu.is-open { opacity: 1; pointer-events: auto; transform: translateX(0); transition-delay: 0s; visibility: visible; }
+      .os-side-menu button { min-height: 38px; padding: 0 14px; border: 0; border-radius: 18px; background: transparent; color: inherit; cursor: pointer; font: 500 11px/1 var(--os-font-family); text-align: start; -webkit-tap-highlight-color: transparent; }
+      .os-side-menu button:is(.is-active, [aria-current="true"], [aria-selected="true"], :active, :focus-visible) { border-radius: 999px; }
+      .os-side-menu button:hover, .os-side-menu button:focus-visible { background: color-mix(in srgb, var(--os-control-color) 8%, transparent); }
+      .os-plus { display: block; width: 14px; height: 14px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .os-oxo-face { display: block; width: 26px; height: 26px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .os-oxo-face .s-page__x-face-eyes { fill: currentColor; stroke: none; }
+      .os-panel {
+        position: fixed;
+        right: var(--os-outer-gap);
+        bottom: var(--os-outer-gap);
+        left: var(--os-outer-gap);
+        display: flex;
+        box-sizing: border-box;
+        width: auto;
+        height: var(--os-closed-height);
+        min-width: 0;
+        min-height: 0;
+        max-height: var(--os-open-height);
+        padding: calc(var(--x-spacing) * 1.25) calc(var(--x-spacing) * 1.5);
+        align-items: center;
+        justify-content: center;
+        border-radius: clamp(42px, 6vw, 72px);
+        background: var(--os-panel-background);
+        color: var(--os-panel-color);
+        font: var(--os-weight-ui) 16px/1 var(--os-font-family);
+        transform: translateY(var(--os-keyboard-shift, 0px));
+        transition: background-color .24s ease, height .2s ease;
+      }
+      .os-panel.is-expanded { height: var(--os-open-height); }
+      .os-panel-handle { position: absolute; top: -34px; left: 50%; width: 120px; height: 44px; padding: 0; border: 0; border-radius: 999px; background: transparent; color: var(--os-panel-background); cursor: grab; touch-action: none; transform: translateX(-50%); }
+      .os-panel-handle::before { position: absolute; top: 20px; left: 50%; width: 42px; height: 4px; border-radius: 999px; background: currentColor; content: ""; transform: translateX(-50%); }
+      .os-panel-handle:active { cursor: grabbing; }
+      .os-panel-copy { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); white-space: nowrap; }
+      .os-panel.is-expanded .os-panel-copy { top: 30px; transform: translateX(-50%); }
+      .os-insights { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) calc(var(--x-spacing) * 1.25); display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); opacity: 0; pointer-events: none; scrollbar-width: none; transition: opacity .22s ease; visibility: hidden; }
+      .os-insights::-webkit-scrollbar { display: none; }
+      .os-panel[data-os-view="insights"].is-expanded .os-insights { opacity: 1; pointer-events: auto; visibility: visible; }
+      .os-insights-section { flex: 0 0 auto; }
+      .os-insights-section + .os-insights-section { margin-top: 18px; }
+      .os-insights-heading { margin: 0; font: 600 11px/1.1 var(--os-font-family); }
+      .os-insights-description { max-width: 34em; margin: 5px 0 10px; color: color-mix(in srgb, var(--os-panel-color) 52%, transparent); font: 400 10px/1.25 var(--os-font-family); }
+      .os-insights-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+      .os-insights-service, .os-insights-metric { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 14px; }
+      .os-insights-service-name, .os-insights-metric-label { min-width: 0; }
+      .os-insights-status { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #929292; }
+      .os-insights-status[data-status="operational"] { background: #39a96b; }
+      .os-insights-status[data-status="attention"] { background: #d9a441; }
+      .os-insights-status[data-status="unavailable"] { background: #d45a5a; }
+      .os-insights-status[data-status="unknown"] { background: #929292; }
+      .os-insights-metric-value { flex: 0 0 auto; color: color-mix(in srgb, var(--os-panel-color) 58%, transparent); font-weight: 400; }
+      .os-notifications { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); opacity: 0; pointer-events: none; scrollbar-width: none; transition: opacity .22s ease; visibility: hidden; }
+      .os-notifications::-webkit-scrollbar { display: none; }
+      .os-panel[data-os-view="notifications"].is-expanded .os-notifications { opacity: 1; pointer-events: auto; visibility: visible; }
+      .os-promo-codes { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); opacity: 0; pointer-events: none; scrollbar-width: none; transition: opacity .22s ease; visibility: hidden; }
+      .os-promo-codes::-webkit-scrollbar { display: none; }
+      .os-panel[data-os-view="promo-codes"].is-expanded .os-promo-codes { opacity: 1; pointer-events: auto; visibility: visible; }
+      .os-promo-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+      .os-promo-row { display: grid; gap: 10px; min-height: 42px; padding: 0 2px 12px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); cursor: pointer; }
+      .os-promo-title-row { display: flex; align-items: center; gap: 7px; min-width: 0; }
+      .os-promo-code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: .02em; }
+      .os-promo-status-dot { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #929292; }
+      .os-promo-status-dot[data-status="active"] { background: #39a96b; }
+      .os-promo-status-dot[data-status="inactive"] { background: #929292; }
+      .os-promo-detail { display: grid; gap: 12px; cursor: default; }
+      .os-promo-detail-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: 100%; min-width: 0; }
+      .os-promo-detail-item { display: grid; min-width: 0; gap: 4px; }
+      .os-promo-detail-label { min-width: 0; color: color-mix(in srgb, var(--os-panel-color) 52%, transparent); font-size: 9px; font-weight: 400; overflow-wrap: anywhere; }
+      .os-promo-detail-value { min-width: 0; overflow-wrap: anywhere; }
+      .os-promo-delete { justify-self: start; }
+      html[dir="rtl"] .os-promo-delete { justify-self: end; }
+      .os-notification-add { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; min-height: 0; overflow: visible; opacity: 0; pointer-events: none; visibility: hidden; }
+      .os-panel[data-os-view="notification-add"].is-expanded .os-notification-add { opacity: 1; pointer-events: auto; visibility: visible; }
+      .os-notification-content { min-height: 0; padding-bottom: 64px; }
+      .os-management-empty-state { position: absolute; right: 0; bottom: calc(var(--x-spacing) + 34px); left: 0; display: flex; justify-content: center; min-width: 0; color: color-mix(in srgb, var(--os-panel-color) 52%, transparent); font: 400 10px/1.2 var(--os-font-family); text-align: center; }
+      .os-notification-main-action { -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
+      .os-notification-main-action:focus:not(:focus-visible) { outline: 0; box-shadow: none; }
+      .os-notification-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+      .os-notification-row { display: grid; gap: 10px; min-height: 42px; padding: 0 2px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); cursor: pointer; }
+      .os-notification-title-row { display: flex; align-items: center; gap: 7px; min-width: 0; }
+      .os-notification-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .os-notification-status-dot { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #929292; }
+      .os-notification-status-dot[data-status="active"] { background: #39a96b; }
+      .os-notification-status-dot[data-status="inactive"] { background: #929292; }
+      .os-notification-meta { color: color-mix(in srgb, var(--os-panel-color) 52%, transparent); font-size: 10px; font-weight: 400; white-space: nowrap; }
+      .os-notification-detail { display: grid; gap: 10px; padding: 0 0 14px; cursor: default; }
+      .os-notification-detail-text { margin: 0; color: color-mix(in srgb, var(--os-panel-color) 68%, transparent); font: 500 11px/1.2 var(--os-font-family); white-space: pre-wrap; }
+      .os-notification-form { display: grid; gap: 9px; padding-top: 4px; padding-bottom: 64px; }
+      .os-notification-form label { display: grid; width: 100%; min-width: 0; gap: 5px; color: color-mix(in srgb, var(--os-panel-color) 58%, transparent); font: 400 10px/1.25 var(--os-font-family); }
+      .os-notification-form input, .os-notification-form textarea, .os-notification-form select { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; inline-size: 100%; max-inline-size: 100%; min-inline-size: 0; padding: 8px 9px; border: 1px solid color-mix(in srgb, var(--os-panel-color) 14%, transparent); border-radius: 12px; outline: 0; background: transparent; color: var(--os-control-color); font: 500 11px/1 var(--os-font-family); letter-spacing: normal; -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; }
+      .os-notification-form input:active, .os-notification-form textarea:active, .os-notification-form select:active { background-color: transparent; }
+      .os-notification-form input:focus-visible, .os-notification-form textarea:focus-visible, .os-notification-form select:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+      @media (hover: none) and (pointer: coarse) { .os-notification-form input:not([type="date"]):not([type="time"]):focus, .os-notification-form textarea:focus { font-size: 16px; } }
+      .os-notification-form select option { color: var(--os-control-color); font: 500 11px/1 var(--os-font-family); letter-spacing: normal; }
+      .os-notification-form input[type="date"], .os-notification-form input[type="time"] { display: block; align-self: stretch; justify-self: stretch; box-sizing: border-box; width: 100%; inline-size: 100%; min-width: 0; min-inline-size: 0; max-width: 100%; max-inline-size: 100%; }
+      .os-notification-form input[data-field-language="en"], .os-notification-form textarea[data-field-language="en"] { direction: ltr; font-family: var(--os-font-en); text-align: start; }
+      .os-notification-form input[data-field-language="ar"], .os-notification-form textarea[data-field-language="ar"] { direction: rtl; font-family: var(--os-font-ar); text-align: start; }
+      .os-notification-form textarea { min-height: 54px; resize: vertical; }
+      .os-notification-form-grid { display: grid; width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+      .os-notification-form-actions { position: absolute; right: 0; bottom: var(--x-spacing); left: 0; display: flex; justify-content: center; gap: 6px; }
+      .os-notification-main-action { padding: 10px 14px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--os-panel-color) 8%, transparent); color: inherit; cursor: pointer; font: 500 10px/1 var(--os-font-family); }
+      .os-notification-main-action--floating { position: absolute; right: 50%; bottom: var(--x-spacing); z-index: 1; transform: translateX(50%); }
+      .os-summary-content { position: absolute; inset: 0; width: auto; height: auto; overflow: visible; opacity: 0; pointer-events: none; visibility: hidden; }
+      .os-panel[data-os-view="summary"].is-expanded .os-summary-content { opacity: 1; pointer-events: auto; visibility: visible; }
+      .os-summary-percentage { position: absolute; top: 50%; left: 50%; overflow: visible; color: transparent; background: linear-gradient(45deg, #050505 0%, #2f3236 44%, #858a8f 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font: 400 clamp(80px, 22vw, 180px)/1 "SF Pro", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: -.06em; opacity: 0; pointer-events: none; transform: translate(-50%, -50%); transition: opacity .22s ease; visibility: hidden; }
+      .os-panel[data-os-view="summary"].is-expanded .os-summary-percentage { opacity: 1; visibility: visible; }
+      .os-summary-indicators { position: absolute; right: 0; bottom: var(--x-spacing); left: 50%; display: grid; width: min(260px, calc(100vw - (var(--x-spacing) * 4))); gap: 6px; color: var(--os-panel-color); font: 500 11px/1 var(--os-font-family); letter-spacing: normal; opacity: 0; pointer-events: none; transform: translateX(-50%); transition: opacity .22s ease; visibility: hidden; }
+      .os-summary-indicator { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+      .os-summary-indicator-value { flex: 0 0 auto; font: 500 11px/1 var(--os-font-family); letter-spacing: normal; }
+      .os-panel[data-os-view="summary"].is-expanded .os-summary-indicators { opacity: 1; visibility: visible; }
+      .os-panel[data-os-view="insights"].is-expanded, .os-panel[data-os-view="notifications"].is-expanded { align-items: stretch; justify-content: flex-start; overflow: visible; }
+      @media (max-width: 480px) { .os-notification-row { gap: 8px; } }
+      html[dir="rtl"] .os-edge-control--left { right: var(--os-outer-gap); left: auto; }
+      html[dir="rtl"] .os-edge-control--right { right: auto; left: var(--os-outer-gap); }
+      html[dir="rtl"] .os-side-menu { right: var(--os-outer-gap); left: auto; transform: translateX(8px); }
+      html[dir="rtl"] .os-side-menu.is-open { transform: translateX(0); }
+    </style>
   </head>
-  <body class="s-page s-page--x s-page--os">
-    <main class="s-page__content">
-      <section class="s-page__section" data-s-section aria-label="OOXME OS">
-        <div class="s-page__major-section s-page__major-section--transition-frame" data-s-major-section><section class="s-page__group s-page__os-section s-page__os-status-section" data-os-section aria-labelledby="os-status-title"><div class="s-page__os-layout"><article class="s-page__os-card"><div class="s-page__os-heading"><p class="s-page__os-eyebrow" data-os-copy="internal">Internal OS</p><h1 id="os-status-title" class="s-page__os-title" data-os-copy="statusTitle">System status</h1></div><div class="s-page__os-status-list" data-os-status-list></div></article></div></section></div>
-        <div class="s-page__major-section s-page__major-section--transition-frame" data-s-major-section><section class="s-page__group s-page__os-section" data-os-section aria-label="Store Management"><div class="s-page__os-layout"><article class="s-page__os-card s-page__os-management-card s-page__os-store-management-card"><div class="s-page__os-heading"><p class="s-page__os-eyebrow" data-os-copy="storeEyebrow">Store management</p><h2 class="s-page__os-title" data-os-copy="storeTitle">Products</h2></div><div class="s-page__store-carousel" data-os-store-carousel aria-roledescription="carousel"><div class="s-page__store-carousel-viewport" data-os-store-viewport><div class="s-page__store-carousel-track" data-os-store-track></div></div></div></article></div></section></div>
-        <div class="s-page__major-section s-page__major-section--transition-frame" data-s-major-section><section class="s-page__group s-page__os-section" data-os-section aria-labelledby="os-consultation-title"><div class="s-page__os-layout"><article class="s-page__os-card s-page__os-management-card"><div class="s-page__os-heading"><p class="s-page__os-eyebrow" data-os-copy="consultationEyebrow">Consultation management</p><h2 id="os-consultation-title" class="s-page__os-title" data-os-copy="consultationTitle">Configuration</h2></div><div class="s-page__os-list" data-os-consultation-list></div></article></div></section></div>
-        <div class="s-page__major-section s-page__major-section--transition-frame" data-s-major-section><section class="s-page__group s-page__os-section" data-os-section aria-labelledby="os-controls-title"><div class="s-page__os-layout"><article class="s-page__os-card s-page__os-management-card"><div class="s-page__os-heading"><p class="s-page__os-eyebrow" data-os-copy="controlsEyebrow">Site controls</p><h2 id="os-controls-title" class="s-page__os-title" data-os-copy="controlsTitle">Interactive map</h2></div><div class="s-page__os-list" data-os-controls-list></div></article></div></section></div>
-      </section>
-    </main>
-    <div class="s-page__os-section-nav s-page__os-global-nav" data-os-global-nav aria-label="OS carousel navigation"><button type="button" data-os-nav-prev aria-label="Previous item"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10.25 3.5 5.75 8l4.5 4.5" /></svg></button><span data-os-nav-count>1 / 3</span><button type="button" data-os-nav-next aria-label="Next item"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m5.75 3.5 4.5 4.5-4.5 4.5" /></svg></button></div>
-    <form class="s-page__composer" data-s-composer novalidate>
-      <div class="s-page__composer-menu" data-s-composer-menu aria-hidden="true">
-      </div>
-      <button class="s-page__icon-button s-page__add" type="button" aria-label="Add context"><span aria-hidden="true"></span><svg class="s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false" data-s-x-face><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85" /><circle cx="9.25" cy="6.5" r="1.85" /></g></g></g></svg></button>
-      <label class="s-page__input-label"><span class="s-page__visually-hidden">Ask ooxme</span><input class="s-page__composer-input is-english-input" type="text" name="question" placeholder="Type..." autocomplete="off" enterkeyhint="send" maxlength="120" lang="en" dir="ltr" /></label>
-      <button class="s-page__submit s-page__x-top-bar-submit" type="submit" aria-label="Submit question"><svg class="s-page__submit-icon" viewBox="3.9 3.9 16.2 16.2" aria-hidden="true" focusable="false"><path class="s-page__x-top-bar-line s-page__x-top-bar-line--top" d="M4.22 8h15.56" /><path class="s-page__x-top-bar-line s-page__x-top-bar-line--bottom" d="M4.22 16h15.56" /></svg></button>
-      <div class="s-page__send-utilities" data-s-send-utilities aria-hidden="true"><button class="s-page__send-utility is-active" type="button" data-s-utility="theme" aria-label="Toggle theme" aria-pressed="true"><span class="s-page__send-utility-inner" aria-hidden="true"></span></button><button class="s-page__send-utility is-active" type="button" data-s-utility="language" aria-label="Toggle language" aria-pressed="true"><span class="s-page__send-utility-inner" aria-hidden="true"></span></button></div>
-    </form>
-  </body>
+  <body><section class="os-auth-gate" data-os-auth-gate hidden><form class="os-auth-form" data-os-auth-form><h1 class="os-auth-title">OOXME OS</h1><input type="password" name="password" autocomplete="current-password" required aria-label="Admin password" placeholder="Password"><div class="os-auth-error" data-os-auth-error role="alert"></div><button type="submit">Unlock</button></form></section><button type="button" class="os-edge-control os-edge-control--left" data-os-add aria-label="Open menu" aria-expanded="false" aria-controls="os-side-menu"><svg class="os-plus" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"></path></svg></button><div class="os-side-menu" id="os-side-menu" aria-hidden="true"><button type="button" data-os-menu-copy-en="Insights" data-os-menu-copy-ar="التحليلات">Insights</button><button type="button" data-os-menu-copy-en="Notifications" data-os-menu-copy-ar="الإشعارات">Notifications</button><button type="button" data-os-menu-copy-en="Promo Codes" data-os-menu-copy-ar="أكواد الخصم">Promo Codes</button><button type="button" data-os-menu-copy-en="Buttons" data-os-menu-copy-ar="الأزرار">Buttons</button><button type="button" data-os-menu-copy-en="Products" data-os-menu-copy-ar="المنتجات">Products</button><button type="button" data-os-menu-copy-en="Consultations" data-os-menu-copy-ar="الاستشارات">Consultations</button><button type="button" data-os-menu-copy-en="Language" data-os-menu-copy-ar="اللغة" data-os-menu-action="language">Language</button><button type="button" data-os-menu-copy-en="Appearance" data-os-menu-copy-ar="المظهر" data-os-menu-action="appearance">Appearance</button><button type="button" data-os-menu-copy-en="Log Out" data-os-menu-copy-ar="تسجيل الخروج">Log Out</button></div><button type="button" class="os-edge-control os-edge-control--right" data-os-oxo-toggle aria-label="Open controls" aria-expanded="false"><svg class="os-oxo-face s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85"></circle><circle cx="9.25" cy="6.5" r="1.85"></circle></g></g></g></svg></button><div class="os-panel" data-os-copy-en="Insights" data-os-copy-ar="التحليلات"><button type="button" class="os-panel-handle" aria-label="Expand panel"></button><span class="os-panel-copy">Insights</span><div class="os-insights" aria-hidden="true"><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="System Status" data-os-insights-ar="حالة النظام">System Status</h2><p class="os-insights-description" data-os-system-description-en="Live service status is not connected." data-os-system-description-ar="بيانات حالة الخدمات المباشرة غير متصلة.">Live service status is not connected.</p><ul class="os-insights-list" data-os-services><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Vercel" data-os-service-ar="Vercel">Vercel</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="GitHub" data-os-service-ar="GitHub">GitHub</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="YCloud" data-os-service-ar="YCloud">YCloud</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Cloudflare" data-os-service-ar="Cloudflare">Cloudflare</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Gmail" data-os-service-ar="Gmail">Gmail</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Calendar" data-os-service-ar="التقويم">Calendar</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li></ul></section><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="Website Status" data-os-insights-ar="حالة الموقع">Website Status</h2><p class="os-insights-description" data-os-website-description-en="Live website telemetry is not connected." data-os-website-description-ar="بيانات الموقع المباشرة غير متصلة.">Live website telemetry is not connected.</p><dl class="os-insights-list"><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Last Update" data-os-metric-ar="آخر تحديث">Last Update</dt><dd class="os-insights-metric-value" data-os-metric-value="last-update">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Uptime" data-os-metric-ar="وقت التشغيل">Uptime</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Response" data-os-metric-ar="الاستجابة">Response</dt><dd class="os-insights-metric-value" data-os-metric-value="response">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Version" data-os-metric-ar="الإصدار">Version</dd></div></dl></section></div><div class="os-notifications" aria-hidden="true"></div></div><script>
+    (() => {
+      const root = document.documentElement;
+      const authGate = document.querySelector('[data-os-auth-gate]');
+      let csrfToken = '';
+      const setAuthenticated = (authenticated) => {
+        document.body.classList.toggle('os-authenticated', authenticated);
+        authGate.hidden = true;
+        if (!authenticated) window.location.reload();
+      };
+      const osFetch = (url, options = {}) => {
+        const headers = new Headers(options.headers || {});
+        headers.set('Accept', headers.get('Accept') || 'application/json');
+        if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(String(options.method || 'GET').toUpperCase()) && csrfToken) headers.set('X-CSRF-Token', csrfToken);
+        return fetch(url, { ...options, headers, credentials: 'same-origin' });
+      };
+      const initializeAuth = async () => {
+        try {
+          const response = await fetch('/api/os/auth', { headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
+          const body = await response.json();
+          if (body.data?.authenticated) { csrfToken = body.data.csrfToken || ''; setAuthenticated(true); return true; }
+          setAuthenticated(false);
+          return false;
+        } catch (_) {
+          setAuthenticated(false);
+          return false;
+        }
+      };
+      void initializeAuth();
+      const addButton = document.querySelector('[data-os-add]');
+      const sideMenu = document.querySelector('[data-os-side-menu], #os-side-menu');
+      const panel = document.querySelector('[data-os-copy-en]');
+      const panelHandle = document.querySelector('.os-panel-handle');
+      const insights = document.querySelector('.os-insights');
+      const notifications = document.querySelector('.os-notifications');
+      const notificationAdd = document.createElement('div');
+      notificationAdd.className = 'os-notification-add';
+      notificationAdd.hidden = true;
+      panel.append(notificationAdd);
+      const promoCodes = document.createElement('div');
+      promoCodes.className = 'os-promo-codes';
+      promoCodes.hidden = true;
+      panel.append(promoCodes);
+      const products = document.createElement('div');
+      products.className = 'os-control-view'; products.hidden = true; panel.append(products);
+      const consultations = document.createElement('div');
+      consultations.className = 'os-control-view'; consultations.hidden = true; panel.append(consultations);
+      const buttons = document.createElement('div');
+      buttons.className = 'os-control-view'; buttons.hidden = true; panel.append(buttons);
+      const panelCopy = document.querySelector('.os-panel-copy');
+      const servicesList = document.querySelector('[data-os-services]');
+      if (servicesList && !servicesList.querySelector('[data-os-service-en="Drive"]')) {
+        const driveItem = document.createElement('li');
+        driveItem.className = 'os-insights-service';
+        driveItem.innerHTML = '<span class="os-insights-service-name" data-os-service-en="Drive" data-os-service-ar="Drive">Drive</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span>';
+        servicesList.append(driveItem);
+      }
+      const uptimeLabel = document.querySelector('[data-os-metric-en="Uptime"]');
+      if (uptimeLabel && !uptimeLabel.parentElement.querySelector('[data-os-metric-value="uptime"]')) {
+        const uptimeValue = document.createElement('dd');
+        uptimeValue.className = 'os-insights-metric-value';
+        uptimeValue.dataset.osMetricValue = 'uptime';
+        uptimeValue.textContent = 'Unknown';
+        uptimeLabel.parentElement.append(uptimeValue);
+      }
+      const versionLabel = document.querySelector('[data-os-metric-en="Version"]');
+      if (versionLabel && !versionLabel.parentElement.querySelector('[data-os-metric-value="version"]')) {
+        const versionValue = document.createElement('dd');
+        versionValue.className = 'os-insights-metric-value';
+        versionValue.dataset.osMetricValue = 'version';
+        versionValue.textContent = 'Unknown';
+        versionLabel.parentElement.append(versionValue);
+      }
+      panel.dataset.osView = 'summary';
+      const insightsMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Insights');
+      if (insightsMenuItem) insightsMenuItem.dataset.osMenuAction = 'insights';
+      const notificationsMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Notifications');
+      if (notificationsMenuItem) notificationsMenuItem.dataset.osMenuAction = 'notifications';
+      const promoCodesMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Promo Codes');
+      if (promoCodesMenuItem) promoCodesMenuItem.dataset.osMenuAction = 'promo-codes';
+      const productsMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Products');
+      if (productsMenuItem) productsMenuItem.dataset.osMenuAction = 'products';
+      const consultationsMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Consultations');
+      if (consultationsMenuItem) consultationsMenuItem.dataset.osMenuAction = 'consultations';
+      const logoutMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Log Out');
+      if (logoutMenuItem) logoutMenuItem.dataset.osMenuAction = 'logout';
+      sideMenu.insertAdjacentHTML('afterbegin', '<button type="button" data-os-menu-copy-en="Summary" data-os-menu-copy-ar="الملخص" data-os-menu-action="summary">Summary</button>');
+      panel.insertAdjacentHTML('beforeend', '<div class="os-summary-content"><span class="os-summary-percentage" aria-hidden="true">88</span><div class="os-summary-indicators" aria-hidden="true"><div class="os-summary-indicator"><span data-os-summary-en="Consultations Today" data-os-summary-ar="استشارات اليوم">Consultations Today</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Products / Orders" data-os-summary-ar="المنتجات / الطلبات">Products / Orders</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Promo Code Uses" data-os-summary-ar="استخدامات الرموز الترويجية">Promo Code Uses</span><span class="os-summary-indicator-value">0</span></div></div></div>');
+      const summaryContent = document.querySelector('.os-summary-content');
+      const panelViews = { summary: summaryContent, insights, notifications, 'promo-codes': promoCodes, products, consultations, buttons, 'notification-add': notificationAdd };
+      const panelViewNodes = (selector) => Object.values(panelViews).flatMap((view) => [...view.querySelectorAll(selector)]);
+      let panelView = 'summary';
+      let latestInsightsData = null;
+      let notificationsData = [];
+      let promoCodesData = [];
+      let productsData = [];
+      let productEditor = null;
+      let consultationsData = [];
+      let buttonsData = [];
+      let notificationEditor = null;
+      let promoEditor = null;
+      let notificationExpandedId = null;
+      let promoCodeExpandedId = null;
+      const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+      const localDateTime = (value) => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return { date: '', time: '' };
+        const pad = (number) => String(number).padStart(2, '0');
+        return { date: `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`, time: `${pad(date.getHours())}:${pad(date.getMinutes())}` };
+      };
+      const notificationLabel = (notification, field) => notification[field]?.[root.lang === 'ar' ? 'ar' : 'en'] || notification[field]?.en || '';
+      const renderNotificationForm = (notification) => {
+        const current = notification || { title: { en: '', ar: '' }, text: { en: '', ar: '' }, publishAt: new Date().toISOString(), status: 'active', frequency: 'once' };
+        const schedule = localDateTime(current.publishAt);
+        return `<form class="os-notification-form" data-notification-form>
+          <label>English Title<input name="titleEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required value="${escapeHtml(current.title.en)}"></label><label>Arabic Title<input name="titleAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" value="${escapeHtml(current.title.ar)}"></label>
+          <label>English Text<textarea name="textEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required>${escapeHtml(current.text.en)}</textarea></label><label>Arabic Text<textarea name="textAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off">${escapeHtml(current.text.ar)}</textarea></label>
+          <label>Publish date<input type="date" name="publishDate" required value="${schedule.date}"></label><label>Publish time<input type="time" name="publishTime" required value="${schedule.time}"></label>
+          <div class="os-notification-form-grid"><label>Repeat / frequency<select name="frequency"><option value="once" ${current.frequency === 'once' ? 'selected' : ''}>Once</option><option value="daily" ${current.frequency === 'daily' ? 'selected' : ''}>Daily</option><option value="weekly" ${current.frequency === 'weekly' ? 'selected' : ''}>Weekly</option></select></label><label>Status<select name="status"><option value="active" ${current.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>Inactive</option></select></label></div>
+          <div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-notification-action="cancel">Cancel</button><button class="os-notification-main-action" type="submit">Save</button></div>
+        </form>`;
+      };
+      const renderPromoForm = (promo) => {
+        const current = promo || { code: '', status: 'active', discountType: 'percentage', discountValue: '', currency: 'USD', startsAt: '', endsAt: '', totalUsageLimit: null, perCustomerLimit: null, serviceRestrictions: [], durationRestrictions: [], campaignSource: '' };
+        const percentage = current.discountType ? current.discountType === 'percentage' : String(current.discount || '').endsWith('%');
+        const value = current.discountValue ?? String(current.discount || '').replace(/%$/, '').trim().split(' ')[0];
+        const dateValue = (input) => input ? String(input).slice(0, 10) : '';
+        const serviceRestrictions = Array.isArray(current.serviceRestrictions) ? current.serviceRestrictions.join(', ') : '';
+        const durationRestrictions = Array.isArray(current.durationRestrictions) ? current.durationRestrictions.join(', ') : '';
+        return `<form class="os-notification-form" data-promo-form><label>Code<input name="code" required value="${escapeHtml(current.code)}"></label><label>Discount value<input name="discountValue" type="number" min="0" step="0.01" required value="${escapeHtml(value)}"></label><label>Discount type<select name="discountType"><option value="percentage" ${percentage ? 'selected' : ''}>Percentage</option><option value="fixed" ${percentage ? '' : 'selected'}>Fixed</option></select></label><label>Currency<input name="currency" maxlength="3" value="${escapeHtml(current.currency || 'USD')}"></label><label>Starts date<input name="startsAt" type="date" value="${dateValue(current.startsAt)}"></label><label>Ends date<input name="endsAt" type="date" value="${dateValue(current.endsAt)}"></label><label>Total usage limit<input name="totalUsageLimit" type="number" min="0" step="1" value="${current.totalUsageLimit == null ? '' : escapeHtml(current.totalUsageLimit)}"></label><label>Per-customer limit<input name="perCustomerLimit" type="number" min="0" step="1" value="${current.perCustomerLimit == null ? '' : escapeHtml(current.perCustomerLimit)}"></label><label>Applies to<input name="serviceRestrictions" value="${escapeHtml(serviceRestrictions)}" placeholder="consultation"></label><label>Durations (minutes)<input name="durationRestrictions" value="${escapeHtml(durationRestrictions)}" placeholder="30, 60"></label><label>Status<select name="status"><option value="active" ${current.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${current.status !== 'active' ? 'selected' : ''}>Inactive</option></select></label><div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-promo-action="cancel">Cancel</button><button class="os-notification-main-action" type="submit">Save</button></div></form>`;
+      };
+      const renderManagementEmptyState = (copy) => `<div class="os-management-empty-state">${escapeHtml(copy)}</div>`;
+      const renderNotifications = () => {
+        const isArabic = root.lang === 'ar';
+        const list = notificationsData.map((notification) => {
+          const selected = notificationExpandedId === notification.id;
+          const schedule = localDateTime(notification.publishAt);
+          const title = escapeHtml(notificationLabel(notification, 'title') || '');
+          const text = escapeHtml(notificationLabel(notification, 'text') || '');
+          return `<li class="os-notification-row${selected ? ' is-selected' : ''}" data-notification-id="${escapeHtml(notification.id)}"><div class="os-notification-title-row"><span class="os-notification-title">${title}</span><span class="os-notification-status-dot" data-status="${notification.status}" aria-label="${notification.status}"></span></div><span class="os-notification-meta">${schedule.date}</span>${selected ? `<div class="os-notification-detail"><p class="os-notification-detail-text">${text}</p><button class="os-notification-main-action" type="button" data-notification-action="edit">${isArabic ? 'تحرير' : 'Edit'}</button><button class="os-notification-main-action" type="button" data-notification-action="toggle">${notification.status === 'active' ? (isArabic ? 'تعطيل' : 'Disable') : (isArabic ? 'تفعيل' : 'Enable')}</button><button class="os-notification-main-action" type="button" data-notification-action="delete">${isArabic ? 'حذف' : 'Delete'}</button></div>` : ''}</li>`;
+        }).join('');
+        const isEditing = Boolean(notificationEditor?.form);
+        const editingNotification = notificationEditor?.id ? notificationsData.find((item) => item.id === notificationEditor.id) : null;
+        notifications.innerHTML = isEditing
+          ? renderNotificationForm(editingNotification)
+          : `<div class="os-notification-content"><ul class="os-notification-list">${list}</ul>${!notificationsData.length ? renderManagementEmptyState(isArabic ? 'لا توجد إشعارات محفوظة' : 'No saved notifications') : ''}</div><button class="os-notification-main-action os-notification-main-action--floating" type="button" data-notification-action="new">+ ${isArabic ? 'إشعار جديد' : 'Add Notification'}</button>`;
+      };
+      const renderNotificationAdd = () => {
+        notificationAdd.innerHTML = renderNotificationForm(null);
+      };
+      const renderPromoCodes = () => {
+        const isArabic = root.lang === 'ar';
+        const labels = isArabic
+          ? { available: 'المتاح', usage: 'الاستخدام', discount: 'الخصم', applies: 'ينطبق على', delete: 'حذف', empty: 'لا توجد أكواد خصم محفوظة' }
+          : { available: 'Available', usage: 'Usage', discount: 'Discount', applies: 'Applies to', delete: 'Delete', empty: 'No saved promo codes' };
+        const rows = promoCodesData.map((promo) => {
+          const selected = promoCodeExpandedId === promo.id;
+          const available = promo.availableCount == null ? (isArabic ? 'غير محدود' : 'Unlimited') : String(promo.availableCount);
+          const usage = String(promo.usageCount ?? 0);
+          const applies = promo.appliesTo === 'all consultations' && isArabic ? 'جميع الاستشارات' : promo.appliesTo;
+          return `<li class="os-promo-row${selected ? ' is-selected' : ''}" data-promo-code-id="${escapeHtml(promo.id)}"><div class="os-promo-title-row"><span class="os-promo-code">${escapeHtml(promo.code)}</span><span class="os-promo-status-dot" data-status="${escapeHtml(promo.status)}" aria-label="${escapeHtml(promo.status)}"></span></div>${selected ? `<div class="os-promo-detail"><div class="os-promo-detail-grid"><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.available}</span><span class="os-promo-detail-value">${escapeHtml(available)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.usage}</span><span class="os-promo-detail-value">${escapeHtml(usage)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.discount}</span><span class="os-promo-detail-value">${escapeHtml(promo.discount)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.applies}</span><span class="os-promo-detail-value">${escapeHtml(applies)}</span></span></div><button class="os-notification-main-action" type="button" data-promo-action="edit">Edit</button><button class="os-notification-main-action" type="button" data-promo-action="toggle">${promo.status === 'active' ? 'Disable' : 'Enable'}</button><button class="os-notification-main-action os-promo-delete" type="button" data-promo-action="delete">${labels.delete}</button></div>` : ''}</li>`;
+        }).join('');
+        promoCodes.innerHTML = promoEditor ? renderPromoForm(promoCodesData.find((item) => item.id === promoEditor.id)) : `<ul class="os-promo-list">${rows}</ul>${!promoCodesData.length ? renderManagementEmptyState(labels.empty) : ''}<button class="os-notification-main-action os-notification-main-action--floating" type="button" data-management-action="promo-new">+ ${isArabic ? 'إضافة رمز خصم' : 'Add Promo Code'}</button>`;
+      };
+      const loadPromoCodes = async () => {
+        try {
+          const response = await osFetch('/api/os/promo-codes', { cache: 'no-store' });
+          if (!response.ok) throw new Error('promo_codes_unavailable');
+          promoCodesData = (await response.json()).data?.promoCodes || [];
+        } catch (_) {
+          promoCodesData = [];
+        }
+        renderPromoCodes();
+      };
+      const renderProductForm = (item) => { const current = item || { name: { en: '', ar: '' }, category: { en: '', ar: '' }, description: { en: '', ar: '' }, price: { amount: '', currency: 'USD', label: { en: '', ar: '' } }, status: 'active', slug: '' }; return `<form class="os-notification-form" data-product-form><label>Slug<input name="slug" required value="${escapeHtml(current.slug)}"></label><label>English Name<input name="nameEn" required value="${escapeHtml(current.name.en)}"></label><label>Arabic Name<input name="nameAr" required value="${escapeHtml(current.name.ar)}"></label><label>English Category<input name="categoryEn" required value="${escapeHtml(current.category.en)}"></label><label>Arabic Category<input name="categoryAr" required value="${escapeHtml(current.category.ar)}"></label><label>English Description<textarea name="descriptionEn" required>${escapeHtml(current.description.en)}</textarea></label><label>Arabic Description<textarea name="descriptionAr" required>${escapeHtml(current.description.ar)}</textarea></label><label>Price<input name="priceAmount" type="number" min="0" step="0.01" value="${current.price.amount == null ? '' : escapeHtml(current.price.amount)}"></label><label>Status<select name="status"><option value="active" ${current.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>Inactive</option></select></label><div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-product-action="cancel">Cancel</button><button class="os-notification-main-action" type="submit">Save</button></div></form>`; };
+      const renderProducts = () => { const ar = root.lang === 'ar'; products.innerHTML = productEditor ? renderProductForm(productsData.find((item) => item.id === productEditor.id)) : `<ul class="os-control-list">${productsData.map((item) => `<li class="os-control-row" data-product-id="${escapeHtml(item.id)}"><span>${escapeHtml(item.name?.[ar ? 'ar' : 'en'] || item.slug)}</span><span class="os-control-muted">${escapeHtml(item.price?.label?.[ar ? 'ar' : 'en'] || item.status)} <button class="os-control-action" type="button" data-product-action="edit">Edit</button><button class="os-control-action" type="button" data-product-action="archive">Archive</button></span></li>`).join('') || `<li class="os-control-muted">${ar ? 'لا توجد منتجات محفوظة' : 'No saved products'}</li>`}</ul><button class="os-notification-main-action os-notification-main-action--floating" type="button" data-product-action="new">+ Add Product</button>`; };
+      const loadProducts = async () => { try { const response = await osFetch('/api/os/products', { cache: 'no-store' }); if (!response.ok) throw new Error(); productsData = (await response.json()).data?.products || []; } catch (_) { productsData = []; } renderProducts(); };
+      const renderConsultations = () => { const ar = root.lang === 'ar'; consultations.innerHTML = `<ul class="os-control-list">${consultationsData.map((item) => `<li class="os-control-row" data-consultation-id="${escapeHtml(item.id)}"><span>${escapeHtml(item.customer?.name || item.reference)}<small class="os-control-muted">${escapeHtml(item.topic)}</small></span><span class="os-control-muted">${escapeHtml(item.status)} · ${escapeHtml(new Date(item.scheduledStart).toLocaleString(ar ? 'ar' : 'en'))}<select data-consultation-status data-current-version="${item.version}"><option value="confirmed" ${item.status === 'confirmed' ? 'selected' : ''}>Confirmed</option><option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option><option value="failed" ${item.status === 'failed' ? 'selected' : ''}>Failed</option></select></span></li>`).join('') || `<li class="os-control-muted">${ar ? 'لا توجد استشارات' : 'No consultations'}</li>`}</ul>`; };
+      const loadConsultations = async () => { try { const response = await osFetch('/api/os/consultations', { cache: 'no-store' }); if (!response.ok) throw new Error(); consultationsData = (await response.json()).data?.consultations || []; } catch (_) { consultationsData = []; } renderConsultations(); };
+      const renderButtons = () => { buttons.innerHTML = `<ul class="os-control-list">${buttonsData.map((item) => `<li class="os-control-row"><span>${escapeHtml(item.label)}</span><button class="os-control-action" type="button" data-control-key="${escapeHtml(item.actionKey)}" data-control-version="${item.version || 1}" aria-pressed="${item.enabled}">${item.enabled ? 'On' : 'Off'}</button></li>`).join('') || '<li class="os-control-muted">No configurable actions</li>'}</ul>`; };
+      const loadButtons = async () => { try { const response = await osFetch('/api/os/page-controls', { cache: 'no-store' }); if (!response.ok) throw new Error(); buttonsData = (await response.json()).data?.controls || []; } catch (_) { buttonsData = []; } renderButtons(); };
+      const syncBilingualDirection = (field) => {
+        if (!field.matches('[data-field-language]')) return;
+        const hasArabic = /[\u0600-\u06ff]/.test(field.value);
+        const language = hasArabic ? 'ar' : field.dataset.fieldLanguage;
+        field.dataset.fieldLanguage = language;
+        field.lang = language;
+        field.dir = language === 'ar' ? 'rtl' : 'ltr';
+      };
+      let keyboardShift = 0;
+      let lastVisualViewportHeight = window.visualViewport?.height || window.innerHeight;
+      const clearKeyboardShift = () => {
+        keyboardShift = 0;
+        panel.style.removeProperty('--os-keyboard-shift');
+      };
+      const keepNotificationInputVisible = (event) => {
+        const field = event?.target?.closest?.('.os-notification-form input, .os-notification-form textarea, .os-notification-form select') || document.activeElement;
+        if (!field || (!notifications.contains(field) && !notificationAdd.contains(field)) || !['notifications', 'notification-add'].includes(panelView)) return;
+        window.setTimeout(() => {
+          const viewport = window.visualViewport;
+          if (!viewport || document.activeElement !== field) return;
+          const top = viewport.offsetTop;
+          const bottom = viewport.height + viewport.offsetTop;
+          const rect = field.getBoundingClientRect();
+          const requiredShift = Math.max(0, rect.bottom - (bottom - 18));
+          if (!requiredShift) return;
+          const maximumShift = Math.max(0, rect.top - (top + 18));
+          const nextShift = Math.min(keyboardShift + requiredShift, maximumShift);
+          if (nextShift <= keyboardShift) return;
+          keyboardShift = nextShift;
+          panel.style.setProperty('--os-keyboard-shift', `${-keyboardShift}px`);
+        }, 80);
+      };
+      const handleVisualViewportResize = () => {
+        const viewport = window.visualViewport;
+        if (!viewport) return;
+        const heightGrew = viewport.height > lastVisualViewportHeight + 2;
+        lastVisualViewportHeight = viewport.height;
+        if (heightGrew) clearKeyboardShift();
+        window.requestAnimationFrame(() => keepNotificationInputVisible());
+      };
+      const handleFormFocusOut = () => {
+        window.setTimeout(() => {
+          if (!document.activeElement?.matches?.('.os-notification-form input, .os-notification-form textarea, .os-notification-form select')) clearKeyboardShift();
+        }, 120);
+      };
+      const loadNotifications = async () => {
+        try {
+          const response = await osFetch('/api/os/notifications', { cache: 'no-store' });
+          if (!response.ok) throw new Error('notifications_unavailable');
+          notificationsData = (await response.json()).data?.notifications || [];
+        } catch (_) {
+          notificationsData = [];
+        }
+        renderNotifications();
+      };
+      const saveNotification = async (form, action, id) => {
+        const wasAdding = notificationEditor?.mode === 'new';
+        const data = new FormData(form);
+        const publishAt = `${data.get('publishDate')}T${data.get('publishTime')}`;
+        const currentNotification = id ? notificationsData.find((item) => item.id === id) : null;
+        const response = await osFetch('/api/os/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ action, id, version: currentNotification?.version, idempotencyKey: action === 'create' ? notificationEditor?.idempotencyKey : undefined, titleEn: data.get('titleEn'), titleAr: data.get('titleAr'), textEn: data.get('textEn'), textAr: data.get('textAr'), publishAt, frequency: data.get('frequency'), status: data.get('status') }) });
+        if (!response.ok) throw new Error('notification_save_failed');
+        notificationEditor = null;
+        if (wasAdding) { notificationExpandedId = null; setPanelView('notifications'); }
+        await loadNotifications();
+      };
+      const setInsightsStatus = (data) => {
+        latestInsightsData = data;
+        const isArabic = root.lang === 'ar';
+        const services = data?.services || {};
+        document.querySelectorAll('[data-os-service-en]').forEach((name) => {
+          const provider = services[name.dataset.osServiceEn] || { status: 'unknown' };
+          const dot = name.parentElement.querySelector('.os-insights-status');
+          dot.dataset.status = ['operational', 'attention', 'unavailable', 'unknown'].includes(provider.status) ? provider.status : 'unknown';
+          dot.setAttribute('aria-label', `${name.dataset.osServiceEn}: ${provider.status}`);
+        });
+        const statuses = Object.values(services).map((provider) => provider.status);
+        const databaseOperational = data?.database?.status === 'operational';
+        const systemDescription = document.querySelector('[data-os-system-description-en]');
+        if (statuses.length && statuses.every((status) => status === 'operational')) {
+          systemDescription.textContent = isArabic ? 'تعمل جميع الخدمات المتصلة بصورة طبيعية.' : 'All connected services are operating normally.';
+        } else if (statuses.some((status) => status === 'unknown' || status === 'unavailable')) {
+          systemDescription.textContent = isArabic ? 'بعض تكاملات الخدمات غير متاحة.' : 'Some service integrations are unavailable.';
+        } else {
+          systemDescription.textContent = databaseOperational
+            ? (isArabic ? 'قاعدة بيانات PostgreSQL متصلة، وحالة الخدمات غير متاحة.' : 'PostgreSQL is connected; service status is unavailable.')
+            : (isArabic ? 'لا تتوفر بيانات مباشرة للخدمات المتصلة.' : 'Live service status is not connected.');
+        }
+        const websiteDescription = document.querySelector('[data-os-website-description-en]');
+        const response = data?.website?.response;
+        websiteDescription.textContent = response && Number(data?.website?.responseStatus) >= 200 && Number(data?.website?.responseStatus) < 400
+          ? (isArabic ? 'يعمل الموقع بصورة طبيعية، وتم قياس الاستجابة مباشرة.' : 'Website is operating normally; response was measured live.')
+          : (isArabic ? 'بيانات الموقع المباشرة غير متصلة.' : 'Live website telemetry is not connected.');
+        const values = data?.website || {};
+        const valueMap = { 'last-update': values.lastUpdate, uptime: values.uptime, response: values.response, version: values.version };
+        document.querySelectorAll('[data-os-metric-value]').forEach((item) => {
+          const value = valueMap[item.dataset.osMetricValue];
+          item.textContent = value || (isArabic ? 'غير متاح' : 'Unavailable');
+        });
+      };
+      const loadInsights = async () => {
+        try {
+          const response = await osFetch('/api/os/insights', { cache: 'no-store' });
+          if (!response.ok) throw new Error('insights_unavailable');
+          setInsightsStatus((await response.json()).data);
+        } catch (_) {
+          setInsightsStatus({ services: {}, website: {} });
+        }
+      };
+      const setPanelView = (view) => {
+        panelView = ['insights', 'notifications', 'promo-codes', 'products', 'consultations', 'buttons', 'notification-add'].includes(view) ? view : 'summary';
+        Object.values(panelViews).forEach((content) => { content.hidden = true; content.remove(); });
+        const activeContent = panelViews[panelView];
+        activeContent.hidden = false;
+        activeContent.setAttribute('aria-hidden', String(!panel.classList.contains('is-expanded')));
+        panel.append(activeContent);
+        panel.dataset.osView = panelView;
+        panel.dataset.osCopyEn = ({ summary: 'Today Summary', insights: 'Insights', notifications: 'Notifications', 'promo-codes': 'Promo Code', products: 'Products', consultations: 'Consultations', buttons: 'Buttons', 'notification-add': 'Add Notification' })[panelView];
+        panel.dataset.osCopyAr = ({ summary: 'ملخص اليوم', insights: 'التحليلات', notifications: 'الإشعارات', 'promo-codes': 'رمز الخصم', products: 'المنتجات', consultations: 'الاستشارات', buttons: 'الأزرار', 'notification-add': 'إضافة إشعار' })[panelView];
+        panelCopy.textContent = root.lang === 'ar' ? panel.dataset.osCopyAr : panel.dataset.osCopyEn;
+        setLanguage(root.lang);
+        if (panelView === 'insights') void loadInsights();
+        if (panelView === 'notifications') void loadNotifications();
+        if (panelView === 'promo-codes') void loadPromoCodes();
+        if (panelView === 'products') void loadProducts();
+        if (panelView === 'consultations') void loadConsultations();
+        if (panelView === 'buttons') void loadButtons();
+        if (panelView === 'notification-add') renderNotificationAdd();
+      };
+      const setLanguage = (language) => {
+        const isArabic = language === 'ar';
+        root.lang = isArabic ? 'ar' : 'en';
+        root.dir = isArabic ? 'rtl' : 'ltr';
+        document.body.dir = root.dir;
+        panelCopy.textContent = panelView === 'summary'
+          ? (isArabic ? 'ملخص اليوم' : 'Today Summary')
+          : panelView === 'insights'
+            ? (isArabic ? 'التحليلات' : 'Insights')
+          : panelView === 'promo-codes'
+            ? (isArabic ? 'رمز الخصم' : 'Promo Code')
+            : panelView === 'products'
+              ? (isArabic ? 'المنتجات' : 'Products')
+              : panelView === 'consultations'
+                ? (isArabic ? 'الاستشارات' : 'Consultations')
+              : panelView === 'buttons'
+                ? (isArabic ? 'الأزرار' : 'Buttons')
+            : panelView === 'notification-add'
+              ? (isArabic ? 'إضافة إشعار' : 'Add Notification')
+              : (isArabic ? 'الإشعارات' : 'Notifications');
+        document.querySelectorAll('[data-os-menu-copy-en]').forEach((item) => { item.textContent = isArabic ? item.dataset.osMenuCopyAr : item.dataset.osMenuCopyEn; });
+        panelViewNodes('[data-os-insights-en], [data-os-service-en], [data-os-metric-en], [data-os-summary-en]').forEach((item) => {
+          const prefix = item.dataset.osSummaryEn !== undefined
+            ? 'osSummary'
+            : item.dataset.osInsightsEn !== undefined
+              ? 'osInsights'
+              : item.dataset.osServiceEn !== undefined ? 'osService' : 'osMetric';
+          item.textContent = isArabic ? item.dataset[`${prefix}Ar`] : item.dataset[`${prefix}En`];
+        });
+        panelViewNodes('[data-os-system-description-en], [data-os-website-description-en]').forEach((item) => {
+          item.textContent = isArabic ? item.dataset.osWebsiteDescriptionAr || item.dataset.osSystemDescriptionAr : item.dataset.osWebsiteDescriptionEn || item.dataset.osSystemDescriptionEn;
+        });
+        panelViewNodes('[data-os-metric-value]').forEach((item) => { item.textContent = isArabic ? 'غير متاح' : 'Unknown'; });
+        if (latestInsightsData) setInsightsStatus(latestInsightsData);
+        if (panelView === 'notifications') renderNotifications();
+        if (panelView === 'promo-codes') renderPromoCodes();
+        if (panelView === 'products') renderProducts();
+        if (panelView === 'consultations') renderConsultations();
+        if (panelView === 'buttons') renderButtons();
+        if (panelView === 'notification-add') renderNotificationAdd();
+        try { localStorage.setItem('ooxme-os-language', isArabic ? 'ar' : 'en'); } catch (_) {}
+      };
+      const setTheme = (theme) => {
+        const isDark = theme === 'dark';
+        root.dataset.theme = isDark ? 'dark' : 'light';
+        try { localStorage.setItem('ooxme-os-theme', isDark ? 'dark' : 'light'); } catch (_) {}
+      };
+      sideMenu.addEventListener('click', (event) => {
+        const actionItem = event.target.closest('[data-os-menu-action]');
+        if (!actionItem) return;
+        if (actionItem.dataset.osMenuAction === 'language') setLanguage(root.lang === 'ar' ? 'en' : 'ar');
+        if (actionItem.dataset.osMenuAction === 'appearance') setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+        if (actionItem.dataset.osMenuAction === 'summary') { setPanelView('summary'); setPanelOpen(false); setMenuOpen(false); }
+        if (actionItem.dataset.osMenuAction === 'insights') { setPanelView('insights'); setPanelOpen(true); setMenuOpen(false); }
+        if (actionItem.dataset.osMenuAction === 'notifications') { setPanelView('notifications'); setPanelOpen(true); setMenuOpen(false); }
+        if (actionItem.dataset.osMenuAction === 'promo-codes') { setPanelView('promo-codes'); setPanelOpen(true); setMenuOpen(false); }
+        if (actionItem.dataset.osMenuAction === 'products') { setPanelView('products'); setPanelOpen(true); setMenuOpen(false); }
+        if (actionItem.dataset.osMenuAction === 'consultations') { setPanelView('consultations'); setPanelOpen(true); setMenuOpen(false); }
+        if (actionItem.dataset.osMenuAction === 'logout') void (async () => { try { await osFetch('/api/os/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) }); } finally { csrfToken = ''; setAuthenticated(false); setPanelOpen(false); setMenuOpen(false); } })();
+      });
+      buttons.addEventListener('click', async (event) => { const control = event.target.closest('[data-control-key]'); if (!control) return; const next = control.getAttribute('aria-pressed') !== 'true'; const response = await osFetch('/api/os/page-controls', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actionKey: control.dataset.controlKey, version: Number(control.dataset.controlVersion), enabled: next }) }); if (response.ok) await loadButtons(); });
+      products.addEventListener('click', async (event) => { const action = event.target.closest('[data-product-action]')?.dataset.productAction; if (!action) return; if (action === 'new') { productEditor = { mode: 'new', id: null, idempotencyKey: window.crypto?.randomUUID?.() || String(Date.now()) }; renderProducts(); return; } if (action === 'cancel') { productEditor = null; renderProducts(); return; } const row = event.target.closest('[data-product-id]'); if (!row) return; if (action === 'edit') { productEditor = { mode: 'edit', id: row.dataset.productId }; renderProducts(); return; } if (action === 'archive') { const response = await osFetch('/api/os/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'archive', id: row.dataset.productId }) }); if (response.ok) await loadProducts(); } });
+      products.addEventListener('submit', async (event) => { const form = event.target.closest('[data-product-form]'); if (!form) return; event.preventDefault(); const data = new FormData(form); const current = productEditor?.id ? productsData.find((item) => item.id === productEditor.id) : null; const response = await osFetch('/api/os/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: productEditor?.mode === 'edit' ? 'update' : 'create', id: productEditor?.id, version: current?.version, idempotencyKey: productEditor?.idempotencyKey, slug: data.get('slug'), nameEn: data.get('nameEn'), nameAr: data.get('nameAr'), categoryEn: data.get('categoryEn'), categoryAr: data.get('categoryAr'), descriptionEn: data.get('descriptionEn'), descriptionAr: data.get('descriptionAr'), priceAmount: data.get('priceAmount'), priceCurrency: 'USD', priceLabelEn: data.get('priceAmount') ? `$${data.get('priceAmount')}` : 'Custom', priceLabelAr: data.get('priceAmount') ? `$${data.get('priceAmount')}` : 'مخصص', status: data.get('status') }) }); if (response.ok) { productEditor = null; await loadProducts(); } });
+      consultations.addEventListener('change', async (event) => { const select = event.target.closest('[data-consultation-status]'); const row = event.target.closest('[data-consultation-id]'); if (!select || !row) return; const item = consultationsData.find((entry) => entry.id === row.dataset.consultationId); if (!item) return; const response = await osFetch('/api/os/consultations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id, status: select.value, version: item.version }) }); if (response.ok) await loadConsultations(); else renderConsultations(); });
+      const setPanelOpen = (open) => {
+        if (open) setMenuOpen(false);
+        panel.classList.toggle('is-expanded', open);
+        panel.style.height = '';
+        Object.entries(panelViews).forEach(([name, content]) => {
+          content.setAttribute('aria-hidden', String(name !== panelView || !open));
+        });
+        panelHandle.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
+      };
+      const setMenuOpen = (open) => {
+        if (open) setPanelOpen(false);
+        sideMenu.classList.toggle('is-open', open);
+        sideMenu.setAttribute('aria-hidden', String(!open));
+        addButton.setAttribute('aria-expanded', String(open));
+        addButton.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      };
+      const closeAll = () => { setMenuOpen(false); setPanelOpen(false); };
+      addButton.addEventListener('click', (event) => { event.stopPropagation(); setMenuOpen(!sideMenu.classList.contains('is-open')); });
+      const updatePanelToggle = () => {
+        setPanelOpen(!panel.classList.contains('is-expanded'));
+      };
+      panelHandle.addEventListener('click', (event) => { event.stopPropagation(); updatePanelToggle(); });
+      notifications.addEventListener('click', async (event) => {
+        const action = event.target.closest('[data-notification-action]')?.dataset.notificationAction;
+        const row = event.target.closest('[data-notification-id]');
+        if (!action && row && !event.target.closest('button, input, textarea, select')) {
+          const id = row.dataset.notificationId;
+          notificationExpandedId = notificationExpandedId === id ? null : id;
+          renderNotifications();
+          return;
+        }
+        if (!action) return;
+        if (action === 'new') { notificationExpandedId = null; notificationEditor = { mode: 'new', form: true, idempotencyKey: window.crypto?.randomUUID?.() || String(Date.now()) }; setPanelView('notification-add'); return; }
+        if (action === 'cancel') { notificationExpandedId = null; notificationEditor = null; setPanelView('notifications'); return; }
+        if (action === 'edit' && row) { notificationEditor = { mode: 'edit', id: row.dataset.notificationId, form: true }; renderNotifications(); return; }
+        if (action === 'delete' && row) {
+          if (!window.confirm(root.lang === 'ar' ? 'حذف هذا الإشعار؟' : 'Delete this notification?')) return;
+          const notification = notificationsData.find((item) => item.id === row.dataset.notificationId);
+          const response = await osFetch('/api/os/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', id: row.dataset.notificationId, version: notification?.version }) });
+          if (!response.ok) return;
+          notificationExpandedId = null;
+          notificationEditor = null;
+          await loadNotifications();
+          return;
+        }
+        if (action === 'toggle' && row) {
+          const notification = notificationsData.find((item) => item.id === row.dataset.notificationId);
+          if (!notification) return;
+          const schedule = localDateTime(notification.publishAt);
+          const response = await osFetch('/api/os/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update', id: notification.id, version: notification.version, titleEn: notification.title.en, titleAr: notification.title.ar, textEn: notification.text.en, textAr: notification.text.ar, publishAt: `${schedule.date}T${schedule.time}`, frequency: notification.frequency, status: notification.status === 'active' ? 'inactive' : 'active' }) });
+          if (!response.ok) return;
+          notificationEditor = { mode: 'edit', id: notification.id, form: false };
+          await loadNotifications();
+        }
+      });
+      promoCodes.addEventListener('click', async (event) => {
+        const action = event.target.closest('[data-promo-action]')?.dataset.promoAction;
+        const managementAction = event.target.closest('[data-management-action]')?.dataset.managementAction;
+        if (managementAction === 'promo-new') { promoEditor = { mode: 'new', id: null, idempotencyKey: window.crypto?.randomUUID?.() || String(Date.now()) }; renderPromoCodes(); return; }
+        const row = event.target.closest('[data-promo-code-id]');
+        if (!row && event.target.closest('[data-promo-action="cancel"]')) { promoEditor = null; renderPromoCodes(); return; }
+        if (!row) return;
+        const id = row.dataset.promoCodeId;
+        if (!action) {
+          promoCodeExpandedId = promoCodeExpandedId === id ? null : id;
+          renderPromoCodes();
+          return;
+        }
+        if (action === 'edit') { promoEditor = { mode: 'edit', id }; renderPromoCodes(); return; }
+        if (action === 'toggle') { const response = await osFetch('/api/os/promo-codes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'toggle', id }) }); if (response.ok) await loadPromoCodes(); return; }
+        if (action !== 'delete') return;
+        if (!window.confirm(root.lang === 'ar' ? 'حذف رمز الخصم هذا؟' : 'Delete this promo code?')) return;
+        const response = await osFetch('/api/os/promo-codes', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ action: 'delete', id }) });
+        if (!response.ok) return;
+        promoCodeExpandedId = null;
+        await loadPromoCodes();
+      });
+      promoCodes.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-promo-form]'); if (!form) return; event.preventDefault();
+        const data = new FormData(form); const current = promoEditor?.id ? promoCodesData.find((item) => item.id === promoEditor.id) : null;
+        const toIso = (value) => value ? new Date(`${value}T00:00:00`).toISOString() : null;
+        const csv = (value) => String(value || '').split(',').map((item) => item.trim()).filter(Boolean);
+        const response = await osFetch('/api/os/promo-codes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: promoEditor?.mode === 'edit' ? 'update' : 'create', id: promoEditor?.id, version: current?.version, idempotencyKey: promoEditor?.idempotencyKey, code: data.get('code'), discountValue: data.get('discountValue'), discountType: data.get('discountType'), currency: data.get('currency'), startsAt: toIso(data.get('startsAt')), endsAt: toIso(data.get('endsAt')), totalUsageLimit: data.get('totalUsageLimit') || null, perCustomerLimit: data.get('perCustomerLimit') || null, status: data.get('status'), serviceRestrictions: csv(data.get('serviceRestrictions')), durationRestrictions: csv(data.get('durationRestrictions')).map(Number).filter(Number.isInteger) }) });
+        if (!response.ok) return; promoEditor = null; await loadPromoCodes();
+      });
+      notifications.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-notification-form]');
+        if (!form) return;
+        event.preventDefault();
+        try { await saveNotification(form, notificationEditor?.mode === 'edit' ? 'update' : 'create', notificationEditor?.id); } catch (_) { /* Keep the editor open on validation/API failure. */ }
+      });
+      notificationAdd.addEventListener('click', (event) => {
+        if (event.target.closest('[data-notification-action="cancel"]')) {
+          notificationEditor = null;
+          setPanelView('notifications');
+        }
+      });
+      notificationAdd.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-notification-form]');
+        if (!form) return;
+        event.preventDefault();
+        try { await saveNotification(form, 'create'); } catch (_) { /* Keep the editor open on validation/API failure. */ }
+      });
+      notifications.addEventListener('input', (event) => syncBilingualDirection(event.target));
+      notifications.addEventListener('focusin', keepNotificationInputVisible);
+      notifications.addEventListener('focusout', handleFormFocusOut);
+      notificationAdd.addEventListener('input', (event) => syncBilingualDirection(event.target));
+      notificationAdd.addEventListener('focusin', keepNotificationInputVisible);
+      notificationAdd.addEventListener('focusout', handleFormFocusOut);
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', handleVisualViewportResize);
+      document.addEventListener('click', (event) => {
+        const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
+        const insidePanel = path.includes(panel) || event.target.closest?.('.os-panel');
+        if (!insidePanel && !event.target.closest('.os-side-menu, [data-os-add], [data-os-oxo-toggle]')) closeAll();
+      });
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeAll(); });
+      setPanelView('summary');
+      setPanelOpen(false);
+      let savedLanguage = 'en';
+      let savedTheme = '';
+      try {
+        savedLanguage = localStorage.getItem('ooxme-os-language') === 'ar' ? 'ar' : 'en';
+        const storedTheme = localStorage.getItem('ooxme-os-theme');
+        savedTheme = storedTheme === 'dark' || storedTheme === 'light'
+          ? storedTheme
+          : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      } catch (_) {}
+      if (!savedTheme) savedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      setLanguage(savedLanguage);
+      setTheme(savedTheme);
+    })();
+  </script></body>
 </html>

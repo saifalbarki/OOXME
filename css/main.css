@@ -169,11 +169,6 @@ body.s-page.s-page--consultation > .s-page__content > * {
   transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
 }
 
-body.s-page.s-page--os > .s-page__content > * {
-  opacity: 1;
-  transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
-}
-
 body.s-page.s-page--store > .s-page__content > * {
   opacity: 1;
   transition: opacity .26s cubic-bezier(.22, .61, .36, 1);
@@ -206,11 +201,6 @@ body.s-page.s-page--consultation.is-menu-open > .s-page__content > * {
   pointer-events: none;
 }
 
-body.s-page.s-page--os.is-menu-open > .s-page__content > * {
-  opacity: .5;
-  pointer-events: none;
-}
-
 body.s-page.s-page--store.is-menu-open > .s-page__content > * {
   opacity: .5;
   pointer-events: none;
@@ -222,7 +212,7 @@ body.s-page.s-page--brand-management.is-menu-open > .s-page__content > * {
 }
 
 html.is-homepage-menu-scroll-locked,
-html.is-homepage-menu-scroll-locked body.s-page:is(.s-page--main, .s-page--gallery, .s-page--update, .s-page--consultation, .s-page--os, .s-page--store, .s-page--brand-management) {
+html.is-homepage-menu-scroll-locked body.s-page:is(.s-page--main, .s-page--gallery, .s-page--update, .s-page--consultation, .s-page--store, .s-page--brand-management) {
   overscroll-behavior: none;
 }
 
@@ -3877,7 +3867,6 @@ html.s-route.is-day-mode body.s-page--main :is(.s-page__group-description, .s-pa
   body.s-page.s-page--space > .s-page__content > *,
   body.s-page.s-page--update > .s-page__content > *,
   body.s-page.s-page--consultation > .s-page__content > *,
-  body.s-page.s-page--os > .s-page__content > *,
   body.s-page.s-page--store > .s-page__content > *,
   body.s-page.s-page--brand-management > .s-page__content > * { transition: none; }
   .s-page__send-utility { transition: none; }

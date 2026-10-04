@@ -26,16 +26,14 @@
     en: {
       menu: ['Home', 'The Brand Management', 'The Gallery', 'The Store', 'The Consultation', 'Contact'],
       ask: 'Ask ooxme', add: 'Add context', submit: 'Submit question', language: 'Switch to Arabic', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode',
-      featuredHeroNumber: '1000', featuredHeroWord: 'Key', featuredLabel: 'Premium Product', featuredName: '1000 Key', featuredCategory: 'Applied E-Book', featuredDescription: 'A book that brings together 1000 keys to the success of any project, divided within OOXME hidden files for managing commercial projects.', featuredPreviousPrice: '$99', featuredPrice: '$49',
-      productOneName: 'Project Planner', productOneCategory: 'Digital File', productOneDescription: 'A practical planning system for organizing projects, tasks, priorities, and execution.', productOnePrice: '$19', productTwoName: 'Business Model Kit', productTwoCategory: 'Business Toolkit', productTwoDescription: 'A structured toolkit for reviewing business models, offers, operations, and growth opportunities.', productTwoPrice: '$39', productThreeName: 'Content System', productThreeCategory: 'Content Toolkit', productThreeDescription: 'A practical framework for planning, organizing, and maintaining consistent brand content.', productThreePrice: '$24', productFourName: 'Custom Brand Pack', productFourCategory: 'Custom Product', productFourDescription: 'A tailored set of brand files prepared around your business needs and priorities.', productFourPrice: 'Custom', view: 'View',
+      view: 'View',
       customLabel: 'Custom Products', customTitle: 'Made for you', customDescription: 'A future space for products shaped around your needs.', customAction: 'Request a Custom Product',
       previous: 'Previous product', next: 'Next product'
     },
     ar: {
       menu: ['الرئيسية', 'إدارة العلامة التجارية', 'المعرض', 'المتجر', 'الاستشارة', 'تواصل'],
       ask: 'اسأل اوكسوم', add: 'اضف سياقًا', submit: 'ارسال السؤال', language: 'Switch to English', day: 'Switch to Day Mode', dark: 'Switch to Dark Mode',
-      featuredHeroNumber: '1000', featuredHeroWord: 'مفتاح', featuredLabel: 'منتج مميز ', featuredName: '1000 مفتاح', featuredCategory: 'كتاب الكتروني تطبيقي', featuredDescription: 'كتاب يجمع 1000 مفتاح لنجاح اي مشروع مقسمة ضمن ملفات اوكسوم المخفية لإدارة المشاريع التجارية', featuredPreviousPrice: '$99', featuredPrice: '$49',
-      productOneName: 'مخطط المشروع', productOneCategory: 'ملف رقمي', productOneDescription: 'نظام عملي لتنظيم المشاريع والمهام والاولويات والتنفيذ.', productOnePrice: '$19', productTwoName: 'حزمة نموذج العمل', productTwoCategory: 'ادوات اعمال', productTwoDescription: 'حزمة منظمة لمراجعة نموذج العمل والعروض والعمليات وفرص النمو.', productTwoPrice: '$39', productThreeName: 'نظام المحتوى', productThreeCategory: 'ادوات محتوى', productThreeDescription: 'اطار عملي لتخطيط وتنظيم واستمرار محتوى العلامة التجارية.', productThreePrice: '$24', productFourName: 'حزمة علامة مخصصة', productFourCategory: 'منتج مخصص', productFourDescription: 'مجموعة ملفات علامة تجارية مخصصة حسب احتياجات واولويات عملك.', productFourPrice: 'مخصص', view: 'عرض',
+      view: 'عرض',
       customLabel: 'منتجات مخصصة', customTitle: 'مصمم لك', customDescription: 'مساحة مستقبلية لمنتجات مصممة حسب احتياجاتك.', customAction: 'اطلب منتج مخصص',
       previous: 'المنتج السابق', next: 'المنتج التالي'
     }
@@ -53,6 +51,7 @@
   let menuTimer = 0;
   let carouselDrag = null;
   let featuredEnglishRows = '';
+  let publicProducts = [];
   const featuredFontsReady = document.fonts?.ready || Promise.resolve();
 
   const syncFeaturedGeometry = (language) => {
@@ -92,6 +91,47 @@
     carouselStatus.textContent = `${activeProduct + 1} / ${productCards.length}`;
   };
 
+  const renderPublicProducts = (language = root.lang) => {
+    const selected = language === 'ar' ? 'ar' : 'en';
+    const featured = publicProducts.find((product) => product.isFeatured) || publicProducts[0];
+    const cards = publicProducts.filter((product) => product !== featured).slice(0, productCards.length);
+    const set = (node, value) => { if (node) node.textContent = value || ''; };
+    if (featured) {
+      const featuredName = featured.name?.[selected] || '';
+      const heroParts = featuredName.match(/^(\d+)\s*(.*)$/u);
+      set(featuredCard?.querySelector('[data-store-copy="featuredHeroNumber"]'), heroParts?.[1] || '');
+      set(featuredCard?.querySelector('[data-store-copy="featuredHeroWord"]'), heroParts?.[2] || featuredName);
+      set(featuredCard?.querySelector('[data-store-copy="featuredName"]'), featured.name?.[selected]);
+      set(featuredCard?.querySelector('[data-store-copy="featuredLabel"]'), language === 'ar' ? 'منتج مميز' : 'Featured Product');
+      set(featuredCard?.querySelector('[data-store-copy="featuredCategory"]'), featured.category?.[selected]);
+      set(featuredCard?.querySelector('[data-store-copy="featuredDescription"]'), featured.description?.[selected]);
+      set(featuredCard?.querySelector('[data-store-copy="featuredPrice"]'), featured.price?.label?.[selected]);
+    } else {
+      featuredCard?.querySelectorAll('[data-store-copy="featuredHeroNumber"], [data-store-copy="featuredHeroWord"], [data-store-copy="featuredName"], [data-store-copy="featuredLabel"], [data-store-copy="featuredCategory"], [data-store-copy="featuredDescription"], [data-store-copy="featuredPrice"], [data-store-copy="featuredPreviousPrice"]').forEach((node) => { node.textContent = ''; });
+    }
+    productCards.forEach((card, index) => {
+      const product = cards[index];
+      card.hidden = !product;
+      if (!product) return;
+      set(card.querySelector('.s-page__store-card-title'), product.name?.[selected]);
+      set(card.querySelector('.s-page__store-eyebrow'), product.category?.[selected]);
+      set(card.querySelector('.s-page__store-card-description'), product.description?.[selected]);
+      set(card.querySelector('.s-page__store-price--current'), product.price?.label?.[selected]);
+    });
+    syncCarousel(false);
+  };
+
+  const loadPublicProducts = async () => {
+    try {
+      const response = await fetch('/api/products', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+      if (!response.ok) throw new Error('products_unavailable');
+      publicProducts = (await response.json()).data?.products || [];
+    } catch (_) {
+      publicProducts = [];
+    }
+    renderPublicProducts(root.lang);
+  };
+
   const selectProduct = (nextIndex) => {
     activeProduct = Math.max(0, Math.min(productCards.length - 1, nextIndex));
     syncCarousel(true);
@@ -103,6 +143,7 @@
     root.lang = language;
     root.dir = language === 'ar' ? 'rtl' : 'ltr';
     page.querySelectorAll('[data-store-copy]').forEach((node) => {
+      if (/^(featured|product(?:One|Two|Three|Four))/.test(node.dataset.storeCopy)) return;
       const value = labels[node.dataset.storeCopy];
       if (value) node.textContent = value;
     });
@@ -119,6 +160,7 @@
     updateInputLanguage();
     syncFeaturedGeometry(language);
     syncCarousel(false);
+    renderPublicProducts(language);
   };
 
   window.addEventListener('ooxme-language-change', (event) => {
@@ -258,6 +300,8 @@
     syncCarousel(false);
   }, { passive: true });
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  renderPublicProducts(root.lang);
+  void loadPublicProducts();
   root.classList.add('s-x-discrete-sections');
   applyLanguage(root.lang === 'en' ? 'en' : 'ar', { persist: false });
   featuredFontsReady.then(() => { if (root.lang === 'en') syncFeaturedGeometry('en'); });

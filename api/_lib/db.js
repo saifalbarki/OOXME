@@ -20,11 +20,32 @@ const getPool = () => {
       idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 10_000
     });
+    pool.on('error', (error) => {
+      if (error?.code || error?.message) console.error('PostgreSQL idle connection error', error.code || error.message);
+    });
   }
   return pool;
 };
 
-const query = (text, values) => getPool().query(text, values);
+const isTransientConnectionError = (error) => {
+  const code = String(error?.code || '');
+  const message = String(error?.message || '').toLowerCase();
+  return ['ECONNRESET', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN', '57P01', '08001', '08006'].includes(code)
+    || message.includes('connection terminated')
+    || message.includes('timeout expired');
+};
+
+const query = async (text, values, attempt = 0) => {
+  try {
+    return await getPool().query(text, values);
+  } catch (error) {
+    if (attempt || !isTransientConnectionError(error) || !pool) throw error;
+    const stalePool = pool;
+    pool = undefined;
+    await stalePool.end().catch(() => undefined);
+    return query(text, values, attempt + 1);
+  }
+};
 
 async function withTransaction(work) {
   const client = await getPool().connect();

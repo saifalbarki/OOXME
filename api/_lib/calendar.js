@@ -155,6 +155,11 @@ async function createCalendarBooking(booking) {
   });
 }
 
+async function cancelCalendarBooking(eventId) {
+  if (!eventId) return { skipped: true };
+  return calendarApi(`/calendars/${encodeURIComponent(bookingConfig().calendarId)}/events/${encodeURIComponent(eventId)}`, { method: 'DELETE' });
+}
+
 const bookingId = () => `OOX-${crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()}`;
 
 module.exports = {
@@ -162,6 +167,7 @@ module.exports = {
   availabilityForMonth,
   availabilityForWindow,
   createCalendarBooking,
+  cancelCalendarBooking,
   bookingId,
   eventRange,
   meetsMinimumBookingLeadTime,

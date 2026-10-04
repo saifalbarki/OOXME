@@ -46,7 +46,8 @@
   const themeUtility = composer.querySelector('[data-s-utility="theme"]');
   const languageUtility = composer.querySelector('[data-s-utility="language"]');
   const notificationReadStateKey = 'ooxme-notification-read-state';
-  const notificationId = 'homepage-gallery-announcement-v1';
+  let activeNotification = null;
+  let notificationId = null;
   const readNotificationState = () => {
     try {
       const stored = JSON.parse(window.localStorage.getItem(notificationReadStateKey) || '{}');
@@ -64,7 +65,7 @@
     writeNotificationState(state);
   };
   const pageFadeTargets = [...document.querySelectorAll(
-    'body.s-page--main > .s-page__content > *, body.s-page--main > .s-page__conversation > *, body.s-page--main > .s-page__conversation-final > *, body.s-page--gallery > .s-page__content > *, body.s-page--space > .s-page__content > *, body.s-page--update > .s-page__content > *, body.s-page--consultation > .s-page__content > *, body.s-page--os > .s-page__content > *, body.s-page--store > .s-page__content > *, body.s-page--brand-management > .s-page__content > *'
+    'body.s-page--main > .s-page__content > *, body.s-page--main > .s-page__conversation > *, body.s-page--main > .s-page__conversation-final > *, body.s-page--gallery > .s-page__content > *, body.s-page--space > .s-page__content > *, body.s-page--update > .s-page__content > *, body.s-page--consultation > .s-page__content > *, body.s-page--store > .s-page__content > *, body.s-page--brand-management > .s-page__content > *'
   )];
   let pageScrollLocked = false;
   let lockedScrollX = 0;
@@ -92,7 +93,6 @@
       || document.body.classList.contains('s-page--space')
       || document.body.classList.contains('s-page--update')
       || document.body.classList.contains('s-page--consultation')
-      || document.body.classList.contains('s-page--os')
       || document.body.classList.contains('s-page--store')
       || document.body.classList.contains('s-page--brand-management');
     if (!isHomepageMenuPage) return;
@@ -175,6 +175,7 @@
   syncNotificationIndicator({ pulse: true });
   const menuMotionDuration = 260;
   const createNotification = () => {
+    if (!activeNotification?.id) return null;
     const notification = document.createElement('button');
     notification.type = 'button';
     notification.className = 's-page__composer-menu-notification';
@@ -199,10 +200,8 @@
     content.append(titleRow, description);
     notification.append(content);
     const language = root.lang === 'en' ? 'en' : 'ar';
-    title.textContent = language === 'en' ? 'Seen Our Gallery?' : 'هل رأيتم معرض اعمالنا؟';
-    description.textContent = language === 'en'
-      ? 'Our gallery is now live, featuring selected brands and identities we’ve created.'
-      : 'افتتحنا اليوم معرض اعمالنا، لتشاهدوا مجموعة من العلامات والهويات التي عملنا عليها.';
+    title.textContent = activeNotification.title?.[language] || activeNotification.title?.en || '';
+    description.textContent = activeNotification.body?.[language] || activeNotification.body?.en || '';
     return { divider, notification };
   };
   const itemForKey = (key, href, disabled = false, buttonOnly = false) => {
@@ -255,8 +254,19 @@
     const notificationArea = document.createElement('div');
     notificationArea.className = 's-page__composer-menu-notification-area';
     const notificationParts = createNotification();
-    notificationArea.append(notificationParts.divider, notificationParts.notification);
-    menu.replaceChildren(optionList, spaceOption, notificationArea);
+    if (notificationParts) notificationArea.append(notificationParts.divider, notificationParts.notification);
+    menu.replaceChildren(optionList, spaceOption, ...(notificationParts ? [notificationArea] : []));
+  };
+  const loadActiveNotification = async () => {
+    try {
+      const response = await fetch('/api/notifications/active', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+      if (!response.ok) throw new Error('active_notification_unavailable');
+      activeNotification = (await response.json()).data?.notification || null;
+    } catch (_) { activeNotification = null; }
+    notificationId = activeNotification?.id || null;
+    notificationRead = notificationId ? isNotificationRead(notificationId) : true;
+    syncNotificationIndicator();
+    normalizeMenu();
   };
   const markNotificationUnread = () => {
     notificationRead = false;
@@ -322,6 +332,7 @@
     if (menu) menu.inert = true;
   };
   window.OOXMEHeader = { setMenuOpen, normalizeMenu, markNotificationUnread };
+  void loadActiveNotification();
 
   if (menu) {
     menu.id ||= 'ooxme-primary-menu';
