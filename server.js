@@ -44,12 +44,12 @@ const legacyRoutes = { '/service': '/bm', '/start': '/update', '/scale': '/consu
 const publicRoots = ['assets', 'css', 'js', 'public'];
 const publicRootFiles = new Set(['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest']);
 const apiRoutes = {
-  '/api/booking/available-slots': './api/booking/available-slots',
-  '/api/booking/availability': './api/booking/availability',
+  '/api/booking/available-slots': './api/public',
+  '/api/booking/availability': './api/public',
   '/api/booking/confirm': './api/booking/confirm',
-  '/api/promo/validate': './api/promo/validate',
-  '/api/products': './api/products',
-  '/api/notifications/active': './api/notifications/active',
+  '/api/promo/validate': './api/public',
+  '/api/products': './api/public',
+  '/api/notifications/active': './api/public',
   '/api/os/notifications': './api/os/notifications',
   '/api/os/promo-codes': './api/os/promo-codes',
   '/api/os/page-controls': './api/os/page-controls',

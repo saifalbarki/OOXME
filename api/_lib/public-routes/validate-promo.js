@@ -1,5 +1,5 @@
-const { json, methodNotAllowed, readJson } = require('../_lib/http');
-const { validatePromotionInput } = require('../_lib/promo-engine');
+const { json, methodNotAllowed, readJson } = require('../http');
+const { validatePromotionInput } = require('../promo-engine');
 
 module.exports = async (request, response) => {
   if (request.method !== 'POST') return methodNotAllowed(response, ['POST']);

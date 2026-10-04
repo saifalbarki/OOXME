@@ -1,6 +1,6 @@
-const { json, methodNotAllowed } = require('../_lib/http');
-const { bookingConfig } = require('../_lib/config');
-const { availabilityForDate, availabilityForMonth, availabilityForWindow } = require('../_lib/calendar');
+const { json, methodNotAllowed } = require('../http');
+const { bookingConfig } = require('../config');
+const { availabilityForDate, availabilityForMonth, availabilityForWindow } = require('../calendar');
 
 const validDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ''));
 

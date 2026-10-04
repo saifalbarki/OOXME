@@ -8,6 +8,11 @@
     "api/**/*.js": { "maxDuration": 30 }
   },
   "rewrites": [
+    { "source": "/api/booking/availability", "destination": "/api/public?route=availability" },
+    { "source": "/api/booking/available-slots", "destination": "/api/public?route=available-slots" },
+    { "source": "/api/products", "destination": "/api/public?route=products" },
+    { "source": "/api/notifications/active", "destination": "/api/public?route=notifications" },
+    { "source": "/api/promo/validate", "destination": "/api/public?route=promo" },
     { "source": "/bm", "destination": "/bm.html" },
     { "source": "/gallery", "destination": "/gallery.html" },
     { "source": "/space", "destination": "/space.html" },

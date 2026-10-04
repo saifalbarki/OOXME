@@ -1,5 +1,5 @@
-const { json, methodNotAllowed } = require('../_lib/http');
-const { query } = require('../_lib/db');
+const { json, methodNotAllowed } = require('../http');
+const { query } = require('../db');
 
 module.exports = async (request, response) => {
   if (request.method !== 'GET') return methodNotAllowed(response, ['GET']);
