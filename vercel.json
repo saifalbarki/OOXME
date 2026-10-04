@@ -7,10 +7,6 @@
   "functions": {
     "api/**/*.js": { "maxDuration": 30 }
   },
-  "crons": [
-    { "path": "/api/cron/insights-uptime", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/consultation-reminders", "schedule": "*/5 * * * *" }
-  ],
   "rewrites": [
     { "source": "/bm", "destination": "/bm.html" },
     { "source": "/gallery", "destination": "/gallery.html" },
