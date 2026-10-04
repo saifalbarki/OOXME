@@ -41,13 +41,18 @@
       html, body { width: 100%; height: 100%; min-height: var(--os-viewport-height); margin: 0; overflow: hidden; overscroll-behavior: none; background-color: var(--os-page-background); touch-action: manipulation; transition: background-color .24s ease, color .24s ease; }
       body { height: var(--os-viewport-height); color: var(--os-control-color); font-family: var(--os-font-family); font-weight: var(--os-weight-ui); }
       body:not(.os-authenticated) > :not(.os-auth-gate) { display: none !important; }
-      .os-auth-gate { position: fixed; inset: 0; display: grid; place-items: center; padding: var(--os-outer-gap); background: var(--os-page-background); color: var(--os-control-color); }
+      .os-auth-gate { position: fixed; right: var(--os-outer-gap); bottom: var(--os-outer-gap); left: var(--os-outer-gap); display: flex; box-sizing: border-box; height: var(--os-closed-height); min-width: 0; padding: calc(var(--x-spacing) * 1.25) calc(var(--x-spacing) * 1.5); align-items: center; justify-content: center; border-radius: clamp(42px, 6vw, 72px); background: var(--os-panel-background); color: var(--os-panel-color); }
       .os-auth-gate[hidden] { display: none; }
-      .os-auth-form { display: grid; width: min(280px, 100%); gap: 10px; }
-      .os-auth-title { margin: 0 0 4px; font: 500 16px/1 var(--os-font-family); text-align: center; }
-      .os-auth-form input { box-sizing: border-box; width: 100%; min-height: 38px; padding: 0 13px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: 14px; outline: 0; background: transparent; color: var(--os-control-color); font: 500 16px/1 var(--os-font-family); -webkit-tap-highlight-color: transparent; }
-      .os-auth-form button { min-height: 38px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--os-control-color) 8%, transparent); color: inherit; cursor: pointer; font: 500 11px/1 var(--os-font-family); -webkit-tap-highlight-color: transparent; }
-      .os-auth-error { min-height: 12px; color: #c44; font: 400 10px/1.2 var(--os-font-family); text-align: center; }
+      .os-auth-form { display: grid; width: min(280px, 100%); gap: 8px; }
+      .os-auth-title { display: none; }
+      .os-auth-form input, .os-auth-form button { box-sizing: border-box; width: 100%; font-family: var(--os-font-family); -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
+      .os-auth-form input { min-height: 38px; padding: 0 13px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: 14px; outline: 0; background: transparent; color: var(--os-control-color); font-size: 16px; font-weight: 500; line-height: 1; }
+      .os-auth-form input::placeholder { color: color-mix(in srgb, var(--os-control-color) 52%, transparent); opacity: 1; }
+      .os-auth-form button { min-height: 38px; padding: 10px 14px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--os-panel-color) 8%, transparent); color: inherit; cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
+      .os-auth-form button:focus:not(:focus-visible) { outline: 0; box-shadow: none; }
+      .os-auth-error { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      @media (max-width: 480px) { .os-auth-gate { padding: calc(var(--x-spacing) * 1.25) var(--x-spacing); } .os-auth-form { width: 100%; } }
+      @media (orientation: landscape) and (max-height: 520px) { .os-auth-gate { height: auto; min-height: calc(var(--x-spacing) * 3.5); padding: var(--x-spacing); } .os-auth-form { grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(100%, 420px); } .os-auth-form button { width: auto; min-width: 84px; } }
       .os-control-view { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; overflow: auto; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
       .os-control-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
       .os-control-row { display: flex; justify-content: space-between; gap: 12px; padding: 0 0 10px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); }
@@ -180,11 +185,13 @@
     (() => {
       const root = document.documentElement;
       const authGate = document.querySelector('[data-os-auth-gate]');
+      const authForm = document.querySelector('[data-os-auth-form]');
+      const authInput = authForm.querySelector('input[name="password"]');
+      const authError = document.querySelector('[data-os-auth-error]');
       let csrfToken = '';
       const setAuthenticated = (authenticated) => {
         document.body.classList.toggle('os-authenticated', authenticated);
-        authGate.hidden = true;
-        if (!authenticated) window.location.reload();
+        authGate.hidden = authenticated;
       };
       const osFetch = (url, options = {}) => {
         const headers = new Headers(options.headers || {});
@@ -204,6 +211,28 @@
           return false;
         }
       };
+      authForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        authError.textContent = '';
+        const submit = authForm.querySelector('button[type="submit"]');
+        submit.disabled = true;
+        try {
+          const response = await fetch('/api/os/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ action: 'login', password: authInput.value })
+          });
+          const body = await response.json();
+          if (!response.ok) throw new Error(body.error || 'authentication_failed');
+          authInput.value = '';
+          await initializeAuth();
+        } catch (error) {
+          authError.textContent = error.message === 'login_temporarily_locked' ? 'Try again later' : 'Invalid password';
+        } finally {
+          submit.disabled = false;
+        }
+      });
       void initializeAuth();
       const addButton = document.querySelector('[data-os-add]');
       const sideMenu = document.querySelector('[data-os-side-menu], #os-side-menu');
