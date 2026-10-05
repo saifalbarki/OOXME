@@ -54,6 +54,7 @@ const apiRoutes = {
   '/api/os/promo-codes': './api/os/promo-codes',
   '/api/os/page-controls': './api/os/page-controls',
   '/api/os/insights': './api/os/insights',
+  '/api/os/response': './api/os/response',
   '/api/os/products': './api/os/products',
   '/api/os/consultations': './api/os/consultations',
   '/api/os/setup': './api/os/setup',

@@ -170,7 +170,8 @@
       .os-notification-main-action--floating { position: absolute; right: 50%; bottom: var(--x-spacing); z-index: 1; transform: translateX(50%); }
       .os-summary-content { position: absolute; inset: 0; width: auto; height: auto; overflow: clip; opacity: 0; pointer-events: none; visibility: hidden; }
       .os-panel[data-os-view="summary"].is-expanded .os-summary-content { opacity: 1; pointer-events: auto; visibility: visible; }
-      .os-summary-percentage { position: absolute; top: 50%; left: 50%; display: inline-block; box-sizing: content-box; width: max-content; min-width: max-content; height: auto; overflow: visible; padding: .12em; color: transparent; background: linear-gradient(45deg, #050505 0%, #2f3236 44%, #858a8f 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font: 400 clamp(80px, 22vw, 180px)/1 "SF Pro", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: -.06em; white-space: nowrap; opacity: 0; pointer-events: none; transform: translate(-50%, -50%); transition: opacity .22s ease; visibility: hidden; }
+      .os-summary-percentage { position: absolute; top: 50%; left: 50%; display: inline-block; box-sizing: content-box; width: max-content; min-width: 2.4ch; height: auto; overflow: visible; padding: .12em; color: transparent; background: linear-gradient(45deg, #050505 0%, #2f3236 44%, #858a8f 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font: 400 clamp(80px, 22vw, 180px)/1 "SF Pro", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.06em; text-align: center; white-space: nowrap; opacity: 0; pointer-events: none; transform: translate(-50%, -50%); transition: opacity .22s ease; visibility: hidden; }
+      .os-summary-percentage[data-available="true"]::after { content: " ms"; font-size: .18em; letter-spacing: 0; vertical-align: baseline; }
       .os-panel[data-os-view="summary"].is-expanded .os-summary-percentage { opacity: 1; visibility: visible; }
       .os-summary-indicators { position: absolute; right: 0; bottom: var(--x-spacing); left: 50%; display: grid; width: min(260px, calc(100vw - (var(--x-spacing) * 4))); gap: 6px; color: var(--os-panel-color); font: 500 11px/1 var(--os-font-family); letter-spacing: normal; opacity: 0; pointer-events: none; transform: translateX(-50%); transition: opacity .22s ease; visibility: hidden; }
       .os-summary-indicator { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
@@ -290,8 +291,9 @@
       const logoutMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Log Out');
       if (logoutMenuItem) logoutMenuItem.dataset.osMenuAction = 'logout';
       sideMenu.insertAdjacentHTML('afterbegin', '<button type="button" data-os-menu-copy-en="Summary" data-os-menu-copy-ar="الملخص" data-os-menu-action="summary">Summary</button>');
-      panel.insertAdjacentHTML('beforeend', '<div class="os-summary-content"><span class="os-summary-percentage" aria-hidden="true">88</span><div class="os-summary-indicators" aria-hidden="true"><div class="os-summary-indicator"><span data-os-summary-en="Consultations Today" data-os-summary-ar="استشارات اليوم">Consultations Today</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Products / Orders" data-os-summary-ar="المنتجات / الطلبات">Products / Orders</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Promo Code Uses" data-os-summary-ar="استخدامات الرموز الترويجية">Promo Code Uses</span><span class="os-summary-indicator-value">0</span></div></div></div>');
+      panel.insertAdjacentHTML('beforeend', '<div class="os-summary-content"><span class="os-summary-percentage" data-os-summary-response data-available="false" aria-label="Response unavailable">—</span><div class="os-summary-indicators" aria-hidden="true"><div class="os-summary-indicator"><span data-os-summary-en="Consultations Today" data-os-summary-ar="استشارات اليوم">Consultations Today</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Products / Orders" data-os-summary-ar="المنتجات / الطلبات">Products / Orders</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Promo Code Uses" data-os-summary-ar="استخدامات الرموز الترويجية">Promo Code Uses</span><span class="os-summary-indicator-value">0</span></div></div></div>');
       const summaryContent = document.querySelector('.os-summary-content');
+      const summaryResponseValue = document.querySelector('[data-os-summary-response]');
       const panelViews = { summary: summaryContent, insights, notifications, 'promo-codes': promoCodes, products, consultations, buttons, 'notification-add': notificationAdd };
       const panelViewNodes = (selector) => Object.values(panelViews).flatMap((view) => [...view.querySelectorAll(selector)]);
       let panelView = 'summary';
@@ -503,8 +505,59 @@
           setInsightsStatus({ services: {}, website: {} });
         }
       };
+      const summaryResponseInterval = 2500;
+      let summaryResponseTimer = 0;
+      let summaryResponseController = null;
+      let summaryResponseRun = 0;
+      const setSummaryResponse = (responseMs) => {
+        const value = Number(responseMs);
+        if (!Number.isFinite(value) || value < 0) {
+          if (summaryResponseValue.dataset.available !== 'true') {
+            summaryResponseValue.textContent = '—';
+            summaryResponseValue.setAttribute('aria-label', root.lang === 'ar' ? 'الاستجابة غير متاحة' : 'Response unavailable');
+          }
+          return;
+        }
+        const rounded = Math.round(value);
+        summaryResponseValue.textContent = String(rounded);
+        summaryResponseValue.dataset.available = 'true';
+        summaryResponseValue.setAttribute('aria-label', `${rounded} ms`);
+      };
+      const stopSummaryResponsePolling = () => {
+        summaryResponseRun += 1;
+        if (summaryResponseTimer) window.clearTimeout(summaryResponseTimer);
+        summaryResponseTimer = 0;
+        if (summaryResponseController) summaryResponseController.abort();
+        summaryResponseController = null;
+      };
+      const requestSummaryResponse = async () => {
+        if (panelView !== 'summary' || !panel.classList.contains('is-expanded') || summaryResponseController) return;
+        const run = summaryResponseRun;
+        const controller = new AbortController();
+        summaryResponseController = controller;
+        try {
+          const response = await osFetch('/api/os/response', { cache: 'no-store', signal: controller.signal });
+          if (response.ok) {
+            const body = await response.json();
+            if (body.data?.isUp && Number.isFinite(Number(body.data.responseMs))) setSummaryResponse(body.data.responseMs);
+            else setSummaryResponse(null);
+          }
+        } catch (_) {
+          if (!controller.signal.aborted) setSummaryResponse(null);
+        } finally {
+          if (summaryResponseController === controller) summaryResponseController = null;
+          if (run === summaryResponseRun && panelView === 'summary' && panel.classList.contains('is-expanded') && !summaryResponseController) {
+            summaryResponseTimer = window.setTimeout(requestSummaryResponse, summaryResponseInterval);
+          }
+        }
+      };
+      const startSummaryResponsePolling = () => {
+        stopSummaryResponsePolling();
+        void requestSummaryResponse();
+      };
       const setPanelView = (view) => {
         panelView = ['insights', 'notifications', 'promo-codes', 'products', 'consultations', 'buttons', 'notification-add'].includes(view) ? view : 'summary';
+        if (panelView !== 'summary') stopSummaryResponsePolling();
         Object.values(panelViews).forEach((content) => { content.hidden = true; content.remove(); });
         const activeContent = panelViews[panelView];
         activeContent.hidden = false;
@@ -591,12 +644,14 @@
       consultations.addEventListener('change', async (event) => { const select = event.target.closest('[data-consultation-status]'); const row = event.target.closest('[data-consultation-id]'); if (!select || !row) return; const item = consultationsData.find((entry) => entry.id === row.dataset.consultationId); if (!item) return; const response = await osFetch('/api/os/consultations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id, status: select.value, version: item.version }) }); if (response.ok) await loadConsultations(); else renderConsultations(); });
       const setPanelOpen = (open) => {
         if (open) setMenuOpen(false);
+        if (!open || panelView !== 'summary') stopSummaryResponsePolling();
         panel.classList.toggle('is-expanded', open);
         panel.style.height = '';
         Object.entries(panelViews).forEach(([name, content]) => {
           content.setAttribute('aria-hidden', String(name !== panelView || !open));
         });
         panelHandle.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
+        if (open && panelView === 'summary') startSummaryResponsePolling();
       };
       const setMenuOpen = (open) => {
         if (open) setPanelOpen(false);
