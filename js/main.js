@@ -73,9 +73,10 @@
           const contactRect = contact.getBoundingClientRect();
           const textRect = consultationText.getBoundingClientRect();
           const fieldHeight = consultationDotField.getBoundingClientRect().height;
+          const consultationDotGap = x * 2;
           consultationDotField.style.setProperty(
             '--s-consultation-dot-top',
-            `${textRect.top - contactRect.top - fieldHeight - x}px`
+            `${textRect.top - contactRect.top - fieldHeight - consultationDotGap}px`
           );
         }
       }
@@ -213,7 +214,13 @@
     };
 
     const redIntervals = [150, 125, 105, 90, 78, 67, 57, 49, 42];
-    const blueOrder = [4, 1, 2, 5, 8, 7, 6, 3, 0];
+    // Read the blue sequence in the rendered 3x3 formation: center, top-middle,
+    // then the surrounding positions clockwise.
+    const blueFormationOrder = [[1, 1], [0, 1], [0, 2], [1, 2], [2, 2], [2, 1], [2, 0], [1, 0], [0, 0]];
+    const selectedDotsByFormation = new Map(selectedDots.map((dot) => [Number(dot.dataset.formationIndex), dot]));
+    const blueOrder = blueFormationOrder
+      .map(([row, column]) => selectedDotsByFormation.get((row * 3) + column))
+      .filter(Boolean);
     const runDotTimeline = async () => {
       consultationDotField.dataset.dotStage = 'red';
       let activeRedDot = null;
@@ -240,7 +247,7 @@
       consultationDotField.dataset.dotStage = 'blue';
       let activeBlueDot = null;
       for (let index = 0; index < blueOrder.length; index += 1) {
-        const dot = selectedDots[blueOrder[index]];
+        const dot = blueOrder[index];
         activeBlueDot?.classList.remove('is-blue-active');
         dot.classList.add('is-blue');
         dot.classList.add('is-blue-active');

@@ -42,7 +42,7 @@
       dot.setAttribute('cy', String(120 + (84 * Math.sin(angle))));
     });
   };
-  const entranceDurations = [1500, 1400, 1400, 1600, 1400, 4286];
+  const entranceDurations = [1500, 1400, 1400, 1600, 2600, 4286];
 
   const completeEntrance = (card) => {
     const art = card.querySelector('.update-art');

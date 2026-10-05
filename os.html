@@ -44,18 +44,27 @@
       html, body { width: 100%; height: 100%; min-height: var(--os-viewport-height); margin: 0; overflow: hidden; overscroll-behavior: none; background-color: var(--os-page-background); touch-action: manipulation; transition: background-color .24s ease, color .24s ease; }
       body { height: var(--os-viewport-height); color: var(--os-control-color); font-family: var(--os-font-family); font-weight: var(--os-weight-ui); }
       body:not(.os-authenticated) > :not(.os-auth-gate) { display: none !important; }
-      .os-auth-gate { position: fixed; right: var(--os-outer-gap); bottom: var(--os-outer-gap); left: var(--os-outer-gap); display: flex; box-sizing: border-box; height: var(--os-closed-height); min-width: 0; padding: calc(var(--x-spacing) * 1.25) calc(var(--x-spacing) * 1.5); align-items: center; justify-content: center; border-radius: clamp(42px, 6vw, 72px); background: var(--os-panel-background); color: var(--os-panel-color); }
+      .os-auth-gate { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
       .os-auth-gate[hidden] { display: none; }
-      .os-auth-form { display: grid; width: min(280px, 100%); gap: 8px; }
+      .os-auth-panel { position: fixed; right: var(--os-outer-gap); bottom: var(--os-outer-gap); left: var(--os-outer-gap); display: flex; box-sizing: border-box; width: auto; height: var(--os-closed-height); min-width: 0; min-height: 0; padding: calc(var(--x-spacing) * 1.25) calc(var(--x-spacing) * 1.5); align-items: center; justify-content: center; border-radius: clamp(42px, 6vw, 72px); background: var(--os-panel-background); color: var(--os-panel-color); font: var(--os-weight-ui) 16px/1 var(--os-font-family); }
+      .os-auth-panel-copy { white-space: nowrap; }
+      .os-auth-form { position: fixed; right: var(--os-outer-gap); bottom: calc(var(--os-outer-gap) + var(--os-closed-height) + var(--x-spacing)); left: var(--os-outer-gap); display: grid; width: min(280px, calc(100% - (var(--os-outer-gap) * 2))); margin: 0 auto; gap: 8px; pointer-events: auto; }
       .os-auth-title { display: none; }
       .os-auth-form input, .os-auth-form button { box-sizing: border-box; width: 100%; font-family: var(--os-font-family); -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
-      .os-auth-form input { min-height: 38px; padding: 0 13px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: 14px; outline: 0; background: transparent; color: var(--os-control-color); font-size: 16px; font-weight: 500; line-height: 1; }
+      .os-auth-password { position: relative; }
+      .os-auth-form input { min-height: 38px; padding: 0 42px 0 13px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: 14px; outline: 0; background: transparent; color: var(--os-control-color); font-size: 16px; font-weight: 500; line-height: 1; }
       .os-auth-form input::placeholder { color: color-mix(in srgb, var(--os-control-color) 52%, transparent); opacity: 1; }
+      .os-auth-eye { position: absolute; top: 50%; right: 7px; display: grid; width: 28px !important; height: 28px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: transparent; color: color-mix(in srgb, var(--os-control-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
+      .os-auth-eye:hover, .os-auth-eye:focus-visible { background: color-mix(in srgb, var(--os-control-color) 8%, transparent); color: var(--os-control-color); }
+      .os-auth-eye svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
       .os-auth-form button { min-height: 38px; padding: 10px 14px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--os-panel-color) 8%, transparent); color: inherit; cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
+      .os-auth-form button:disabled { cursor: wait; opacity: .58; }
       .os-auth-form button:focus:not(:focus-visible) { outline: 0; box-shadow: none; }
       .os-auth-error { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-      @media (max-width: 480px) { .os-auth-gate { padding: calc(var(--x-spacing) * 1.25) var(--x-spacing); } .os-auth-form { width: 100%; } }
-      @media (orientation: landscape) and (max-height: 520px) { .os-auth-gate { height: auto; min-height: calc(var(--x-spacing) * 3.5); padding: var(--x-spacing); } .os-auth-form { grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(100%, 420px); } .os-auth-form button { width: auto; min-width: 84px; } }
+      html[dir="rtl"] .os-auth-form input { padding-right: 13px; padding-left: 42px; }
+      html[dir="rtl"] .os-auth-eye { right: auto; left: 7px; }
+      @media (max-width: 480px) { .os-auth-form { width: calc(100% - (var(--os-outer-gap) * 2)); } }
+      @media (orientation: landscape) and (max-height: 520px) { .os-auth-form { grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(100%, 420px); } .os-auth-form button[type="submit"] { width: auto; min-width: 84px; } }
       .os-control-view { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; overflow: auto; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
       .os-control-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
       .os-control-row { display: flex; justify-content: space-between; gap: 12px; padding: 0 0 10px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); }
@@ -203,6 +212,20 @@
       const authForm = document.querySelector('[data-os-auth-form]');
       const authInput = authForm.querySelector('input[name="password"]');
       const authError = document.querySelector('[data-os-auth-error]');
+      const authPassword = document.createElement('div');
+      authPassword.className = 'os-auth-password';
+      authInput.before(authPassword);
+      authPassword.append(authInput);
+      const authEye = document.createElement('button');
+      authEye.type = 'button'; authEye.className = 'os-auth-eye'; authEye.setAttribute('aria-label', 'Show password');
+      authEye.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>';
+      authPassword.append(authEye);
+      const authPanel = document.createElement('div');
+      authPanel.className = 'os-auth-panel'; authPanel.setAttribute('aria-hidden', 'true');
+      const authPanelCopy = document.createElement('span');
+      authPanelCopy.className = 'os-auth-panel-copy'; authPanelCopy.textContent = 'Today Summary';
+      authPanel.append(authPanelCopy); authGate.append(authPanel);
+      authEye.addEventListener('click', () => { const visible = authInput.type === 'text'; authInput.type = visible ? 'password' : 'text'; authEye.setAttribute('aria-label', visible ? (root.lang === 'ar' ? 'إظهار كلمة المرور' : 'Show password') : (root.lang === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password')); authInput.focus(); });
       let csrfToken = '';
       const setAuthenticated = (authenticated) => {
         document.body.classList.toggle('os-authenticated', authenticated);
@@ -636,6 +659,8 @@
         root.lang = isArabic ? 'ar' : 'en';
         root.dir = isArabic ? 'rtl' : 'ltr';
         document.body.dir = root.dir;
+        authPanelCopy.textContent = isArabic ? 'ملخص اليوم' : 'Today Summary';
+        authEye.setAttribute('aria-label', authInput.type === 'text' ? (isArabic ? 'إخفاء كلمة المرور' : 'Hide password') : (isArabic ? 'إظهار كلمة المرور' : 'Show password'));
         panelCopy.textContent = panelView === 'summary'
           ? (isArabic ? 'ملخص اليوم' : 'Today Summary')
           : panelView === 'insights'
