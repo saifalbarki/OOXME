@@ -536,7 +536,7 @@
         const controller = new AbortController();
         summaryResponseController = controller;
         try {
-          const response = await osFetch('/api/os/response', { cache: 'no-store', signal: controller.signal });
+          const response = await osFetch('/api/os/insights?mode=response', { cache: 'no-store', signal: controller.signal });
           if (response.ok) {
             const body = await response.json();
             if (body.data?.isUp && Number.isFinite(Number(body.data.responseMs))) setSummaryResponse(body.data.responseMs);

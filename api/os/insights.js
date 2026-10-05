@@ -1,5 +1,5 @@
 const { json, methodNotAllowed } = require('../_lib/http');
-const { insightsData } = require('../_lib/insights');
+const { insightsData, probeWebsite } = require('../_lib/insights');
 const { requireAdmin } = require('../_lib/os-auth');
 const { setRequestId } = require('../_lib/os-audit');
 
@@ -9,6 +9,17 @@ module.exports = async (request, response) => {
   setRequestId(request, response);
   try {
     await requireAdmin(request);
+    if (request.query?.mode === 'response') {
+      const sample = await probeWebsite();
+      return json(response, 200, {
+        success: true,
+        data: {
+          isUp: sample.isUp,
+          responseMs: sample.isUp ? sample.responseMs : null,
+          statusCode: sample.statusCode
+        }
+      });
+    }
     return json(response, 200, { success: true, data: await insightsData() });
   } catch (error) {
     const status = Number(error.status) || 503;
