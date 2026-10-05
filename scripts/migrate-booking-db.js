@@ -45,8 +45,8 @@ async function migrate() {
     const tables = await client.query("SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = ANY($1::text[]) ORDER BY tablename", [requiredTables]);
     const missingTables = requiredTables.filter((name) => !tables.rows.some((row) => row.tablename === name));
     if (missingTables.length) throw new Error(`Missing required tables: ${missingTables.join(', ')}`);
-    const indexes = await client.query("SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND indexname IN ('notifications_public_window_index','os_products_active_order_index','os_page_controls_page_index','os_admin_sessions_expiry_index','os_admin_audit_log_resource_index','os_admin_idempotency_expiry_index','promotion_redemptions_history_index')");
-    if (indexes.rowCount < 7) throw new Error('Missing required OS indexes');
+    const indexes = await client.query("SELECT indexname FROM pg_indexes WHERE schemaname = 'public' AND indexname IN ('notifications_public_window_index','os_products_active_order_index','os_page_controls_page_index','os_admin_sessions_expiry_index','os_admin_audit_log_resource_index','os_admin_idempotency_expiry_index','promotion_redemptions_history_index','os_uptime_samples_interval_start_index')");
+    if (indexes.rowCount < 8) throw new Error('Missing required OS indexes');
     console.log(`Verified tables: ${tables.rows.map((row) => row.tablename).join(', ')}`);
     console.log(`Verified OS indexes: ${indexes.rowCount}`);
   } finally {

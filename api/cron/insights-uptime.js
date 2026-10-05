@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const { json, methodNotAllowed } = require('../_lib/http');
-const { probeWebsite, recordUptimeSample } = require('../_lib/insights');
+const { probeWebsite, recordUptimeSample, cleanupUptimeSamples } = require('../_lib/insights');
 
 module.exports = async (request, response) => {
   response.setHeader('Cache-Control', 'no-store');
@@ -12,6 +12,7 @@ module.exports = async (request, response) => {
   try {
     const sample = await probeWebsite();
     await recordUptimeSample(sample);
+    await cleanupUptimeSamples();
     return json(response, 200, { success: true, data: { recorded: true } });
   } catch (error) {
     console.error('OS uptime sample failed', error.code || error.message);

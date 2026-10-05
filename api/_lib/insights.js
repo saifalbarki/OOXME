@@ -46,11 +46,22 @@ const probeWebsite = async () => {
 };
 
 const recordUptimeSample = async (sample) => {
-  await query(
-    `INSERT INTO os_uptime_samples (checked_at, is_up, response_ms, status_code)
-     VALUES (now(), $1, $2, $3)`,
+  const result = await query(
+    `WITH sample_time AS (SELECT clock_timestamp() AS checked_at)
+     INSERT INTO os_uptime_samples (checked_at, interval_start, is_up, response_ms, status_code)
+     SELECT checked_at,
+            to_timestamp(floor(extract(epoch FROM checked_at) / 300) * 300),
+            $1, $2, $3
+       FROM sample_time
+     ON CONFLICT (interval_start) DO NOTHING
+     RETURNING checked_at`,
     [sample.isUp, sample.responseMs, sample.statusCode]
   );
+  return { inserted: result.rowCount > 0 };
+};
+
+const cleanupUptimeSamples = async () => {
+  await query(`DELETE FROM os_uptime_samples WHERE checked_at < now() - interval '30 days'`);
 };
 
 const databaseHealth = async () => {
@@ -72,7 +83,7 @@ const uptimeSummary = async () => {
         WHERE checked_at >= now() - interval '24 hours'`
     );
     const row = result.rows[0];
-    if (row.total < 288) return { value: null, reason: 'insufficient_history', samples: row.total, latest: row.latest };
+    if (row.total < 12) return { value: null, reason: 'monitoring', samples: row.total, latest: row.latest };
     return { value: Number(((row.healthy / row.total) * 100).toFixed(2)), samples: row.total, latest: row.latest };
   } catch (_) {
     return { value: null, reason: 'monitoring_unavailable', samples: 0, latest: null };
@@ -141,7 +152,8 @@ const insightsData = async () => {
     database,
     website: {
       lastUpdate: vercelResult?.updatedAt || null,
-      uptime: uptime.value === null ? null : `${uptime.value}%`,
+      uptime: uptime.value === null && uptime.reason === 'monitoring' ? 'Monitoring' : (uptime.value === null ? null : `${uptime.value}%`),
+      uptimeState: uptime.value === null ? uptime.reason : 'ready',
       response: sample.responseMs === null ? null : `${sample.responseMs} ms`,
       version,
       responseStatus: sample.statusCode,
@@ -150,4 +162,4 @@ const insightsData = async () => {
   };
 };
 
-module.exports = { insightsData, probeWebsite, recordUptimeSample };
+module.exports = { insightsData, probeWebsite, recordUptimeSample, cleanupUptimeSamples };
