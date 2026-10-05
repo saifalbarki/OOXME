@@ -17,7 +17,7 @@ const serialize = (row) => ({
 
 module.exports = async (request, response) => {
   if (request.method !== 'GET') return methodNotAllowed(response, ['GET']);
-  response.setHeader('Cache-Control', 'no-store');
+  response.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
   try {
     const result = await query(`SELECT slug, is_featured, display_order, name_en, name_ar,
                                       category_en, category_ar, description_en, description_ar,

@@ -3,7 +3,7 @@ const { query } = require('../db');
 
 module.exports = async (request, response) => {
   if (request.method !== 'GET') return methodNotAllowed(response, ['GET']);
-  response.setHeader('Cache-Control', 'no-store');
+  response.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
   try {
     const result = await query(`SELECT id,title,body,title_ar,body_ar,publish_date,audience,status,
                                        frequency,appearance_limit,targeting,valid_until

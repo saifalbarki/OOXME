@@ -320,6 +320,7 @@
       ['assets/projects/sda alrwaq/10.png', 'assets/projects/sda alrwaq/02.png', 'assets/projects/sda alrwaq/11.png']
     ];
     const previewImageCache = new Map();
+    const getPreviewDeliverySource = (src, extension) => src.replace(/\.png$/i, `.${extension}`);
     const previewDurations = {
       reveal: 260,
       open: 420,
@@ -357,7 +358,7 @@
       previewImageCache.set(src, promise);
       return promise;
     };
-    const preloadPreviewSet = (index) => Promise.all(previewSets[index].map(waitForPreviewImage));
+    const preloadPreviewSet = (index) => Promise.all(previewSets[index].map((src) => waitForPreviewImage(getPreviewDeliverySource(src, 'avif'))));
     const clearPreviewTimer = () => {
       if (previewTimer) window.clearTimeout(previewTimer);
       previewTimer = 0;
@@ -374,8 +375,13 @@
     const setPreviewSources = (setIndex) => {
       previewCards.forEach((card, index) => {
         const image = card.querySelector('img');
-        if (image && image.src !== new URL(previewSets[setIndex][index], document.baseURI).href) {
-          image.src = previewSets[setIndex][index];
+        const source = card.querySelector('source[type="image/avif"]');
+        const sourcePath = previewSets[setIndex][index];
+        const avifPath = getPreviewDeliverySource(sourcePath, 'avif');
+        const webpPath = getPreviewDeliverySource(sourcePath, 'webp');
+        if (source) source.srcset = avifPath;
+        if (image && image.src !== new URL(webpPath, document.baseURI).href) {
+          image.src = webpPath;
         }
       });
     };

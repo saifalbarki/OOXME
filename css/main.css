@@ -4144,6 +4144,10 @@ body.s-page.s-page--main .s-page__gallery-preview-card img {
   -webkit-user-drag: none;
 }
 
+body.s-page.s-page--main .s-page__gallery-preview-card picture {
+  display: contents;
+}
+
 body.s-page.s-page--main .s-page__gallery-preview-card--pattern img {
   box-sizing: border-box;
   padding: 9%;
