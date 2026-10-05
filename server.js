@@ -222,6 +222,7 @@ const activeLanIpv4 = () => Object.values(os.networkInterfaces())
   .find((address) => address && address.family === 'IPv4' && !address.internal)?.address;
 
 server.listen(port, '0.0.0.0', () => {
+  if (process.env.OOXME_STARTUP_FLOW === '1') return;
   const lanAddress = activeLanIpv4();
   console.log(`OOXME static preview: http://localhost:${port}`);
   if (lanAddress) console.log(`OOXME LAN preview: http://${lanAddress}:${port}`);

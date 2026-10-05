@@ -4,7 +4,7 @@
   "private": true,
   "description": "OOXME static website",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "node scripts/start-dev.js",
     "start": "node server.js",
     "build": "node scripts/build-static.js",
     "db:migrate": "node scripts/migrate-booking-db.js",
