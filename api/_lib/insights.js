@@ -9,9 +9,12 @@ const githubRepository = () => process.env.GITHUB_REPOSITORY
 
 const githubLatest = async () => {
   const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
-  const response = await fetch(`https://api.github.com/repos/${githubRepository()}/commits?per_page=1`, {
-    headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'OOXME-Insights', ...(token ? { Authorization: `Bearer ${token}` } : {}) }
+  const url = `https://api.github.com/repos/${githubRepository()}/commits?per_page=1`;
+  const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'OOXME-Insights', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  let response = await fetch(url, {
+    headers
   });
+  if ((response.status === 401 || response.status === 403) && token) response = await fetch(url, { headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'OOXME-Insights' } });
   const body = await response.json().catch(() => ({}));
   if (!response.ok || !body[0]?.sha) throw Object.assign(new Error('GitHub latest commit unavailable'), { code: `http_${response.status}` });
   return { sha: body[0].sha, committedAt: body[0].commit?.committer?.date || null };
