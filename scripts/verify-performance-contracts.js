@@ -12,6 +12,7 @@ const verifyStaticContracts = () => {
   assert(!/assets\/fonts\/[^)'"?]+\.(?:ttf|otf)/i.test(runtimeSources), 'Legacy font formats remain referenced');
   assert(pages.every((page) => read(page).includes('href="/assets/logo/Favicon.png"')), 'Original logo/Favicon.png is not referenced by every page');
   assert(pages.every((page) => !/href="\/(?:favicon(?:\.svg|\.ico|-\d+x\d+\.png)|apple-touch-icon\.png)/.test(read(page))), 'Generated favicon variants remain referenced');
+  assert(pages.every((page) => /rel="apple-touch-icon" href="\/assets\/logo\/Favicon\.png"(?:\s*\/?)/.test(read(page))), 'Apple touch icon must use the original source without an over-constrained size hint');
   assert(pages.filter((page) => page !== 'os.html').every((page) => read(page).includes('href="/site.webmanifest"')), 'Website PWA manifest is not referenced by every public page');
   assert(read('os.html').includes('href="/os.webmanifest"'), 'OS is not using its dedicated PWA manifest');
   assert(read('os-login.html').includes('href="/os.webmanifest"'), 'OS login shell is missing the dedicated PWA manifest');
