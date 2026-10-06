@@ -1,5 +1,10 @@
 (() => {
   const root = document.documentElement;
+  const scriptVersion = (() => {
+    try { return new URL(document.currentScript?.src || '', document.baseURI).searchParams.get('v') || ''; }
+    catch (_) { return ''; }
+  })();
+  const versionedAsset = (url) => scriptVersion ? `${url}${url.includes('?') ? '&' : '?'}v=${encodeURIComponent(scriptVersion)}` : url;
   const pages = [...document.querySelectorAll('[data-gallery]')];
   if (!pages.length) return;
 
@@ -382,9 +387,9 @@
     card.style.removeProperty('z-index');
   };
   const assetCandidates = (asset) => [
-    asset?.formats?.avif ? `${assetRoot}/${asset.formats.avif}` : null,
-    asset?.formats?.webp ? `${assetRoot}/${asset.formats.webp}` : null,
-    asset?.src
+    asset?.formats?.avif ? versionedAsset(`${assetRoot}/${asset.formats.avif}`) : null,
+    asset?.formats?.webp ? versionedAsset(`${assetRoot}/${asset.formats.webp}`) : null,
+    asset?.src ? versionedAsset(asset.src) : null
   ].filter(Boolean);
   const resolvedAssetSource = (asset) => asset?.resolvedSrc || asset?.src;
   const mix = (from, to, value) => from + ((to - from) * value);
@@ -458,7 +463,7 @@
     }
   };
   const preloadNeighbors = () => {
-    [order[3], order[4], order[order.length - 1], order[order.length - 2]]
+    [order[3], order[order.length - 1]]
       .filter(Boolean)
       .forEach((card) => { void ensureCardReady(card).catch(() => {}); });
   };
@@ -751,9 +756,13 @@
     }, { root: null, rootMargin: '0px 0px -25% 0px', threshold: 0 })
     : null;
 
-  fetch(`${assetRoot}/manifest.json`, { cache: 'no-store' })
-    .then((response) => response.ok ? response.json() : null)
-    .then((manifest) => {
+  let initialized = false;
+  const initializeGallery = () => {
+    if (initialized) return;
+    initialized = true;
+    fetch(versionedAsset(`${assetRoot}/manifest.json`), { cache: scriptVersion ? 'force-cache' : 'no-cache' })
+      .then((response) => response.ok ? response.json() : null)
+      .then((manifest) => {
       const entries = Array.isArray(manifest?.assets) ? manifest.assets : [];
       const manifestAssets = entries.filter((asset) => asset.name && asset.width > 0 && asset.height > 0).map((asset, index) => ({
         ...asset,
@@ -806,7 +815,19 @@
         }
         else revealOnce();
       }).catch((error) => markInitializationError(error));
-    })
-    .catch((error) => markInitializationError(error));
+      })
+      .catch((error) => markInitializationError(error));
+  };
+
+  if (page === pages[0] || !('IntersectionObserver' in window)) {
+    initializeGallery();
+  } else {
+    const initializationObserver = new IntersectionObserver((entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      initializationObserver.disconnect();
+      initializeGallery();
+    }, { root: null, rootMargin: '0px', threshold: .01 });
+    initializationObserver.observe(page);
+  }
   });
 })();

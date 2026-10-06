@@ -1,18 +1,18 @@
 @font-face {
   font-family: OOXMESFPro;
-  src: url('../assets/fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
+  src: url('../assets/fonts/SFPRODISPLAYREGULAR.woff2') format('woff2');
   font-weight: 100 599;
   font-display: swap;
 }
 @font-face {
   font-family: OOXMESFPro;
-  src: url('../assets/fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
+  src: url('../assets/fonts/SFPRODISPLAYBOLD.woff2') format('woff2');
   font-weight: 600 900;
   font-display: swap;
 }
 @font-face {
   font-family: OOXMEScript;
-  src: url('../assets/fonts/SFPRODISPLAYREGULAR.OTF') format('opentype');
+  src: url('../assets/fonts/SFPRODISPLAYREGULAR.woff2') format('woff2');
   font-weight: 100 599;
   font-display: swap;
   unicode-range: U+0000-05FF, U+0700-074F, U+0780-086F, U+0900-FB4F, U+FE00-FE6F, U+FF00-10FFFF;
@@ -20,7 +20,7 @@
 
 @font-face {
   font-family: OOXMEScript;
-  src: url('../assets/fonts/SFPRODISPLAYBOLD.OTF') format('opentype');
+  src: url('../assets/fonts/SFPRODISPLAYBOLD.woff2') format('woff2');
   font-weight: 600 900;
   font-display: swap;
   unicode-range: U+0000-05FF, U+0700-074F, U+0780-086F, U+0900-FB4F, U+FE00-FE6F, U+FF00-10FFFF;
@@ -28,7 +28,7 @@
 
 @font-face {
   font-family: OOXMETosh;
-  src: url('../assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf') format('truetype');
+  src: url('../assets/fonts/TRYToshB-wght-BF677df27a71b87.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
   size-adjust: 80%;
@@ -40,7 +40,7 @@
 
 @font-face {
   font-family: OOXMEPlayfair;
-  src: url('../assets/fonts/PlayfairDisplay-BoldItalic.ttf') format('truetype');
+  src: url('../assets/fonts/PlayfairDisplay-BoldItalic.woff2') format('woff2');
   font-weight: 700;
   font-style: italic;
   font-display: swap;

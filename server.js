@@ -43,7 +43,7 @@ const pageRoutes = {
 };
 const legacyRoutes = { '/service': '/bm', '/start': '/update', '/scale': '/consultation', '/system': '/os', '/rpn': '/space' };
 const publicRoots = ['assets', 'css', 'js', 'public'];
-const publicRootFiles = new Set(['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest']);
+const publicRootFiles = new Set(['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', 'site.webmanifest']);
 const apiRoutes = {
   '/api/booking/available-slots': './api/public',
   '/api/booking/availability': './api/public',
@@ -51,6 +51,7 @@ const apiRoutes = {
   '/api/promo/validate': './api/public',
   '/api/products': './api/public',
   '/api/notifications/active': './api/public',
+  '/api/runtime/bootstrap': './api/public',
   '/api/os/notifications': './api/os/notifications',
   '/api/os/promo-codes': './api/os/promo-codes',
   '/api/os/page-controls': './api/os/page-controls',
@@ -86,8 +87,50 @@ const send = (response, status, type, body) => {
   response.end(body);
 };
 
+const compressibleType = (type) => /^(?:text\/|application\/(?:javascript|json|manifest\+json)|image\/svg\+xml)/i.test(type);
+const sendStatic = (response, request, status, type, body) => {
+  const source = Buffer.isBuffer(body) ? body : Buffer.from(String(body));
+  const accepted = String(request.headers?.['accept-encoding'] || '');
+  const finish = (encoding, error, output) => {
+    const content = error ? source : output;
+    const headers = {
+      'Content-Type': type,
+      'Cache-Control': 'no-cache',
+      'Content-Length': content.length
+    };
+    if (!error && encoding) {
+      headers['Content-Encoding'] = encoding;
+      headers.Vary = 'Accept-Encoding';
+    }
+    response.writeHead(status, headers);
+    response.end(content);
+  };
+  if (!compressibleType(type) || source.length < 1024) return finish('', null, source);
+  if (/\bbr\b/i.test(accepted)) {
+    zlib.brotliCompress(source, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 5 } }, (error, output) => finish('br', error, output));
+    return;
+  }
+  if (/\bgzip\b/i.test(accepted)) {
+    zlib.gzip(source, { level: 6 }, (error, output) => finish('gzip', error, output));
+    return;
+  }
+  finish('', null, source);
+};
+
 const sendOsHtml = (response, request, body, status = 200) => {
   const source = Buffer.isBuffer(body) ? body : Buffer.from(String(body));
+  if (/\bbr\b/i.test(String(request.headers?.['accept-encoding'] || ''))) {
+    const compressed = zlib.brotliCompressSync(source, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 5 } });
+    response.writeHead(status, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'Content-Encoding': 'br',
+      'Vary': 'Accept-Encoding',
+      'Content-Length': compressed.length
+    });
+    response.end(compressed);
+    return;
+  }
   if (/\bgzip\b/i.test(String(request.headers?.['accept-encoding'] || ''))) {
     const compressed = zlib.gzipSync(source);
     response.writeHead(status, {
@@ -249,7 +292,7 @@ const server = http.createServer(async (request, response) => {
       send(response, 404, 'text/plain; charset=utf-8', 'Not found');
       return;
     }
-    send(response, 200, types[path.extname(target).toLowerCase()] || 'application/octet-stream', content);
+    sendStatic(response, request, 200, types[path.extname(target).toLowerCase()] || 'application/octet-stream', content);
   });
 });
 

@@ -80,13 +80,17 @@
     event.stopPropagation();
   }, true);
 
-  const loadPageControls = () => fetch('/api/os/page-controls', { headers: { Accept: 'application/json' }, cache: 'no-store' })
-    .then((response) => response.ok ? response.json() : Promise.reject(new Error('page_controls_unavailable')))
-    .then((payload) => {
-      (payload.data?.controls || []).forEach((control) => apply(control.actionKey, control.enabled !== false));
+  const loadPageControls = () => {
+    const runtime = window.OOXMEPublicRuntime?.load?.();
+    const data = runtime || fetch('/api/os/page-controls', { headers: { Accept: 'application/json' }, cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('page_controls_unavailable')))
+      .then((payload) => payload.data || {});
+    return data.then((payload) => {
+      (payload.controls || []).forEach((control) => apply(control.actionKey, control.enabled !== false));
       page.dataset.osControlsReady = 'true';
     })
     .catch(() => { page.dataset.osControlsReady = 'false'; });
+  };
 
   const scheduleAfterFirstPaint = (callback) => {
     const runWhenIdle = () => {

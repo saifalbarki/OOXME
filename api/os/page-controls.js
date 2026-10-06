@@ -1,5 +1,5 @@
-const { json, methodNotAllowed, readJson } = require('../_lib/http');
-const { query } = require('../_lib/db');
+const { json, methodNotAllowed, readJson, serverTiming } = require('../_lib/http');
+const { query, timedQuery } = require('../_lib/db');
 const { bool, text } = require('../_lib/os-helpers');
 const { requireAdmin, requireCsrf } = require('../_lib/os-auth');
 const { recordAudit, setRequestId } = require('../_lib/os-audit');
@@ -16,15 +16,16 @@ const serialize = (row) => ({
 
 module.exports = async (request, response) => {
   setRequestId(request, response);
-  response.setHeader('Cache-Control', request.method === 'GET'
-    ? 'public, max-age=0, s-maxage=30, stale-while-revalidate=60'
-    : 'no-store');
+  response.setHeader('Cache-Control', 'no-store');
   if (request.method === 'GET') {
+    const timing = serverTiming(response);
     try {
-      const result = await query('SELECT action_key, page_key, route, label, selector, enabled, version FROM os_page_controls ORDER BY page_key, action_key');
+      const result = await timedQuery('SELECT action_key, page_key, route, label, selector, enabled, version FROM os_page_controls ORDER BY page_key, action_key', undefined, timing);
+      timing.finish();
       return json(response, 200, { success: true, data: { controls: result.rows.map(serialize) } });
     } catch (error) {
       console.error('OS page controls read failed', error.message);
+      timing.finish();
       return json(response, 503, { success: false, error: 'page_controls_unavailable' });
     }
   }

@@ -108,14 +108,14 @@ html[dir="rtl"] { --ooxme-language-font-scale: var(--ooxme-arabic-font-scale); }
 
 @font-face {
   font-family: OOXMEEnglish;
-  src: url('../assets/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
+  src: url('../assets/fonts/PlusJakartaSans-VariableFont_wght.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }
 
 @font-face {
   font-family: OOXMEArabic;
-  src: url('../assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf') format('truetype');
+  src: url('../assets/fonts/TRYToshB-wght-BF677df27a71b87.woff2') format('woff2');
   font-weight: 100 900;
   font-display: swap;
 }

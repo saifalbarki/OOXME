@@ -21,6 +21,22 @@
     applyLanguage(initial, false);
   }
 
+  const publicRuntime = window.OOXMEPublicRuntime || (() => {
+    let pending;
+    return {
+      load() {
+        if (!pending) {
+          pending = fetch('/api/runtime/bootstrap', { headers: { Accept: 'application/json' }, cache: 'no-store' })
+            .then((response) => response.ok ? response.json() : Promise.reject(new Error('public_runtime_unavailable')))
+            .then((payload) => payload.data || {})
+            .catch((error) => { pending = null; throw error; });
+        }
+        return pending;
+      }
+    };
+  })();
+  window.OOXMEPublicRuntime = publicRuntime;
+
   const composer = document.querySelector('[data-s-composer]');
   const addButton = composer?.querySelector('.s-page__add');
   const submitButton = composer?.querySelector('button[type="submit"]');
@@ -259,9 +275,7 @@
   };
   const loadActiveNotification = async () => {
     try {
-      const response = await fetch('/api/notifications/active', { headers: { Accept: 'application/json' }, cache: 'no-store' });
-      if (!response.ok) throw new Error('active_notification_unavailable');
-      activeNotification = (await response.json()).data?.notification || null;
+      activeNotification = (await publicRuntime.load()).notification || null;
     } catch (_) { activeNotification = null; }
     notificationId = activeNotification?.id || null;
     notificationRead = notificationId ? isNotificationRead(notificationId) : true;

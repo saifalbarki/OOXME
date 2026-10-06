@@ -3,6 +3,7 @@ const routes = {
   '/api/booking/available-slots': require('./_lib/public-routes/available-slots'),
   '/api/products': require('./_lib/public-routes/products'),
   '/api/notifications/active': require('./_lib/public-routes/active-notifications'),
+  '/api/runtime/bootstrap': require('./_lib/public-routes/bootstrap'),
   '/api/promo/validate': require('./_lib/public-routes/validate-promo')
 };
 const aliases = {
@@ -10,6 +11,7 @@ const aliases = {
   'available-slots': '/api/booking/available-slots',
   products: '/api/products',
   notifications: '/api/notifications/active',
+  bootstrap: '/api/runtime/bootstrap',
   promo: '/api/promo/validate'
 };
 

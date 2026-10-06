@@ -12,6 +12,18 @@
       ]
     },
     {
+      "source": "/assets/fonts/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/assets/projects/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
       "source": "/css/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
@@ -32,6 +44,7 @@
     { "source": "/api/booking/available-slots", "destination": "/api/public?route=available-slots" },
     { "source": "/api/products", "destination": "/api/public?route=products" },
     { "source": "/api/notifications/active", "destination": "/api/public?route=notifications" },
+    { "source": "/api/runtime/bootstrap", "destination": "/api/public?route=bootstrap" },
     { "source": "/api/promo/validate", "destination": "/api/public?route=promo" },
     { "source": "/bm", "destination": "/bm.html" },
     { "source": "/gallery", "destination": "/gallery.html" },

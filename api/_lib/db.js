@@ -50,6 +50,30 @@ const query = async (text, values, attempt = 0) => {
   }
 };
 
+const timedQuery = async (text, values, timing, attempt = 0) => {
+  const totalStartedAt = process.hrtime.bigint();
+  let client;
+  try {
+    const connectStartedAt = process.hrtime.bigint();
+    try { client = await getPool().connect(); }
+    finally { timing?.add('db_connect', Number(process.hrtime.bigint() - connectStartedAt) / 1e6); }
+    const queryStartedAt = process.hrtime.bigint();
+    try { return await client.query(text, values); }
+    finally { timing?.add('db_query', Number(process.hrtime.bigint() - queryStartedAt) / 1e6); }
+  } catch (error) {
+    if (attempt || !isTransientConnectionError(error) || !pool) throw error;
+    client?.release();
+    client = undefined;
+    const stalePool = pool;
+    pool = undefined;
+    await stalePool.end().catch(() => undefined);
+    return timedQuery(text, values, timing, attempt + 1);
+  } finally {
+    client?.release();
+    timing?.add('db', Number(process.hrtime.bigint() - totalStartedAt) / 1e6);
+  }
+};
+
 async function withTransaction(work) {
   const client = await getPool().connect();
   try {
@@ -72,4 +96,4 @@ const closeDatabase = async () => {
   await activePool.end();
 };
 
-module.exports = { databaseUrl, getPool, query, withTransaction, closeDatabase };
+module.exports = { databaseUrl, getPool, query, timedQuery, withTransaction, closeDatabase };

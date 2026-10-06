@@ -1,5 +1,5 @@
-const { json, methodNotAllowed } = require('../http');
-const { query } = require('../db');
+const { json, methodNotAllowed, serverTiming } = require('../http');
+const { timedQuery } = require('../db');
 
 const serialize = (row) => ({
   slug: row.slug,
@@ -19,18 +19,21 @@ const serialize = (row) => ({
 
 module.exports = async (request, response) => {
   if (request.method !== 'GET') return methodNotAllowed(response, ['GET']);
-  response.setHeader('Cache-Control', 'public, max-age=0, s-maxage=30, stale-while-revalidate=60');
+  response.setHeader('Cache-Control', 'no-store');
+  const timing = serverTiming(response);
   try {
-    const result = await query(`SELECT slug, is_featured, display_order, name_en, name_ar,
+    const result = await timedQuery(`SELECT slug, is_featured, display_order, name_en, name_ar,
                                       category_en, category_ar, description_en, description_ar,
                                       price_amount, price_currency, price_label_en, price_label_ar,
                                       price_after_discount_amount, price_after_discount_label_en, price_after_discount_label_ar, image_data
                                  FROM os_products
                                 WHERE status = 'active'
-                                ORDER BY is_featured DESC, display_order ASC, created_at ASC`);
+                                ORDER BY is_featured DESC, display_order ASC, created_at ASC`, undefined, timing);
+    timing.finish();
     return json(response, 200, { success: true, data: { products: result.rows.map(serialize) } });
   } catch (error) {
     console.error('Public products read failed', error.message);
+    timing.finish();
     return json(response, 503, { success: false, error: 'products_unavailable' });
   }
 };

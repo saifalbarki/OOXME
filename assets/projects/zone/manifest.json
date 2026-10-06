@@ -4,17 +4,29 @@
     {
       "name": "01.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "01.avif",
+        "webp": "01.webp"
+      }
     },
     {
       "name": "02.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "02.avif",
+        "webp": "02.webp"
+      }
     },
     {
       "name": "03.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "03.avif",
+        "webp": "03.webp"
+      }
     },
     {
       "name": "04.png",
@@ -28,27 +40,47 @@
     {
       "name": "05.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "05.avif",
+        "webp": "05.webp"
+      }
     },
     {
       "name": "06.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "06.avif",
+        "webp": "06.webp"
+      }
     },
     {
       "name": "07.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "07.avif",
+        "webp": "07.webp"
+      }
     },
     {
       "name": "08.png",
       "width": 2176,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "08.avif",
+        "webp": "08.webp"
+      }
     },
     {
       "name": "09.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "09.avif",
+        "webp": "09.webp"
+      }
     },
     {
       "name": "10.png",

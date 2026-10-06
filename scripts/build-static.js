@@ -5,7 +5,15 @@ const root = path.resolve(__dirname, '..');
 const sourceRoot = root;
 const output = path.join(root, 'dist');
 const directories = ['assets', 'css', 'js', 'public'];
-const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'site.webmanifest', 'robots.txt', 'sitemap.xml'];
+const deploymentOnlyExclusions = [
+  'assets/fonts/PlayfairDisplay-BoldItalic.ttf',
+  'assets/fonts/PlusJakartaSans-VariableFont_wght.ttf',
+  'assets/fonts/SFPRODISPLAYBOLD.OTF',
+  'assets/fonts/SFPRODISPLAYREGULAR.OTF',
+  'assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf',
+  'assets/logo/Favicon.png'
+];
+const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', 'site.webmanifest', 'robots.txt', 'sitemap.xml'];
 const pageOutputs = {
   'main.html': 'index.html',
   'brand.html': 'bm.html',
@@ -24,7 +32,7 @@ const analyticsSnippet = `
     <script defer src="/_vercel/insights/script.js"></script>`;
 const assetVersion = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || '';
 const versionStaticReferences = (html) => assetVersion
-  ? html.replace(/((?:href|src)="(?:css|js)\/[^"?]+)"/g, `$1?v=${assetVersion}"`)
+  ? html.replace(/((?:href|src)="\/?(?:css|js|assets\/(?:fonts|projects))\/[^"?]+)"/g, `$1?v=${assetVersion}"`)
   : html;
 
 const readPngDimensions = (filePath) => {
@@ -76,6 +84,19 @@ for (const name of directories) {
   const source = path.join(sourceRoot, name);
   if (fs.existsSync(source)) {
     fs.cpSync(source, path.join(output, name), { recursive: true });
+  }
+}
+
+for (const relative of deploymentOnlyExclusions) {
+  fs.rmSync(path.join(output, relative), { force: true });
+}
+
+if (assetVersion) {
+  const cssRoot = path.join(output, 'css');
+  for (const name of fs.readdirSync(cssRoot).filter((file) => file.endsWith('.css'))) {
+    const filePath = path.join(cssRoot, name);
+    const source = fs.readFileSync(filePath, 'utf8');
+    fs.writeFileSync(filePath, source.replace(/(url\(['"]?\.\.\/assets\/fonts\/[^)'"?]+)(['"]?\))/g, `$1?v=${assetVersion}$2`));
   }
 }
 
