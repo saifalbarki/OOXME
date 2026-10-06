@@ -96,7 +96,10 @@ if (assetVersion) {
   for (const name of fs.readdirSync(cssRoot).filter((file) => file.endsWith('.css'))) {
     const filePath = path.join(cssRoot, name);
     const source = fs.readFileSync(filePath, 'utf8');
-    fs.writeFileSync(filePath, source.replace(/(url\(['"]?\.\.\/assets\/fonts\/[^)'"?]+)(['"]?\))/g, `$1?v=${assetVersion}$2`));
+    const versioned = source
+      .replace(/(url\(['"]?\.\.\/assets\/fonts\/[^)'"?]+)(['"]?\))/g, `$1?v=${assetVersion}$2`)
+      .replace(/(url\(['"]?\.\/[^)'"?]+\.css)(['"]?\))/g, `$1?v=${assetVersion}$2`);
+    fs.writeFileSync(filePath, versioned);
   }
 }
 
