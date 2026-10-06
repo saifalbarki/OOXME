@@ -13,7 +13,7 @@ const deploymentOnlyExclusions = [
   'assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf',
   'assets/logo/Favicon.png'
 ];
-const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', 'site.webmanifest', 'robots.txt', 'sitemap.xml'];
+const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', 'site.webmanifest', 'os.webmanifest', 'robots.txt', 'sitemap.xml'];
 const pageOutputs = {
   'main.html': 'index.html',
   'brand.html': 'bm.html',
@@ -33,7 +33,7 @@ const analyticsSnippet = `
 const assetVersion = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || '';
 const versionQuery = assetVersion ? `?v=${assetVersion}` : '';
 const versionRootReferences = (html) => assetVersion
-  ? html.replace(/((?:href|src)="\/?(?:favicon\.svg|favicon\.ico|favicon-[0-9]+x[0-9]+\.png|apple-touch-icon\.png|site\.webmanifest))"/g, `$1${versionQuery}"`)
+  ? html.replace(/((?:href|src)="\/?(?:favicon\.svg|favicon\.ico|favicon-[0-9]+x[0-9]+\.png|apple-touch-icon\.png|site\.webmanifest|os\.webmanifest))"/g, `$1${versionQuery}"`)
   : html;
 const versionStaticReferences = (html) => assetVersion
   ? versionRootReferences(html.replace(/((?:href|src)="\/?(?:css|js|assets\/(?:fonts|projects))\/[^"?]+)"/g, `$1?v=${assetVersion}"`))
@@ -111,7 +111,7 @@ for (const name of rootFiles) {
   const source = path.join(sourceRoot, name);
   if (!fs.existsSync(source)) continue;
   const destination = path.join(output, name);
-  if (name === 'site.webmanifest' && assetVersion) {
+  if ((name === 'site.webmanifest' || name === 'os.webmanifest') && assetVersion) {
     const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
     manifest.icons = manifest.icons.map((icon) => ({ ...icon, src: `${icon.src}${versionQuery}` }));
     fs.writeFileSync(destination, `${JSON.stringify(manifest, null, 2)}\n`);

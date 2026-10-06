@@ -43,7 +43,7 @@ const pageRoutes = {
 };
 const legacyRoutes = { '/service': '/bm', '/start': '/update', '/scale': '/consultation', '/system': '/os', '/rpn': '/space' };
 const publicRoots = ['assets', 'css', 'js', 'public'];
-const publicRootFiles = new Set(['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', 'site.webmanifest']);
+const publicRootFiles = new Set(['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', 'site.webmanifest', 'os.webmanifest']);
 const apiRoutes = {
   '/api/booking/available-slots': './api/public',
   '/api/booking/availability': './api/public',

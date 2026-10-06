@@ -12,8 +12,9 @@ const verifyStaticContracts = () => {
   assert(!/assets\/fonts\/[^)'"?]+\.(?:ttf|otf)/i.test(runtimeSources), 'Legacy font formats remain referenced');
   assert(pages.every((page) => !read(page).includes('/assets/logo/Favicon.png')), 'Oversized favicon remains referenced');
   assert(pages.every((page) => read(page).includes('href="/favicon.svg"')), 'SVG favicon is not referenced by every page');
-  assert(pages.every((page) => read(page).includes('href="/site.webmanifest"')), 'PWA manifest is not referenced by every page');
-  assert(read('os-login.html').includes('href="/site.webmanifest"'), 'OS login shell is missing the PWA manifest');
+  assert(pages.filter((page) => page !== 'os.html').every((page) => read(page).includes('href="/site.webmanifest"')), 'Website PWA manifest is not referenced by every public page');
+  assert(read('os.html').includes('href="/os.webmanifest"'), 'OS is not using its dedicated PWA manifest');
+  assert(read('os-login.html').includes('href="/os.webmanifest"'), 'OS login shell is missing the dedicated PWA manifest');
   const pngDimensions = (file) => { const data = fs.readFileSync(path.join(root, file)); assert(data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), `${file} is not a PNG`); return [data.readUInt32BE(16), data.readUInt32BE(20)]; };
   assert.deepStrictEqual(pngDimensions('favicon-16x16.png'), [16, 16]);
   assert.deepStrictEqual(pngDimensions('favicon-32x32.png'), [32, 32]);
@@ -43,6 +44,11 @@ const verifyStaticContracts = () => {
   assert(!/\bclient\b/.test(pooledQuery), 'Pool query retry references an undefined client');
   const manifest = JSON.parse(read('site.webmanifest'));
   assert.deepStrictEqual(manifest.icons.map((icon) => icon.sizes), ['192x192', '512x512']);
+  const osManifest = JSON.parse(read('os.webmanifest'));
+  assert.strictEqual(osManifest.id, '/os');
+  assert.strictEqual(osManifest.start_url, '/os');
+  assert.strictEqual(osManifest.scope, '/os');
+  assert.deepStrictEqual(osManifest.icons.map((icon) => icon.sizes), ['192x192', '512x512']);
   const gallery = read('gallery.html');
   assert.strictEqual((gallery.match(/loading="eager"/g) || []).length, 1, 'Gallery must have exactly one eager project image');
   assert.strictEqual((gallery.match(/\/07\.avif/g) || []).length, 5, 'Gallery initial images must use optimized AVIF assets');
