@@ -26,11 +26,15 @@
         --os-outer-gap: var(--os-x);
         --x-spacing: var(--os-x);
         --os-viewport-height: 100dvh;
+        --os-safe-top: env(safe-area-inset-top, 0px);
+        --os-safe-bottom: env(safe-area-inset-bottom, 0px);
+        --os-top-gap: calc(var(--os-outer-gap) + var(--os-safe-top));
+        --os-bottom-gap: calc(var(--os-outer-gap) + var(--os-safe-bottom));
         --os-top-control-size: 32px;
         --os-handle-visual-offset: 14px;
         --os-handle-clearance: calc(var(--os-outer-gap) * 3);
-        --os-open-top: calc(var(--os-outer-gap) + var(--os-top-control-size) + var(--os-handle-clearance) + var(--os-handle-visual-offset));
-        --os-open-height: max(0px, calc(var(--os-viewport-height) - var(--os-outer-gap) - var(--os-open-top)));
+        --os-open-top: calc(var(--os-top-gap) + var(--os-top-control-size) + var(--os-handle-clearance) + var(--os-handle-visual-offset));
+        --os-open-height: max(0px, calc(var(--os-viewport-height) - var(--os-bottom-gap) - var(--os-open-top)));
         --os-closed-height: min(calc(var(--x-spacing) * 5), var(--os-open-height));
         --os-panel-header-center: calc(var(--os-closed-height) / 2);
         --os-selection-row-height: 42px;
@@ -79,7 +83,7 @@
       .os-auth-gate { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
       .os-auth-gate[hidden] { display: none; }
       html:not([data-os-auth-ready]) .os-auth-gate[hidden] { display: block; }
-      .os-auth-composition { position: fixed; right: var(--os-outer-gap); bottom: calc(var(--os-outer-gap) + (var(--x-spacing) * 2.2)); left: var(--os-outer-gap); display: grid; width: min(280px, calc(100% - (var(--os-outer-gap) * 2))); margin: 0 auto; gap: 18px; pointer-events: none; transform: translateY(var(--os-keyboard-shift, 0px)); }
+      .os-auth-composition { position: fixed; right: var(--os-outer-gap); bottom: calc(var(--os-bottom-gap) + (var(--x-spacing) * 2.2)); left: var(--os-outer-gap); display: grid; width: min(280px, calc(100% - (var(--os-outer-gap) * 2))); margin: 0 auto; gap: 18px; pointer-events: none; transform: translateY(var(--os-keyboard-shift, 0px)); }
       .os-auth-form { position: static; display: grid; width: 100%; margin: 0; gap: 8px; pointer-events: auto; }
       .os-auth-title { display: none; }
       .os-auth-form input, .os-auth-form button { box-sizing: border-box; width: 100%; font-family: var(--os-font-family); -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
@@ -87,7 +91,7 @@
       .os-auth-form input { height: var(--os-field-height); min-height: var(--os-field-height); padding: 0 14px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: var(--os-action-radius); outline: 0; background: transparent; color: var(--os-control-color); font-size: 10px; font-weight: 500; line-height: 1; }
       .os-auth-form input:focus, .os-auth-form input:focus-visible { border-color: color-mix(in srgb, var(--os-control-color) 14%, transparent); outline: 0; box-shadow: none; }
       .os-auth-password input { padding-right: 36px; }
-      .os-admin-shell { position: fixed; inset: var(--os-open-top) var(--os-outer-gap) var(--os-outer-gap); color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
+      .os-admin-shell { position: fixed; top: var(--os-open-top); right: var(--os-outer-gap); bottom: var(--os-bottom-gap); left: var(--os-outer-gap); color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
       .os-admin-shell[hidden] { display: none; }
       .os-admin-shell.is-menu-obscured { visibility: hidden; opacity: 0; pointer-events: none; }
       .os-admin-form { position: absolute; right: var(--x-spacing); bottom: var(--x-spacing); left: var(--x-spacing); display: grid; align-content: end; gap: 8px; min-width: 0; }
@@ -98,8 +102,7 @@
       .os-admin-password input { padding-right: 36px; }
       .os-admin-form .os-auth-eye { position: absolute; top: 50%; right: 8px; display: grid; width: 20px !important; height: 20px; min-height: 20px; padding: 0; place-items: center; border: 0; border-radius: 0; background: transparent; color: color-mix(in srgb, var(--os-control-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
       .os-admin-form .os-auth-eye:hover, .os-admin-form .os-auth-eye:focus, .os-admin-form .os-auth-eye:focus-visible, .os-admin-form .os-auth-eye:active { background: transparent; color: var(--os-control-color); outline: 0; box-shadow: none; }
-      .os-admin-form .os-auth-eye svg { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
-      .os-admin-form .os-auth-eye[data-visible="true"] svg { fill: currentColor; stroke: currentColor; }
+      .os-hugeicon { display: block; width: 15px; height: 15px; background-color: currentColor; background-position: center; background-repeat: no-repeat; background-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; -webkit-mask-size: contain; mask-position: center; mask-repeat: no-repeat; mask-size: contain; pointer-events: none; }
       .os-admin-status { min-height: 1.2em; color: var(--os-status-positive); font-size: 10px; text-align: center; }
       .os-admin-status[data-state="error"] { color: color-mix(in srgb, #d45a5a 84%, var(--os-panel-color)); }
       .os-admin-form .os-notification-main-action { width: 100%; min-width: 0; margin-top: 2px; }
@@ -110,8 +113,7 @@
       .os-auth-form input:-webkit-autofill, .os-auth-form input:-webkit-autofill:hover, .os-auth-form input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 1000px var(--os-page-background) inset; -webkit-text-fill-color: var(--os-control-color); caret-color: var(--os-control-color); }
       .os-auth-form .os-auth-eye { position: absolute; top: 50%; right: 8px; display: grid; width: 20px !important; min-height: 20px; height: 20px; padding: 0; place-items: center; border: 0; border-radius: 0; background: transparent; color: color-mix(in srgb, var(--os-control-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
       .os-auth-eye:hover, .os-auth-eye:focus, .os-auth-eye:focus-visible, .os-auth-eye:active { background: transparent; color: var(--os-control-color); outline: 0; box-shadow: none; }
-      .os-auth-eye svg { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
-      .os-auth-eye[data-visible="true"] svg { fill: currentColor; stroke: currentColor; }
+      .os-auth-eye .os-hugeicon { width: 15px; height: 15px; }
       .os-auth-form button { height: var(--os-action-height); min-height: var(--os-action-height); padding: 10px 14px; border: 0; border-radius: var(--os-action-radius); background: var(--os-action-background); color: var(--os-action-color); cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
       .os-auth-form > button[type="submit"] { justify-self: center; width: 50%; }
       .os-auth-form button:disabled { cursor: wait; opacity: .58; }
@@ -123,7 +125,7 @@
       html[dir="rtl"] .os-auth-eye { right: auto; left: 8px; }
       @media (max-width: 480px) { .os-auth-composition { width: calc(100% - (var(--os-outer-gap) * 2)); } }
       @media (orientation: landscape) and (max-height: 520px) { .os-auth-composition { width: min(100%, 420px); } .os-auth-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; } .os-auth-form button[type="submit"] { grid-column: 1 / -1; width: 50%; min-width: 84px; } }
-      .os-buttons-shell { position: fixed; inset: var(--os-open-top) var(--os-outer-gap) var(--os-outer-gap); color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
+      .os-buttons-shell { position: fixed; top: var(--os-open-top); right: var(--os-outer-gap); bottom: var(--os-bottom-gap); left: var(--os-outer-gap); color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
       .os-buttons-divider { position: absolute; right: auto; bottom: 0; left: 50%; width: 42px; height: 4px; border-radius: 999px; background: var(--os-panel-color); content: ""; transform: translateX(-50%); }
       .os-buttons-track { position: absolute; top: var(--os-panel-header-center); right: calc(var(--os-outer-gap) * -1); bottom: 0; left: calc(var(--os-outer-gap) * -1); display: flex; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
       .os-buttons-track::-webkit-scrollbar { display: none; }
@@ -208,19 +210,19 @@
       .os-consultation-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(var(--x-spacing) * .5); }
       .os-consultation-actions .os-notification-main-action { width: 100%; min-width: 0; }
       .os-edge-control, .os-panel-handle { -webkit-tap-highlight-color: transparent; }
-      .os-edge-control { position: fixed; top: var(--os-outer-gap); z-index: 6; display: grid; width: 32px; height: 32px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: var(--os-control-background); color: var(--os-control-color); cursor: pointer; font: 500 20px/1 var(--os-font-family); }
+      .os-edge-control { position: fixed; top: var(--os-top-gap); z-index: 6; display: grid; width: 32px; height: 32px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: var(--os-control-background); color: var(--os-control-color); cursor: pointer; font: 500 20px/1 var(--os-font-family); }
       .os-edge-control--left { left: var(--os-outer-gap); }
       .os-edge-control--right { right: var(--os-outer-gap); }
       .os-edge-control--right, .os-edge-control--right:hover, .os-edge-control--right:focus, .os-edge-control--right:focus-visible, .os-edge-control--right:active { background: transparent; color: transparent; outline: 0; box-shadow: none; }
-      .os-side-menu { --os-menu-radius: 31px; position: fixed; top: calc(var(--os-outer-gap) + 40px); left: var(--os-outer-gap); z-index: 5; display: grid; width: min(190px, calc(100vw - (var(--os-outer-gap) * 2))); gap: 6px; padding: 10px 12px; overflow-y: auto; overscroll-behavior: contain; border: 0; border-radius: var(--os-menu-radius); background: var(--os-control-background); color: var(--os-control-color); opacity: 0; pointer-events: none; transform: translateX(-8px); transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background-color .24s ease; visibility: hidden; }
+      .os-side-menu { --os-menu-radius: 31px; position: fixed; top: calc(var(--os-safe-top) + var(--os-outer-gap) + 40px); left: var(--os-outer-gap); z-index: 5; display: grid; width: min(190px, calc(100vw - (var(--os-outer-gap) * 2))); gap: 6px; padding: 10px 12px; overflow-y: auto; overscroll-behavior: contain; border: 0; border-radius: var(--os-menu-radius); background: var(--os-control-background); color: var(--os-control-color); opacity: 0; pointer-events: none; transform: translateX(-8px); transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background-color .24s ease; visibility: hidden; }
       .os-side-menu.is-open { opacity: 1; pointer-events: auto; transform: translateX(0); transition-delay: 0s; visibility: visible; }
       .os-side-menu button { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border: 0; border-radius: 18px; background: transparent; color: inherit; cursor: pointer; font: 500 11px/1 var(--os-font-family); text-align: start; -webkit-tap-highlight-color: transparent; }
       .os-side-menu .os-menu-icon { display: block; flex: 0 0 14px; width: 14px; height: 14px; background-color: currentColor; background-position: center; background-repeat: no-repeat; background-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; -webkit-mask-size: contain; mask-position: center; mask-repeat: no-repeat; mask-size: contain; pointer-events: none; }
       .os-side-menu .os-menu-label { min-width: 0; line-height: 1; text-align: start; }
       .os-side-menu button:is(.is-active, [aria-current="true"], [aria-selected="true"], :active, :focus-visible) { border-radius: 999px; }
       .os-side-menu button:hover, .os-side-menu button:focus-visible { background: color-mix(in srgb, var(--os-control-color) 8%, transparent); }
-      .os-plus { display: block; width: 14px; height: 14px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-      .os-menu-trigger-icon { display: block; width: 14px; height: 14px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .os-plus { display: block; width: 14px; height: 14px; overflow: visible; background-color: currentColor; background-position: center; background-repeat: no-repeat; background-size: contain; -webkit-mask-image: url("assets/icons/hugeicons/plus-sign.svg"); mask-image: url("assets/icons/hugeicons/plus-sign.svg"); -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; -webkit-mask-size: contain; mask-position: center; mask-repeat: no-repeat; mask-size: contain; pointer-events: none; }
+      .os-menu-trigger-icon { display: block; width: 14px; height: 14px; overflow: visible; background-color: currentColor; background-position: center; background-repeat: no-repeat; background-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; -webkit-mask-size: contain; mask-position: center; mask-repeat: no-repeat; mask-size: contain; pointer-events: none; }
       .os-notification-main-action .os-plus { flex: 0 0 auto; margin-inline-end: 6px; }
       .os-oxo-face { display: block; width: 26px; height: 26px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
       .os-oxo-face { visibility: hidden; }
@@ -228,7 +230,7 @@
       .os-panel {
         position: fixed;
         right: var(--os-outer-gap);
-        bottom: var(--os-outer-gap);
+        bottom: var(--os-bottom-gap);
         left: var(--os-outer-gap);
         display: flex;
         box-sizing: border-box;
@@ -363,9 +365,19 @@
       html[dir="rtl"] .os-side-menu.is-open { transform: translateX(0); }
     </style>
   </head>
-  <body><section class="os-auth-gate" data-os-auth-gate hidden><form class="os-auth-form" data-os-auth-form><h1 class="os-auth-title">OOXME OS</h1><input type="password" name="password" autocomplete="current-password" required aria-label="Admin password" placeholder="Password"><div class="os-auth-error" data-os-auth-error role="alert"></div><button type="submit">Unlock</button></form></section><button type="button" class="os-edge-control os-edge-control--left" data-os-add aria-label="Open menu" aria-expanded="false" aria-controls="os-side-menu"><svg class="os-menu-trigger-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"></path></svg></button><div class="os-side-menu" id="os-side-menu" aria-hidden="true"><button type="button" data-os-menu-copy-en="Insights" data-os-menu-copy-ar="التحليلات">Insights</button><button type="button" data-os-menu-copy-en="Notifications" data-os-menu-copy-ar="الإشعارات">Notifications</button><button type="button" data-os-menu-copy-en="Promo Codes" data-os-menu-copy-ar="أكواد الخصم">Promo Codes</button><button type="button" data-os-menu-copy-en="Buttons" data-os-menu-copy-ar="الأزرار">Buttons</button><button type="button" data-os-menu-copy-en="Products" data-os-menu-copy-ar="المنتجات">Products</button><button type="button" data-os-menu-copy-en="Consultations" data-os-menu-copy-ar="الاستشارات">Consultations</button><button type="button" data-os-menu-copy-en="Language" data-os-menu-copy-ar="اللغة" data-os-menu-action="language">Language</button><button type="button" data-os-menu-copy-en="Appearance" data-os-menu-copy-ar="المظهر" data-os-menu-action="appearance">Appearance</button><button type="button" data-os-menu-copy-en="Admin" data-os-menu-copy-ar="الإدارة" data-os-menu-action="admin">Admin</button><button type="button" data-os-menu-copy-en="Log Out" data-os-menu-copy-ar="تسجيل الخروج">Log Out</button></div><button type="button" class="os-edge-control os-edge-control--right" data-os-oxo-toggle aria-label="Open controls" aria-expanded="false"><svg class="os-oxo-face s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85"></circle><circle cx="9.25" cy="6.5" r="1.85"></circle></g></g></g></svg></button><div class="os-admin-shell" data-os-admin hidden><div class="os-admin-line" aria-hidden="true"></div><form class="os-admin-form" data-os-admin-form><div class="os-admin-status" data-os-admin-status role="status" aria-live="polite"></div><input name="user" data-admin-field="user" autocomplete="username" required placeholder="New User" aria-label="New User"><div class="os-admin-password"><input type="password" name="currentPassword" data-admin-field="currentPassword" autocomplete="current-password" required placeholder="Current Password" aria-label="Current Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="currentPassword" aria-label="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg></button></div><div class="os-admin-password"><input type="password" name="newPassword" data-admin-field="newPassword" autocomplete="new-password" required minlength="12" placeholder="New Password" aria-label="New Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="newPassword" aria-label="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg></button></div><div class="os-admin-password"><input type="password" name="confirmPassword" data-admin-field="confirmPassword" autocomplete="new-password" required minlength="12" placeholder="Confirm New Password" aria-label="Confirm New Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="confirmPassword" aria-label="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg></button></div><button class="os-notification-main-action" type="submit">Change Credentials</button></form></div><div class="os-panel" data-os-copy-en="Insights" data-os-copy-ar="التحليلات"><button type="button" class="os-panel-handle" aria-label="Expand panel"></button><span class="os-panel-copy">Insights</span><div class="os-insights" aria-hidden="true"><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="System Status" data-os-insights-ar="حالة النظام">System Status</h2><p class="os-insights-description" data-os-system-description-en="Live service status is not connected." data-os-system-description-ar="بيانات حالة الخدمات المباشرة غير متصلة.">Live service status is not connected.</p><ul class="os-insights-list" data-os-services><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Vercel" data-os-service-ar="Vercel">Vercel</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="GitHub" data-os-service-ar="GitHub">GitHub</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="YCloud" data-os-service-ar="YCloud">YCloud</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Cloudflare" data-os-service-ar="Cloudflare">Cloudflare</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Gmail" data-os-service-ar="Gmail">Gmail</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Calendar" data-os-service-ar="التقويم">Calendar</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Drive" data-os-service-ar="Drive">Drive</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li></ul></section><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="Website Status" data-os-insights-ar="حالة الموقع">Website Status</h2><p class="os-insights-description" data-os-website-description-en="Live website telemetry is not connected." data-os-website-description-ar="بيانات الموقع المباشرة غير متصلة.">Live website telemetry is not connected.</p><dl class="os-insights-list"><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Last Update" data-os-metric-ar="آخر تحديث">Last Update</dt><dd class="os-insights-metric-value" data-os-metric-value="last-update">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Uptime" data-os-metric-ar="وقت التشغيل">Uptime</dt></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Response" data-os-metric-ar="الاستجابة">Response</dt><dd class="os-insights-metric-value" data-os-metric-value="response">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Version" data-os-metric-ar="الإصدار">Version</dt></div></dl></section></div><div class="os-notifications" aria-hidden="true"></div></div><script>
+  <body><section class="os-auth-gate" data-os-auth-gate hidden><form class="os-auth-form" data-os-auth-form><h1 class="os-auth-title">OOXME OS</h1><input type="password" name="password" autocomplete="current-password" required aria-label="Admin password" placeholder="Password"><div class="os-auth-error" data-os-auth-error role="alert"></div><button type="submit">Unlock</button></form></section><button type="button" class="os-edge-control os-edge-control--left" data-os-add aria-label="Open menu" aria-expanded="false" aria-controls="os-side-menu"><span class="os-menu-trigger-icon" aria-hidden="true"></span></button><div class="os-side-menu" id="os-side-menu" aria-hidden="true"><button type="button" data-os-menu-copy-en="Insights" data-os-menu-copy-ar="التحليلات">Insights</button><button type="button" data-os-menu-copy-en="Notifications" data-os-menu-copy-ar="الإشعارات">Notifications</button><button type="button" data-os-menu-copy-en="Promo Codes" data-os-menu-copy-ar="أكواد الخصم">Promo Codes</button><button type="button" data-os-menu-copy-en="Buttons" data-os-menu-copy-ar="الأزرار">Buttons</button><button type="button" data-os-menu-copy-en="Products" data-os-menu-copy-ar="المنتجات">Products</button><button type="button" data-os-menu-copy-en="Consultations" data-os-menu-copy-ar="الاستشارات">Consultations</button><button type="button" data-os-menu-copy-en="Language" data-os-menu-copy-ar="اللغة" data-os-menu-action="language">Language</button><button type="button" data-os-menu-copy-en="Appearance" data-os-menu-copy-ar="المظهر" data-os-menu-action="appearance">Appearance</button><button type="button" data-os-menu-copy-en="Admin" data-os-menu-copy-ar="الإدارة" data-os-menu-action="admin">Admin</button><button type="button" data-os-menu-copy-en="Log Out" data-os-menu-copy-ar="تسجيل الخروج">Log Out</button></div><button type="button" class="os-edge-control os-edge-control--right" data-os-oxo-toggle aria-label="Open controls" aria-expanded="false"><svg class="os-oxo-face s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85"></circle><circle cx="9.25" cy="6.5" r="1.85"></circle></g></g></g></svg></button><div class="os-admin-shell" data-os-admin hidden><div class="os-admin-line" aria-hidden="true"></div><form class="os-admin-form" data-os-admin-form><div class="os-admin-status" data-os-admin-status role="status" aria-live="polite"></div><input name="user" data-admin-field="user" autocomplete="username" required placeholder="New User" aria-label="New User"><div class="os-admin-password"><input type="password" name="currentPassword" data-admin-field="currentPassword" autocomplete="current-password" required placeholder="Current Password" aria-label="Current Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="currentPassword" aria-label="Show password"><span class="os-hugeicon" aria-hidden="true"></span></button></div><div class="os-admin-password"><input type="password" name="newPassword" data-admin-field="newPassword" autocomplete="new-password" required minlength="12" placeholder="New Password" aria-label="New Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="newPassword" aria-label="Show password"><span class="os-hugeicon" aria-hidden="true"></span></button></div><div class="os-admin-password"><input type="password" name="confirmPassword" data-admin-field="confirmPassword" autocomplete="new-password" required minlength="12" placeholder="Confirm New Password" aria-label="Confirm New Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="confirmPassword" aria-label="Show password"><span class="os-hugeicon" aria-hidden="true"></span></button></div><button class="os-notification-main-action" type="submit">Change Credentials</button></form></div><div class="os-panel" data-os-copy-en="Insights" data-os-copy-ar="التحليلات"><button type="button" class="os-panel-handle" aria-label="Expand panel"></button><span class="os-panel-copy">Insights</span><div class="os-insights" aria-hidden="true"><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="System Status" data-os-insights-ar="حالة النظام">System Status</h2><p class="os-insights-description" data-os-system-description-en="Live service status is not connected." data-os-system-description-ar="بيانات حالة الخدمات المباشرة غير متصلة.">Live service status is not connected.</p><ul class="os-insights-list" data-os-services><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Vercel" data-os-service-ar="Vercel">Vercel</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="GitHub" data-os-service-ar="GitHub">GitHub</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="YCloud" data-os-service-ar="YCloud">YCloud</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Cloudflare" data-os-service-ar="Cloudflare">Cloudflare</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Gmail" data-os-service-ar="Gmail">Gmail</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Calendar" data-os-service-ar="التقويم">Calendar</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Drive" data-os-service-ar="Drive">Drive</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li></ul></section><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="Website Status" data-os-insights-ar="حالة الموقع">Website Status</h2><p class="os-insights-description" data-os-website-description-en="Live website telemetry is not connected." data-os-website-description-ar="بيانات الموقع المباشرة غير متصلة.">Live website telemetry is not connected.</p><dl class="os-insights-list"><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Last Update" data-os-metric-ar="آخر تحديث">Last Update</dt><dd class="os-insights-metric-value" data-os-metric-value="last-update">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Uptime" data-os-metric-ar="وقت التشغيل">Uptime</dt></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Response" data-os-metric-ar="الاستجابة">Response</dt><dd class="os-insights-metric-value" data-os-metric-value="response">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Version" data-os-metric-ar="الإصدار">Version</dt></div></dl></section></div><div class="os-notifications" aria-hidden="true"></div></div><script>
     (() => {
       const root = document.documentElement;
+      const hugeIconAssetRoot = 'assets/icons/hugeicons/';
+      const setHugeIcon = (element, file) => {
+        element.replaceChildren();
+        const icon = document.createElement('span');
+        icon.className = 'os-hugeicon';
+        icon.setAttribute('aria-hidden', 'true');
+        icon.style.webkitMaskImage = `url("${hugeIconAssetRoot}${file}")`;
+        icon.style.maskImage = `url("${hugeIconAssetRoot}${file}")`;
+        element.append(icon);
+      };
       const serverAuthState = root.dataset.osAuthState === 'authenticated';
       const themeColor = document.querySelector('[data-os-theme-color]');
       const statusBarStyle = document.querySelector('[data-os-status-bar-style]');
@@ -385,7 +397,7 @@
       authPassword.append(authInput);
       const authEye = document.createElement('button');
       authEye.type = 'button'; authEye.className = 'os-auth-eye'; authEye.setAttribute('aria-label', 'Show password');
-      authEye.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg>';
+      setHugeIcon(authEye, 'view-off-slash.svg');
       authPassword.append(authEye);
       const authComposition = document.createElement('div');
       authComposition.className = 'os-auth-composition';
@@ -394,7 +406,7 @@
       authSeparator.innerHTML = '<span class="os-auth-panel-line"></span>';
       authComposition.append(authSeparator, authForm);
       authGate.append(authComposition);
-      const renderPasswordIcon = () => { const visible = authInput.type === 'text'; authEye.dataset.visible = String(visible); authEye.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg>'; };
+      const renderPasswordIcon = () => { const visible = authInput.type === 'text'; authEye.dataset.visible = String(visible); setHugeIcon(authEye, visible ? 'view.svg' : 'view-off-slash.svg'); };
       renderPasswordIcon();
       authEye.addEventListener('click', () => { authInput.type = authInput.type === 'text' ? 'password' : 'text'; renderPasswordIcon(); authEye.setAttribute('aria-label', authInput.type === 'text' ? (root.lang === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password') : (root.lang === 'ar' ? 'إظهار كلمة المرور' : 'Show password')); authInput.focus(); });
       const authErrorMessages = {
@@ -474,7 +486,7 @@
         const render = () => {
           const visible = field.type === 'text';
           toggle.dataset.visible = String(visible);
-          toggle.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg>';
+          setHugeIcon(toggle, visible ? 'view.svg' : 'view-off-slash.svg');
           toggle.setAttribute('aria-label', visible ? (root.lang === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password') : (root.lang === 'ar' ? 'إظهار كلمة المرور' : 'Show password'));
         };
         render();
@@ -508,23 +520,25 @@
       });
       void initializeAuth();
       const addButton = document.querySelector('[data-os-add]');
-      const menuTriggerPath = document.querySelector('.os-menu-trigger-icon path');
-      if (menuTriggerPath) menuTriggerPath.setAttribute('d', 'M3 6h10M3 10h10');
       const sideMenu = document.querySelector('[data-os-side-menu], #os-side-menu');
+      const menuTrigger = document.querySelector('.os-menu-trigger-icon');
+      if (menuTrigger) {
+        menuTrigger.style.webkitMaskImage = `url("${hugeIconAssetRoot}menu-09.svg")`;
+        menuTrigger.style.maskImage = `url("${hugeIconAssetRoot}menu-09.svg")`;
+      }
       const menuIconAssets = Object.freeze({
-        Summary: { name: 'Dashboard Square 01', file: 'dashboard-square-01.svg' },
+        Summary: { name: 'Dashboard Browsing', file: 'dashboard-browsing.svg' },
         Insights: { name: 'Analytics 01', file: 'analytics-01.svg' },
-        Notifications: { name: 'Notification 02', file: 'notification-02.svg' },
-        'Promo Codes': { name: 'Ticket 01', file: 'ticket-01.svg' },
-        Consultations: { name: 'Calendar 03', file: 'calendar-03.svg' },
-        Products: { name: 'Shopping Bag 01', file: 'shopping-bag-01.svg' },
-        Buttons: { name: 'Toggle On', file: 'toggle-on.svg' },
+        Notifications: { name: 'Notification 01', file: 'notification-01.svg' },
+        'Promo Codes': { name: 'Badge Percent', file: 'badge-percent.svg' },
+        Consultations: { name: 'Property New', file: 'property-new.svg' },
+        Products: { name: 'Shopping Bag 03', file: 'shopping-bag-03.svg' },
+        Buttons: { name: 'Stop Circle', file: 'stop-circle.svg' },
         Admin: { name: 'Shield 01', file: 'shield-01.svg' },
         Language: { name: 'Language Circle', file: 'language-circle.svg' },
-        Appearance: { name: 'Sun 01', file: 'sun-01.svg' },
+        Appearance: { name: 'Dark Mode', file: 'dark-mode.svg' },
         'Log Out': { name: 'Logout 01', file: 'logout-01.svg' }
       });
-      const menuIconAssetRoot = 'assets/icons/hugeicons/';
       const decorateMenuIcons = () => {
         sideMenu.querySelectorAll('[data-os-menu-copy-en]').forEach((item) => {
           if (item.querySelector('.os-menu-icon')) return;
@@ -537,8 +551,8 @@
           icon.classList.add('os-menu-icon');
           icon.setAttribute('aria-hidden', 'true');
           icon.dataset.hugeiconsName = iconAsset.name;
-          icon.style.webkitMaskImage = `url("${menuIconAssetRoot}${iconAsset.file}")`;
-          icon.style.maskImage = `url("${menuIconAssetRoot}${iconAsset.file}")`;
+          icon.style.webkitMaskImage = `url("${hugeIconAssetRoot}${iconAsset.file}")`;
+          icon.style.maskImage = `url("${hugeIconAssetRoot}${iconAsset.file}")`;
           item.replaceChildren(icon, label);
         });
       };
@@ -650,7 +664,7 @@
       let notificationExpandedId = null;
       let promoCodeExpandedId = null;
       const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
-      const plusIcon = () => '<svg class="os-plus" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"></path></svg>';
+      const plusIcon = () => '<span class="os-plus" aria-hidden="true"></span>';
       const localDateTime = (value) => {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return { date: '', time: '' };
@@ -740,7 +754,7 @@
       const productImage = (item, ar, upload = false) => item?.imageData
         ? `<img class="os-product-image" src="${escapeHtml(item.imageData)}" alt="${escapeHtml(productText(item, 'name', ar))}">${upload ? `<button class="os-product-upload" type="button" data-product-action="choose-image" aria-label="${ar ? 'تغيير الصورة' : 'Change image'}"></button>` : ''}`
         : upload
-          ? `<button class="os-product-upload" type="button" data-product-action="choose-image" aria-label="${ar ? 'إضافة صورة' : 'Add image'}"><span class="os-product-image-placeholder"><strong aria-hidden="true"><svg class="os-plus" viewBox="0 0 16 16" focusable="false"><path d="M8 3v10M3 8h10"></path></svg></strong></span></button>`
+          ? `<button class="os-product-upload" type="button" data-product-action="choose-image" aria-label="${ar ? 'إضافة صورة' : 'Add image'}"><span class="os-product-image-placeholder"><strong aria-hidden="true"><span class="os-plus" aria-hidden="true"></span></strong></span></button>`
           : '<span class="os-product-image-empty" aria-hidden="true"></span>';
       const renderProductForm = (item) => {
         const ar = root.lang === 'ar';
@@ -760,7 +774,7 @@
       const renderProducts = () => {
         const ar = root.lang === 'ar';
         const current = productEditor?.id ? productsData.find((item) => item.id === productEditor.id) : null;
-        const addSlide = productEditor ? `<article class="os-product-slide">${renderProductForm(productEditor.mode === 'new' ? { ...(current || { name: { en: '', ar: '' }, category: { en: '', ar: '' }, description: { en: '', ar: '' }, price: { amount: '', currency: 'USD', label: { en: '', ar: '' }, afterDiscount: null }, status: 'active', slug: '' }), imageData: productImageDraft } : { ...current, imageData: productImageDraft })}</article>` : `<article class="os-product-slide"><div class="os-product-image-wrap"><button class="os-product-upload" type="button" data-product-action="choose-image" aria-label="${ar ? 'إضافة صورة' : 'Add image'}"><span class="os-product-image-placeholder"><strong aria-hidden="true"><svg class="os-plus" viewBox="0 0 16 16" focusable="false"><path d="M8 3v10M3 8h10"></path></svg></strong></span></button></div><button class="os-notification-main-action os-notification-main-action--floating" type="button" data-product-action="new">${plusIcon()}${ar ? 'إضافة' : 'Add Product'}</button></article>`;
+        const addSlide = productEditor ? `<article class="os-product-slide">${renderProductForm(productEditor.mode === 'new' ? { ...(current || { name: { en: '', ar: '' }, category: { en: '', ar: '' }, description: { en: '', ar: '' }, price: { amount: '', currency: 'USD', label: { en: '', ar: '' }, afterDiscount: null }, status: 'active', slug: '' }), imageData: productImageDraft } : { ...current, imageData: productImageDraft })}</article>` : `<article class="os-product-slide"><div class="os-product-image-wrap"><button class="os-product-upload" type="button" data-product-action="choose-image" aria-label="${ar ? 'إضافة صورة' : 'Add image'}"><span class="os-product-image-placeholder"><strong aria-hidden="true"><span class="os-plus" aria-hidden="true"></span></strong></span></button></div><button class="os-notification-main-action os-notification-main-action--floating" type="button" data-product-action="new">${plusIcon()}${ar ? 'إضافة' : 'Add Product'}</button></article>`;
         const slides = productEditor ? addSlide : `${addSlide}${productsData.map((item) => renderProductSlide(item, ar)).join('')}`;
         products.innerHTML = `<div class="os-products-track" data-product-track>${slides}</div><input class="os-product-image-input" data-product-image-input type="file" accept="image/png,image/jpeg,image/webp,image/avif" hidden>`;
         const track = products.querySelector('[data-product-track]');

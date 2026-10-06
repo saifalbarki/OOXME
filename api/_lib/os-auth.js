@@ -10,11 +10,6 @@ const MAX_FAILURES = 5;
 const LOCK_MINUTES = 15;
 const environmentFile = path.join(__dirname, '..', '..', '.env.os.local');
 
-// Development-only test switch. Enable only in the ignored .env.os.local (or the
-// local process environment) as OOXME_DEV_AUTH_BYPASS=true. NODE_ENV must also
-// be exactly "development", so production always uses the real password hash.
-const devAuthBypassEnabled = () => process.env.NODE_ENV === 'development' && process.env.OOXME_DEV_AUTH_BYPASS === 'true';
-
 const required = (name) => {
   const value = process.env[name];
   if (!value) throw Object.assign(new Error(`${name}_missing`), { code: 'admin_auth_not_configured' });
@@ -133,21 +128,15 @@ const requireCsrf = (request, session) => {
 
 const login = async (request, user, password) => {
   const key = rateKey(request);
-  if (devAuthBypassEnabled()) {
-    // The bypass affects only credential acceptance; the normal database session,
-    // HttpOnly cookie, CSRF token, expiry, and logout flow remain unchanged.
-    await clearFailures(key);
-  } else {
-    const current = await attemptState(key);
-    if (current.lockedUntil > Date.now()) throw Object.assign(new Error('login_temporarily_locked'), { status: 429, code: 'login_temporarily_locked' });
-    const configuredUser = adminUser();
-    const valid = (!configuredUser || timingEqual(String(user || '').trim(), configuredUser)) && await passwordMatches(password, required('OS_ADMIN_PASSWORD_HASH'));
-    if (!valid) {
-      await registerFailure(key);
-      throw Object.assign(new Error('invalid_credentials'), { status: 401, code: 'invalid_credentials' });
-    }
-    await clearFailures(key);
+  const current = await attemptState(key);
+  if (current.lockedUntil > Date.now()) throw Object.assign(new Error('login_temporarily_locked'), { status: 429, code: 'login_temporarily_locked' });
+  const configuredUser = adminUser();
+  const valid = (!configuredUser || timingEqual(String(user || '').trim(), configuredUser)) && await passwordMatches(password, required('OS_ADMIN_PASSWORD_HASH'));
+  if (!valid) {
+    await registerFailure(key);
+    throw Object.assign(new Error('invalid_credentials'), { status: 401, code: 'invalid_credentials' });
   }
+  await clearFailures(key);
   const rawSession = crypto.randomBytes(32).toString('base64url');
   const csrf = crypto.randomBytes(32).toString('base64url');
   await query(`INSERT INTO os_admin_sessions (session_id_hash, csrf_token_hash, expires_at)
