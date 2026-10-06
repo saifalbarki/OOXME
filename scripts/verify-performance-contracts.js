@@ -6,15 +6,27 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const verifyStaticContracts = () => {
-  const pages = ['main.html', 'brand.html', 'gallery.html', 'space.html', 'update.html', 'consultation.html', 'store.html'];
+  const pages = ['main.html', 'brand.html', 'gallery.html', 'space.html', 'update.html', 'consultation.html', 'store.html', 'os.html'];
   const styles = ['css/main.css', 'css/brand-base.css', 'css/update-base.css', 'css/tokens.css'];
   const runtimeSources = [...pages, ...styles].map(read).join('\n');
   assert(!/assets\/fonts\/[^)'"?]+\.(?:ttf|otf)/i.test(runtimeSources), 'Legacy font formats remain referenced');
   assert(pages.every((page) => !read(page).includes('/assets/logo/Favicon.png')), 'Oversized favicon remains referenced');
+  assert(pages.every((page) => read(page).includes('href="/favicon.svg"')), 'SVG favicon is not referenced by every page');
+  assert(pages.every((page) => read(page).includes('href="/site.webmanifest"')), 'PWA manifest is not referenced by every page');
+  assert(read('os-login.html').includes('href="/site.webmanifest"'), 'OS login shell is missing the PWA manifest');
+  const pngDimensions = (file) => { const data = fs.readFileSync(path.join(root, file)); assert(data.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), `${file} is not a PNG`); return [data.readUInt32BE(16), data.readUInt32BE(20)]; };
+  assert.deepStrictEqual(pngDimensions('favicon-16x16.png'), [16, 16]);
+  assert.deepStrictEqual(pngDimensions('favicon-32x32.png'), [32, 32]);
+  assert.deepStrictEqual(pngDimensions('favicon-192x192.png'), [192, 192]);
+  assert.deepStrictEqual(pngDimensions('favicon-512x512.png'), [512, 512]);
+  assert.deepStrictEqual(pngDimensions('apple-touch-icon.png'), [180, 180]);
+  assert(fs.readFileSync(path.join(root, 'favicon.ico')).subarray(0, 4).equals(Buffer.from([0, 0, 1, 0])), 'favicon.ico is not an ICO container');
+  assert(!read('favicon.svg').includes('<image'), 'SVG favicon has an external raster dependency');
   assert(read('os.html').includes('href="css/os.css"'), 'OS stylesheet was not externalized');
   assert(read('os.html').includes('src="js/os.js"'), 'OS runtime was not externalized');
   assert(!read('os.html').includes('<style>'), 'OS still contains its stable inline stylesheet');
-  assert(read('css/os.css').includes('--os-bottom-safe-inset: max(var(--os-safe-bottom), var(--os-visual-bottom-inset))'), 'Approved standalone bottom inset was lost');
+  assert(read('css/os.css').includes('--os-bottom-safe-inset: var(--os-safe-bottom)'), 'Browser bottom safe-area fallback was lost');
+  assert(read('css/os.css').includes('html[data-os-standalone] { --os-bottom-safe-inset: var(--os-visual-bottom-inset); }'), 'Standalone OS bottom gap must use the single visual viewport source');
   const osRuntime = read('js/os.js');
   const osLogin = read('os-login.html');
   assert(osRuntime.includes('window.innerHeight || document.documentElement.clientHeight || root.getBoundingClientRect().height'), 'OS fixed-position layout viewport measurement was lost');
@@ -23,6 +35,8 @@ const verifyStaticContracts = () => {
   assert(osLogin.includes('const visibleBottom = viewport ? Math.min(layoutHeight, viewport.offsetTop + viewport.height) : layoutHeight'), 'OS login VisualViewport bottom anchor calculation was lost');
   assert(osRuntime.indexOf('window.innerHeight || document.documentElement.clientHeight') < osRuntime.indexOf('const visibleBottom ='), 'OS layout viewport must be measured before the 100dvh root height');
   assert(osLogin.indexOf('window.innerHeight || document.documentElement.clientHeight') < osLogin.indexOf('const visibleBottom ='), 'OS login layout viewport must be measured before the 100dvh root height');
+  assert(osRuntime.includes("root.toggleAttribute('data-os-standalone', isStandaloneApp)"), 'OS standalone coordinate mode is not shared');
+  assert(osLogin.includes("root.toggleAttribute('data-os-standalone', isStandaloneApp)"), 'OS login standalone coordinate mode is not shared');
   assert(read('css/space.css').includes('width: calc(100% - 2px)'), 'Space card tail width contract was lost');
   const databaseRuntime = read('api/_lib/db.js');
   const pooledQuery = databaseRuntime.slice(databaseRuntime.indexOf('const query ='), databaseRuntime.indexOf('const timedQuery ='));

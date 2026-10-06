@@ -1,7 +1,9 @@
 {
   "name": "OOXME",
   "short_name": "OOXME",
-  "start_url": "https://ooxme.com/",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f1f3f7",
   "theme_color": "#f1f3f7",

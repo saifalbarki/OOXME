@@ -7,7 +7,7 @@
         --os-safe-bottom: env(safe-area-inset-bottom, 0px);
         --os-visual-bottom-inset: 0px;
         /* Keep every bottom anchor on the same fixed-position coordinate system. */
-        --os-bottom-safe-inset: max(var(--os-safe-bottom), var(--os-visual-bottom-inset));
+        --os-bottom-safe-inset: var(--os-safe-bottom);
         --os-top-gap: calc(var(--os-outer-gap) + var(--os-safe-top));
         --os-bottom-gap: calc(var(--os-outer-gap) + var(--os-bottom-safe-inset));
         --os-top-control-size: 32px;
@@ -44,6 +44,7 @@
         --os-control-color: var(--os-panel-color);
       }
       html[dir="rtl"] { --os-font-family: var(--os-font-ar); }
+      html[data-os-standalone] { --os-bottom-safe-inset: var(--os-visual-bottom-inset); }
       html[data-theme="dark"] {
         --os-page-background: #000;
         --os-panel-background: #161616;

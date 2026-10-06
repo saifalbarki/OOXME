@@ -1,6 +1,7 @@
     (() => {
       const root = document.documentElement;
       const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+      root.toggleAttribute('data-os-standalone', isStandaloneApp);
       const syncStandaloneBottomInset = () => {
         if (!isStandaloneApp) return;
         const viewport = window.visualViewport;

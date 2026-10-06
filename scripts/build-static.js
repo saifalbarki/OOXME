@@ -31,8 +31,12 @@ const analyticsSnippet = `
     </script>
     <script defer src="/_vercel/insights/script.js"></script>`;
 const assetVersion = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || '';
+const versionQuery = assetVersion ? `?v=${assetVersion}` : '';
+const versionRootReferences = (html) => assetVersion
+  ? html.replace(/((?:href|src)="\/?(?:favicon\.svg|favicon\.ico|favicon-[0-9]+x[0-9]+\.png|apple-touch-icon\.png|site\.webmanifest))"/g, `$1${versionQuery}"`)
+  : html;
 const versionStaticReferences = (html) => assetVersion
-  ? html.replace(/((?:href|src)="\/?(?:css|js|assets\/(?:fonts|projects))\/[^"?]+)"/g, `$1?v=${assetVersion}"`)
+  ? versionRootReferences(html.replace(/((?:href|src)="\/?(?:css|js|assets\/(?:fonts|projects))\/[^"?]+)"/g, `$1?v=${assetVersion}"`))
   : html;
 
 const readPngDimensions = (filePath) => {
@@ -105,7 +109,15 @@ if (assetVersion) {
 
 for (const name of rootFiles) {
   const source = path.join(sourceRoot, name);
-  if (fs.existsSync(source)) fs.copyFileSync(source, path.join(output, name));
+  if (!fs.existsSync(source)) continue;
+  const destination = path.join(output, name);
+  if (name === 'site.webmanifest' && assetVersion) {
+    const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
+    manifest.icons = manifest.icons.map((icon) => ({ ...icon, src: `${icon.src}${versionQuery}` }));
+    fs.writeFileSync(destination, `${JSON.stringify(manifest, null, 2)}\n`);
+  } else {
+    fs.copyFileSync(source, destination);
+  }
 }
 
 console.log('Static deployment files created in dist.');
