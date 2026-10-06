@@ -215,7 +215,7 @@
       .os-side-menu { --os-menu-radius: 31px; position: fixed; top: calc(var(--os-outer-gap) + 40px); left: var(--os-outer-gap); z-index: 5; display: grid; width: min(190px, calc(100vw - (var(--os-outer-gap) * 2))); gap: 6px; padding: 10px 12px; overflow-y: auto; overscroll-behavior: contain; border: 0; border-radius: var(--os-menu-radius); background: var(--os-control-background); color: var(--os-control-color); opacity: 0; pointer-events: none; transform: translateX(-8px); transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background-color .24s ease; visibility: hidden; }
       .os-side-menu.is-open { opacity: 1; pointer-events: auto; transform: translateX(0); transition-delay: 0s; visibility: visible; }
       .os-side-menu button { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border: 0; border-radius: 18px; background: transparent; color: inherit; cursor: pointer; font: 500 11px/1 var(--os-font-family); text-align: start; -webkit-tap-highlight-color: transparent; }
-      .os-side-menu .os-menu-icon { display: block; flex: 0 0 14px; width: 14px; height: 14px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+      .os-side-menu .os-menu-icon { display: block; flex: 0 0 14px; width: 14px; height: 14px; background-color: currentColor; background-position: center; background-repeat: no-repeat; background-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; -webkit-mask-size: contain; mask-position: center; mask-repeat: no-repeat; mask-size: contain; pointer-events: none; }
       .os-side-menu .os-menu-label { min-width: 0; line-height: 1; text-align: start; }
       .os-side-menu button:is(.is-active, [aria-current="true"], [aria-selected="true"], :active, :focus-visible) { border-radius: 999px; }
       .os-side-menu button:hover, .os-side-menu button:focus-visible { background: color-mix(in srgb, var(--os-control-color) 8%, transparent); }
@@ -359,6 +359,7 @@
       html[dir="rtl"] .os-edge-control--left { right: var(--os-outer-gap); left: auto; }
       html[dir="rtl"] .os-edge-control--right { right: auto; left: var(--os-outer-gap); }
       html[dir="rtl"] .os-side-menu { right: var(--os-outer-gap); left: auto; transform: translateX(8px); }
+      html[dir="rtl"] .os-side-menu button { flex-direction: row-reverse; }
       html[dir="rtl"] .os-side-menu.is-open { transform: translateX(0); }
     </style>
   </head>
@@ -510,33 +511,34 @@
       const menuTriggerPath = document.querySelector('.os-menu-trigger-icon path');
       if (menuTriggerPath) menuTriggerPath.setAttribute('d', 'M3 6h10M3 10h10');
       const sideMenu = document.querySelector('[data-os-side-menu], #os-side-menu');
-      const menuIconPaths = Object.freeze({
-        Summary: '<rect x="2.75" y="2.75" width="4" height="4" rx=".8"></rect><rect x="9.25" y="2.75" width="4" height="4" rx=".8"></rect><rect x="2.75" y="9.25" width="4" height="4" rx=".8"></rect><rect x="9.25" y="9.25" width="4" height="4" rx=".8"></rect>',
-        Insights: '<path d="M2.75 12.75V8.5M6.5 12.75V5.75M10.25 12.75V3.25M13.25 12.75H2.25"></path>',
-        Notifications: '<path d="M4.25 10.25V7a3.75 3.75 0 0 1 7.5 0v3.25l1.25 2H3l1.25-2ZM6.5 14h3"></path>',
-        'Promo Codes': '<path d="M3.25 4.25h9.5A1.25 1.25 0 0 1 14 5.5v1.25a1.75 1.75 0 0 0 0 2.5v1.25a1.25 1.25 0 0 1-1.25 1.25h-9.5A1.25 1.25 0 0 1 2 10.5V9.25a1.75 1.75 0 0 0 0-2.5V5.5a1.25 1.25 0 0 1 1.25-1.25Z"></path><path d="M8 5.75v.5M8 8v.5M8 10.25v.5"></path>',
-        Consultations: '<rect x="2.75" y="3.75" width="10.5" height="10" rx="1.25"></rect><path d="M5.25 2.5v2.5M10.75 2.5v2.5M2.75 7h10.5"></path>',
-        Products: '<path d="M3 5.25h10v8.5H3z"></path><path d="M5.25 5.25a2.75 2.75 0 0 1 5.5 0"></path>',
-        Buttons: '<rect x="2.5" y="4.25" width="11" height="7.5" rx="3.75"></rect><circle cx="6.25" cy="8" r="1.5"></circle>',
-        Admin: '<path d="m8 2.25 4.5 2v3.5c0 2.6-1.8 4.5-4.5 5.75-2.7-1.25-4.5-3.15-4.5-5.75v-3.5L8 2.25Z"></path><path d="M6.25 8h3.5M8 6.25v3.5"></path>',
-        Language: '<circle cx="8" cy="8" r="5.5"></circle><path d="M2.5 8h11M8 2.5c1.45 1.5 2.15 3.35 2.15 5.5S9.45 12 8 13.5C6.55 12 5.85 10.15 5.85 8S6.55 4 8 2.5Z"></path>',
-        Appearance: '<circle cx="8" cy="8" r="2.5"></circle><path d="M8 2.25v1.5M8 12.25v1.5M2.25 8h1.5M12.25 8h1.5M3.94 3.94 5 5M11 11l1.06 1.06M12.06 3.94 11 5M5 11l-1.06 1.06"></path>',
-        'Log Out': '<path d="M8.75 3.25h3.5v9.5h-3.5M9.25 8H2.5M5 5.5 2.5 8 5 10.5"></path>'
+      const menuIconAssets = Object.freeze({
+        Summary: { name: 'Dashboard Square 01', file: 'dashboard-square-01.svg' },
+        Insights: { name: 'Analytics 01', file: 'analytics-01.svg' },
+        Notifications: { name: 'Notification 02', file: 'notification-02.svg' },
+        'Promo Codes': { name: 'Ticket 01', file: 'ticket-01.svg' },
+        Consultations: { name: 'Calendar 03', file: 'calendar-03.svg' },
+        Products: { name: 'Shopping Bag 01', file: 'shopping-bag-01.svg' },
+        Buttons: { name: 'Toggle On', file: 'toggle-on.svg' },
+        Admin: { name: 'Shield 01', file: 'shield-01.svg' },
+        Language: { name: 'Language Circle', file: 'language-circle.svg' },
+        Appearance: { name: 'Sun 01', file: 'sun-01.svg' },
+        'Log Out': { name: 'Logout 01', file: 'logout-01.svg' }
       });
+      const menuIconAssetRoot = 'assets/icons/hugeicons/';
       const decorateMenuIcons = () => {
         sideMenu.querySelectorAll('[data-os-menu-copy-en]').forEach((item) => {
           if (item.querySelector('.os-menu-icon')) return;
-          const iconPath = menuIconPaths[item.dataset.osMenuCopyEn];
-          if (!iconPath) return;
+          const iconAsset = menuIconAssets[item.dataset.osMenuCopyEn];
+          if (!iconAsset) return;
           const label = document.createElement('span');
           label.className = 'os-menu-label';
           label.textContent = item.textContent.trim();
-          const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          const icon = document.createElement('span');
           icon.classList.add('os-menu-icon');
-          icon.setAttribute('viewBox', '0 0 16 16');
           icon.setAttribute('aria-hidden', 'true');
-          icon.setAttribute('focusable', 'false');
-          icon.innerHTML = iconPath;
+          icon.dataset.hugeiconsName = iconAsset.name;
+          icon.style.webkitMaskImage = `url("${menuIconAssetRoot}${iconAsset.file}")`;
+          icon.style.maskImage = `url("${menuIconAssetRoot}${iconAsset.file}")`;
           item.replaceChildren(icon, label);
         });
       };
