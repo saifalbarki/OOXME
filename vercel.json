@@ -3,7 +3,7 @@
   "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "regions": ["dxb1"],
+  "regions": ["bom1"],
   "cleanUrls": true,
   "headers": [
     {
