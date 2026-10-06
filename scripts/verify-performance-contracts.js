@@ -15,7 +15,12 @@ const verifyStaticContracts = () => {
   assert(read('os.html').includes('src="js/os.js"'), 'OS runtime was not externalized');
   assert(!read('os.html').includes('<style>'), 'OS still contains its stable inline stylesheet');
   assert(read('css/os.css').includes('--os-bottom-safe-inset: max(var(--os-safe-bottom), var(--os-visual-bottom-inset))'), 'Approved standalone bottom inset was lost');
-  assert(read('js/os.js').includes('const layoutViewport = root.getBoundingClientRect()'), 'Approved standalone viewport coordinate fix was lost');
+  const osRuntime = read('js/os.js');
+  const osLogin = read('os-login.html');
+  assert(osRuntime.includes('document.documentElement.clientHeight || window.innerHeight || root.getBoundingClientRect().height'), 'OS fixed-position layout viewport measurement was lost');
+  assert(osRuntime.includes('const visibleBottom = viewport ? viewport.offsetTop + viewport.height : layoutHeight'), 'OS VisualViewport bottom anchor calculation was lost');
+  assert(osLogin.includes('document.documentElement.clientHeight || window.innerHeight || root.getBoundingClientRect().height'), 'OS login fixed-position layout viewport measurement was lost');
+  assert(read('css/space.css').includes('width: calc(100% - 2px)'), 'Space card tail width contract was lost');
   const databaseRuntime = read('api/_lib/db.js');
   const pooledQuery = databaseRuntime.slice(databaseRuntime.indexOf('const query ='), databaseRuntime.indexOf('const timedQuery ='));
   assert(!/\bclient\b/.test(pooledQuery), 'Pool query retry references an undefined client');

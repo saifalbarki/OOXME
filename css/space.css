@@ -248,7 +248,7 @@ html[lang="ar"] .s-page--space :is(.space-message, .space-baseline) {
   z-index: 0;
   box-sizing: border-box;
   display: flex;
-  width: var(--space-side-menu-width);
+  width: calc(100% - 2px);
   height: auto;
   margin: 0 auto;
   padding: var(--space-gap-standard);
