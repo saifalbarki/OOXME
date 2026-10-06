@@ -17,9 +17,12 @@ const verifyStaticContracts = () => {
   assert(read('css/os.css').includes('--os-bottom-safe-inset: max(var(--os-safe-bottom), var(--os-visual-bottom-inset))'), 'Approved standalone bottom inset was lost');
   const osRuntime = read('js/os.js');
   const osLogin = read('os-login.html');
-  assert(osRuntime.includes('document.documentElement.clientHeight || window.innerHeight || root.getBoundingClientRect().height'), 'OS fixed-position layout viewport measurement was lost');
-  assert(osRuntime.includes('const visibleBottom = viewport ? viewport.offsetTop + viewport.height : layoutHeight'), 'OS VisualViewport bottom anchor calculation was lost');
-  assert(osLogin.includes('document.documentElement.clientHeight || window.innerHeight || root.getBoundingClientRect().height'), 'OS login fixed-position layout viewport measurement was lost');
+  assert(osRuntime.includes('window.innerHeight || document.documentElement.clientHeight || root.getBoundingClientRect().height'), 'OS fixed-position layout viewport measurement was lost');
+  assert(osRuntime.includes('const visibleBottom = viewport ? Math.min(layoutHeight, viewport.offsetTop + viewport.height) : layoutHeight'), 'OS VisualViewport bottom anchor calculation was lost');
+  assert(osLogin.includes('window.innerHeight || document.documentElement.clientHeight || root.getBoundingClientRect().height'), 'OS login fixed-position layout viewport measurement was lost');
+  assert(osLogin.includes('const visibleBottom = viewport ? Math.min(layoutHeight, viewport.offsetTop + viewport.height) : layoutHeight'), 'OS login VisualViewport bottom anchor calculation was lost');
+  assert(osRuntime.indexOf('window.innerHeight || document.documentElement.clientHeight') < osRuntime.indexOf('const visibleBottom ='), 'OS layout viewport must be measured before the 100dvh root height');
+  assert(osLogin.indexOf('window.innerHeight || document.documentElement.clientHeight') < osLogin.indexOf('const visibleBottom ='), 'OS login layout viewport must be measured before the 100dvh root height');
   assert(read('css/space.css').includes('width: calc(100% - 2px)'), 'Space card tail width contract was lost');
   const databaseRuntime = read('api/_lib/db.js');
   const pooledQuery = databaseRuntime.slice(databaseRuntime.indexOf('const query ='), databaseRuntime.indexOf('const timedQuery ='));

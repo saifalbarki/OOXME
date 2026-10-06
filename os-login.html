@@ -62,10 +62,11 @@
           const viewport = window.visualViewport;
           const activeField = document.activeElement;
           // Fixed-position elements use the layout viewport. The root element
-          // can be sized by 100dvh in standalone mode, so its rect is not a
-          // stable substitute for the fixed-position containing block.
-          const layoutHeight = document.documentElement.clientHeight || window.innerHeight || root.getBoundingClientRect().height;
-          const visibleBottom = viewport ? viewport.offsetTop + viewport.height : layoutHeight;
+          // can be sized by 100dvh in standalone mode, so clientHeight is not
+          // a stable substitute for the fixed-position containing block. Keep
+          // both sides of this calculation in the same viewport coordinates.
+          const layoutHeight = window.innerHeight || document.documentElement.clientHeight || root.getBoundingClientRect().height;
+          const visibleBottom = viewport ? Math.min(layoutHeight, viewport.offsetTop + viewport.height) : layoutHeight;
           const keyboardOpen = Boolean(viewport && activeField?.matches?.('input, textarea, select, [contenteditable="true"]') && viewport.height < layoutHeight - 120);
           const inset = keyboardOpen ? 0 : Math.max(0, layoutHeight - visibleBottom);
           root.style.setProperty('--os-visual-bottom-inset', `${inset}px`);
