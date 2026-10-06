@@ -7,10 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" data-os-status-bar-style>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>OOXME OS</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+    <link rel="icon" href="/assets/logo/Favicon.png" type="image/png" sizes="4000x4000">
+    <link rel="apple-touch-icon" href="/assets/logo/Favicon.png" sizes="4000x4000">
     <link rel="manifest" href="/os.webmanifest">
     <style>
       :root { --os-x: 18px; --os-outer-gap: var(--os-x); --os-viewport-height: 100dvh; --os-safe-top: env(safe-area-inset-top, 0px); --os-safe-bottom: env(safe-area-inset-bottom, 0px); --os-visual-bottom-inset: 0px; /* Keep the login anchor on the same fixed-position coordinate system as /os. */ --os-bottom-safe-inset: var(--os-safe-bottom); --os-top-gap: calc(var(--os-outer-gap) + var(--os-safe-top)); --os-bottom-gap: calc(var(--os-outer-gap) + var(--os-bottom-safe-inset)); --os-closed-height: min(calc(var(--os-x) * 5), var(--os-viewport-height)); --os-font-en: "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --os-font-ar: "SF Arabic Rounded", "SF Arabic", "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --os-font-family: var(--os-font-en); --os-page-background: #fff; --os-panel-background: #F1F3F7; --os-panel-color: #000; }
@@ -20,7 +18,7 @@
       * { box-sizing: border-box; }
       html, body { width: 100%; height: 100%; min-height: var(--os-viewport-height); margin: 0; overflow: hidden; overscroll-behavior: none; background: var(--os-page-background); color: var(--os-panel-color); font-family: var(--os-font-family); transition: background-color .24s ease, color .24s ease; }
       body { touch-action: manipulation; }
-      .os-auth-composition { position: fixed; right: var(--os-outer-gap); bottom: calc(var(--os-bottom-gap) + (var(--os-x) * 2.2)); left: var(--os-outer-gap); display: grid; width: min(280px, calc(100% - (var(--os-outer-gap) * 2))); margin: 0 auto; gap: 18px; pointer-events: none; transform: translateY(var(--os-keyboard-shift, 0px)); }
+      .os-auth-composition { position: fixed; right: var(--os-outer-gap); bottom: var(--os-bottom-gap); left: var(--os-outer-gap); display: grid; width: auto; margin: 0; gap: calc(var(--os-x) - 4px); pointer-events: none; transform: translateY(var(--os-keyboard-shift, 0px)); }
       .os-auth-form { position: static; display: grid; width: 100%; margin: 0; gap: 8px; pointer-events: auto; }
       .os-auth-field { position: relative; min-width: 0; }
       .os-auth-form input, .os-auth-form button { box-sizing: border-box; width: 100%; font-family: var(--os-font-family); -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
@@ -32,7 +30,7 @@
       .os-auth-eye { position: absolute; top: 50%; right: 8px; display: grid; width: 20px !important; height: 20px; padding: 0; place-items: center; border: 0; border-radius: 0; background: transparent; color: color-mix(in srgb, var(--os-panel-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
       .os-auth-eye:hover, .os-auth-eye:focus, .os-auth-eye:focus-visible, .os-auth-eye:active { background: transparent; color: var(--os-panel-color); outline: 0; box-shadow: none; }
       .os-hugeicon { display: block; width: 15px; height: 15px; background-color: currentColor; background-position: center; background-repeat: no-repeat; background-size: contain; -webkit-mask-position: center; -webkit-mask-repeat: no-repeat; -webkit-mask-size: contain; mask-position: center; mask-repeat: no-repeat; mask-size: contain; pointer-events: none; }
-      .os-auth-form > button[type="submit"] { justify-self: center; width: 50%; height: 38px; min-height: 38px; padding: 10px 14px; border: 0; border-radius: 999px; background: #0A84FF; color: #fff; cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
+      .os-auth-form > button[type="submit"] { justify-self: stretch; width: 100%; height: 38px; min-height: 38px; padding: 10px 14px; border: 0; border-radius: 999px; background: #0A84FF; color: #fff; cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
       .os-auth-form > button[type="submit"]:disabled { cursor: wait; opacity: .58; }
       .os-auth-form button:focus, .os-auth-form button:focus-visible { outline: 0; box-shadow: none; }
       .os-auth-error { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -41,13 +39,12 @@
       html[dir="rtl"] .os-auth-password input { padding-right: 14px; padding-left: 36px; }
       html[dir="rtl"] .os-auth-eye { right: auto; left: 8px; }
       @supports not (height: 100dvh) { :root { --os-viewport-height: 100vh; } }
-      @media (max-width: 480px) { .os-auth-composition { width: calc(100% - (var(--os-outer-gap) * 2)); } }
-      @media (orientation: landscape) and (max-height: 520px) { .os-auth-composition { width: min(100%, 420px); } .os-auth-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; } .os-auth-form > button[type="submit"] { grid-column: 1 / -1; width: 50%; min-width: 84px; } }
+      @media (max-width: 480px) { .os-auth-composition { width: auto; } }
+      @media (orientation: landscape) and (max-height: 520px) { .os-auth-composition { width: auto; } .os-auth-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; } .os-auth-form > button[type="submit"] { grid-column: 1 / -1; width: 100%; min-width: 84px; } }
     </style>
   </head>
   <body>
     <div class="os-auth-composition">
-    <div class="os-auth-separator" aria-hidden="true"><span class="os-auth-panel-line"></span></div>
     <form class="os-auth-form" data-os-auth-form>
       <div class="os-auth-field">
         <input type="text" name="user" autocomplete="username" aria-label="User" placeholder="User">
@@ -59,6 +56,7 @@
       <div class="os-auth-error" data-os-auth-error role="alert"></div>
       <button type="submit">Log In</button>
     </form>
+    <div class="os-auth-separator" aria-hidden="true"><span class="os-auth-panel-line"></span></div>
     </div>
     <script>
       (() => {
@@ -74,6 +72,7 @@
           // a stable substitute for the fixed-position containing block. Keep
           // both sides of this calculation in the same viewport coordinates.
           const layoutHeight = window.innerHeight || document.documentElement.clientHeight || root.getBoundingClientRect().height;
+          root.style.setProperty('--os-viewport-height', `${layoutHeight}px`);
           const visibleBottom = viewport ? Math.min(layoutHeight, viewport.offsetTop + viewport.height) : layoutHeight;
           const keyboardOpen = Boolean(viewport && activeField?.matches?.('input, textarea, select, [contenteditable="true"]') && viewport.height < layoutHeight - 120);
           const inset = keyboardOpen ? 0 : Math.max(0, layoutHeight - visibleBottom);

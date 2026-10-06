@@ -11,9 +11,8 @@ const deploymentOnlyExclusions = [
   'assets/fonts/SFPRODISPLAYBOLD.OTF',
   'assets/fonts/SFPRODISPLAYREGULAR.OTF',
   'assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf',
-  'assets/logo/Favicon.png'
 ];
-const rootFiles = ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'favicon-192x192.png', 'favicon-512x512.png', 'apple-touch-icon.png', 'site.webmanifest', 'os.webmanifest', 'robots.txt', 'sitemap.xml'];
+const rootFiles = ['site.webmanifest', 'os.webmanifest', 'robots.txt', 'sitemap.xml'];
 const pageOutputs = {
   'main.html': 'index.html',
   'brand.html': 'bm.html',
@@ -33,7 +32,7 @@ const analyticsSnippet = `
 const assetVersion = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || '';
 const versionQuery = assetVersion ? `?v=${assetVersion}` : '';
 const versionRootReferences = (html) => assetVersion
-  ? html.replace(/((?:href|src)="\/?(?:favicon\.svg|favicon\.ico|favicon-[0-9]+x[0-9]+\.png|apple-touch-icon\.png|site\.webmanifest|os\.webmanifest))"/g, `$1${versionQuery}"`)
+  ? html.replace(/((?:href|src)="\/?(?:assets\/logo\/Favicon\.png|site\.webmanifest|os\.webmanifest))"/g, `$1${versionQuery}"`)
   : html;
 const versionStaticReferences = (html) => assetVersion
   ? versionRootReferences(html.replace(/((?:href|src)="\/?(?:css|js|assets\/(?:fonts|projects))\/[^"?]+)"/g, `$1?v=${assetVersion}"`))

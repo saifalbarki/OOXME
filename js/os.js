@@ -11,6 +11,7 @@
         // substitute for the fixed-position containing block. Keep both sides
         // of this calculation in the same viewport coordinate system.
         const layoutHeight = window.innerHeight || document.documentElement.clientHeight || root.getBoundingClientRect().height;
+        root.style.setProperty('--os-viewport-height', `${layoutHeight}px`);
         const visibleBottom = viewport ? Math.min(layoutHeight, viewport.offsetTop + viewport.height) : layoutHeight;
         const keyboardOpen = Boolean(viewport && activeField?.matches?.('input, textarea, select, [contenteditable="true"]') && viewport.height < layoutHeight - 120);
         const inset = keyboardOpen ? 0 : Math.max(0, layoutHeight - visibleBottom);
@@ -60,7 +61,7 @@
       const authSeparator = document.createElement('div');
       authSeparator.className = 'os-auth-separator'; authSeparator.setAttribute('aria-hidden', 'true');
       authSeparator.innerHTML = '<span class="os-auth-panel-line"></span>';
-      authComposition.append(authSeparator, authForm);
+      authComposition.append(authForm, authSeparator);
       authGate.append(authComposition);
       const renderPasswordIcon = () => { const visible = authInput.type === 'text'; authEye.dataset.visible = String(visible); setHugeIcon(authEye, visible ? 'view.svg' : 'view-off-slash.svg'); };
       renderPasswordIcon();
@@ -267,7 +268,7 @@
       if (logoutMenuItem) logoutMenuItem.dataset.osMenuAction = 'logout';
       sideMenu.insertAdjacentHTML('afterbegin', '<button type="button" data-os-menu-copy-en="Summary" data-os-menu-copy-ar="الملخص" data-os-menu-action="summary">Summary</button>');
       decorateMenuIcons();
-      panel.insertAdjacentHTML('beforeend', '<div class="os-summary-content"><span class="os-summary-percentage" data-os-summary-response data-available="false" aria-label="Response unavailable"><svg class="os-summary-response-svg" viewBox="0 0 300 180" aria-hidden="true"><defs><linearGradient id="os-summary-response-gradient" x1="0" y1="180" x2="300" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="var(--os-response-start)"/><stop offset="48%" stop-color="var(--os-response-mid)"/><stop offset="100%" stop-color="var(--os-response-end)"/></linearGradient></defs><text class="os-summary-response-text" x="150" y="112"><tspan data-os-summary-response-number>—</tspan><tspan class="os-summary-response-unit" data-os-summary-unit-en="ms" data-os-summary-unit-ar="ملي ثانية" aria-hidden="true"> ms</tspan></text></svg></span><div class="os-summary-indicators" aria-hidden="true"><div class="os-summary-indicator"><span data-os-summary-en="Consultations Today" data-os-summary-ar="استشارات اليوم">Consultations Today</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Products / Orders" data-os-summary-ar="المنتجات / الطلبات">Products / Orders</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Promo Code Uses" data-os-summary-ar="استخدامات الرموز الترويجية">Promo Code Uses</span><span class="os-summary-indicator-value">0</span></div></div></div>');
+      panel.insertAdjacentHTML('beforeend', '<div class="os-summary-content"><span class="os-summary-percentage" data-os-summary-response data-available="false" aria-label="Response unavailable"><svg class="os-summary-response-svg" viewBox="0 0 300 180" aria-hidden="true"><defs><linearGradient id="os-summary-response-gradient" x1="0" y1="180" x2="300" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="var(--os-response-start)"/><stop offset="48%" stop-color="var(--os-response-mid)"/><stop offset="100%" stop-color="var(--os-response-end)"/></linearGradient></defs><text class="os-summary-response-text" x="150" y="112"><tspan class="os-summary-response-unit" data-os-summary-unit-en="~" data-os-summary-unit-ar="~" aria-hidden="true">~</tspan><tspan data-os-summary-response-number>—</tspan></text></svg></span><div class="os-summary-indicators" aria-hidden="true"><div class="os-summary-indicator"><span data-os-summary-en="Consultations Today" data-os-summary-ar="استشارات اليوم">Consultations Today</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Products / Orders" data-os-summary-ar="المنتجات / الطلبات">Products / Orders</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Promo Code Uses" data-os-summary-ar="استخدامات الرموز الترويجية">Promo Code Uses</span><span class="os-summary-indicator-value">0</span></div></div></div>');
       const summaryIndicators = panel.querySelector('.os-summary-indicators');
       if (summaryIndicators) {
         summaryIndicators.replaceChildren(...[
@@ -321,6 +322,34 @@
       let promoCodeExpandedId = null;
       const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
       const plusIcon = () => '<span class="os-plus" aria-hidden="true"></span>';
+      const statusLabel = (status, isArabic = root.lang === 'ar') => {
+        const labels = isArabic
+          ? { active: 'نشط', inactive: 'غير نشط', operational: 'يعمل', attention: 'يحتاج إلى انتباه', unavailable: 'غير متاح', unknown: 'غير معروف', confirmed: 'مؤكد', cancelled: 'ملغى', failed: 'فشل' }
+          : { active: 'Active', inactive: 'Inactive', operational: 'Operational', attention: 'Needs attention', unavailable: 'Unavailable', unknown: 'Unknown', confirmed: 'Confirmed', cancelled: 'Cancelled', failed: 'Failed' };
+        return labels[status] || String(status || (isArabic ? 'غير متاح' : 'Unavailable'));
+      };
+      const durationLabel = (value, isArabic = root.lang === 'ar') => {
+        if (value === null || value === undefined || value === '') return '';
+        return isArabic ? `${value} دقيقة` : `${value} min`;
+      };
+      const nextLocalMinute = () => {
+        const date = new Date();
+        date.setSeconds(0, 0);
+        date.setMinutes(date.getMinutes() + 1);
+        return date;
+      };
+      const localScheduleToIso = (dateValue, timeValue) => {
+        const date = new Date(`${dateValue}T${timeValue}`);
+        if (!dateValue || !timeValue || Number.isNaN(date.getTime())) return null;
+        return date.toISOString();
+      };
+      const scheduleError = (form, message) => {
+        const dateField = form.elements.publishDate;
+        const timeField = form.elements.publishTime;
+        dateField.setCustomValidity(message || '');
+        timeField.setCustomValidity('');
+        if (message) dateField.reportValidity();
+      };
       const localDateTime = (value) => {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return { date: '', time: '' };
@@ -329,14 +358,18 @@
       };
       const notificationLabel = (notification, field) => notification[field]?.[root.lang === 'ar' ? 'ar' : 'en'] || notification[field]?.en || '';
       const renderNotificationForm = (notification) => {
-        const current = notification || { title: { en: '', ar: '' }, text: { en: '', ar: '' }, publishAt: new Date().toISOString(), status: 'active', frequency: 'once' };
+        const current = notification || { title: { en: '', ar: '' }, text: { en: '', ar: '' }, publishAt: nextLocalMinute().toISOString(), status: 'active', frequency: 'once' };
         const schedule = localDateTime(current.publishAt);
+        const ar = root.lang === 'ar';
+        const labels = ar
+          ? { englishTitle: 'العنوان بالإنجليزية', arabicTitle: 'العنوان بالعربية', englishText: 'النص بالإنجليزية', arabicText: 'النص بالعربية', publishDate: 'تاريخ النشر', publishTime: 'وقت النشر', frequency: 'التكرار', once: 'مرة واحدة', daily: 'يوميًا', weekly: 'أسبوعيًا', status: 'الحالة', active: 'نشط', inactive: 'غير نشط', cancel: 'إلغاء', save: 'حفظ' }
+          : { englishTitle: 'English Title', arabicTitle: 'Arabic Title', englishText: 'English Text', arabicText: 'Arabic Text', publishDate: 'Publish Date', publishTime: 'Publish Time', frequency: 'Repeat / frequency', once: 'Once', daily: 'Daily', weekly: 'Weekly', status: 'Status', active: 'Active', inactive: 'Inactive', cancel: 'Cancel', save: 'Save' };
         return `<form class="os-notification-form" data-notification-form>
-          <div class="os-notification-form-grid"><label><input name="titleEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required aria-label="English Title" placeholder="English Title" value="${escapeHtml(current.title.en)}"></label><label><input name="titleAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" aria-label="Arabic Title" placeholder="العنوان" value="${escapeHtml(current.title.ar)}"></label></div>
-          <div class="os-notification-form-grid"><label><textarea name="textEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required aria-label="English Text" placeholder="English Text">${escapeHtml(current.text.en)}</textarea></label><label><textarea name="textAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" aria-label="Arabic Text" placeholder="النص">${escapeHtml(current.text.ar)}</textarea></label></div>
-          <div class="os-notification-form-grid"><label><input type="date" name="publishDate" required aria-label="Publish Date" placeholder="Publish Date" value="${schedule.date}"></label><label><input type="time" name="publishTime" required aria-label="Publish Time" placeholder="Publish Time" value="${schedule.time}"></label></div>
-          <div class="os-notification-form-grid"><label><select name="frequency" aria-label="Repeat / frequency"><option value="once" ${current.frequency === 'once' ? 'selected' : ''}>Once</option><option value="daily" ${current.frequency === 'daily' ? 'selected' : ''}>Daily</option><option value="weekly" ${current.frequency === 'weekly' ? 'selected' : ''}>Weekly</option></select></label><label><select name="status" aria-label="Status"><option value="active" ${current.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>Inactive</option></select></label></div>
-          <div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-notification-action="cancel">Cancel</button><button class="os-notification-main-action" type="submit">Save</button></div>
+          <div class="os-notification-form-grid"><label><input name="titleEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required aria-label="${labels.englishTitle}" placeholder="${labels.englishTitle}" value="${escapeHtml(current.title.en)}"></label><label><input name="titleAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" aria-label="${labels.arabicTitle}" placeholder="${labels.arabicTitle}" value="${escapeHtml(current.title.ar)}"></label></div>
+          <div class="os-notification-form-grid"><label><textarea name="textEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required aria-label="${labels.englishText}" placeholder="${labels.englishText}">${escapeHtml(current.text.en)}</textarea></label><label><textarea name="textAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" aria-label="${labels.arabicText}" placeholder="${labels.arabicText}">${escapeHtml(current.text.ar)}</textarea></label></div>
+          <div class="os-notification-form-grid"><label><input type="date" name="publishDate" required aria-label="${labels.publishDate}" placeholder="${labels.publishDate}" value="${schedule.date}"></label><label><input type="time" name="publishTime" required aria-label="${labels.publishTime}" placeholder="${labels.publishTime}" value="${schedule.time}"></label></div>
+          <div class="os-notification-form-grid"><label><select name="frequency" aria-label="${labels.frequency}"><option value="once" ${current.frequency === 'once' ? 'selected' : ''}>${labels.once}</option><option value="daily" ${current.frequency === 'daily' ? 'selected' : ''}>${labels.daily}</option><option value="weekly" ${current.frequency === 'weekly' ? 'selected' : ''}>${labels.weekly}</option></select></label><label><select name="status" aria-label="${labels.status}"><option value="active" ${current.status === 'active' ? 'selected' : ''}>${labels.active}</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>${labels.inactive}</option></select></label></div>
+          <div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-notification-action="cancel">${labels.cancel}</button><button class="os-notification-main-action" type="submit">${labels.save}</button></div>
         </form>`;
       };
       const renderPromoForm = (promo) => {
@@ -346,14 +379,18 @@
         const dateValue = (input) => input ? String(input).slice(0, 10) : '';
         const serviceRestrictions = Array.isArray(current.serviceRestrictions) ? current.serviceRestrictions.join(', ') : '';
         const durationRestrictions = Array.isArray(current.durationRestrictions) ? current.durationRestrictions.join(', ') : '';
+        const ar = root.lang === 'ar';
+        const labels = ar
+          ? { code: 'رمز الخصم', discountValue: 'قيمة الخصم', discountType: 'نوع الخصم', percentage: 'نسبة مئوية', fixed: 'ثابت', currency: 'العملة', starts: 'تاريخ البدء', ends: 'تاريخ الانتهاء', totalLimit: 'إجمالي حد الاستخدام', customerLimit: 'حد الاستخدام لكل عميل', applies: 'ينطبق على', durations: 'المدد بالدقائق', status: 'الحالة', active: 'نشط', inactive: 'غير نشط', cancel: 'إلغاء', save: 'حفظ' }
+          : { code: 'Promo Code', discountValue: 'Discount Value', discountType: 'Discount Type', percentage: 'Percentage', fixed: 'Fixed', currency: 'Currency', starts: 'Starts Date', ends: 'Ends Date', totalLimit: 'Total Usage Limit', customerLimit: 'Per Customer Limit', applies: 'Applies To', durations: 'Durations in Minutes', status: 'Status', active: 'Active', inactive: 'Inactive', cancel: 'Cancel', save: 'Save' };
         return `<form class="os-notification-form" data-promo-form>
-          <div class="os-notification-form-grid"><label><input name="code" required aria-label="Promo Code" placeholder="Promo Code" value="${escapeHtml(current.code)}"></label><label><input name="discountValue" type="number" min="0" step="0.01" required aria-label="Discount Value" placeholder="Discount Value" value="${escapeHtml(value)}"></label></div>
-          <div class="os-notification-form-grid"><label><select name="discountType" aria-label="Discount Type"><option value="percentage" ${percentage ? 'selected' : ''}>Percentage</option><option value="fixed" ${percentage ? '' : 'selected'}>Fixed</option></select></label><label><input name="currency" maxlength="3" aria-label="Currency" placeholder="Currency" value="${escapeHtml(current.currency || 'USD')}"></label></div>
-          <div class="os-notification-form-grid"><label><input name="startsAt" type="date" aria-label="Starts Date" placeholder="Starts Date" value="${dateValue(current.startsAt)}"></label><label><input name="endsAt" type="date" aria-label="Ends Date" placeholder="Ends Date" value="${dateValue(current.endsAt)}"></label></div>
-          <div class="os-notification-form-grid"><label><input name="totalUsageLimit" type="number" min="0" step="1" aria-label="Total Usage Limit" placeholder="Total Usage Limit" value="${current.totalUsageLimit == null ? '' : escapeHtml(current.totalUsageLimit)}"></label><label><input name="perCustomerLimit" type="number" min="0" step="1" aria-label="Per Customer Limit" placeholder="Per Customer Limit" value="${current.perCustomerLimit == null ? '' : escapeHtml(current.perCustomerLimit)}"></label></div>
-          <div class="os-notification-form-grid"><label><input name="serviceRestrictions" aria-label="Applies To" placeholder="Applies To" value="${escapeHtml(serviceRestrictions)}"></label><label><input name="durationRestrictions" aria-label="Durations in Minutes" placeholder="Durations in Minutes" value="${escapeHtml(durationRestrictions)}"></label></div>
-          <div class="os-notification-form-grid"><label><select name="status" aria-label="Status"><option value="active" ${current.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${current.status !== 'active' ? 'selected' : ''}>Inactive</option></select></label><span aria-hidden="true"></span></div>
-          <div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-promo-action="cancel">Cancel</button><button class="os-notification-main-action" type="submit">Save</button></div>
+          <div class="os-notification-form-grid"><label><input name="code" required aria-label="${labels.code}" placeholder="${labels.code}" value="${escapeHtml(current.code)}"></label><label><input name="discountValue" type="number" min="0" step="0.01" required aria-label="${labels.discountValue}" placeholder="${labels.discountValue}" value="${escapeHtml(value)}"></label></div>
+          <div class="os-notification-form-grid"><label><select name="discountType" aria-label="${labels.discountType}"><option value="percentage" ${percentage ? 'selected' : ''}>${labels.percentage}</option><option value="fixed" ${percentage ? '' : 'selected'}>${labels.fixed}</option></select></label><label><input name="currency" maxlength="3" aria-label="${labels.currency}" placeholder="${labels.currency}" value="${escapeHtml(current.currency || 'USD')}"></label></div>
+          <div class="os-notification-form-grid"><label><input name="startsAt" type="date" aria-label="${labels.starts}" placeholder="${labels.starts}" value="${dateValue(current.startsAt)}"></label><label><input name="endsAt" type="date" aria-label="${labels.ends}" placeholder="${labels.ends}" value="${dateValue(current.endsAt)}"></label></div>
+          <div class="os-notification-form-grid"><label><input name="totalUsageLimit" type="number" min="0" step="1" aria-label="${labels.totalLimit}" placeholder="${labels.totalLimit}" value="${current.totalUsageLimit == null ? '' : escapeHtml(current.totalUsageLimit)}"></label><label><input name="perCustomerLimit" type="number" min="0" step="1" aria-label="${labels.customerLimit}" placeholder="${labels.customerLimit}" value="${current.perCustomerLimit == null ? '' : escapeHtml(current.perCustomerLimit)}"></label></div>
+          <div class="os-notification-form-grid"><label><input name="serviceRestrictions" aria-label="${labels.applies}" placeholder="${labels.applies}" value="${escapeHtml(serviceRestrictions)}"></label><label><input name="durationRestrictions" aria-label="${labels.durations}" placeholder="${labels.durations}" value="${escapeHtml(durationRestrictions)}"></label></div>
+          <div class="os-notification-form-grid"><label><select name="status" aria-label="${labels.status}"><option value="active" ${current.status === 'active' ? 'selected' : ''}>${labels.active}</option><option value="inactive" ${current.status !== 'active' ? 'selected' : ''}>${labels.inactive}</option></select></label><span aria-hidden="true"></span></div>
+          <div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-promo-action="cancel">${labels.cancel}</button><button class="os-notification-main-action" type="submit">${labels.save}</button></div>
         </form>`;
       };
       const renderManagementEmptyState = (copy) => `<div class="os-management-empty-state">${escapeHtml(copy)}</div>`;
@@ -362,7 +399,7 @@
         const list = notificationsData.map((notification) => {
           const selected = notificationExpandedId === notification.id;
           const title = escapeHtml(notificationLabel(notification, 'title') || '');
-          return `<li class="os-notification-row${selected ? ' is-selected' : ''}" data-notification-id="${escapeHtml(notification.id)}"><div class="os-notification-title-row"><span class="os-notification-title">${title}</span><span class="os-notification-status-dot" data-status="${notification.status}" aria-label="${notification.status}"></span></div>${selected ? `<div class="os-notification-detail"><div class="os-management-action-row"><button class="os-notification-main-action" type="button" data-notification-action="edit">${isArabic ? 'تحرير' : 'Edit'}</button><button class="os-notification-main-action" type="button" data-notification-action="toggle">${notification.status === 'active' ? (isArabic ? 'تعطيل' : 'Disable') : (isArabic ? 'تفعيل' : 'Enable')}</button><button class="os-notification-main-action" type="button" data-notification-action="delete">${isArabic ? 'حذف' : 'Delete'}</button></div></div>` : ''}</li>`;
+          return `<li class="os-notification-row${selected ? ' is-selected' : ''}" data-notification-id="${escapeHtml(notification.id)}"><div class="os-notification-title-row"><span class="os-notification-title">${title}</span><span class="os-notification-status-dot" data-status="${notification.status}" aria-label="${escapeHtml(statusLabel(notification.status, isArabic))}"></span></div>${selected ? `<div class="os-notification-detail"><div class="os-management-action-row"><button class="os-notification-main-action" type="button" data-notification-action="edit">${isArabic ? 'تحرير' : 'Edit'}</button><button class="os-notification-main-action" type="button" data-notification-action="toggle">${notification.status === 'active' ? (isArabic ? 'تعطيل' : 'Disable') : (isArabic ? 'تفعيل' : 'Enable')}</button><button class="os-notification-main-action" type="button" data-notification-action="delete">${isArabic ? 'حذف' : 'Delete'}</button></div></div>` : ''}</li>`;
         }).join('');
         const isEditing = Boolean(notificationEditor?.form);
         const editingNotification = notificationEditor?.id ? notificationsData.find((item) => item.id === notificationEditor.id) : null;
@@ -382,8 +419,10 @@
           const selected = promoCodeExpandedId === promo.id;
           const available = promo.availableCount == null ? (isArabic ? 'غير محدود' : 'Unlimited') : String(promo.availableCount);
           const usage = String(promo.usageCount ?? 0);
-          const applies = promo.appliesTo === 'all consultations' && isArabic ? 'جميع الاستشارات' : promo.appliesTo;
-          return `<li class="os-promo-row${selected ? ' is-selected' : ''}" data-promo-code-id="${escapeHtml(promo.id)}"><div class="os-promo-title-row"><span class="os-promo-code">${escapeHtml(promo.code)}</span><span class="os-promo-status-dot" data-status="${escapeHtml(promo.status)}" aria-label="${escapeHtml(promo.status)}"></span></div>${selected ? `<div class="os-promo-detail"><div class="os-promo-detail-grid"><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.available}</span><span class="os-promo-detail-value">${escapeHtml(available)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.usage}</span><span class="os-promo-detail-value">${escapeHtml(usage)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.discount}</span><span class="os-promo-detail-value">${escapeHtml(promo.discount)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.applies}</span><span class="os-promo-detail-value">${escapeHtml(applies)}</span></span></div><div class="os-management-action-row"><button class="os-notification-main-action" type="button" data-promo-action="edit">Edit</button><button class="os-notification-main-action" type="button" data-promo-action="toggle">${promo.status === 'active' ? 'Disable' : 'Enable'}</button><button class="os-notification-main-action os-promo-delete" type="button" data-promo-action="delete">${labels.delete}</button></div></div>` : ''}</li>`;
+          const applies = isArabic
+            ? String(promo.appliesTo || '').replace(/^all consultations/i, 'جميع الاستشارات').replace(/(\d+)\s+min\b/gi, '$1 دقيقة')
+            : promo.appliesTo;
+          return `<li class="os-promo-row${selected ? ' is-selected' : ''}" data-promo-code-id="${escapeHtml(promo.id)}"><div class="os-promo-title-row"><span class="os-promo-code">${escapeHtml(promo.code)}</span><span class="os-promo-status-dot" data-status="${escapeHtml(promo.status)}" aria-label="${escapeHtml(statusLabel(promo.status, isArabic))}"></span></div>${selected ? `<div class="os-promo-detail"><div class="os-promo-detail-grid"><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.available}</span><span class="os-promo-detail-value">${escapeHtml(available)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.usage}</span><span class="os-promo-detail-value">${escapeHtml(usage)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.discount}</span><span class="os-promo-detail-value">${escapeHtml(promo.discount)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.applies}</span><span class="os-promo-detail-value">${escapeHtml(applies)}</span></span></div><div class="os-management-action-row"><button class="os-notification-main-action" type="button" data-promo-action="edit">${isArabic ? 'تحرير' : 'Edit'}</button><button class="os-notification-main-action" type="button" data-promo-action="toggle">${promo.status === 'active' ? (isArabic ? 'تعطيل' : 'Disable') : (isArabic ? 'تفعيل' : 'Enable')}</button><button class="os-notification-main-action os-promo-delete" type="button" data-promo-action="delete">${labels.delete}</button></div></div>` : ''}</li>`;
         }).join('');
         promoCodes.innerHTML = promoEditor ? renderPromoForm(promoCodesData.find((item) => item.id === promoEditor.id)) : `<ul class="os-promo-list">${rows}</ul>${!promoCodesData.length ? renderManagementEmptyState(labels.empty) : ''}<button class="os-notification-main-action os-notification-main-action--floating" type="button" data-management-action="promo-new">${plusIcon()}${isArabic ? 'إضافة رمز خصم' : 'Add Promo Code'}</button>`;
       };
@@ -416,17 +455,20 @@
         const ar = root.lang === 'ar';
         const current = item || { name: { en: '', ar: '' }, category: { en: '', ar: '' }, description: { en: '', ar: '' }, price: { amount: '', currency: 'USD', label: { en: '', ar: '' } }, status: 'active', slug: '', imageData: '' };
         const afterDiscount = current.price.afterDiscount || { amount: '', label: { en: '', ar: '' } };
+        const labels = ar
+          ? { slug: 'الرابط المختصر', status: 'الحالة', active: 'نشط', inactive: 'غير نشط', englishName: 'الاسم بالإنجليزية', arabicName: 'الاسم بالعربية', englishCategory: 'الفئة بالإنجليزية', arabicCategory: 'الفئة بالعربية', englishDescription: 'الوصف بالإنجليزية', arabicDescription: 'الوصف بالعربية', actualPrice: 'السعر الفعلي', afterPrice: 'السعر بعد الخصم', cancel: 'إلغاء', save: 'حفظ' }
+          : { slug: 'Slug', status: 'Status', active: 'Active', inactive: 'Inactive', englishName: 'English Name', arabicName: 'Arabic Name', englishCategory: 'English Category', arabicCategory: 'Arabic Category', englishDescription: 'English Description', arabicDescription: 'Arabic Description', actualPrice: 'Actual Price', afterPrice: 'Price After Discount', cancel: 'Cancel', save: 'Save' };
         return `<form class="os-product-form" data-product-form>
           <div class="os-product-image-wrap"><input class="os-product-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/avif" hidden>${productImage(current, ar, true)}</div>
-          <div class="os-product-form-grid"><label><input name="slug" required autocomplete="off" placeholder="${ar ? 'الرابط المختصر' : 'Slug'}" aria-label="${ar ? 'الرابط المختصر' : 'Slug'}" value="${escapeHtml(current.slug)}"></label><label><select name="status" aria-label="${ar ? 'الحالة' : 'Status'}"><option value="active" ${current.status === 'active' ? 'selected' : ''}>${ar ? 'نشط' : 'Active'}</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>${ar ? 'غير نشط' : 'Inactive'}</option></select></label></div>
-          <div class="os-product-form-grid"><label><input name="nameEn" data-field-language="en" lang="en" dir="ltr" required autocomplete="off" placeholder="English Name" aria-label="English Name" value="${escapeHtml(current.name.en)}"></label><label><input name="nameAr" data-field-language="ar" lang="ar" dir="rtl" required autocomplete="off" placeholder="الاسم بالعربية" aria-label="الاسم بالعربية" value="${escapeHtml(current.name.ar)}"></label></div>
-          <div class="os-product-form-grid"><label><input name="categoryEn" data-field-language="en" lang="en" dir="ltr" required autocomplete="off" placeholder="English Category" aria-label="English Category" value="${escapeHtml(current.category.en)}"></label><label><input name="categoryAr" data-field-language="ar" lang="ar" dir="rtl" required autocomplete="off" placeholder="الفئة بالعربية" aria-label="الفئة بالعربية" value="${escapeHtml(current.category.ar)}"></label></div>
-          <div class="os-product-form-grid"><label><textarea name="descriptionEn" data-field-language="en" lang="en" dir="ltr" required placeholder="English Description" aria-label="English Description">${escapeHtml(current.description.en)}</textarea></label><label><textarea name="descriptionAr" data-field-language="ar" lang="ar" dir="rtl" required placeholder="الوصف بالعربية" aria-label="الوصف بالعربية">${escapeHtml(current.description.ar)}</textarea></label></div>
-          <div class="os-product-form-grid"><label><input name="priceAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${ar ? 'السعر الفعلي' : 'Actual Price'}" aria-label="${ar ? 'السعر الفعلي' : 'Actual Price'}" value="${current.price.amount == null ? '' : escapeHtml(current.price.amount)}"></label><label><input class="os-product-price-discount" name="priceAfterDiscountAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${ar ? 'السعر بعد الخصم' : 'Price After Discount'}" aria-label="${ar ? 'السعر بعد الخصم' : 'Price After Discount'}" value="${afterDiscount.amount == null ? '' : escapeHtml(afterDiscount.amount)}"></label></div>
-          <div class="os-product-form-actions"><button class="os-notification-main-action" type="button" data-product-action="cancel">${ar ? 'إلغاء' : 'Cancel'}</button><button class="os-notification-main-action" type="submit">${ar ? 'حفظ' : 'Save'}</button></div>
+          <div class="os-product-form-grid"><label><input name="slug" required autocomplete="off" placeholder="${labels.slug}" aria-label="${labels.slug}" value="${escapeHtml(current.slug)}"></label><label><select name="status" aria-label="${labels.status}"><option value="active" ${current.status === 'active' ? 'selected' : ''}>${labels.active}</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>${labels.inactive}</option></select></label></div>
+          <div class="os-product-form-grid"><label><input name="nameEn" data-field-language="en" lang="en" dir="ltr" required autocomplete="off" placeholder="${labels.englishName}" aria-label="${labels.englishName}" value="${escapeHtml(current.name.en)}"></label><label><input name="nameAr" data-field-language="ar" lang="ar" dir="rtl" required autocomplete="off" placeholder="${labels.arabicName}" aria-label="${labels.arabicName}" value="${escapeHtml(current.name.ar)}"></label></div>
+          <div class="os-product-form-grid"><label><input name="categoryEn" data-field-language="en" lang="en" dir="ltr" required autocomplete="off" placeholder="${labels.englishCategory}" aria-label="${labels.englishCategory}" value="${escapeHtml(current.category.en)}"></label><label><input name="categoryAr" data-field-language="ar" lang="ar" dir="rtl" required autocomplete="off" placeholder="${labels.arabicCategory}" aria-label="${labels.arabicCategory}" value="${escapeHtml(current.category.ar)}"></label></div>
+          <div class="os-product-form-grid"><label><textarea name="descriptionEn" data-field-language="en" lang="en" dir="ltr" required placeholder="${labels.englishDescription}" aria-label="${labels.englishDescription}">${escapeHtml(current.description.en)}</textarea></label><label><textarea name="descriptionAr" data-field-language="ar" lang="ar" dir="rtl" required placeholder="${labels.arabicDescription}" aria-label="${labels.arabicDescription}">${escapeHtml(current.description.ar)}</textarea></label></div>
+          <div class="os-product-form-grid"><label><input name="priceAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${labels.actualPrice}" aria-label="${labels.actualPrice}" value="${current.price.amount == null ? '' : escapeHtml(current.price.amount)}"></label><label><input class="os-product-price-discount" name="priceAfterDiscountAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${labels.afterPrice}" aria-label="${labels.afterPrice}" value="${afterDiscount.amount == null ? '' : escapeHtml(afterDiscount.amount)}"></label></div>
+          <div class="os-product-form-actions"><button class="os-notification-main-action" type="button" data-product-action="cancel">${labels.cancel}</button><button class="os-notification-main-action" type="submit">${labels.save}</button></div>
         </form>`;
       };
-      const renderProductSlide = (item, ar) => `<article class="os-product-slide" data-product-id="${escapeHtml(item.id)}"><div class="os-product-image-wrap">${productImage(item, ar)}</div><div class="os-product-details"><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'name', ar) || item.slug)}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'category', ar))}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'description', ar))}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(item.price?.label?.[ar ? 'ar' : 'en'] || item.status)}</span></div><div class="os-product-detail"><span class="os-product-detail-value os-product-price-discount">${escapeHtml((item.price?.afterDiscount?.label?.[ar ? 'ar' : 'en'] || item.price?.afterDiscount?.amount) ?? '—')}</span></div></div><div class="os-product-actions"><button class="os-notification-main-action" type="button" data-product-action="edit">${ar ? 'تعديل' : 'Edit'}</button><button class="os-notification-main-action" type="button" data-product-action="toggle-status">${item.status === 'active' ? (ar ? 'تعطيل' : 'Disable') : (ar ? 'تفعيل' : 'Enable')}</button></div></article>`;
+      const renderProductSlide = (item, ar) => `<article class="os-product-slide" data-product-id="${escapeHtml(item.id)}"><div class="os-product-image-wrap">${productImage(item, ar)}</div><div class="os-product-details"><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'name', ar) || item.slug)}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'category', ar))}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'description', ar))}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(item.price?.label?.[ar ? 'ar' : 'en'] || statusLabel(item.status, ar))}</span></div><div class="os-product-detail"><span class="os-product-detail-value os-product-price-discount">${escapeHtml((item.price?.afterDiscount?.label?.[ar ? 'ar' : 'en'] || item.price?.afterDiscount?.amount) ?? '—')}</span></div></div><div class="os-product-actions"><button class="os-notification-main-action" type="button" data-product-action="edit">${ar ? 'تعديل' : 'Edit'}</button><button class="os-notification-main-action" type="button" data-product-action="toggle-status">${item.status === 'active' ? (ar ? 'تعطيل' : 'Disable') : (ar ? 'تفعيل' : 'Enable')}</button></div></article>`;
       const renderProducts = () => {
         const ar = root.lang === 'ar';
         const current = productEditor?.id ? productsData.find((item) => item.id === productEditor.id) : null;
@@ -460,6 +502,10 @@
           return date && time ? `${date} · ${time}` : date || time;
         };
         const formatMoney = (value, currency) => hasValue(value) && Number.isFinite(Number(value)) ? `${Number(value).toFixed(2)} ${currency || ''}`.trim() : '';
+        const formatBookingLanguage = (value) => {
+          if (!ar) return value;
+          return value === 'en' ? 'الإنجليزية' : value === 'ar' ? 'العربية' : value;
+        };
         const detail = (label, value) => hasValue(value) ? `<span class="os-consultation-detail-item"><span class="os-consultation-detail-label">${label}</span><span class="os-consultation-detail-value">${escapeValue(value)}</span></span>` : '';
         const rows = consultationsData.map((item) => {
           const expanded = consultationsExpandedId === item.id;
@@ -470,7 +516,7 @@
             detail(labels.reference, item.reference),
             detail(labels.date, formatDate(item.scheduledStart)),
             detail(labels.time, item.scheduledStart ? `${formatTime(item.scheduledStart)}${item.scheduledEnd ? ` – ${formatTime(item.scheduledEnd)}` : ''}` : ''),
-            detail(labels.duration, hasValue(item.durationMinutes) ? `${item.durationMinutes} min` : ''),
+            detail(labels.duration, durationLabel(item.durationMinutes, ar)),
             detail(labels.service, item.service),
             detail(labels.topic, item.topic),
             detail(labels.sector, item.sector),
@@ -484,7 +530,7 @@
             detail(labels.payment, item.paymentProvider),
             detail(labels.notes, item.notes),
             detail(labels.timezone, item.timezone),
-            detail(labels.bookingLanguage, item.bookingLanguage),
+            detail(labels.bookingLanguage, formatBookingLanguage(item.bookingLanguage)),
             detail(labels.calendar, item.calendarEventId),
             detail(labels.created, formatDateTime(item.createdAt)),
             detail(labels.updated, formatDateTime(item.updatedAt)),
@@ -659,7 +705,13 @@
       const saveNotification = async (form, action, id) => {
         const wasAdding = notificationEditor?.mode === 'new';
         const data = new FormData(form);
-        const publishAt = `${data.get('publishDate')}T${data.get('publishTime')}`;
+        const publishAt = localScheduleToIso(data.get('publishDate'), data.get('publishTime'));
+        const pastMessage = root.lang === 'ar' ? 'اختر تاريخًا ووقتًا مستقبليين.' : 'Choose a future date and time.';
+        scheduleError(form, '');
+        if (!publishAt || Date.parse(publishAt) <= Date.now()) {
+          scheduleError(form, pastMessage);
+          throw new Error('publish_at_past');
+        }
         const currentNotification = id ? notificationsData.find((item) => item.id === id) : null;
         const response = await osFetch('/api/os/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ action, id, version: currentNotification?.version, idempotencyKey: action === 'create' ? notificationEditor?.idempotencyKey : undefined, titleEn: data.get('titleEn'), titleAr: data.get('titleAr'), textEn: data.get('textEn'), textAr: data.get('textAr'), publishAt, frequency: data.get('frequency'), status: data.get('status') }) });
         if (!response.ok) throw new Error('notification_save_failed');
@@ -676,7 +728,8 @@
         const [size, unit] = units.find(([milliseconds]) => absolute >= milliseconds) || [1000, 'second'];
         const amount = Math.round(elapsed / size);
         if (typeof Intl.RelativeTimeFormat === 'function') return new Intl.RelativeTimeFormat(isArabic ? 'ar' : 'en', { numeric: 'auto' }).format(amount, unit);
-        return isArabic ? `${Math.abs(amount)} ${unit}` : `${Math.abs(amount)}${unit[0]} ago`;
+        const arabicUnits = { year: 'سنة', month: 'شهر', week: 'أسبوع', day: 'يوم', hour: 'ساعة', minute: 'دقيقة', second: 'ثانية' };
+        return isArabic ? `${Math.abs(amount)} ${arabicUnits[unit] || 'وحدة'}` : `${Math.abs(amount)}${unit[0]} ago`;
       };
       const setInsightsStatus = (data) => {
         latestInsightsData = data;
@@ -686,7 +739,7 @@
           const provider = services[name.dataset.osServiceEn] || { status: 'unknown' };
           const dot = name.parentElement.querySelector('.os-insights-status');
           dot.dataset.status = ['operational', 'attention', 'unavailable', 'unknown'].includes(provider.status) ? provider.status : 'unknown';
-          dot.setAttribute('aria-label', `${name.dataset.osServiceEn}: ${provider.status}`);
+          dot.setAttribute('aria-label', `${name.dataset.osServiceEn}: ${statusLabel(provider.status, isArabic)}`);
         });
         const statuses = Object.values(services).map((provider) => provider.status);
         const databaseOperational = data?.database?.status === 'operational';
@@ -711,7 +764,8 @@
         const uptimeValue = values.uptimeState === 'monitoring'
           ? (isArabic ? `قيد المراقبة · ${values.uptimeSamples || 0}/${values.uptimeRequiredSamples || 12} عينات` : `Monitoring · ${values.uptimeSamples || 0}/${values.uptimeRequiredSamples || 12} samples`)
           : values.uptime || (Number.isFinite(Number(values.uptimeSamples)) ? (isArabic ? `غير متاح · ${values.uptimeSamples}/288 عينات` : `Unavailable · ${values.uptimeSamples}/288 samples`) : null);
-        const valueMap = { 'last-update': formatRelativeTime(values.lastUpdate, isArabic), uptime: uptimeValue, response: values.response, version: values.version ? String(values.version).slice(0, 7) : null };
+        const responseValue = values.response == null ? null : String(values.response).replace(/\s*ms\b/i, isArabic ? ' ملي ثانية' : ' ms');
+        const valueMap = { 'last-update': formatRelativeTime(values.lastUpdate, isArabic), uptime: uptimeValue, response: responseValue, version: values.version ? String(values.version).slice(0, 7) : null };
         insights.querySelectorAll('[data-os-metric-value]').forEach((item) => {
           const value = valueMap[item.dataset.osMetricValue];
           item.textContent = value || (isArabic ? 'غير متاح' : 'Unavailable');
@@ -786,7 +840,7 @@
         const rounded = Math.round(value);
         summaryResponseNumber.textContent = String(rounded);
         summaryResponseValue.dataset.available = 'true';
-        summaryResponseValue.setAttribute('aria-label', `${rounded} ${root.lang === 'ar' ? 'ملي ثانية' : 'ms'}`);
+        summaryResponseValue.setAttribute('aria-label', `~${rounded}`);
       };
       const stopSummaryResponsePolling = () => {
         summaryResponseRun += 1;
@@ -857,7 +911,7 @@
         root.lang = isArabic ? 'ar' : 'en';
         root.dir = isArabic ? 'rtl' : 'ltr';
         document.body.dir = root.dir;
-        summaryResponseUnit.textContent = isArabic ? ' ملي ثانية' : ' ms';
+        summaryResponseUnit.textContent = '~';
         authUser.placeholder = isArabic ? 'المستخدم' : 'User';
         authUser.setAttribute('aria-label', isArabic ? 'المستخدم' : 'User');
         authInput.placeholder = authInput.dataset.authError
@@ -900,6 +954,10 @@
         });
         panelViewNodes('[data-os-system-description-en], [data-os-website-description-en]').forEach((item) => {
           item.textContent = isArabic ? item.dataset.osWebsiteDescriptionAr || item.dataset.osSystemDescriptionAr : item.dataset.osWebsiteDescriptionEn || item.dataset.osSystemDescriptionEn;
+        });
+        panelViewNodes('[data-os-service-en]').forEach((item) => {
+          const dot = item.parentElement.querySelector('.os-insights-status');
+          if (dot) dot.setAttribute('aria-label', `${item.dataset.osServiceEn}: ${statusLabel(dot.dataset.status, isArabic)}`);
         });
         panelViewNodes('[data-os-metric-value]').forEach((item) => { item.textContent = isArabic ? 'غير متاح' : 'Unknown'; });
         if (latestSummaryData) setSummaryMetrics(latestSummaryData);
@@ -1048,7 +1106,7 @@
           const notification = notificationsData.find((item) => item.id === row.dataset.notificationId);
           if (!notification) return;
           const schedule = localDateTime(notification.publishAt);
-          const response = await osFetch('/api/os/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update', id: notification.id, version: notification.version, titleEn: notification.title.en, titleAr: notification.title.ar, textEn: notification.text.en, textAr: notification.text.ar, publishAt: `${schedule.date}T${schedule.time}`, frequency: notification.frequency, status: notification.status === 'active' ? 'inactive' : 'active' }) });
+          const response = await osFetch('/api/os/notifications', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update', id: notification.id, version: notification.version, titleEn: notification.title.en, titleAr: notification.title.ar, textEn: notification.text.en, textAr: notification.text.ar, publishAt: new Date(notification.publishAt).toISOString(), frequency: notification.frequency, status: notification.status === 'active' ? 'inactive' : 'active' }) });
           if (!response.ok) return;
           notificationEditor = { mode: 'edit', id: notification.id, form: false };
           await loadNotifications();
@@ -1090,6 +1148,11 @@
         event.preventDefault();
         try { await saveNotification(form, notificationEditor?.mode === 'edit' ? 'update' : 'create', notificationEditor?.id); } catch (_) { /* Keep the editor open on validation/API failure. */ }
       });
+      const clearScheduleValidity = (event) => {
+        if (event.target.matches?.('input[name="publishDate"], input[name="publishTime"]')) event.target.setCustomValidity('');
+      };
+      notifications.addEventListener('input', clearScheduleValidity);
+      notificationAdd.addEventListener('input', clearScheduleValidity);
       notificationAdd.addEventListener('click', (event) => {
         if (event.target.closest('[data-notification-action="cancel"]')) {
           notificationEditor = null;

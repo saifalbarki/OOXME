@@ -23,13 +23,14 @@ const requiredText = (value, field) => {
   return text;
 };
 
-const publishAt = (value) => {
+const publishAt = (value, { allowPast = false } = {}) => {
   const date = new Date(String(value || ''));
   if (!value || Number.isNaN(date.getTime())) throw Object.assign(new Error('publish_at_invalid'), { status: 400 });
+  if (!allowPast && date.getTime() <= Date.now()) throw Object.assign(new Error('publish_at_past'), { status: 400 });
   return date.toISOString();
 };
 
-const input = (body) => {
+const input = (body, options) => {
   const frequency = String(body.frequency || 'once');
   if (!frequencies.has(frequency)) throw Object.assign(new Error('frequency_invalid'), { status: 400 });
   return {
@@ -37,7 +38,7 @@ const input = (body) => {
     titleAr: String(body.titleAr || '').trim(),
     textEn: requiredText(body.textEn, 'text_en'),
     textAr: String(body.textAr || '').trim(),
-    publishAt: publishAt(body.publishAt),
+    publishAt: publishAt(body.publishAt, options),
     frequency,
     status: body.status === 'inactive' ? 'inactive' : 'published'
   };
@@ -69,7 +70,15 @@ module.exports = async (request, response) => {
       return json(response, 200, { success: true });
     }
 
-    const values = input(body);
+    let values;
+    if (action === 'update') {
+      const current = await query('SELECT publish_date FROM notifications WHERE id = $1 AND status <> \'archived\'', [requiredText(body.id, 'id')]);
+      const requestedTime = new Date(String(body.publishAt || '')).getTime();
+      const currentTime = current.rows[0] ? new Date(current.rows[0].publish_date).getTime() : NaN;
+      values = input(body, { allowPast: Number.isFinite(requestedTime) && requestedTime === currentTime });
+    } else {
+      values = input(body);
+    }
     if (action === 'create') {
       const idempotency = await beginIdempotency(request, 'notification:create', body);
       if (idempotency?.replay) return json(response, idempotency.status, idempotency.body);
