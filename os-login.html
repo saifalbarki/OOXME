@@ -10,44 +10,55 @@
       :root { --os-x: 18px; --os-outer-gap: var(--os-x); --os-viewport-height: 100dvh; --os-closed-height: min(calc(var(--os-x) * 5), var(--os-viewport-height)); --os-font-en: "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --os-font-ar: "SF Arabic Rounded", "SF Arabic", "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --os-font-family: var(--os-font-en); --os-page-background: #fff; --os-panel-background: #F1F3F7; --os-panel-color: #000; }
       html[dir="rtl"] { --os-font-family: var(--os-font-ar); }
       html[data-theme="dark"] { --os-page-background: #000; --os-panel-background: #161616; --os-panel-color: #f5f5f5; }
-      @supports not (height: 100dvh) { :root { --os-viewport-height: 100vh; } }
       * { box-sizing: border-box; }
       html, body { width: 100%; height: 100%; min-height: var(--os-viewport-height); margin: 0; overflow: hidden; overscroll-behavior: none; background: var(--os-page-background); color: var(--os-panel-color); font-family: var(--os-font-family); transition: background-color .24s ease, color .24s ease; }
       body { touch-action: manipulation; }
-      .os-auth-panel { position: fixed; right: var(--os-outer-gap); bottom: var(--os-outer-gap); left: var(--os-outer-gap); display: flex; height: var(--os-closed-height); min-width: 0; padding: calc(var(--os-x) * 1.25) calc(var(--os-x) * 1.5); align-items: center; justify-content: center; border-radius: clamp(42px, 6vw, 72px); background: var(--os-panel-background); color: var(--os-panel-color); font: 500 16px/1 var(--os-font-family); }
-      .os-auth-panel-copy { white-space: nowrap; }
-      .os-auth-form { position: fixed; right: var(--os-outer-gap); bottom: calc(var(--os-outer-gap) + var(--os-closed-height) + var(--os-x)); left: var(--os-outer-gap); display: grid; width: min(280px, calc(100% - (var(--os-outer-gap) * 2))); margin: 0 auto; gap: 8px; }
-      .os-auth-password { position: relative; }
+      .os-auth-composition { position: fixed; right: var(--os-outer-gap); bottom: calc(var(--os-outer-gap) + (var(--os-x) * 2.2)); left: var(--os-outer-gap); display: grid; width: min(280px, calc(100% - (var(--os-outer-gap) * 2))); margin: 0 auto; gap: 18px; pointer-events: none; transform: translateY(var(--os-keyboard-shift, 0px)); }
+      .os-auth-form { position: static; display: grid; width: 100%; margin: 0; gap: 8px; pointer-events: auto; }
+      .os-auth-field { position: relative; min-width: 0; }
       .os-auth-form input, .os-auth-form button { box-sizing: border-box; width: 100%; font-family: var(--os-font-family); -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
-      .os-auth-form input { min-height: 38px; padding: 0 42px 0 13px; border: 1px solid color-mix(in srgb, var(--os-panel-color) 14%, transparent); border-radius: 14px; outline: 0; background: transparent; color: var(--os-panel-color); font-size: 16px; font-weight: 500; line-height: 1; }
+      .os-auth-form input { height: 38px; min-height: 38px; padding: 0 14px; border: 1px solid color-mix(in srgb, var(--os-panel-color) 14%, transparent); border-radius: 999px; outline: 0; background: transparent; color: var(--os-panel-color); font-size: 10px; font-weight: 500; line-height: 1; }
+      .os-auth-form input:focus, .os-auth-form input:focus-visible { border-color: color-mix(in srgb, var(--os-panel-color) 14%, transparent); outline: 0; box-shadow: none; }
+      .os-auth-password input { padding-right: 36px; }
       .os-auth-form input::placeholder { color: color-mix(in srgb, var(--os-panel-color) 52%, transparent); opacity: 1; }
-      .os-auth-eye { position: absolute; top: 50%; right: 7px; display: grid; width: 28px !important; height: 28px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: transparent; color: color-mix(in srgb, var(--os-panel-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
-      .os-auth-eye:hover, .os-auth-eye:focus-visible { background: color-mix(in srgb, var(--os-panel-color) 8%, transparent); color: var(--os-panel-color); }
-      .os-auth-eye svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-      .os-auth-form > button[type="submit"] { min-height: 38px; padding: 10px 14px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--os-panel-color) 8%, transparent); color: inherit; cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
+      .os-auth-form input:-webkit-autofill, .os-auth-form input:-webkit-autofill:hover, .os-auth-form input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 1000px var(--os-page-background) inset; -webkit-text-fill-color: var(--os-panel-color); caret-color: var(--os-panel-color); }
+      .os-auth-eye { position: absolute; top: 50%; right: 8px; display: grid; width: 20px !important; height: 20px; padding: 0; place-items: center; border: 0; border-radius: 0; background: transparent; color: color-mix(in srgb, var(--os-panel-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
+      .os-auth-eye:hover, .os-auth-eye:focus, .os-auth-eye:focus-visible, .os-auth-eye:active { background: transparent; color: var(--os-panel-color); outline: 0; box-shadow: none; }
+      .os-auth-eye svg { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+      .os-auth-eye[data-visible="true"] svg { fill: currentColor; stroke: currentColor; }
+      .os-auth-form > button[type="submit"] { justify-self: center; width: 50%; height: 38px; min-height: 38px; padding: 10px 14px; border: 0; border-radius: 999px; background: #0A84FF; color: #fff; cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
       .os-auth-form > button[type="submit"]:disabled { cursor: wait; opacity: .58; }
-      .os-auth-form button:focus:not(:focus-visible) { outline: 0; box-shadow: none; }
+      .os-auth-form button:focus, .os-auth-form button:focus-visible { outline: 0; box-shadow: none; }
       .os-auth-error { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-      html[dir="rtl"] .os-auth-form input { padding-right: 13px; padding-left: 42px; }
-      html[dir="rtl"] .os-auth-eye { right: auto; left: 7px; }
-      @media (max-width: 480px) { .os-auth-form { width: calc(100% - (var(--os-outer-gap) * 2)); } }
-      @media (orientation: landscape) and (max-height: 520px) { .os-auth-form { grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(100%, 420px); } .os-auth-form > button[type="submit"] { width: auto; min-width: 84px; } }
+      .os-auth-separator { display: grid; height: 4px; place-items: center; pointer-events: none; }
+      .os-auth-panel-line { display: block; width: 42px; height: 4px; border-radius: 999px; background: var(--os-panel-background); }
+      html[dir="rtl"] .os-auth-password input { padding-right: 14px; padding-left: 36px; }
+      html[dir="rtl"] .os-auth-eye { right: auto; left: 8px; }
+      @supports not (height: 100dvh) { :root { --os-viewport-height: 100vh; } }
+      @media (max-width: 480px) { .os-auth-composition { width: calc(100% - (var(--os-outer-gap) * 2)); } }
+      @media (orientation: landscape) and (max-height: 520px) { .os-auth-composition { width: min(100%, 420px); } .os-auth-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; } .os-auth-form > button[type="submit"] { grid-column: 1 / -1; width: 50%; min-width: 84px; } }
     </style>
   </head>
   <body>
+    <div class="os-auth-composition">
+    <div class="os-auth-separator" aria-hidden="true"><span class="os-auth-panel-line"></span></div>
     <form class="os-auth-form" data-os-auth-form>
-      <div class="os-auth-password">
+      <div class="os-auth-field">
+        <input type="text" name="user" autocomplete="username" aria-label="User" placeholder="User">
+      </div>
+      <div class="os-auth-field os-auth-password">
         <input type="password" name="password" autocomplete="current-password" required aria-label="Admin password" placeholder="Password">
-        <button type="button" class="os-auth-eye" data-os-password-toggle aria-label="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg></button>
+        <button type="button" class="os-auth-eye" data-os-password-toggle aria-label="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg></button>
       </div>
       <div class="os-auth-error" data-os-auth-error role="alert"></div>
-      <button type="submit">Unlock</button>
+      <button type="submit">Log In</button>
     </form>
-    <section class="os-auth-panel" aria-hidden="true"><span class="os-auth-panel-copy">Today Summary</span></section>
+    </div>
     <script>
       (() => {
         const root = document.documentElement;
         const form = document.querySelector('[data-os-auth-form]');
+        const user = form.querySelector('input[name="user"]');
         const input = form.querySelector('input[name="password"]');
         const submit = form.querySelector('button[type="submit"]');
         const eye = form.querySelector('[data-os-password-toggle]');
@@ -60,10 +71,41 @@
           const storedTheme = localStorage.getItem('ooxme-os-theme');
           const theme = storedTheme === 'dark' || storedTheme === 'light' ? storedTheme : (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           root.dataset.theme = theme; themeColor?.setAttribute('content', theme === 'dark' ? '#000000' : '#ffffff'); statusBarStyle?.setAttribute('content', theme === 'dark' ? 'black-translucent' : 'default');
-          input.placeholder = language === 'ar' ? 'كلمة المرور' : 'Password'; input.setAttribute('aria-label', language === 'ar' ? 'كلمة المرور' : 'Admin password'); submit.textContent = language === 'ar' ? 'فتح' : 'Unlock';
+          user.placeholder = language === 'ar' ? 'المستخدم' : 'User'; user.setAttribute('aria-label', language === 'ar' ? 'المستخدم' : 'User'); input.placeholder = language === 'ar' ? 'كلمة المرور' : 'Password'; input.setAttribute('aria-label', language === 'ar' ? 'كلمة المرور' : 'Admin password'); submit.textContent = language === 'ar' ? 'تسجيل الدخول' : 'Log In';
         } catch (_) {}
-        eye.addEventListener('click', () => { const visible = input.type === 'text'; input.type = visible ? 'password' : 'text'; eye.setAttribute('aria-label', visible ? (root.lang === 'ar' ? 'إظهار كلمة المرور' : 'Show password') : (root.lang === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password')); eye.innerHTML = visible ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 18 18M10.6 6.3A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a17.6 17.6 0 0 1-4.1 4.5M6.1 6.8C3.8 8.3 2.5 12 2.5 12s3.5 6 9.5 6c1.2 0 2.3-.2 3.3-.7"></path></svg>'; input.focus(); });
-        form.addEventListener('submit', async (event) => { event.preventDefault(); error.textContent = ''; submit.disabled = true; try { const response = await fetch('/api/os/auth', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'login', password: input.value }) }); const body = await response.json(); if (!response.ok) throw new Error(body.error || 'authentication_failed'); input.value = ''; location.reload(); } catch (exception) { error.textContent = exception.message === 'login_temporarily_locked' ? 'Try again later' : 'Invalid password'; } finally { submit.disabled = false; } });
+        const renderPasswordIcon = () => { const visible = input.type === 'text'; eye.dataset.visible = String(visible); eye.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg>'; };
+        renderPasswordIcon();
+        eye.addEventListener('click', () => { input.type = input.type === 'text' ? 'password' : 'text'; renderPasswordIcon(); eye.setAttribute('aria-label', input.type === 'text' ? (root.lang === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password') : (root.lang === 'ar' ? 'إظهار كلمة المرور' : 'Show password')); input.focus(); });
+        let keyboardShift = 0;
+        let lastVisualViewportHeight = window.visualViewport?.height || window.innerHeight;
+        const fieldSelector = 'input, textarea, select, [contenteditable="true"]';
+        const viewportMetaContent = document.querySelector('meta[name="viewport"]')?.getAttribute('content') || '';
+        const focusZoomMeta = document.querySelector('meta[name="viewport"]');
+        const isTouchViewport = () => matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+        const setFocusZoomLock = (locked) => {
+          if (!focusZoomMeta || !isTouchViewport()) return;
+          focusZoomMeta.setAttribute('content', locked ? `${viewportMetaContent}, maximum-scale=1` : viewportMetaContent);
+        };
+        const clearKeyboardShift = () => { keyboardShift = 0; root.style.removeProperty('--os-keyboard-shift'); };
+        const keepFieldVisible = (field = document.activeElement) => {
+          if (!field?.matches?.(fieldSelector)) return;
+          const viewport = window.visualViewport;
+          if (!viewport || document.activeElement !== field) return;
+          const top = viewport.offsetTop + 18;
+          const bottom = viewport.offsetTop + viewport.height - 18;
+          const rect = field.getBoundingClientRect();
+          const requiredShift = Math.max(0, rect.bottom - bottom);
+          const maximumShift = Math.max(0, rect.top - top);
+          const nextShift = Math.min(keyboardShift + requiredShift, maximumShift);
+          if (nextShift > keyboardShift) { keyboardShift = nextShift; root.style.setProperty('--os-keyboard-shift', `${-keyboardShift}px`); }
+        };
+        const handleFieldFocusIn = (event) => { if (!event.target.matches?.(fieldSelector)) return; setFocusZoomLock(true); window.setTimeout(() => keepFieldVisible(event.target), 80); };
+        const handleFieldFocusOut = () => { window.setTimeout(() => { if (!document.activeElement?.matches?.(fieldSelector)) { clearKeyboardShift(); setFocusZoomLock(false); } }, 120); };
+        const handleVisualViewportResize = () => { const viewport = window.visualViewport; if (!viewport) return; const heightGrew = viewport.height > lastVisualViewportHeight + 2; lastVisualViewportHeight = viewport.height; if (heightGrew) { clearKeyboardShift(); setFocusZoomLock(false); } window.requestAnimationFrame(() => keepFieldVisible()); };
+        document.addEventListener('focusin', handleFieldFocusIn);
+        document.addEventListener('focusout', handleFieldFocusOut);
+        if (window.visualViewport) { window.visualViewport.addEventListener('resize', handleVisualViewportResize); window.visualViewport.addEventListener('scroll', () => keepFieldVisible()); }
+        form.addEventListener('submit', async (event) => { event.preventDefault(); error.textContent = ''; submit.disabled = true; try { const response = await fetch('/api/os/auth', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ action: 'login', user: user.value, password: input.value }) }); const body = await response.json(); if (!response.ok) throw new Error(body.error || 'authentication_failed'); input.value = ''; location.reload(); } catch (exception) { error.textContent = exception.message === 'login_temporarily_locked' ? 'Try again later' : 'Invalid password'; } finally { submit.disabled = false; } });
       })();
     </script>
   </body>

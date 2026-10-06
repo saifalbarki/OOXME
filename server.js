@@ -2,7 +2,8 @@ const http = require('http');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { requireAdmin } = require('./api/_lib/os-auth');
+const zlib = require('zlib');
+const { authenticateAndIssueCsrf } = require('./api/_lib/os-auth');
 
 const root = __dirname;
 
@@ -85,12 +86,49 @@ const send = (response, status, type, body) => {
   response.end(body);
 };
 
-const sendOsLoginPage = (response, status = 401) => {
+const sendOsHtml = (response, request, body, status = 200) => {
+  const source = Buffer.isBuffer(body) ? body : Buffer.from(String(body));
+  if (/\bgzip\b/i.test(String(request.headers?.['accept-encoding'] || ''))) {
+    const compressed = zlib.gzipSync(source);
+    response.writeHead(status, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'Content-Encoding': 'gzip',
+      'Vary': 'Accept-Encoding',
+      'Content-Length': compressed.length
+    });
+    response.end(compressed);
+    return;
+  }
+  response.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+  response.end(source);
+};
+
+// The login shell is a public document. Keep OS data and API routes protected,
+// but return the shell as a successful document so browsers render its form
+// instead of treating the unauthenticated navigation as a failed page load.
+const sendOsLoginPage = (response, status = 200, request) => {
   fs.readFile(path.join(root, 'os-login.html'), (error, content) => {
     if (error) return send(response, 503, 'text/plain; charset=utf-8', 'OS login unavailable');
-    response.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-    response.end(content);
+    sendOsHtml(response, request, content, status);
   });
+};
+
+const escapeHtmlAttribute = (value) => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/"/g, '&quot;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;');
+
+const sendOsAuthenticatedPage = async (response, request, session) => {
+  try {
+    const content = await fs.promises.readFile(path.join(root, 'os.html'), 'utf8');
+    const authenticatedDocument = content
+      .replace('data-os-auth-state="pending"', `data-os-auth-state="authenticated" data-os-auth-ready="true" data-os-csrf-token="${escapeHtmlAttribute(session.csrfToken)}"`);
+    sendOsHtml(response, request, authenticatedDocument);
+  } catch (error) {
+    send(response, 503, 'text/plain; charset=utf-8', 'OS authentication unavailable');
+  }
 };
 
 
@@ -181,9 +219,10 @@ const server = http.createServer(async (request, response) => {
 
   if (requestPath === '/os') {
     try {
-      await requireAdmin(request);
+      const session = await authenticateAndIssueCsrf(request);
+       if (!session) return sendOsLoginPage(response, 200, request);
+       return void sendOsAuthenticatedPage(response, request, session);
     } catch (error) {
-      if (Number(error.status) === 401) return sendOsLoginPage(response, 401);
       return send(response, Number(error.status) || 503, 'text/plain; charset=utf-8', 'OS authentication unavailable');
     }
   }
@@ -219,9 +258,17 @@ const activeLanIpv4 = () => Object.values(os.networkInterfaces())
   .flat()
   .find((address) => address && address.family === 'IPv4' && !address.internal)?.address;
 
-server.listen(port, '0.0.0.0', () => {
-  if (process.env.OOXME_STARTUP_FLOW === '1') return;
-  const lanAddress = activeLanIpv4();
-  console.log(`OOXME static preview: http://localhost:${port}`);
-  if (lanAddress) console.log(`OOXME LAN preview: http://${lanAddress}:${port}`);
-});
+const startServer = () => {
+  server.listen(port, '0.0.0.0', () => {
+    if (process.env.DATABASE_URL) {
+      void require('./api/_lib/db').getPool().query('SELECT 1')
+        .catch((error) => console.warn(`OOXME PostgreSQL warmup skipped: ${error.code || 'unavailable'}`));
+    }
+    if (process.env.OOXME_STARTUP_FLOW === '1') return;
+    const lanAddress = activeLanIpv4();
+    console.log(`OOXME static preview: http://localhost:${port}`);
+    if (lanAddress) console.log(`OOXME LAN preview: http://${lanAddress}:${port}`);
+  });
+};
+
+startServer();

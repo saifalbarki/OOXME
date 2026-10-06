@@ -8,6 +8,9 @@ const { query, closeDatabase } = require('../api/_lib/db');
 const root = path.resolve(__dirname, '..');
 const port = Number(process.env.PORT || 3000);
 
+// To test the authenticated OS UI locally, add OOXME_DEV_AUTH_BYPASS=true to
+// the ignored .env.os.local. Remove/disable that one flag to restore password validation.
+
 const loadLocalEnvironment = () => {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Development startup cannot run with NODE_ENV=production');

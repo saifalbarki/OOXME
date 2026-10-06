@@ -11,8 +11,10 @@ const serialize = (row) => ({
   price: {
     amount: row.price_amount === null ? null : Number(row.price_amount),
     currency: String(row.price_currency || 'USD').trim(),
-    label: { en: row.price_label_en || '', ar: row.price_label_ar || '' }
-  }
+    label: { en: row.price_label_en || '', ar: row.price_label_ar || '' },
+    afterDiscount: row.price_after_discount_amount === null ? null : { amount: Number(row.price_after_discount_amount), label: { en: row.price_after_discount_label_en || '', ar: row.price_after_discount_label_ar || '' } }
+  },
+  imageData: row.image_data || ''
 });
 
 module.exports = async (request, response) => {
@@ -21,7 +23,8 @@ module.exports = async (request, response) => {
   try {
     const result = await query(`SELECT slug, is_featured, display_order, name_en, name_ar,
                                       category_en, category_ar, description_en, description_ar,
-                                      price_amount, price_currency, price_label_en, price_label_ar
+                                      price_amount, price_currency, price_label_en, price_label_ar,
+                                      price_after_discount_amount, price_after_discount_label_en, price_after_discount_label_ar, image_data
                                  FROM os_products
                                 WHERE status = 'active'
                                 ORDER BY is_featured DESC, display_order ASC, created_at ASC`);

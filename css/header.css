@@ -45,8 +45,10 @@ html[dir] body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
 }
 
 body.s-page:not(.s-page--rpn) .s-page__composer-menu {
-  will-change: transform, opacity;
   transition: opacity .26s ease-in-out, transform .26s ease-in-out, visibility 0s linear .26s;
+}
+body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-open {
+  will-change: transform, opacity;
 }
 
 body.s-page:not(.s-page--rpn) .s-page__composer-menu-item {

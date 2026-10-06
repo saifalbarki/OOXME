@@ -1,11 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html data-os-auth-state="pending" lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" data-os-theme-color />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" data-os-status-bar-style />
-    <title></title>
+    <title>OOXME OS</title>
+    <script>
+      (() => {
+        try {
+          const language = localStorage.getItem('ooxme-os-language') === 'ar' ? 'ar' : 'en';
+          const storedTheme = localStorage.getItem('ooxme-os-theme');
+          const theme = storedTheme === 'dark' || storedTheme === 'light'
+            ? storedTheme
+            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.lang = language;
+          document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+          document.documentElement.dataset.theme = theme;
+        } catch (_) {}
+      })();
+    </script>
     <style>
       :root {
         --os-x: 18px;
@@ -18,6 +32,14 @@
         --os-open-top: calc(var(--os-outer-gap) + var(--os-top-control-size) + var(--os-handle-clearance) + var(--os-handle-visual-offset));
         --os-open-height: max(0px, calc(var(--os-viewport-height) - var(--os-outer-gap) - var(--os-open-top)));
         --os-closed-height: min(calc(var(--x-spacing) * 5), var(--os-open-height));
+        --os-panel-header-center: calc(var(--os-closed-height) / 2);
+        --os-selection-row-height: 42px;
+        --os-action-height: 38px;
+        --os-action-radius: 999px;
+        --os-action-background: #0A84FF;
+        --os-action-color: #fff;
+        --os-field-height: 38px;
+        --os-field-radius: 18px;
         --os-font-en: "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         --os-font-ar: "SF Arabic Rounded", "SF Arabic", "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         --os-font-family: var(--os-font-en);
@@ -29,6 +51,11 @@
         --os-page-background: #fff;
         --os-panel-background: #F1F3F7;
         --os-panel-color: #000;
+        --os-status-positive: #0A84FF;
+        --os-status-positive-background: #e5f2ff;
+        --os-status-muted: #666666;
+        --os-status-muted-background: var(--os-status-muted);
+        --os-status-muted-text: #f5f5f5;
         --os-control-background: var(--os-panel-background);
         --os-control-color: var(--os-panel-color);
       }
@@ -37,50 +64,166 @@
         --os-page-background: #000;
         --os-panel-background: #161616;
         --os-panel-color: #f5f5f5;
+        --os-status-positive: #0A84FF;
+        --os-status-positive-background: #17304a;
+        --os-status-muted: #666666;
+        --os-status-muted-background: var(--os-status-muted);
+        --os-status-muted-text: #f5f5f5;
         --os-control-background: var(--os-panel-background);
         --os-control-color: var(--os-panel-color);
       }
       @supports not (height: 100dvh) { :root { --os-viewport-height: 100vh; } }
       html, body { width: 100%; height: 100%; min-height: var(--os-viewport-height); margin: 0; overflow: hidden; overscroll-behavior: none; background-color: var(--os-page-background); touch-action: manipulation; transition: background-color .24s ease, color .24s ease; }
       body { height: var(--os-viewport-height); color: var(--os-control-color); font-family: var(--os-font-family); font-weight: var(--os-weight-ui); }
-      body:not(.os-authenticated) > :not(.os-auth-gate) { display: none !important; }
+      html[data-os-auth-state="pending"] body:not(.os-authenticated) > :not(.os-auth-gate) { display: none !important; }
       .os-auth-gate { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
       .os-auth-gate[hidden] { display: none; }
-      .os-auth-panel { position: fixed; right: var(--os-outer-gap); bottom: var(--os-outer-gap); left: var(--os-outer-gap); display: flex; box-sizing: border-box; width: auto; height: var(--os-closed-height); min-width: 0; min-height: 0; padding: calc(var(--x-spacing) * 1.25) calc(var(--x-spacing) * 1.5); align-items: center; justify-content: center; border-radius: clamp(42px, 6vw, 72px); background: var(--os-panel-background); color: var(--os-panel-color); font: var(--os-weight-ui) 16px/1 var(--os-font-family); }
-      .os-auth-panel-copy { white-space: nowrap; }
-      .os-auth-form { position: fixed; right: var(--os-outer-gap); bottom: calc(var(--os-outer-gap) + var(--os-closed-height) + var(--x-spacing)); left: var(--os-outer-gap); display: grid; width: min(280px, calc(100% - (var(--os-outer-gap) * 2))); margin: 0 auto; gap: 8px; pointer-events: auto; }
+      html:not([data-os-auth-ready]) .os-auth-gate[hidden] { display: block; }
+      .os-auth-composition { position: fixed; right: var(--os-outer-gap); bottom: calc(var(--os-outer-gap) + (var(--x-spacing) * 2.2)); left: var(--os-outer-gap); display: grid; width: min(280px, calc(100% - (var(--os-outer-gap) * 2))); margin: 0 auto; gap: 18px; pointer-events: none; transform: translateY(var(--os-keyboard-shift, 0px)); }
+      .os-auth-form { position: static; display: grid; width: 100%; margin: 0; gap: 8px; pointer-events: auto; }
       .os-auth-title { display: none; }
       .os-auth-form input, .os-auth-form button { box-sizing: border-box; width: 100%; font-family: var(--os-font-family); -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
-      .os-auth-password { position: relative; }
-      .os-auth-form input { min-height: 38px; padding: 0 42px 0 13px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: 14px; outline: 0; background: transparent; color: var(--os-control-color); font-size: 16px; font-weight: 500; line-height: 1; }
+      .os-auth-field { position: relative; min-width: 0; }
+      .os-auth-form input { height: var(--os-field-height); min-height: var(--os-field-height); padding: 0 14px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: var(--os-action-radius); outline: 0; background: transparent; color: var(--os-control-color); font-size: 10px; font-weight: 500; line-height: 1; }
+      .os-auth-form input:focus, .os-auth-form input:focus-visible { border-color: color-mix(in srgb, var(--os-control-color) 14%, transparent); outline: 0; box-shadow: none; }
+      .os-auth-password input { padding-right: 36px; }
+      .os-admin-shell { position: fixed; inset: var(--os-open-top) var(--os-outer-gap) var(--os-outer-gap); color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
+      .os-admin-shell[hidden] { display: none; }
+      .os-admin-shell.is-menu-obscured { visibility: hidden; opacity: 0; pointer-events: none; }
+      .os-admin-form { position: absolute; right: var(--x-spacing); bottom: var(--x-spacing); left: var(--x-spacing); display: grid; align-content: end; gap: 8px; min-width: 0; }
+      .os-admin-form input { box-sizing: border-box; width: 100%; height: var(--os-field-height); min-height: var(--os-field-height); padding: 0 14px; border: 1px solid color-mix(in srgb, var(--os-control-color) 14%, transparent); border-radius: var(--os-action-radius); outline: 0; background: transparent; color: var(--os-control-color); font-family: var(--os-font-family); font-size: 10px; font-weight: 500; line-height: 1; -webkit-appearance: none; appearance: none; }
+      .os-admin-form input:focus, .os-admin-form input:focus-visible { border-color: color-mix(in srgb, var(--os-control-color) 14%, transparent); outline: 0; box-shadow: none; }
+      .os-admin-form input::placeholder { color: color-mix(in srgb, var(--os-control-color) 52%, transparent); opacity: 1; }
+      .os-admin-password { position: relative; min-width: 0; }
+      .os-admin-password input { padding-right: 36px; }
+      .os-admin-form .os-auth-eye { position: absolute; top: 50%; right: 8px; display: grid; width: 20px !important; height: 20px; min-height: 20px; padding: 0; place-items: center; border: 0; border-radius: 0; background: transparent; color: color-mix(in srgb, var(--os-control-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
+      .os-admin-form .os-auth-eye:hover, .os-admin-form .os-auth-eye:focus, .os-admin-form .os-auth-eye:focus-visible, .os-admin-form .os-auth-eye:active { background: transparent; color: var(--os-control-color); outline: 0; box-shadow: none; }
+      .os-admin-form .os-auth-eye svg { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+      .os-admin-form .os-auth-eye[data-visible="true"] svg { fill: currentColor; stroke: currentColor; }
+      .os-admin-status { min-height: 1.2em; color: var(--os-status-positive); font-size: 10px; text-align: center; }
+      .os-admin-status[data-state="error"] { color: color-mix(in srgb, #d45a5a 84%, var(--os-panel-color)); }
+      .os-admin-form .os-notification-main-action { width: 100%; min-width: 0; margin-top: 2px; }
+      .os-admin-line { position: absolute; right: auto; bottom: 0; left: 50%; width: 42px; height: 4px; border-radius: 999px; background: var(--os-panel-color); transform: translateX(-50%); }
+      html[dir="rtl"] .os-admin-password input { padding-right: 14px; padding-left: 36px; }
+      html[dir="rtl"] .os-admin-form .os-auth-eye { right: auto; left: 8px; }
       .os-auth-form input::placeholder { color: color-mix(in srgb, var(--os-control-color) 52%, transparent); opacity: 1; }
-      .os-auth-eye { position: absolute; top: 50%; right: 7px; display: grid; width: 28px !important; height: 28px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: transparent; color: color-mix(in srgb, var(--os-control-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
-      .os-auth-eye:hover, .os-auth-eye:focus-visible { background: color-mix(in srgb, var(--os-control-color) 8%, transparent); color: var(--os-control-color); }
-      .os-auth-eye svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-      .os-auth-form button { min-height: 38px; padding: 10px 14px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--os-panel-color) 8%, transparent); color: inherit; cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
+      .os-auth-form input:-webkit-autofill, .os-auth-form input:-webkit-autofill:hover, .os-auth-form input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 1000px var(--os-page-background) inset; -webkit-text-fill-color: var(--os-control-color); caret-color: var(--os-control-color); }
+      .os-auth-form .os-auth-eye { position: absolute; top: 50%; right: 8px; display: grid; width: 20px !important; min-height: 20px; height: 20px; padding: 0; place-items: center; border: 0; border-radius: 0; background: transparent; color: color-mix(in srgb, var(--os-control-color) 60%, transparent); cursor: pointer; transform: translateY(-50%); }
+      .os-auth-eye:hover, .os-auth-eye:focus, .os-auth-eye:focus-visible, .os-auth-eye:active { background: transparent; color: var(--os-control-color); outline: 0; box-shadow: none; }
+      .os-auth-eye svg { display: block; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+      .os-auth-eye[data-visible="true"] svg { fill: currentColor; stroke: currentColor; }
+      .os-auth-form button { height: var(--os-action-height); min-height: var(--os-action-height); padding: 10px 14px; border: 0; border-radius: var(--os-action-radius); background: var(--os-action-background); color: var(--os-action-color); cursor: pointer; font-size: 10px; font-weight: 500; line-height: 1; }
+      .os-auth-form > button[type="submit"] { justify-self: center; width: 50%; }
       .os-auth-form button:disabled { cursor: wait; opacity: .58; }
-      .os-auth-form button:focus:not(:focus-visible) { outline: 0; box-shadow: none; }
+      .os-auth-form button:focus, .os-auth-form button:focus-visible { outline: 0; box-shadow: none; }
       .os-auth-error { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-      html[dir="rtl"] .os-auth-form input { padding-right: 13px; padding-left: 42px; }
-      html[dir="rtl"] .os-auth-eye { right: auto; left: 7px; }
-      @media (max-width: 480px) { .os-auth-form { width: calc(100% - (var(--os-outer-gap) * 2)); } }
-      @media (orientation: landscape) and (max-height: 520px) { .os-auth-form { grid-template-columns: minmax(0, 1fr) auto; align-items: center; width: min(100%, 420px); } .os-auth-form button[type="submit"] { width: auto; min-width: 84px; } }
-      .os-control-view { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; overflow: auto; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
-      .os-control-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-      .os-control-row { display: flex; justify-content: space-between; gap: 12px; padding: 0 0 10px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); }
+      .os-auth-separator { display: grid; height: 4px; place-items: center; pointer-events: none; }
+      .os-auth-panel-line { display: block; width: 42px; height: 4px; border-radius: 999px; background: var(--os-panel-background); }
+      html[dir="rtl"] .os-auth-password input { padding-right: 14px; padding-left: 36px; }
+      html[dir="rtl"] .os-auth-eye { right: auto; left: 8px; }
+      @media (max-width: 480px) { .os-auth-composition { width: calc(100% - (var(--os-outer-gap) * 2)); } }
+      @media (orientation: landscape) and (max-height: 520px) { .os-auth-composition { width: min(100%, 420px); } .os-auth-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; } .os-auth-form button[type="submit"] { grid-column: 1 / -1; width: 50%; min-width: 84px; } }
+      .os-buttons-shell { position: fixed; inset: var(--os-open-top) var(--os-outer-gap) var(--os-outer-gap); color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
+      .os-buttons-divider { position: absolute; right: auto; bottom: 0; left: 50%; width: 42px; height: 4px; border-radius: 999px; background: var(--os-panel-color); content: ""; transform: translateX(-50%); }
+      .os-buttons-track { position: absolute; top: var(--os-panel-header-center); right: calc(var(--os-outer-gap) * -1); bottom: 0; left: calc(var(--os-outer-gap) * -1); display: flex; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
+      .os-buttons-track::-webkit-scrollbar { display: none; }
+      .os-buttons-slide { flex: 0 0 100vw; min-width: 0; height: 100%; overflow-y: auto; overflow-x: hidden; padding: 0 var(--os-outer-gap) var(--x-spacing); box-sizing: border-box; scroll-snap-align: start; scrollbar-width: none; overscroll-behavior-y: contain; }
+      .os-buttons-slide::-webkit-scrollbar { display: none; }
+      .os-control-list { display: grid; gap: calc(var(--x-spacing) * .5); margin: 0; padding: 0; list-style: none; }
+      .os-control-row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.5fr) 42px; min-height: 38px; height: 38px; align-items: stretch; overflow: hidden; border-radius: 18px; background: var(--os-panel-background); direction: ltr; scroll-snap-align: center; }
+      .os-control-zone { display: grid; min-width: 0; align-items: center; padding: 0 12px; }
+      .os-control-zone--name { position: relative; justify-items: start; clip-path: polygon(0 0, 100% 0, calc(100% - 7px) 50%, 100% 100%, 0 100%, 7px 50%); }
+      .os-control-zone--route { direction: ltr; justify-items: left; border-inline-start: 1px dotted color-mix(in srgb, var(--os-panel-color) 30%, transparent); text-align: left; }
+      .os-control-zone--toggle { justify-items: center; box-sizing: border-box; width: 42px; padding: 0 10px; border-inline-start: 1px dotted color-mix(in srgb, var(--os-panel-color) 30%, transparent); }
+      .os-control-name, .os-control-section, .os-control-route { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .os-control-name { display: block; max-width: 100%; font: 500 11px/1.15 var(--os-font-family); }
+      .os-control-section { display: block; max-width: 100%; font: 400 10px/1.15 var(--os-font-family); }
+      .os-control-route { width: 100%; color: inherit; direction: ltr; font: 400 10px/1 var(--os-font-family); text-align: left; text-decoration: none; }
+      .os-control-route:hover, .os-control-route:focus-visible { text-decoration: underline; }
+      .os-control-toggle { position: relative; display: grid; width: 22px; height: 22px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: transparent; color: transparent; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+      .os-control-toggle::before { width: 16px; height: 16px; box-sizing: border-box; border: 1.5px solid color-mix(in srgb, var(--os-panel-color) 60%, transparent); border-radius: 50%; background: transparent; content: ""; }
+      .os-control-toggle[aria-pressed="true"]::before { border-color: var(--os-status-positive); background: var(--os-status-positive); }
+      .os-control-toggle:focus, .os-control-toggle:focus-visible, .os-control-toggle:hover, .os-control-toggle:active { outline: 0; box-shadow: none; }
+      html[dir="rtl"] .os-control-row { direction: rtl; }
+      html[dir="rtl"] .os-control-zone--route { direction: rtl; justify-items: right; text-align: right; }
+      html[dir="rtl"] .os-control-route { direction: rtl; text-align: right; }
+      .os-panel[data-os-view="buttons"] { display: none; }
+      .os-panel[data-os-view="admin"] { display: none; }
+      .os-control-list--empty { display: grid; place-items: center; height: 100%; }
       .os-control-muted { color: color-mix(in srgb, var(--os-panel-color) 54%, transparent); }
-      .os-control-action { border: 0; border-radius: 999px; padding: 7px 12px; background: color-mix(in srgb, var(--os-panel-color) 10%, transparent); color: inherit; font: inherit; }
+      .os-products { position: absolute; inset: 66px 0 0; overflow: hidden; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); }
+      .os-products-track { display: flex; width: 100%; height: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; touch-action: pan-x pan-y; }
+      .os-products-track::-webkit-scrollbar { display: none; }
+      .os-product-slide { position: relative; flex: 0 0 100%; box-sizing: border-box; min-width: 0; height: 100%; padding: 0 var(--x-spacing) calc(var(--os-action-height) + (var(--x-spacing) * 2)); overflow-y: auto; overflow-x: visible; scroll-snap-align: start; scrollbar-width: none; }
+      .os-product-slide::-webkit-scrollbar { display: none; }
+      .os-product-image-wrap { position: relative; display: grid; width: 100%; height: 132px; min-height: 132px; max-height: 132px; margin: var(--x-spacing) 0; overflow: hidden; place-items: center; border-radius: 18px; background: color-mix(in srgb, var(--os-panel-color) 7%, transparent); }
+      .os-product-image { display: block; width: 100%; height: 132px; max-height: 132px; object-fit: cover; }
+      .os-product-image-placeholder { display: grid; place-items: center; color: #0A84FF; font-size: 0; text-align: center; }
+      .os-product-image-placeholder strong { display: grid; width: 42px; height: 42px; place-items: center; border: 0; border-radius: 50%; background: #0A84FF; color: #fff; line-height: 0; }
+      .os-product-image-placeholder .os-plus { width: 14px; height: 14px; }
+      .os-product-upload { position: absolute; inset: 0; display: grid; place-items: center; border: 0; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+      .os-product-upload:focus-visible { outline: 1px solid currentColor; outline-offset: -4px; }
+      .os-product-details { display: grid; gap: calc(var(--x-spacing) * .5); margin: 0; }
+      .os-product-detail { display: block; min-width: 0; }
+      .os-product-detail-value, .os-product-form input, .os-product-form textarea, .os-product-form select { box-sizing: border-box; width: 100%; min-width: 0; height: var(--os-field-height); min-height: var(--os-field-height); padding: 0 var(--x-spacing); border: 1px solid color-mix(in srgb, var(--os-panel-color) 14%, transparent); border-radius: var(--os-field-radius); background: transparent; color: var(--os-control-color); font: 500 10px/38px var(--os-font-family); }
+      .os-product-detail-value { display: block; overflow-wrap: anywhere; }
+      .os-product-price-discount { color: #0A84FF; }
+      .os-product-form input.os-product-price-discount::placeholder { color: color-mix(in srgb, #0A84FF 62%, transparent); opacity: 1; }
+      .os-product-detail:nth-child(3) .os-product-detail-value { height: 54px; min-height: 54px; padding-block: 9px; line-height: 1.2; }
+      .os-product-form textarea { height: 72px; min-height: 72px; padding-block: 9px; line-height: 1.2; overflow: auto; }
+      .os-product-actions { position: absolute; right: var(--x-spacing); bottom: var(--x-spacing); left: var(--x-spacing); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(var(--x-spacing) * .5); margin: 0; }
+      .os-product-actions .os-notification-main-action { width: 100%; min-width: 0; }
+      .os-product-form { position: absolute; inset: 0 var(--x-spacing); display: grid; align-content: start; min-height: 0; gap: calc(var(--x-spacing) * .5); padding: 0 0 64px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+      .os-product-form > .os-product-image-wrap { margin-bottom: calc(var(--x-spacing) * .5); }
+      .os-product-form::-webkit-scrollbar { display: none; }
+      .os-product-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(var(--x-spacing) * .5); min-width: 0; direction: ltr; }
+      .os-product-form-grid--single { grid-template-columns: minmax(0, 1fr); }
+      .os-product-form label { display: grid; gap: calc(var(--x-spacing) * .5); min-width: 0; color: color-mix(in srgb, var(--os-panel-color) 58%, transparent); font-size: 9px; font-weight: 400; }
+      .os-product-form input, .os-product-form textarea, .os-product-form select { outline: 0; -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; }
+      .os-product-form textarea { resize: none; }
+      .os-product-form select { line-height: 38px; text-align: center; text-align-last: center; }
+      .os-product-form input[data-field-language="en"], .os-product-form textarea[data-field-language="en"] { direction: ltr; font-family: var(--os-font-en); text-align: start; }
+      .os-product-form input[data-field-language="ar"], .os-product-form textarea[data-field-language="ar"] { direction: rtl; font-family: var(--os-font-ar); text-align: right; }
+      .os-product-form input:focus, .os-product-form textarea:focus, .os-product-form select:focus, .os-product-form input:focus-visible, .os-product-form textarea:focus-visible, .os-product-form select:focus-visible { outline: 0; box-shadow: none; }
+      .os-product-form input:-webkit-autofill, .os-product-form input:-webkit-autofill:hover, .os-product-form input:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 1000px var(--os-panel-background) inset; -webkit-text-fill-color: var(--os-control-color); caret-color: var(--os-control-color); }
+      .os-product-form-actions { position: absolute; right: 0; bottom: var(--x-spacing); left: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(var(--x-spacing) * .5); }
+      .os-product-form-actions .os-notification-main-action { width: 100%; min-width: 0; }
+      .os-products .os-notification-main-action--floating { position: absolute; right: 50%; bottom: var(--x-spacing); z-index: 1; transform: translateX(50%); }
+      @media (max-width: 480px) { .os-product-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      .os-consultations { position: absolute; inset: 66px var(--x-spacing) 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); scrollbar-width: none; }
+      .os-consultations::-webkit-scrollbar { display: none; }
+      .os-consultation-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+      .os-consultation-row { display: grid; grid-template-rows: var(--os-selection-row-height) auto; align-content: start; gap: 0; min-height: var(--os-selection-row-height); padding: 0 2px 12px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); cursor: pointer; }
+      .os-consultation-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; height: var(--os-selection-row-height); min-height: var(--os-selection-row-height); line-height: 1; }
+      .os-consultation-heading { display: block; min-width: 0; text-align: start; }
+      .os-consultation-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .os-consultation-status { display: inline-flex; flex: 0 0 auto; height: 22px; min-height: 22px; box-sizing: border-box; align-items: center; padding: 0 9px; border-radius: 999px; font: 500 10px/1 var(--os-font-family); }
+      .os-consultation-status[data-state="new"] { background: var(--os-status-positive-background); color: var(--os-status-positive); }
+      .os-consultation-status[data-state="done"] { background: var(--os-status-muted-background); color: var(--os-status-muted-text); }
+      .os-consultation-detail { display: grid; gap: calc(var(--x-spacing) * .5); padding: 0 0 2px; cursor: default; }
+      .os-consultation-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(var(--x-spacing) * .5); min-width: 0; }
+      .os-consultation-detail-item { display: grid; min-width: 0; gap: 3px; }
+      .os-consultation-detail-label { color: color-mix(in srgb, var(--os-panel-color) 52%, transparent); font-size: 9px; font-weight: 400; }
+      .os-consultation-detail-value { min-width: 0; overflow-wrap: anywhere; }
+      .os-consultation-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(var(--x-spacing) * .5); }
+      .os-consultation-actions .os-notification-main-action { width: 100%; min-width: 0; }
       .os-edge-control, .os-panel-handle { -webkit-tap-highlight-color: transparent; }
       .os-edge-control { position: fixed; top: var(--os-outer-gap); z-index: 6; display: grid; width: 32px; height: 32px; padding: 0; place-items: center; border: 0; border-radius: 50%; background: var(--os-control-background); color: var(--os-control-color); cursor: pointer; font: 500 20px/1 var(--os-font-family); }
       .os-edge-control--left { left: var(--os-outer-gap); }
       .os-edge-control--right { right: var(--os-outer-gap); }
+      .os-edge-control--right, .os-edge-control--right:hover, .os-edge-control--right:focus, .os-edge-control--right:focus-visible, .os-edge-control--right:active { background: transparent; color: transparent; outline: 0; box-shadow: none; }
       .os-side-menu { --os-menu-radius: 31px; position: fixed; top: calc(var(--os-outer-gap) + 40px); left: var(--os-outer-gap); z-index: 5; display: grid; width: min(190px, calc(100vw - (var(--os-outer-gap) * 2))); gap: 6px; padding: 10px 12px; overflow-y: auto; overscroll-behavior: contain; border: 0; border-radius: var(--os-menu-radius); background: var(--os-control-background); color: var(--os-control-color); opacity: 0; pointer-events: none; transform: translateX(-8px); transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s, background-color .24s ease; visibility: hidden; }
       .os-side-menu.is-open { opacity: 1; pointer-events: auto; transform: translateX(0); transition-delay: 0s; visibility: visible; }
-      .os-side-menu button { min-height: 38px; padding: 0 14px; border: 0; border-radius: 18px; background: transparent; color: inherit; cursor: pointer; font: 500 11px/1 var(--os-font-family); text-align: start; -webkit-tap-highlight-color: transparent; }
+      .os-side-menu button { display: flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 14px; border: 0; border-radius: 18px; background: transparent; color: inherit; cursor: pointer; font: 500 11px/1 var(--os-font-family); text-align: start; -webkit-tap-highlight-color: transparent; }
+      .os-side-menu .os-menu-icon { display: block; flex: 0 0 14px; width: 14px; height: 14px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+      .os-side-menu .os-menu-label { min-width: 0; line-height: 1; text-align: start; }
       .os-side-menu button:is(.is-active, [aria-current="true"], [aria-selected="true"], :active, :focus-visible) { border-radius: 999px; }
       .os-side-menu button:hover, .os-side-menu button:focus-visible { background: color-mix(in srgb, var(--os-control-color) 8%, transparent); }
       .os-plus { display: block; width: 14px; height: 14px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .os-menu-trigger-icon { display: block; width: 14px; height: 14px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .os-notification-main-action .os-plus { flex: 0 0 auto; margin-inline-end: 6px; }
       .os-oxo-face { display: block; width: 26px; height: 26px; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+      .os-oxo-face { visibility: hidden; }
       .os-oxo-face .s-page__x-face-eyes { fill: currentColor; stroke: none; }
       .os-panel {
         position: fixed;
@@ -105,11 +248,14 @@
         transition: background-color .24s ease, height .2s ease;
       }
       .os-panel.is-expanded { height: var(--os-open-height); }
+      .os-panel.is-menu-obscured { visibility: hidden; opacity: 0; pointer-events: none; }
+      .os-panel:not(.is-expanded) > :not(.os-panel-handle):not(.os-panel-copy) { visibility: hidden; opacity: 0; pointer-events: none; }
       .os-panel-handle { position: absolute; top: -34px; left: 50%; width: 120px; height: 44px; padding: 0; border: 0; border-radius: 999px; background: transparent; color: var(--os-panel-background); cursor: grab; touch-action: none; transform: translateX(-50%); }
+      .os-panel[data-os-view="buttons"] .os-panel-handle { pointer-events: none; cursor: default; }
       .os-panel-handle::before { position: absolute; top: 20px; left: 50%; width: 42px; height: 4px; border-radius: 999px; background: currentColor; content: ""; transform: translateX(-50%); }
       .os-panel-handle:active { cursor: grabbing; }
-      .os-panel-copy { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); white-space: nowrap; }
-      .os-panel.is-expanded .os-panel-copy { top: 30px; transform: translateX(-50%); }
+      .os-panel-copy { position: absolute; top: var(--os-panel-header-center); left: 50%; line-height: 1; transform: translate(-50%, -50%); white-space: nowrap; }
+      .os-panel.is-expanded .os-panel-copy { top: var(--os-panel-header-center); transform: translate(-50%, -50%); }
       .os-insights { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) calc(var(--x-spacing) * 1.25); display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); opacity: 0; pointer-events: none; scrollbar-width: none; transition: opacity .22s ease; visibility: hidden; }
       .os-insights::-webkit-scrollbar { display: none; }
       .os-panel[data-os-view="insights"].is-expanded .os-insights { opacity: 1; pointer-events: auto; visibility: visible; }
@@ -121,23 +267,23 @@
       .os-insights-service, .os-insights-metric { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 14px; }
       .os-insights-service-name, .os-insights-metric-label { min-width: 0; }
       .os-insights-status { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #929292; }
-      .os-insights-status[data-status="operational"] { background: #39a96b; }
+      .os-insights-status[data-status="operational"] { background: var(--os-status-positive); }
       .os-insights-status[data-status="attention"] { background: #d9a441; }
       .os-insights-status[data-status="unavailable"] { background: #d45a5a; }
       .os-insights-status[data-status="unknown"] { background: #929292; }
       .os-insights-metric-value { flex: 0 0 auto; color: color-mix(in srgb, var(--os-panel-color) 58%, transparent); font-weight: 400; }
-      .os-notifications { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); opacity: 0; pointer-events: none; scrollbar-width: none; transition: opacity .22s ease; visibility: hidden; }
+      .os-notifications { position: absolute; inset: 66px var(--x-spacing) 0; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); opacity: 0; pointer-events: none; scrollbar-width: none; transition: opacity .22s ease; visibility: hidden; }
       .os-notifications::-webkit-scrollbar { display: none; }
       .os-panel[data-os-view="notifications"].is-expanded .os-notifications { opacity: 1; pointer-events: auto; visibility: visible; }
-      .os-promo-codes { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); opacity: 0; pointer-events: none; scrollbar-width: none; transition: opacity .22s ease; visibility: hidden; }
+      .os-promo-codes { position: absolute; inset: 66px var(--x-spacing) 0; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; overscroll-behavior: contain; color: var(--os-panel-color); font: 500 11px/1.2 var(--os-font-family); opacity: 0; pointer-events: none; scrollbar-width: none; transition: opacity .22s ease; visibility: hidden; }
       .os-promo-codes::-webkit-scrollbar { display: none; }
       .os-panel[data-os-view="promo-codes"].is-expanded .os-promo-codes { opacity: 1; pointer-events: auto; visibility: visible; }
       .os-promo-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
-      .os-promo-row { display: grid; grid-template-rows: 42px auto; align-content: start; gap: 0; min-height: 42px; padding: 0 2px 12px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); cursor: pointer; }
-      .os-promo-title-row { display: flex; align-items: center; justify-content: space-between; gap: 7px; min-width: 0; height: 42px; min-height: 42px; }
+      .os-promo-row { display: grid; grid-template-rows: var(--os-selection-row-height) auto; align-content: start; gap: 0; min-height: var(--os-selection-row-height); padding: 0 2px 12px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); cursor: pointer; }
+      .os-promo-title-row { display: flex; align-items: center; justify-content: space-between; gap: 7px; min-width: 0; height: var(--os-selection-row-height); min-height: var(--os-selection-row-height); line-height: 1; }
       .os-promo-code { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: .02em; }
-      .os-promo-status-dot { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #929292; }
-      .os-promo-status-dot[data-status="active"] { background: #39a96b; }
+      .os-promo-status-dot { flex: 0 0 6px; align-self: center; width: 6px; height: 6px; border-radius: 50%; background: #929292; }
+      .os-promo-status-dot[data-status="active"] { background: var(--os-status-positive); }
       .os-promo-status-dot[data-status="inactive"] { background: #929292; }
       .os-promo-detail { display: grid; gap: 12px; cursor: default; }
       .os-promo-detail-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: 100%; min-width: 0; }
@@ -146,28 +292,29 @@
       .os-promo-detail-value { min-width: 0; overflow-wrap: anywhere; }
       .os-promo-delete { justify-self: start; }
       html[dir="rtl"] .os-promo-delete { justify-self: end; }
-      .os-notification-add { position: absolute; inset: 66px calc(var(--x-spacing) * 1.5) 0; min-height: 0; overflow: visible; opacity: 0; pointer-events: none; visibility: hidden; }
+      .os-notification-add { position: absolute; inset: 66px var(--x-spacing) 0; min-height: 0; overflow: visible; opacity: 0; pointer-events: none; visibility: hidden; }
       .os-panel[data-os-view="notification-add"].is-expanded .os-notification-add { opacity: 1; pointer-events: auto; visibility: visible; }
       .os-notification-content { min-height: 0; padding-bottom: 64px; }
-      .os-management-empty-state { position: absolute; right: 0; bottom: calc(var(--x-spacing) + 34px); left: 0; display: flex; justify-content: center; min-width: 0; color: color-mix(in srgb, var(--os-panel-color) 52%, transparent); font: 400 10px/1.2 var(--os-font-family); text-align: center; }
+      .os-management-empty-state { position: absolute; inset: 0 0 calc(var(--x-spacing) + var(--os-action-height) + (var(--x-spacing) * .5)); display: flex; align-items: center; justify-content: center; min-width: 0; color: color-mix(in srgb, var(--os-panel-color) 52%, transparent); font: 400 10px/1.2 var(--os-font-family); text-align: center; }
+      .os-management-empty-state--consultations { inset: 0; }
       .os-notification-main-action { -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
       .os-notification-main-action:focus:not(:focus-visible) { outline: 0; box-shadow: none; }
       .os-notification-list { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
-      .os-notification-row { display: grid; grid-template-rows: 42px auto; align-content: start; gap: 0; min-height: 42px; padding: 0 2px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); cursor: pointer; }
-      .os-notification-title-row { display: flex; align-items: center; justify-content: space-between; gap: 7px; min-width: 0; height: 42px; min-height: 42px; }
+      .os-notification-row { display: grid; grid-template-rows: var(--os-selection-row-height) auto; align-content: start; gap: 0; min-height: var(--os-selection-row-height); padding: 0 2px; border-bottom: 1px solid color-mix(in srgb, var(--os-panel-color) 10%, transparent); cursor: pointer; }
+      .os-notification-title-row { display: flex; align-items: center; justify-content: space-between; gap: 7px; min-width: 0; height: var(--os-selection-row-height); min-height: var(--os-selection-row-height); line-height: 1; }
       .os-notification-title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .os-notification-status-dot { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #929292; }
-      .os-notification-status-dot[data-status="active"] { background: #39a96b; }
+      .os-notification-status-dot { flex: 0 0 6px; align-self: center; width: 6px; height: 6px; border-radius: 50%; background: #929292; }
+      .os-notification-status-dot[data-status="active"] { background: var(--os-status-positive); }
       .os-notification-status-dot[data-status="inactive"] { background: #929292; }
       .os-notification-detail { display: grid; gap: 0; padding: 0 0 14px; cursor: default; }
-      .os-management-action-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: 100%; min-width: 0; }
+      .os-management-action-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(var(--x-spacing) * .5); width: 100%; min-width: 0; }
       .os-management-action-row .os-notification-main-action { width: 100%; min-width: 0; }
       .os-notification-form { display: grid; gap: 9px; padding-top: 4px; padding-bottom: 64px; }
       .os-notification-form label { display: grid; width: 100%; min-width: 0; gap: 5px; color: color-mix(in srgb, var(--os-panel-color) 58%, transparent); font: 400 10px/1.25 var(--os-font-family); }
       .os-notification-form input, .os-notification-form textarea, .os-notification-form select { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; inline-size: 100%; max-inline-size: 100%; min-inline-size: 0; padding: 8px 9px; border: 1px solid color-mix(in srgb, var(--os-panel-color) 14%, transparent); border-radius: 12px; outline: 0; background: transparent; color: var(--os-control-color); font: 500 11px/1 var(--os-font-family); letter-spacing: normal; -webkit-appearance: none; appearance: none; -webkit-tap-highlight-color: transparent; }
+      .os-notification-form input:-webkit-autofill, .os-notification-form input:-webkit-autofill:hover, .os-notification-form input:-webkit-autofill:focus, .os-notification-form textarea:-webkit-autofill, .os-notification-form textarea:-webkit-autofill:hover, .os-notification-form textarea:-webkit-autofill:focus { -webkit-box-shadow: 0 0 0 1000px var(--os-panel-background) inset; -webkit-text-fill-color: var(--os-control-color); caret-color: var(--os-control-color); }
       .os-notification-form input:active, .os-notification-form textarea:active, .os-notification-form select:active { background-color: transparent; }
-      .os-notification-form input:focus-visible, .os-notification-form textarea:focus-visible, .os-notification-form select:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
-      @media (hover: none) and (pointer: coarse) { .os-notification-form input:not([type="date"]):not([type="time"]):focus, .os-notification-form textarea:focus { font-size: 16px; } }
+      .os-notification-form input:focus, .os-notification-form textarea:focus, .os-notification-form select:focus, .os-notification-form input:focus-visible, .os-notification-form textarea:focus-visible, .os-notification-form select:focus-visible { outline: 0; box-shadow: none; }
       .os-notification-form select option { color: var(--os-control-color); font: 500 11px/1 var(--os-font-family); letter-spacing: normal; }
       .os-notification-form input[type="date"], .os-notification-form input[type="time"] { display: block; align-self: stretch; justify-self: stretch; box-sizing: border-box; width: 100%; inline-size: 100%; min-width: 0; min-inline-size: 0; max-width: 100%; max-inline-size: 100%; }
       .os-notification-form input[data-field-language="en"], .os-notification-form textarea[data-field-language="en"] { direction: ltr; font-family: var(--os-font-en); text-align: start; }
@@ -175,25 +322,37 @@
       .os-notification-form textarea { min-height: 54px; resize: vertical; }
       .os-notification-form-grid { display: grid; width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
       .os-notification-form-actions { position: absolute; right: 0; bottom: var(--x-spacing); left: 0; display: flex; justify-content: center; gap: 6px; }
-      .os-notification-main-action { padding: 10px 14px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--os-panel-color) 8%, transparent); color: inherit; cursor: pointer; font: 500 10px/1 var(--os-font-family); }
+      .os-notification-main-action { display: inline-flex; box-sizing: border-box; min-width: 0; height: var(--os-action-height); min-height: var(--os-action-height); align-items: center; justify-content: center; padding: 0 14px; border: 0; border-radius: var(--os-action-radius); background: var(--os-action-background); color: var(--os-action-color); cursor: pointer; font: 500 10px/1 var(--os-font-family); text-align: center; }
       .os-notification-main-action--floating { position: absolute; right: 50%; bottom: var(--x-spacing); z-index: 1; transform: translateX(50%); }
-      .os-notification-form[data-notification-form], .os-notification-form[data-promo-form] { gap: 8px; }
-      .os-notification-form[data-notification-form] label, .os-notification-form[data-promo-form] label { display: block; gap: 0; }
-      .os-notification-form[data-notification-form] input, .os-notification-form[data-notification-form] textarea, .os-notification-form[data-notification-form] select, .os-notification-form[data-promo-form] input, .os-notification-form[data-promo-form] textarea, .os-notification-form[data-promo-form] select { padding: 0 9px; border-radius: 18px; }
-      .os-notification-form[data-notification-form] input, .os-notification-form[data-notification-form] select, .os-notification-form[data-promo-form] input, .os-notification-form[data-promo-form] select { height: 38px; min-height: 38px; }
-      .os-notification-form[data-notification-form] textarea { min-height: 54px; padding: 9px; border-radius: 18px; line-height: 1.2; }
-      .os-notification-form[data-notification-form] .os-notification-form-grid, .os-notification-form[data-promo-form] .os-notification-form-grid { direction: ltr; }
+      .os-notification-form[data-notification-form], .os-notification-form[data-promo-form] { gap: calc(var(--x-spacing) * .5); }
+      .os-notification-form[data-notification-form] label, .os-notification-form[data-promo-form] label { display: grid; gap: calc(var(--x-spacing) * .5); }
+      .os-notification-form[data-notification-form] input, .os-notification-form[data-notification-form] textarea, .os-notification-form[data-notification-form] select, .os-notification-form[data-promo-form] input, .os-notification-form[data-promo-form] textarea, .os-notification-form[data-promo-form] select { padding-inline: var(--x-spacing); border-radius: var(--os-field-radius); font: 500 10px/1 var(--os-font-family); direction: inherit; text-align: start; }
+      .os-notification-form[data-notification-form] input, .os-notification-form[data-notification-form] select, .os-notification-form[data-promo-form] input, .os-notification-form[data-promo-form] select { height: var(--os-field-height); min-height: var(--os-field-height); }
+      .os-notification-form[data-notification-form] input, .os-notification-form[data-notification-form] select, .os-notification-form[data-promo-form] input, .os-notification-form[data-promo-form] select { padding-block: 0; line-height: 38px; }
+      .os-notification-form[data-notification-form] textarea { min-height: 54px; padding-block: 9px; border-radius: 18px; line-height: 1.2; }
+      .os-notification-form[data-notification-form] .os-notification-form-grid, .os-notification-form[data-promo-form] .os-notification-form-grid { direction: ltr; gap: calc(var(--x-spacing) * .5); }
       .os-notification-form[data-notification-form] .os-notification-form-actions, .os-notification-form[data-promo-form] .os-notification-form-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .os-notification-form[data-notification-form] .os-notification-form-actions .os-notification-main-action, .os-notification-form[data-promo-form] .os-notification-form-actions .os-notification-main-action { width: 100%; min-width: 0; height: 38px; min-height: 38px; }
+      .os-notification-form[data-notification-form] input:focus, .os-notification-form[data-notification-form] textarea:focus, .os-notification-form[data-notification-form] select:focus, .os-notification-form[data-promo-form] input:focus, .os-notification-form[data-promo-form] textarea:focus, .os-notification-form[data-promo-form] select:focus, .os-notification-form[data-notification-form] input:focus-visible, .os-notification-form[data-notification-form] textarea:focus-visible, .os-notification-form[data-notification-form] select:focus-visible, .os-notification-form[data-promo-form] input:focus-visible, .os-notification-form[data-promo-form] textarea:focus-visible, .os-notification-form[data-promo-form] select:focus-visible { outline: 0; box-shadow: none; }
+      .os-notification-form[data-notification-form] select, .os-notification-form[data-promo-form] select { text-align: center; text-align-last: center; }
+      .os-notification-form[data-notification-form] select option, .os-notification-form[data-promo-form] select option { font: 500 10px/1 var(--os-font-family); text-align: center; }
+      .os-notification-form[data-notification-form] .os-notification-form-actions, .os-notification-form[data-promo-form] .os-notification-form-actions { gap: calc(var(--x-spacing) * .5); }
+      .os-notification-form[data-notification-form] .os-notification-form-actions .os-notification-main-action, .os-notification-form[data-promo-form] .os-notification-form-actions .os-notification-main-action { width: 100%; min-width: 0; }
+      .os-notification-form[data-notification-form] input[data-field-language="ar"], .os-notification-form[data-notification-form] textarea[data-field-language="ar"] { direction: rtl; font-family: var(--os-font-ar); text-align: right; }
+      .os-notification-form[data-promo-form] input, .os-notification-form[data-promo-form] textarea, .os-notification-form[data-promo-form] select { text-align: center; text-align-last: center; }
+      .os-notification-form[data-promo-form] input, .os-notification-form[data-promo-form] select { line-height: 38px; }
+      .os-notification-form[data-promo-form] textarea { padding-block: 9px; line-height: 1.2; text-align: center; }
       .os-summary-content { position: absolute; inset: 0; width: auto; height: auto; overflow: clip; opacity: 0; pointer-events: none; visibility: hidden; }
       .os-panel[data-os-view="summary"].is-expanded .os-summary-content { opacity: 1; pointer-events: auto; visibility: visible; }
-      .os-summary-percentage { position: absolute; top: 50%; left: 50%; display: inline-block; box-sizing: content-box; width: max-content; min-width: 2.4ch; height: auto; overflow: visible; padding: .12em; color: transparent; background: linear-gradient(45deg, #050505 0%, #2f3236 44%, #858a8f 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font: 400 clamp(80px, 22vw, 180px)/1 "SF Pro", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.06em; text-align: center; white-space: nowrap; opacity: 0; pointer-events: none; transform: translate(-50%, -50%); transition: opacity .22s ease; visibility: hidden; }
-      html[data-theme="dark"] .os-summary-percentage { background: linear-gradient(45deg, var(--os-panel-color) 0%, #d9dde2 48%, #b3bac3 100%); }
-      .os-summary-percentage[data-available="true"]::after { content: " ms"; font-size: .18em; letter-spacing: 0; vertical-align: baseline; }
+      .os-summary-percentage { --os-response-start: #050505; --os-response-mid: #2f3236; --os-response-end: #858a8f; position: absolute; top: 50%; left: 50%; display: inline-block; box-sizing: content-box; width: clamp(160px, 34vw, 300px); height: clamp(80px, 22vw, 180px); overflow: visible; color: var(--os-panel-color); opacity: 0; pointer-events: none; transform: translate(-50%, -50%); transition: opacity .22s ease; visibility: hidden; }
+      html[data-theme="dark"] .os-summary-percentage { --os-response-start: var(--os-panel-color); --os-response-mid: #d9dde2; --os-response-end: #b3bac3; }
+      .os-summary-response-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+      .os-summary-response-text { fill: url(#os-summary-response-gradient); font: 400 100px/1 "SF Pro", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -6px; text-anchor: middle; }
+      .os-summary-response-unit { font-size: 18px; letter-spacing: 0; }
       .os-panel[data-os-view="summary"].is-expanded .os-summary-percentage { opacity: 1; visibility: visible; }
-      .os-summary-indicators { position: absolute; right: 0; bottom: var(--x-spacing); left: 50%; display: grid; width: min(260px, calc(100vw - (var(--x-spacing) * 4))); gap: 6px; color: var(--os-panel-color); font: 500 11px/1 var(--os-font-family); letter-spacing: normal; opacity: 0; pointer-events: none; transform: translateX(-50%); transition: opacity .22s ease; visibility: hidden; }
-      .os-summary-indicator { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-      .os-summary-indicator-value { flex: 0 0 auto; font: 500 11px/1 var(--os-font-family); letter-spacing: normal; }
+      .os-summary-indicators { position: absolute; right: auto; bottom: var(--x-spacing); left: auto; inset-inline: 0; display: grid; width: min(260px, calc(100vw - (var(--x-spacing) * 4))); gap: 6px; margin-inline: auto; color: var(--os-panel-color); font: 500 11px/1 var(--os-font-family); letter-spacing: normal; opacity: 0; pointer-events: none; transition: opacity .22s ease; visibility: hidden; }
+      .os-summary-indicator { display: flex; align-items: center; justify-content: space-between; gap: 18px; direction: inherit; }
+      .os-summary-indicator > span:first-child { min-width: 0; text-align: start; }
+      .os-summary-indicator-value { flex: 0 0 auto; font: 500 11px/1 var(--os-font-family); letter-spacing: normal; text-align: end; }
       .os-panel[data-os-view="summary"].is-expanded .os-summary-indicators { opacity: 1; visibility: visible; }
       .os-panel[data-os-view="insights"].is-expanded, .os-panel[data-os-view="notifications"].is-expanded { align-items: stretch; justify-content: flex-start; overflow: visible; }
       @media (max-width: 480px) { .os-notification-row { gap: 8px; } }
@@ -203,41 +362,75 @@
       html[dir="rtl"] .os-side-menu.is-open { transform: translateX(0); }
     </style>
   </head>
-  <body><section class="os-auth-gate" data-os-auth-gate hidden><form class="os-auth-form" data-os-auth-form><h1 class="os-auth-title">OOXME OS</h1><input type="password" name="password" autocomplete="current-password" required aria-label="Admin password" placeholder="Password"><div class="os-auth-error" data-os-auth-error role="alert"></div><button type="submit">Unlock</button></form></section><button type="button" class="os-edge-control os-edge-control--left" data-os-add aria-label="Open menu" aria-expanded="false" aria-controls="os-side-menu"><svg class="os-plus" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"></path></svg></button><div class="os-side-menu" id="os-side-menu" aria-hidden="true"><button type="button" data-os-menu-copy-en="Insights" data-os-menu-copy-ar="التحليلات">Insights</button><button type="button" data-os-menu-copy-en="Notifications" data-os-menu-copy-ar="الإشعارات">Notifications</button><button type="button" data-os-menu-copy-en="Promo Codes" data-os-menu-copy-ar="أكواد الخصم">Promo Codes</button><button type="button" data-os-menu-copy-en="Buttons" data-os-menu-copy-ar="الأزرار">Buttons</button><button type="button" data-os-menu-copy-en="Products" data-os-menu-copy-ar="المنتجات">Products</button><button type="button" data-os-menu-copy-en="Consultations" data-os-menu-copy-ar="الاستشارات">Consultations</button><button type="button" data-os-menu-copy-en="Language" data-os-menu-copy-ar="اللغة" data-os-menu-action="language">Language</button><button type="button" data-os-menu-copy-en="Appearance" data-os-menu-copy-ar="المظهر" data-os-menu-action="appearance">Appearance</button><button type="button" data-os-menu-copy-en="Log Out" data-os-menu-copy-ar="تسجيل الخروج">Log Out</button></div><button type="button" class="os-edge-control os-edge-control--right" data-os-oxo-toggle aria-label="Open controls" aria-expanded="false"><svg class="os-oxo-face s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85"></circle><circle cx="9.25" cy="6.5" r="1.85"></circle></g></g></g></svg></button><div class="os-panel" data-os-copy-en="Insights" data-os-copy-ar="التحليلات"><button type="button" class="os-panel-handle" aria-label="Expand panel"></button><span class="os-panel-copy">Insights</span><div class="os-insights" aria-hidden="true"><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="System Status" data-os-insights-ar="حالة النظام">System Status</h2><p class="os-insights-description" data-os-system-description-en="Live service status is not connected." data-os-system-description-ar="بيانات حالة الخدمات المباشرة غير متصلة.">Live service status is not connected.</p><ul class="os-insights-list" data-os-services><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Vercel" data-os-service-ar="Vercel">Vercel</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="GitHub" data-os-service-ar="GitHub">GitHub</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="YCloud" data-os-service-ar="YCloud">YCloud</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Cloudflare" data-os-service-ar="Cloudflare">Cloudflare</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Gmail" data-os-service-ar="Gmail">Gmail</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Calendar" data-os-service-ar="التقويم">Calendar</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Drive" data-os-service-ar="Drive">Drive</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li></ul></section><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="Website Status" data-os-insights-ar="حالة الموقع">Website Status</h2><p class="os-insights-description" data-os-website-description-en="Live website telemetry is not connected." data-os-website-description-ar="بيانات الموقع المباشرة غير متصلة.">Live website telemetry is not connected.</p><dl class="os-insights-list"><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Last Update" data-os-metric-ar="آخر تحديث">Last Update</dt><dd class="os-insights-metric-value" data-os-metric-value="last-update">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Uptime" data-os-metric-ar="وقت التشغيل">Uptime</dt></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Response" data-os-metric-ar="الاستجابة">Response</dt><dd class="os-insights-metric-value" data-os-metric-value="response">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Version" data-os-metric-ar="الإصدار">Version</dt></div></dl></section></div><div class="os-notifications" aria-hidden="true"></div></div><script>
+  <body><section class="os-auth-gate" data-os-auth-gate hidden><form class="os-auth-form" data-os-auth-form><h1 class="os-auth-title">OOXME OS</h1><input type="password" name="password" autocomplete="current-password" required aria-label="Admin password" placeholder="Password"><div class="os-auth-error" data-os-auth-error role="alert"></div><button type="submit">Unlock</button></form></section><button type="button" class="os-edge-control os-edge-control--left" data-os-add aria-label="Open menu" aria-expanded="false" aria-controls="os-side-menu"><svg class="os-menu-trigger-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"></path></svg></button><div class="os-side-menu" id="os-side-menu" aria-hidden="true"><button type="button" data-os-menu-copy-en="Insights" data-os-menu-copy-ar="التحليلات">Insights</button><button type="button" data-os-menu-copy-en="Notifications" data-os-menu-copy-ar="الإشعارات">Notifications</button><button type="button" data-os-menu-copy-en="Promo Codes" data-os-menu-copy-ar="أكواد الخصم">Promo Codes</button><button type="button" data-os-menu-copy-en="Buttons" data-os-menu-copy-ar="الأزرار">Buttons</button><button type="button" data-os-menu-copy-en="Products" data-os-menu-copy-ar="المنتجات">Products</button><button type="button" data-os-menu-copy-en="Consultations" data-os-menu-copy-ar="الاستشارات">Consultations</button><button type="button" data-os-menu-copy-en="Language" data-os-menu-copy-ar="اللغة" data-os-menu-action="language">Language</button><button type="button" data-os-menu-copy-en="Appearance" data-os-menu-copy-ar="المظهر" data-os-menu-action="appearance">Appearance</button><button type="button" data-os-menu-copy-en="Admin" data-os-menu-copy-ar="الإدارة" data-os-menu-action="admin">Admin</button><button type="button" data-os-menu-copy-en="Log Out" data-os-menu-copy-ar="تسجيل الخروج">Log Out</button></div><button type="button" class="os-edge-control os-edge-control--right" data-os-oxo-toggle aria-label="Open controls" aria-expanded="false"><svg class="os-oxo-face s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85"></circle><circle cx="9.25" cy="6.5" r="1.85"></circle></g></g></g></svg></button><div class="os-admin-shell" data-os-admin hidden><div class="os-admin-line" aria-hidden="true"></div><form class="os-admin-form" data-os-admin-form><div class="os-admin-status" data-os-admin-status role="status" aria-live="polite"></div><input name="user" data-admin-field="user" autocomplete="username" required placeholder="New User" aria-label="New User"><div class="os-admin-password"><input type="password" name="currentPassword" data-admin-field="currentPassword" autocomplete="current-password" required placeholder="Current Password" aria-label="Current Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="currentPassword" aria-label="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg></button></div><div class="os-admin-password"><input type="password" name="newPassword" data-admin-field="newPassword" autocomplete="new-password" required minlength="12" placeholder="New Password" aria-label="New Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="newPassword" aria-label="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg></button></div><div class="os-admin-password"><input type="password" name="confirmPassword" data-admin-field="confirmPassword" autocomplete="new-password" required minlength="12" placeholder="Confirm New Password" aria-label="Confirm New Password"><button type="button" class="os-auth-eye" data-admin-password-toggle="confirmPassword" aria-label="Show password"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg></button></div><button class="os-notification-main-action" type="submit">Change Credentials</button></form></div><div class="os-panel" data-os-copy-en="Insights" data-os-copy-ar="التحليلات"><button type="button" class="os-panel-handle" aria-label="Expand panel"></button><span class="os-panel-copy">Insights</span><div class="os-insights" aria-hidden="true"><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="System Status" data-os-insights-ar="حالة النظام">System Status</h2><p class="os-insights-description" data-os-system-description-en="Live service status is not connected." data-os-system-description-ar="بيانات حالة الخدمات المباشرة غير متصلة.">Live service status is not connected.</p><ul class="os-insights-list" data-os-services><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Vercel" data-os-service-ar="Vercel">Vercel</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="GitHub" data-os-service-ar="GitHub">GitHub</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="YCloud" data-os-service-ar="YCloud">YCloud</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Cloudflare" data-os-service-ar="Cloudflare">Cloudflare</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Gmail" data-os-service-ar="Gmail">Gmail</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Calendar" data-os-service-ar="التقويم">Calendar</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li><li class="os-insights-service"><span class="os-insights-service-name" data-os-service-en="Drive" data-os-service-ar="Drive">Drive</span><span class="os-insights-status" data-status="unknown" aria-label="Unknown status"></span></li></ul></section><section class="os-insights-section"><h2 class="os-insights-heading" data-os-insights-en="Website Status" data-os-insights-ar="حالة الموقع">Website Status</h2><p class="os-insights-description" data-os-website-description-en="Live website telemetry is not connected." data-os-website-description-ar="بيانات الموقع المباشرة غير متصلة.">Live website telemetry is not connected.</p><dl class="os-insights-list"><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Last Update" data-os-metric-ar="آخر تحديث">Last Update</dt><dd class="os-insights-metric-value" data-os-metric-value="last-update">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Uptime" data-os-metric-ar="وقت التشغيل">Uptime</dt></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Response" data-os-metric-ar="الاستجابة">Response</dt><dd class="os-insights-metric-value" data-os-metric-value="response">Unknown</dd></div><div class="os-insights-metric"><dt class="os-insights-metric-label" data-os-metric-en="Version" data-os-metric-ar="الإصدار">Version</dt></div></dl></section></div><div class="os-notifications" aria-hidden="true"></div></div><script>
     (() => {
       const root = document.documentElement;
+      const serverAuthState = root.dataset.osAuthState === 'authenticated';
       const themeColor = document.querySelector('[data-os-theme-color]');
       const statusBarStyle = document.querySelector('[data-os-status-bar-style]');
       const authGate = document.querySelector('[data-os-auth-gate]');
       const authForm = document.querySelector('[data-os-auth-form]');
       const authInput = authForm.querySelector('input[name="password"]');
       const authError = document.querySelector('[data-os-auth-error]');
+      const authUserField = document.createElement('div');
+      authUserField.className = 'os-auth-field';
+      const authUser = document.createElement('input');
+      authUser.type = 'text'; authUser.name = 'user'; authUser.autocomplete = 'username'; authUser.placeholder = 'User'; authUser.setAttribute('aria-label', 'User');
+      authUserField.append(authUser);
+      authInput.before(authUserField);
       const authPassword = document.createElement('div');
-      authPassword.className = 'os-auth-password';
+      authPassword.className = 'os-auth-field os-auth-password';
       authInput.before(authPassword);
       authPassword.append(authInput);
       const authEye = document.createElement('button');
       authEye.type = 'button'; authEye.className = 'os-auth-eye'; authEye.setAttribute('aria-label', 'Show password');
-      authEye.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"></path><circle cx="12" cy="12" r="2.5"></circle></svg>';
+      authEye.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg>';
       authPassword.append(authEye);
-      const authPanel = document.createElement('div');
-      authPanel.className = 'os-auth-panel'; authPanel.setAttribute('aria-hidden', 'true');
-      const authPanelCopy = document.createElement('span');
-      authPanelCopy.className = 'os-auth-panel-copy'; authPanelCopy.textContent = 'Today Summary';
-      authPanel.append(authPanelCopy); authGate.append(authPanel);
-      authEye.addEventListener('click', () => { const visible = authInput.type === 'text'; authInput.type = visible ? 'password' : 'text'; authEye.setAttribute('aria-label', visible ? (root.lang === 'ar' ? 'إظهار كلمة المرور' : 'Show password') : (root.lang === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password')); authInput.focus(); });
-      let csrfToken = '';
+      const authComposition = document.createElement('div');
+      authComposition.className = 'os-auth-composition';
+      const authSeparator = document.createElement('div');
+      authSeparator.className = 'os-auth-separator'; authSeparator.setAttribute('aria-hidden', 'true');
+      authSeparator.innerHTML = '<span class="os-auth-panel-line"></span>';
+      authComposition.append(authSeparator, authForm);
+      authGate.append(authComposition);
+      const renderPasswordIcon = () => { const visible = authInput.type === 'text'; authEye.dataset.visible = String(visible); authEye.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg>'; };
+      renderPasswordIcon();
+      authEye.addEventListener('click', () => { authInput.type = authInput.type === 'text' ? 'password' : 'text'; renderPasswordIcon(); authEye.setAttribute('aria-label', authInput.type === 'text' ? (root.lang === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password') : (root.lang === 'ar' ? 'إظهار كلمة المرور' : 'Show password')); authInput.focus(); });
+      const authErrorMessages = {
+        invalid: { en: 'Invalid password', ar: 'كلمة المرور غير صحيحة' },
+        locked: { en: 'Try again later', ar: 'حاول مرة أخرى لاحقًا' }
+      };
+      const clearAuthError = () => {
+        delete authInput.dataset.authError;
+        authError.textContent = '';
+        authInput.placeholder = root.lang === 'ar' ? 'كلمة المرور' : 'Password';
+      };
+      const showAuthError = (kind) => {
+        const message = authErrorMessages[kind] || authErrorMessages.invalid;
+        const text = message[root.lang === 'ar' ? 'ar' : 'en'];
+        authInput.dataset.authError = kind;
+        authInput.placeholder = text;
+        authError.textContent = text;
+      };
+      authUser.addEventListener('input', clearAuthError);
+      authInput.addEventListener('input', clearAuthError);
+      let csrfToken = root.dataset.csrfToken || '';
       const setAuthenticated = (authenticated) => {
         document.body.classList.toggle('os-authenticated', authenticated);
+        root.dataset.osAuthState = authenticated ? 'authenticated' : 'pending';
+        root.dataset.osAuthReady = 'true';
         authGate.hidden = authenticated;
       };
-      const osFetch = (url, options = {}) => {
+      const osFetch = async (url, options = {}) => {
         const headers = new Headers(options.headers || {});
         headers.set('Accept', headers.get('Accept') || 'application/json');
         if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(String(options.method || 'GET').toUpperCase()) && csrfToken) headers.set('X-CSRF-Token', csrfToken);
-        return fetch(url, { ...options, headers, credentials: 'same-origin' });
+        const response = await fetch(url, { ...options, headers, credentials: 'same-origin' });
+        if (response.status === 401) { csrfToken = ''; setAuthenticated(false); }
+        return response;
       };
       const initializeAuth = async () => {
+        if (serverAuthState) { setAuthenticated(true); return true; }
         try {
           const response = await fetch('/api/os/auth', { headers: { Accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
           const body = await response.json();
@@ -249,9 +442,12 @@
           return false;
         }
       };
+      const adminForm = document.querySelector('[data-os-admin-form]');
+      const adminStatus = document.querySelector('[data-os-admin-status]');
+      const adminFields = Object.fromEntries([...adminForm.querySelectorAll('[data-admin-field]')].map((field) => [field.dataset.adminField, field]));
       authForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        authError.textContent = '';
+        clearAuthError();
         const submit = authForm.querySelector('button[type="submit"]');
         submit.disabled = true;
         try {
@@ -259,21 +455,91 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
             credentials: 'same-origin',
-            body: JSON.stringify({ action: 'login', password: authInput.value })
+            body: JSON.stringify({ action: 'login', user: authUser.value, password: authInput.value })
           });
           const body = await response.json();
           if (!response.ok) throw new Error(body.error || 'authentication_failed');
           authInput.value = '';
-          await initializeAuth();
+          csrfToken = body.data?.csrfToken || '';
+          setAuthenticated(true);
         } catch (error) {
-          authError.textContent = error.message === 'login_temporarily_locked' ? 'Try again later' : 'Invalid password';
+          showAuthError(error.message === 'login_temporarily_locked' ? 'locked' : 'invalid');
+        } finally {
+          submit.disabled = false;
+        }
+      });
+      adminForm.querySelectorAll('[data-admin-password-toggle]').forEach((toggle) => {
+        const field = adminFields[toggle.dataset.adminPasswordToggle];
+        const render = () => {
+          const visible = field.type === 'text';
+          toggle.dataset.visible = String(visible);
+          toggle.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle></svg>';
+          toggle.setAttribute('aria-label', visible ? (root.lang === 'ar' ? 'إخفاء كلمة المرور' : 'Hide password') : (root.lang === 'ar' ? 'إظهار كلمة المرور' : 'Show password'));
+        };
+        render();
+        toggle.addEventListener('click', () => { field.type = field.type === 'text' ? 'password' : 'text'; render(); field.focus(); });
+      });
+      adminForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        adminStatus.textContent = '';
+        delete adminStatus.dataset.state;
+        if (String(adminFields.newPassword.value) !== String(adminFields.confirmPassword.value) || String(adminFields.newPassword.value).length < 12) {
+          adminStatus.dataset.state = 'error';
+          adminStatus.textContent = root.lang === 'ar' ? 'حدث خطأ' : 'An error occurred';
+          return;
+        }
+        const submit = adminForm.querySelector('button[type="submit"]');
+        submit.disabled = true;
+        try {
+          const response = await osFetch('/api/os/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'change_credentials', user: adminFields.user.value, currentPassword: adminFields.currentPassword.value, newPassword: adminFields.newPassword.value, confirmPassword: adminFields.confirmPassword.value }) });
+          if (!response.ok) throw new Error('credential_change_failed');
+          adminStatus.dataset.state = 'success';
+          adminStatus.textContent = root.lang === 'ar' ? 'تم التغيير بنجاح' : 'Changed successfully';
+          adminForm.reset();
+          csrfToken = '';
+          window.setTimeout(() => { adminStatus.textContent = ''; delete adminStatus.dataset.state; setAuthenticated(false); setPanelOpen(false); setMenuOpen(false); }, 900);
+        } catch (_) {
+          adminStatus.dataset.state = 'error';
+          adminStatus.textContent = root.lang === 'ar' ? 'حدث خطأ' : 'An error occurred';
         } finally {
           submit.disabled = false;
         }
       });
       void initializeAuth();
       const addButton = document.querySelector('[data-os-add]');
+      const menuTriggerPath = document.querySelector('.os-menu-trigger-icon path');
+      if (menuTriggerPath) menuTriggerPath.setAttribute('d', 'M3 6h10M3 10h10');
       const sideMenu = document.querySelector('[data-os-side-menu], #os-side-menu');
+      const menuIconPaths = Object.freeze({
+        Summary: '<rect x="2.75" y="2.75" width="4" height="4" rx=".8"></rect><rect x="9.25" y="2.75" width="4" height="4" rx=".8"></rect><rect x="2.75" y="9.25" width="4" height="4" rx=".8"></rect><rect x="9.25" y="9.25" width="4" height="4" rx=".8"></rect>',
+        Insights: '<path d="M2.75 12.75V8.5M6.5 12.75V5.75M10.25 12.75V3.25M13.25 12.75H2.25"></path>',
+        Notifications: '<path d="M4.25 10.25V7a3.75 3.75 0 0 1 7.5 0v3.25l1.25 2H3l1.25-2ZM6.5 14h3"></path>',
+        'Promo Codes': '<path d="M3.25 4.25h9.5A1.25 1.25 0 0 1 14 5.5v1.25a1.75 1.75 0 0 0 0 2.5v1.25a1.25 1.25 0 0 1-1.25 1.25h-9.5A1.25 1.25 0 0 1 2 10.5V9.25a1.75 1.75 0 0 0 0-2.5V5.5a1.25 1.25 0 0 1 1.25-1.25Z"></path><path d="M8 5.75v.5M8 8v.5M8 10.25v.5"></path>',
+        Consultations: '<rect x="2.75" y="3.75" width="10.5" height="10" rx="1.25"></rect><path d="M5.25 2.5v2.5M10.75 2.5v2.5M2.75 7h10.5"></path>',
+        Products: '<path d="M3 5.25h10v8.5H3z"></path><path d="M5.25 5.25a2.75 2.75 0 0 1 5.5 0"></path>',
+        Buttons: '<rect x="2.5" y="4.25" width="11" height="7.5" rx="3.75"></rect><circle cx="6.25" cy="8" r="1.5"></circle>',
+        Admin: '<path d="m8 2.25 4.5 2v3.5c0 2.6-1.8 4.5-4.5 5.75-2.7-1.25-4.5-3.15-4.5-5.75v-3.5L8 2.25Z"></path><path d="M6.25 8h3.5M8 6.25v3.5"></path>',
+        Language: '<circle cx="8" cy="8" r="5.5"></circle><path d="M2.5 8h11M8 2.5c1.45 1.5 2.15 3.35 2.15 5.5S9.45 12 8 13.5C6.55 12 5.85 10.15 5.85 8S6.55 4 8 2.5Z"></path>',
+        Appearance: '<circle cx="8" cy="8" r="2.5"></circle><path d="M8 2.25v1.5M8 12.25v1.5M2.25 8h1.5M12.25 8h1.5M3.94 3.94 5 5M11 11l1.06 1.06M12.06 3.94 11 5M5 11l-1.06 1.06"></path>',
+        'Log Out': '<path d="M8.75 3.25h3.5v9.5h-3.5M9.25 8H2.5M5 5.5 2.5 8 5 10.5"></path>'
+      });
+      const decorateMenuIcons = () => {
+        sideMenu.querySelectorAll('[data-os-menu-copy-en]').forEach((item) => {
+          if (item.querySelector('.os-menu-icon')) return;
+          const iconPath = menuIconPaths[item.dataset.osMenuCopyEn];
+          if (!iconPath) return;
+          const label = document.createElement('span');
+          label.className = 'os-menu-label';
+          label.textContent = item.textContent.trim();
+          const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          icon.classList.add('os-menu-icon');
+          icon.setAttribute('viewBox', '0 0 16 16');
+          icon.setAttribute('aria-hidden', 'true');
+          icon.setAttribute('focusable', 'false');
+          icon.innerHTML = iconPath;
+          item.replaceChildren(icon, label);
+        });
+      };
       const panel = document.querySelector('[data-os-copy-en]');
       const panelHandle = document.querySelector('.os-panel-handle');
       const insights = document.querySelector('.os-insights');
@@ -287,11 +553,12 @@
       promoCodes.hidden = true;
       panel.append(promoCodes);
       const products = document.createElement('div');
-      products.className = 'os-control-view'; products.hidden = true; panel.append(products);
+      products.className = 'os-products'; products.hidden = true; panel.append(products);
       const consultations = document.createElement('div');
-      consultations.className = 'os-control-view'; consultations.hidden = true; panel.append(consultations);
+      consultations.className = 'os-consultations'; consultations.hidden = true; panel.append(consultations);
       const buttons = document.createElement('div');
-      buttons.className = 'os-control-view'; buttons.hidden = true; panel.append(buttons);
+      buttons.className = 'os-buttons-shell'; buttons.hidden = true; document.body.append(buttons);
+      const adminShell = document.querySelector('[data-os-admin]');
       const panelCopy = document.querySelector('.os-panel-copy');
       const uptimeLabel = document.querySelector('[data-os-metric-en="Uptime"]');
       if (uptimeLabel && !uptimeLabel.parentElement.querySelector('[data-os-metric-value="uptime"]')) {
@@ -320,16 +587,47 @@
       if (productsMenuItem) productsMenuItem.dataset.osMenuAction = 'products';
       const consultationsMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Consultations');
       if (consultationsMenuItem) consultationsMenuItem.dataset.osMenuAction = 'consultations';
+      const buttonsMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Buttons');
+      if (buttonsMenuItem) buttonsMenuItem.dataset.osMenuAction = 'buttons';
+      const adminMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Admin');
+      if (adminMenuItem) adminMenuItem.dataset.osMenuAction = 'admin';
       const logoutMenuItem = [...sideMenu.querySelectorAll('[data-os-menu-copy-en]')].find((item) => item.dataset.osMenuCopyEn === 'Log Out');
       if (logoutMenuItem) logoutMenuItem.dataset.osMenuAction = 'logout';
       sideMenu.insertAdjacentHTML('afterbegin', '<button type="button" data-os-menu-copy-en="Summary" data-os-menu-copy-ar="الملخص" data-os-menu-action="summary">Summary</button>');
-      panel.insertAdjacentHTML('beforeend', '<div class="os-summary-content"><span class="os-summary-percentage" data-os-summary-response data-available="false" aria-label="Response unavailable">—</span><div class="os-summary-indicators" aria-hidden="true"><div class="os-summary-indicator"><span data-os-summary-en="Consultations Today" data-os-summary-ar="استشارات اليوم">Consultations Today</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Products / Orders" data-os-summary-ar="المنتجات / الطلبات">Products / Orders</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Promo Code Uses" data-os-summary-ar="استخدامات الرموز الترويجية">Promo Code Uses</span><span class="os-summary-indicator-value">0</span></div></div></div>');
+      decorateMenuIcons();
+      panel.insertAdjacentHTML('beforeend', '<div class="os-summary-content"><span class="os-summary-percentage" data-os-summary-response data-available="false" aria-label="Response unavailable"><svg class="os-summary-response-svg" viewBox="0 0 300 180" aria-hidden="true"><defs><linearGradient id="os-summary-response-gradient" x1="0" y1="180" x2="300" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="var(--os-response-start)"/><stop offset="48%" stop-color="var(--os-response-mid)"/><stop offset="100%" stop-color="var(--os-response-end)"/></linearGradient></defs><text class="os-summary-response-text" x="150" y="112"><tspan data-os-summary-response-number>—</tspan><tspan class="os-summary-response-unit" data-os-summary-unit-en="ms" data-os-summary-unit-ar="ملي ثانية" aria-hidden="true"> ms</tspan></text></svg></span><div class="os-summary-indicators" aria-hidden="true"><div class="os-summary-indicator"><span data-os-summary-en="Consultations Today" data-os-summary-ar="استشارات اليوم">Consultations Today</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Products / Orders" data-os-summary-ar="المنتجات / الطلبات">Products / Orders</span><span class="os-summary-indicator-value">0</span></div><div class="os-summary-indicator"><span data-os-summary-en="Promo Code Uses" data-os-summary-ar="استخدامات الرموز الترويجية">Promo Code Uses</span><span class="os-summary-indicator-value">0</span></div></div></div>');
+      const summaryIndicators = panel.querySelector('.os-summary-indicators');
+      if (summaryIndicators) {
+        summaryIndicators.replaceChildren(...[
+          ['Visitors', 'الزوار', 'visitors'],
+          ['Online', 'اونلاين', 'online'],
+          ['Site Status', 'حالة الموقع', 'site-status']
+        ].map(([english, arabic, key]) => {
+          const row = document.createElement('div');
+          row.className = 'os-summary-indicator';
+          const label = document.createElement('span');
+          label.dataset.osSummaryEn = english;
+          label.dataset.osSummaryAr = arabic;
+          label.textContent = english;
+          const value = document.createElement('span');
+          value.className = 'os-summary-indicator-value';
+          value.dataset.osSummaryValue = key;
+          value.textContent = 'Unavailable';
+          row.append(label, value);
+          return row;
+        }));
+      }
       const summaryContent = document.querySelector('.os-summary-content');
       const summaryResponseValue = document.querySelector('[data-os-summary-response]');
+      const summaryResponseNumber = document.querySelector('[data-os-summary-response-number]');
+      const summaryResponseUnit = document.querySelector('.os-summary-response-unit');
       const panelViews = { summary: summaryContent, insights, notifications, 'promo-codes': promoCodes, products, consultations, buttons, 'notification-add': notificationAdd };
       const panelViewNodes = (selector) => Object.values(panelViews).flatMap((view) => [...view.querySelectorAll(selector)]);
       let panelView = 'summary';
       let latestInsightsData = null;
+      let latestSummaryData = null;
+      let summaryLoadRun = 0;
+      let summaryController = null;
       let notificationsData = [];
       let promoCodesData = [];
       let insightsLoadRun = 0;
@@ -340,13 +638,17 @@
       let promoCodesController = null;
       let productsData = [];
       let productEditor = null;
+      let productImageDraft = '';
+      let productCarouselScrollLeft = 0;
       let consultationsData = [];
+      let consultationsExpandedId = null;
       let buttonsData = [];
       let notificationEditor = null;
       let promoEditor = null;
       let notificationExpandedId = null;
       let promoCodeExpandedId = null;
       const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
+      const plusIcon = () => '<svg class="os-plus" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 3v10M3 8h10"></path></svg>';
       const localDateTime = (value) => {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return { date: '', time: '' };
@@ -358,8 +660,8 @@
         const current = notification || { title: { en: '', ar: '' }, text: { en: '', ar: '' }, publishAt: new Date().toISOString(), status: 'active', frequency: 'once' };
         const schedule = localDateTime(current.publishAt);
         return `<form class="os-notification-form" data-notification-form>
-          <div class="os-notification-form-grid"><label><input name="titleEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required aria-label="English Title" placeholder="English Title" value="${escapeHtml(current.title.en)}"></label><label><input name="titleAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" aria-label="Arabic Title" placeholder="Arabic Title" value="${escapeHtml(current.title.ar)}"></label></div>
-          <div class="os-notification-form-grid"><label><textarea name="textEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required aria-label="English Text" placeholder="English Text">${escapeHtml(current.text.en)}</textarea></label><label><textarea name="textAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" aria-label="Arabic Text" placeholder="Arabic Text">${escapeHtml(current.text.ar)}</textarea></label></div>
+          <div class="os-notification-form-grid"><label><input name="titleEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required aria-label="English Title" placeholder="English Title" value="${escapeHtml(current.title.en)}"></label><label><input name="titleAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" aria-label="Arabic Title" placeholder="العنوان" value="${escapeHtml(current.title.ar)}"></label></div>
+          <div class="os-notification-form-grid"><label><textarea name="textEn" data-field-language="en" lang="en" dir="ltr" autocomplete="off" required aria-label="English Text" placeholder="English Text">${escapeHtml(current.text.en)}</textarea></label><label><textarea name="textAr" data-field-language="ar" lang="ar" dir="rtl" autocomplete="off" aria-label="Arabic Text" placeholder="النص">${escapeHtml(current.text.ar)}</textarea></label></div>
           <div class="os-notification-form-grid"><label><input type="date" name="publishDate" required aria-label="Publish Date" placeholder="Publish Date" value="${schedule.date}"></label><label><input type="time" name="publishTime" required aria-label="Publish Time" placeholder="Publish Time" value="${schedule.time}"></label></div>
           <div class="os-notification-form-grid"><label><select name="frequency" aria-label="Repeat / frequency"><option value="once" ${current.frequency === 'once' ? 'selected' : ''}>Once</option><option value="daily" ${current.frequency === 'daily' ? 'selected' : ''}>Daily</option><option value="weekly" ${current.frequency === 'weekly' ? 'selected' : ''}>Weekly</option></select></label><label><select name="status" aria-label="Status"><option value="active" ${current.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>Inactive</option></select></label></div>
           <div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-notification-action="cancel">Cancel</button><button class="os-notification-main-action" type="submit">Save</button></div>
@@ -394,7 +696,7 @@
         const editingNotification = notificationEditor?.id ? notificationsData.find((item) => item.id === notificationEditor.id) : null;
         notifications.innerHTML = isEditing
           ? renderNotificationForm(editingNotification)
-          : `<div class="os-notification-content"><ul class="os-notification-list">${list}</ul>${!notificationsData.length ? renderManagementEmptyState(isArabic ? 'لا توجد إشعارات محفوظة' : 'No saved notifications') : ''}</div><button class="os-notification-main-action os-notification-main-action--floating" type="button" data-notification-action="new">+ ${isArabic ? 'إشعار جديد' : 'Add Notification'}</button>`;
+          : `<div class="os-notification-content"><ul class="os-notification-list">${list}</ul>${!notificationsData.length ? renderManagementEmptyState(isArabic ? 'لا توجد إشعارات محفوظة' : 'No saved notifications') : ''}</div><button class="os-notification-main-action os-notification-main-action--floating" type="button" data-notification-action="new">${plusIcon()}${isArabic ? 'إشعار جديد' : 'Add Notification'}</button>`;
       };
       const renderNotificationAdd = () => {
         notificationAdd.innerHTML = renderNotificationForm(null);
@@ -411,7 +713,7 @@
           const applies = promo.appliesTo === 'all consultations' && isArabic ? 'جميع الاستشارات' : promo.appliesTo;
           return `<li class="os-promo-row${selected ? ' is-selected' : ''}" data-promo-code-id="${escapeHtml(promo.id)}"><div class="os-promo-title-row"><span class="os-promo-code">${escapeHtml(promo.code)}</span><span class="os-promo-status-dot" data-status="${escapeHtml(promo.status)}" aria-label="${escapeHtml(promo.status)}"></span></div>${selected ? `<div class="os-promo-detail"><div class="os-promo-detail-grid"><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.available}</span><span class="os-promo-detail-value">${escapeHtml(available)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.usage}</span><span class="os-promo-detail-value">${escapeHtml(usage)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.discount}</span><span class="os-promo-detail-value">${escapeHtml(promo.discount)}</span></span><span class="os-promo-detail-item"><span class="os-promo-detail-label">${labels.applies}</span><span class="os-promo-detail-value">${escapeHtml(applies)}</span></span></div><div class="os-management-action-row"><button class="os-notification-main-action" type="button" data-promo-action="edit">Edit</button><button class="os-notification-main-action" type="button" data-promo-action="toggle">${promo.status === 'active' ? 'Disable' : 'Enable'}</button><button class="os-notification-main-action os-promo-delete" type="button" data-promo-action="delete">${labels.delete}</button></div></div>` : ''}</li>`;
         }).join('');
-        promoCodes.innerHTML = promoEditor ? renderPromoForm(promoCodesData.find((item) => item.id === promoEditor.id)) : `<ul class="os-promo-list">${rows}</ul>${!promoCodesData.length ? renderManagementEmptyState(labels.empty) : ''}<button class="os-notification-main-action os-notification-main-action--floating" type="button" data-management-action="promo-new">+ ${isArabic ? 'إضافة رمز خصم' : 'Add Promo Code'}</button>`;
+        promoCodes.innerHTML = promoEditor ? renderPromoForm(promoCodesData.find((item) => item.id === promoEditor.id)) : `<ul class="os-promo-list">${rows}</ul>${!promoCodesData.length ? renderManagementEmptyState(labels.empty) : ''}<button class="os-notification-main-action os-notification-main-action--floating" type="button" data-management-action="promo-new">${plusIcon()}${isArabic ? 'إضافة رمز خصم' : 'Add Promo Code'}</button>`;
       };
       const loadPromoCodes = async () => {
         const run = ++promoCodesLoadRun;
@@ -432,12 +734,174 @@
         }
         if (run === promoCodesLoadRun && panelView === 'promo-codes') renderPromoCodes();
       };
-      const renderProductForm = (item) => { const current = item || { name: { en: '', ar: '' }, category: { en: '', ar: '' }, description: { en: '', ar: '' }, price: { amount: '', currency: 'USD', label: { en: '', ar: '' } }, status: 'active', slug: '' }; return `<form class="os-notification-form" data-product-form><label>Slug<input name="slug" required value="${escapeHtml(current.slug)}"></label><label>English Name<input name="nameEn" required value="${escapeHtml(current.name.en)}"></label><label>Arabic Name<input name="nameAr" required value="${escapeHtml(current.name.ar)}"></label><label>English Category<input name="categoryEn" required value="${escapeHtml(current.category.en)}"></label><label>Arabic Category<input name="categoryAr" required value="${escapeHtml(current.category.ar)}"></label><label>English Description<textarea name="descriptionEn" required>${escapeHtml(current.description.en)}</textarea></label><label>Arabic Description<textarea name="descriptionAr" required>${escapeHtml(current.description.ar)}</textarea></label><label>Price<input name="priceAmount" type="number" min="0" step="0.01" value="${current.price.amount == null ? '' : escapeHtml(current.price.amount)}"></label><label>Status<select name="status"><option value="active" ${current.status === 'active' ? 'selected' : ''}>Active</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>Inactive</option></select></label><div class="os-notification-form-actions"><button class="os-notification-main-action" type="button" data-product-action="cancel">Cancel</button><button class="os-notification-main-action" type="submit">Save</button></div></form>`; };
-      const renderProducts = () => { const ar = root.lang === 'ar'; products.innerHTML = productEditor ? renderProductForm(productsData.find((item) => item.id === productEditor.id)) : `<ul class="os-control-list">${productsData.map((item) => `<li class="os-control-row" data-product-id="${escapeHtml(item.id)}"><span>${escapeHtml(item.name?.[ar ? 'ar' : 'en'] || item.slug)}</span><span class="os-control-muted">${escapeHtml(item.price?.label?.[ar ? 'ar' : 'en'] || item.status)} <button class="os-control-action" type="button" data-product-action="edit">Edit</button><button class="os-control-action" type="button" data-product-action="archive">Archive</button></span></li>`).join('') || `<li class="os-control-muted">${ar ? 'لا توجد منتجات محفوظة' : 'No saved products'}</li>`}</ul><button class="os-notification-main-action os-notification-main-action--floating" type="button" data-product-action="new">+ Add Product</button>`; };
+      const productText = (item, field, ar) => item?.[field]?.[ar ? 'ar' : 'en'] || item?.[field]?.en || '';
+      const productImage = (item, ar, upload = false) => item?.imageData
+        ? `<img class="os-product-image" src="${escapeHtml(item.imageData)}" alt="${escapeHtml(productText(item, 'name', ar))}">${upload ? `<button class="os-product-upload" type="button" data-product-action="choose-image" aria-label="${ar ? 'تغيير الصورة' : 'Change image'}"></button>` : ''}`
+        : upload
+          ? `<button class="os-product-upload" type="button" data-product-action="choose-image" aria-label="${ar ? 'إضافة صورة' : 'Add image'}"><span class="os-product-image-placeholder"><strong aria-hidden="true"><svg class="os-plus" viewBox="0 0 16 16" focusable="false"><path d="M8 3v10M3 8h10"></path></svg></strong></span></button>`
+          : '<span class="os-product-image-empty" aria-hidden="true"></span>';
+      const renderProductForm = (item) => {
+        const ar = root.lang === 'ar';
+        const current = item || { name: { en: '', ar: '' }, category: { en: '', ar: '' }, description: { en: '', ar: '' }, price: { amount: '', currency: 'USD', label: { en: '', ar: '' } }, status: 'active', slug: '', imageData: '' };
+        const afterDiscount = current.price.afterDiscount || { amount: '', label: { en: '', ar: '' } };
+        return `<form class="os-product-form" data-product-form>
+          <div class="os-product-image-wrap"><input class="os-product-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/avif" hidden>${productImage(current, ar, true)}</div>
+          <div class="os-product-form-grid"><label><input name="slug" required autocomplete="off" placeholder="${ar ? 'الرابط المختصر' : 'Slug'}" aria-label="${ar ? 'الرابط المختصر' : 'Slug'}" value="${escapeHtml(current.slug)}"></label><label><select name="status" aria-label="${ar ? 'الحالة' : 'Status'}"><option value="active" ${current.status === 'active' ? 'selected' : ''}>${ar ? 'نشط' : 'Active'}</option><option value="inactive" ${current.status === 'inactive' ? 'selected' : ''}>${ar ? 'غير نشط' : 'Inactive'}</option></select></label></div>
+          <div class="os-product-form-grid"><label><input name="nameEn" data-field-language="en" lang="en" dir="ltr" required autocomplete="off" placeholder="English Name" aria-label="English Name" value="${escapeHtml(current.name.en)}"></label><label><input name="nameAr" data-field-language="ar" lang="ar" dir="rtl" required autocomplete="off" placeholder="الاسم بالعربية" aria-label="الاسم بالعربية" value="${escapeHtml(current.name.ar)}"></label></div>
+          <div class="os-product-form-grid"><label><input name="categoryEn" data-field-language="en" lang="en" dir="ltr" required autocomplete="off" placeholder="English Category" aria-label="English Category" value="${escapeHtml(current.category.en)}"></label><label><input name="categoryAr" data-field-language="ar" lang="ar" dir="rtl" required autocomplete="off" placeholder="الفئة بالعربية" aria-label="الفئة بالعربية" value="${escapeHtml(current.category.ar)}"></label></div>
+          <div class="os-product-form-grid"><label><textarea name="descriptionEn" data-field-language="en" lang="en" dir="ltr" required placeholder="English Description" aria-label="English Description">${escapeHtml(current.description.en)}</textarea></label><label><textarea name="descriptionAr" data-field-language="ar" lang="ar" dir="rtl" required placeholder="الوصف بالعربية" aria-label="الوصف بالعربية">${escapeHtml(current.description.ar)}</textarea></label></div>
+          <div class="os-product-form-grid"><label><input name="priceAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${ar ? 'السعر الفعلي' : 'Actual Price'}" aria-label="${ar ? 'السعر الفعلي' : 'Actual Price'}" value="${current.price.amount == null ? '' : escapeHtml(current.price.amount)}"></label><label><input class="os-product-price-discount" name="priceAfterDiscountAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="${ar ? 'السعر بعد الخصم' : 'Price After Discount'}" aria-label="${ar ? 'السعر بعد الخصم' : 'Price After Discount'}" value="${afterDiscount.amount == null ? '' : escapeHtml(afterDiscount.amount)}"></label></div>
+          <div class="os-product-form-actions"><button class="os-notification-main-action" type="button" data-product-action="cancel">${ar ? 'إلغاء' : 'Cancel'}</button><button class="os-notification-main-action" type="submit">${ar ? 'حفظ' : 'Save'}</button></div>
+        </form>`;
+      };
+      const renderProductSlide = (item, ar) => `<article class="os-product-slide" data-product-id="${escapeHtml(item.id)}"><div class="os-product-image-wrap">${productImage(item, ar)}</div><div class="os-product-details"><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'name', ar) || item.slug)}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'category', ar))}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(productText(item, 'description', ar))}</span></div><div class="os-product-detail"><span class="os-product-detail-value">${escapeHtml(item.price?.label?.[ar ? 'ar' : 'en'] || item.status)}</span></div><div class="os-product-detail"><span class="os-product-detail-value os-product-price-discount">${escapeHtml((item.price?.afterDiscount?.label?.[ar ? 'ar' : 'en'] || item.price?.afterDiscount?.amount) ?? '—')}</span></div></div><div class="os-product-actions"><button class="os-notification-main-action" type="button" data-product-action="edit">${ar ? 'تعديل' : 'Edit'}</button><button class="os-notification-main-action" type="button" data-product-action="toggle-status">${item.status === 'active' ? (ar ? 'تعطيل' : 'Disable') : (ar ? 'تفعيل' : 'Enable')}</button></div></article>`;
+      const renderProducts = () => {
+        const ar = root.lang === 'ar';
+        const current = productEditor?.id ? productsData.find((item) => item.id === productEditor.id) : null;
+        const addSlide = productEditor ? `<article class="os-product-slide">${renderProductForm(productEditor.mode === 'new' ? { ...(current || { name: { en: '', ar: '' }, category: { en: '', ar: '' }, description: { en: '', ar: '' }, price: { amount: '', currency: 'USD', label: { en: '', ar: '' }, afterDiscount: null }, status: 'active', slug: '' }), imageData: productImageDraft } : { ...current, imageData: productImageDraft })}</article>` : `<article class="os-product-slide"><div class="os-product-image-wrap"><button class="os-product-upload" type="button" data-product-action="choose-image" aria-label="${ar ? 'إضافة صورة' : 'Add image'}"><span class="os-product-image-placeholder"><strong aria-hidden="true"><svg class="os-plus" viewBox="0 0 16 16" focusable="false"><path d="M8 3v10M3 8h10"></path></svg></strong></span></button></div><button class="os-notification-main-action os-notification-main-action--floating" type="button" data-product-action="new">${plusIcon()}${ar ? 'إضافة' : 'Add Product'}</button></article>`;
+        const slides = productEditor ? addSlide : `${addSlide}${productsData.map((item) => renderProductSlide(item, ar)).join('')}`;
+        products.innerHTML = `<div class="os-products-track" data-product-track>${slides}</div><input class="os-product-image-input" data-product-image-input type="file" accept="image/png,image/jpeg,image/webp,image/avif" hidden>`;
+        const track = products.querySelector('[data-product-track]');
+        if (track) {
+          track.addEventListener('scroll', () => { productCarouselScrollLeft = track.scrollLeft; }, { passive: true });
+          if (!productEditor && productCarouselScrollLeft > 0) window.requestAnimationFrame(() => { track.scrollLeft = productCarouselScrollLeft; });
+        }
+      };
       const loadProducts = async () => { try { const response = await osFetch('/api/os/products', { cache: 'no-store' }); if (!response.ok) throw new Error(); productsData = (await response.json()).data?.products || []; } catch (_) { productsData = []; } renderProducts(); };
-      const renderConsultations = () => { const ar = root.lang === 'ar'; consultations.innerHTML = `<ul class="os-control-list">${consultationsData.map((item) => `<li class="os-control-row" data-consultation-id="${escapeHtml(item.id)}"><span>${escapeHtml(item.customer?.name || item.reference)}<small class="os-control-muted">${escapeHtml(item.topic)}</small></span><span class="os-control-muted">${escapeHtml(item.status)} · ${escapeHtml(new Date(item.scheduledStart).toLocaleString(ar ? 'ar' : 'en'))}<select data-consultation-status data-current-version="${item.version}"><option value="confirmed" ${item.status === 'confirmed' ? 'selected' : ''}>Confirmed</option><option value="cancelled" ${item.status === 'cancelled' ? 'selected' : ''}>Cancelled</option><option value="failed" ${item.status === 'failed' ? 'selected' : ''}>Failed</option></select></span></li>`).join('') || `<li class="os-control-muted">${ar ? 'لا توجد استشارات' : 'No consultations'}</li>`}</ul>`; };
+      const renderConsultations = () => {
+        const ar = root.lang === 'ar';
+        const labels = ar
+          ? { new: 'جديد', done: 'منجز', approve: 'موافقة', reject: 'رفض', delete: 'حذف', empty: 'لا توجد استشارات', reference: 'المرجع', date: 'التاريخ', time: 'الوقت', duration: 'المدة', service: 'الخدمة', topic: 'الموضوع', sector: 'القطاع', price: 'السعر الأصلي', promo: 'رمز الخصم', discount: 'الخصم', finalAmount: 'المبلغ النهائي', currency: 'العملة', email: 'البريد', phone: 'الهاتف', notes: 'ملاحظات', payment: 'طريقة الدفع', timezone: 'المنطقة الزمنية', bookingLanguage: 'لغة الحجز', calendar: 'معرّف التقويم', created: 'تاريخ الإنشاء', updated: 'آخر تحديث', confirmed: 'تاريخ التأكيد' }
+          : { new: 'New', done: 'Done', approve: 'Approve', reject: 'Reject', delete: 'Delete', empty: 'No consultations', reference: 'Reference', date: 'Date', time: 'Time', duration: 'Duration', service: 'Service', topic: 'Topic', sector: 'Sector', price: 'Original price', promo: 'Promo code', discount: 'Discount', finalAmount: 'Final amount', currency: 'Currency', email: 'Email', phone: 'Phone', notes: 'Notes', payment: 'Payment method', timezone: 'Timezone', bookingLanguage: 'Booking language', calendar: 'Calendar event', created: 'Created', updated: 'Updated', confirmed: 'Confirmed' };
+        const hasValue = (value) => value !== null && value !== undefined && value !== '';
+        const escapeValue = (value) => escapeHtml(value);
+        const formatDate = (value) => {
+          const date = new Date(value);
+          return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(ar ? 'ar' : 'en', { year: 'numeric', month: 'short', day: 'numeric' });
+        };
+        const formatTime = (value) => {
+          const date = new Date(value);
+          return Number.isNaN(date.getTime()) ? '' : date.toLocaleTimeString(ar ? 'ar' : 'en', { hour: 'numeric', minute: '2-digit' });
+        };
+        const formatDateTime = (value) => {
+          const date = formatDate(value); const time = formatTime(value);
+          return date && time ? `${date} · ${time}` : date || time;
+        };
+        const formatMoney = (value, currency) => hasValue(value) && Number.isFinite(Number(value)) ? `${Number(value).toFixed(2)} ${currency || ''}`.trim() : '';
+        const detail = (label, value) => hasValue(value) ? `<span class="os-consultation-detail-item"><span class="os-consultation-detail-label">${label}</span><span class="os-consultation-detail-value">${escapeValue(value)}</span></span>` : '';
+        const rows = consultationsData.map((item) => {
+          const expanded = consultationsExpandedId === item.id;
+          const isDone = ['confirmed', 'cancelled', 'failed'].includes(item.status);
+          const state = isDone ? 'done' : 'new';
+          const status = isDone ? labels.done : labels.new;
+          const details = [
+            detail(labels.reference, item.reference),
+            detail(labels.date, formatDate(item.scheduledStart)),
+            detail(labels.time, item.scheduledStart ? `${formatTime(item.scheduledStart)}${item.scheduledEnd ? ` – ${formatTime(item.scheduledEnd)}` : ''}` : ''),
+            detail(labels.duration, hasValue(item.durationMinutes) ? `${item.durationMinutes} min` : ''),
+            detail(labels.service, item.service),
+            detail(labels.topic, item.topic),
+            detail(labels.sector, item.sector),
+            detail(labels.price, formatMoney(item.baseAmount, item.currency)),
+            detail(labels.promo, item.promoCode),
+            detail(labels.discount, formatMoney(item.discountAmount, item.currency)),
+            detail(labels.finalAmount, formatMoney(item.finalAmount, item.currency)),
+            detail(labels.currency, item.currency),
+            detail(labels.email, item.customer?.email),
+            detail(labels.phone, item.customer?.phone),
+            detail(labels.payment, item.paymentProvider),
+            detail(labels.notes, item.notes),
+            detail(labels.timezone, item.timezone),
+            detail(labels.bookingLanguage, item.bookingLanguage),
+            detail(labels.calendar, item.calendarEventId),
+            detail(labels.created, formatDateTime(item.createdAt)),
+            detail(labels.updated, formatDateTime(item.updatedAt)),
+            detail(labels.confirmed, formatDateTime(item.confirmedAt))
+          ].join('');
+          return `<li class="os-consultation-row${expanded ? ' is-selected' : ''}" data-consultation-id="${escapeHtml(item.id)}"><div class="os-consultation-title-row" role="button" tabindex="0" aria-expanded="${expanded}"><span class="os-consultation-heading"><span class="os-consultation-name">${escapeValue(item.customer?.name || item.reference)}</span></span><span class="os-consultation-status" data-state="${state}">${status}</span></div>${expanded ? `<div class="os-consultation-detail"><div class="os-consultation-details">${details}</div><div class="os-consultation-actions"><button class="os-notification-main-action" type="button" data-consultation-action="approve">${labels.approve}</button><button class="os-notification-main-action" type="button" data-consultation-action="reject">${labels.reject}</button><button class="os-notification-main-action" type="button" data-consultation-action="delete">${labels.delete}</button></div></div>` : ''}</li>`;
+        }).join('');
+        consultations.innerHTML = `<ul class="os-consultation-list">${rows || `<li class="os-management-empty-state os-management-empty-state--consultations">${labels.empty}</li>`}</ul>`;
+      };
       const loadConsultations = async () => { try { const response = await osFetch('/api/os/consultations', { cache: 'no-store' }); if (!response.ok) throw new Error(); consultationsData = (await response.json()).data?.consultations || []; } catch (_) { consultationsData = []; } renderConsultations(); };
-      const renderButtons = () => { buttons.innerHTML = `<ul class="os-control-list">${buttonsData.map((item) => `<li class="os-control-row"><span>${escapeHtml(item.label)}</span><button class="os-control-action" type="button" data-control-key="${escapeHtml(item.actionKey)}" data-control-version="${item.version || 1}" aria-pressed="${item.enabled}">${item.enabled ? 'On' : 'Off'}</button></li>`).join('') || '<li class="os-control-muted">No configurable actions</li>'}</ul>`; };
+      const controlPageName = (page, language = root.lang) => {
+        const names = language === 'ar'
+          ? { Homepage: 'الرئيسية', Gallery: 'المعرض', 'Brand Management': 'العلامة', RPN: 'RPN', Consultation: 'الاستشارة', Store: 'المتجر', Update: 'التحديث' }
+          : { Homepage: 'Home', Gallery: 'Gallery', 'Brand Management': 'Brand', RPN: 'RPN', Consultation: 'Consultation', Store: 'Store', Update: 'Update' };
+        return names[page] || String(page || (root.lang === 'ar' ? 'صفحة' : 'Page')).split(/\s+/)[0];
+      };
+      const controlSectionName = (item) => {
+        const key = String(item.actionKey || '').toLowerCase();
+        if (key === 'main-update-1') return root.lang === 'ar' ? 'الأول' : 'First';
+        if (key === 'main-rpn') return root.lang === 'ar' ? 'الثاني' : 'Second';
+        if (key === 'main-gallery') return root.lang === 'ar' ? 'المعرض' : 'Gallery';
+        if (key.startsWith('main-')) return root.lang === 'ar' ? 'التواصل' : 'Contact';
+        if (key.startsWith('gallery-')) return root.lang === 'ar' ? 'المشاريع' : 'Projects';
+        if (key === 'bm-view') return root.lang === 'ar' ? 'الرئيسي' : 'Main';
+        if (key.startsWith('bm-')) return root.lang === 'ar' ? 'التنقل' : 'Navigation';
+        if (key === 'rpn-faq') return 'FAQ';
+        if (key.startsWith('rpn-')) return root.lang === 'ar' ? 'التقديم' : 'Application';
+        if (key.startsWith('consultation-')) return root.lang === 'ar' ? 'النموذج' : 'Form';
+        if (key.startsWith('store-') || key.startsWith('update-')) return root.lang === 'ar' ? 'التنقل' : 'Navigation';
+        return root.lang === 'ar' ? 'الرئيسي' : 'Main';
+      };
+      const controlPurpose = (item) => {
+        const key = String(item.actionKey || '').toLowerCase();
+        if (root.lang !== 'ar') return String(item.label || '').trim() || 'Button';
+        const labels = {
+          'main-update-1': 'فتح التحديث', 'main-rpn': 'فتح RPN', 'main-gallery': 'فتح المعرض', 'main-consultation': 'حجز استشارة',
+          'main-phone': 'هاتف', 'main-email': 'بريد إلكتروني', 'main-whatsapp': 'واتساب', 'main-instagram': 'إنستغرام', 'main-facebook': 'فيسبوك', 'main-linkedin': 'لينكدإن',
+          'bm-view': 'عرض', 'bm-prev': 'السابق', 'bm-next': 'التالي', 'rpn-faq': 'أسئلة شائعة', 'rpn-email': 'إرسال بريد', 'rpn-join': 'انضمام',
+          'gallery-alfares': 'صور مشروع ألفارس', 'gallery-alsibtain': 'صور مشروع السبطين', 'gallery-velvet-flora': 'صور فيلفت فلورا', 'gallery-zone': 'صور مشروع زون', 'gallery-sada-al-riwaq': 'صور صدى الرواق',
+          'consultation-send': 'إرسال رسالة', 'consultation-language': 'تبديل اللغة', 'consultation-apply': 'تقديم', 'consultation-zaincash': 'زين كاش', 'consultation-superqi': 'سوبر كي', 'consultation-confirm': 'تأكيد',
+          'store-prev': 'المنتج السابق', 'store-next': 'المنتج التالي', 'update-prev': 'البطاقة السابقة', 'update-next': 'البطاقة التالية'
+        };
+        return labels[key] || String(item.label || '').trim() || 'زر';
+      };
+      let buttonsPageFrame = 0;
+      const updateButtonsPageState = () => {
+        if (buttonsPageFrame) return;
+        buttonsPageFrame = window.requestAnimationFrame(() => {
+          buttonsPageFrame = 0;
+          const track = buttons.querySelector('.os-buttons-track');
+          const slides = [...buttons.querySelectorAll('.os-buttons-slide')];
+          if (!track || !slides.length) return;
+          const center = track.getBoundingClientRect().left + (track.clientWidth / 2);
+          let closest = slides[0];
+          let closestDistance = Infinity;
+          slides.forEach((slide) => {
+            const rect = slide.getBoundingClientRect();
+            const distance = Math.abs((rect.left + (rect.width / 2)) - center);
+            if (distance < closestDistance) { closest = slide; closestDistance = distance; }
+          });
+          slides.forEach((slide) => slide.setAttribute('aria-current', slide === closest ? 'true' : 'false'));
+        });
+      };
+      const renderButtons = () => {
+        const noControls = root.lang === 'ar' ? 'لا توجد أزرار قابلة للإدارة' : 'No managed buttons';
+        const groups = new Map();
+        buttonsData.forEach((item, index) => {
+          const pageKey = String(item.page || '').trim() || '__unassigned__';
+          const group = groups.get(pageKey) || { pageKey, firstIndex: index, items: [] };
+          group.items.push(item);
+          groups.set(pageKey, group);
+        });
+        const orderedGroups = [...groups.values()]
+          .sort((a, b) => {
+            const aHomepage = a.pageKey.toLowerCase() === 'homepage';
+            const bHomepage = b.pageKey.toLowerCase() === 'homepage';
+            if (aHomepage !== bHomepage) return aHomepage ? -1 : 1;
+            return (a.items.length - b.items.length) || (a.firstIndex - b.firstIndex);
+          });
+        const slides = orderedGroups.map((group) => {
+          const pageNameEn = controlPageName(group.pageKey, 'en');
+          const pageNameAr = controlPageName(group.pageKey, 'ar');
+          const rows = group.items.map((item) => { const purpose = controlPurpose(item); const textDirection = root.lang === 'ar' ? 'rtl' : 'ltr'; return `<li class="os-control-row"><span class="os-control-zone os-control-zone--name"><span class="os-control-name" dir="auto">${escapeHtml(controlPageName(item.page))} — ${escapeHtml(controlSectionName(item))}</span></span><a class="os-control-zone os-control-zone--route os-control-route" href="${escapeHtml(item.route || '#')}" dir="${textDirection}" aria-label="${escapeHtml(purpose)}"><span class="os-control-section" dir="${textDirection}">${escapeHtml(purpose)}</span></a><span class="os-control-zone os-control-zone--toggle"><button class="os-control-toggle" type="button" data-control-key="${escapeHtml(item.actionKey)}" data-control-version="${item.version || 1}" aria-pressed="${item.enabled}" aria-label="${escapeHtml((item.enabled ? (root.lang === 'ar' ? 'تعطيل ' : 'Disable ') : (root.lang === 'ar' ? 'تفعيل ' : 'Enable ')) + purpose)}"></button></span></li>`; }).join('');
+          return `<section class="os-buttons-slide" data-page-key="${escapeHtml(group.pageKey)}" aria-label="${escapeHtml(root.lang === 'ar' ? pageNameAr : pageNameEn)}"><ul class="os-control-list">${rows}</ul></section>`;
+        }).join('') || `<section class="os-buttons-slide" aria-label="${escapeHtml(noControls)}"><ul class="os-control-list os-control-list--empty"><li class="os-management-empty-state os-management-empty-state--buttons">${noControls}</li></ul></section>`;
+        buttons.innerHTML = `<span class="os-buttons-divider" aria-hidden="true"></span><div class="os-buttons-track">${slides}</div>`;
+        buttons.querySelector('.os-buttons-track')?.addEventListener('scroll', updateButtonsPageState, { passive: true });
+        updateButtonsPageState();
+      };
       const loadButtons = async () => { try { const response = await osFetch('/api/os/page-controls', { cache: 'no-store' }); if (!response.ok) throw new Error(); buttonsData = (await response.json()).data?.controls || []; } catch (_) { buttonsData = []; } renderButtons(); };
       const syncBilingualDirection = (field) => {
         if (!field.matches('[data-field-language]')) return;
@@ -451,11 +915,11 @@
       let lastVisualViewportHeight = window.visualViewport?.height || window.innerHeight;
       const clearKeyboardShift = () => {
         keyboardShift = 0;
-        panel.style.removeProperty('--os-keyboard-shift');
+        root.style.removeProperty('--os-keyboard-shift');
       };
       const keepNotificationInputVisible = (event) => {
-        const field = event?.target?.closest?.('.os-notification-form input, .os-notification-form textarea, .os-notification-form select') || document.activeElement;
-        if (!field || (!notifications.contains(field) && !notificationAdd.contains(field)) || !['notifications', 'notification-add'].includes(panelView)) return;
+        const field = event?.target?.closest?.('input, textarea, select, [contenteditable="true"]') || document.activeElement;
+        if (!field || !field.matches?.('input, textarea, select, [contenteditable="true"]')) return;
         window.setTimeout(() => {
           const viewport = window.visualViewport;
           if (!viewport || document.activeElement !== field) return;
@@ -468,7 +932,7 @@
           const nextShift = Math.min(keyboardShift + requiredShift, maximumShift);
           if (nextShift <= keyboardShift) return;
           keyboardShift = nextShift;
-          panel.style.setProperty('--os-keyboard-shift', `${-keyboardShift}px`);
+          root.style.setProperty('--os-keyboard-shift', `${-keyboardShift}px`);
         }, 80);
       };
       const handleVisualViewportResize = () => {
@@ -476,13 +940,30 @@
         if (!viewport) return;
         const heightGrew = viewport.height > lastVisualViewportHeight + 2;
         lastVisualViewportHeight = viewport.height;
-        if (heightGrew) clearKeyboardShift();
+        if (heightGrew) { clearKeyboardShift(); setFocusZoomLock(false); }
         window.requestAnimationFrame(() => keepNotificationInputVisible());
       };
       const handleFormFocusOut = () => {
         window.setTimeout(() => {
-          if (!document.activeElement?.matches?.('.os-notification-form input, .os-notification-form textarea, .os-notification-form select')) clearKeyboardShift();
+          if (!document.activeElement?.matches?.('input, textarea, select, [contenteditable="true"]')) clearKeyboardShift();
         }, 120);
+      };
+      const fieldSelector = 'input, textarea, select, [contenteditable="true"]';
+      const viewportMeta = document.querySelector('meta[name="viewport"]');
+      const viewportMetaContent = viewportMeta?.getAttribute('content') || '';
+      const isTouchViewport = () => matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+      const setFocusZoomLock = (locked) => {
+        if (!viewportMeta || !isTouchViewport()) return;
+        viewportMeta.setAttribute('content', locked ? `${viewportMetaContent}, maximum-scale=1` : viewportMetaContent);
+      };
+      const handleFieldFocusIn = (event) => {
+        if (!event.target.matches?.(fieldSelector)) return;
+        setFocusZoomLock(true);
+        window.setTimeout(() => keepNotificationInputVisible({ target: event.target }), 80);
+      };
+      const handleFieldFocusOut = () => {
+        handleFormFocusOut();
+        window.setTimeout(() => { if (!document.activeElement?.matches?.(fieldSelector)) setFocusZoomLock(false); }, 120);
       };
       const loadNotifications = async () => {
         const run = ++notificationsLoadRun;
@@ -555,12 +1036,49 @@
           ? (isArabic ? 'يعمل الموقع بصورة طبيعية، وتم قياس الاستجابة مباشرة.' : 'Website is operating normally; response was measured live.')
           : (isArabic ? 'بيانات الموقع المباشرة غير متصلة.' : 'Live website telemetry is not connected.');
         const values = data?.website || {};
-        const uptimeValue = values.uptime || (values.uptimeState === 'monitoring' ? (isArabic ? 'قيد المراقبة' : 'Monitoring') : (Number.isFinite(Number(values.uptimeSamples)) ? (isArabic ? `غير متاح · ${values.uptimeSamples}/288 عينات` : `Unavailable · ${values.uptimeSamples}/288 samples`) : null));
+        const uptimeValue = values.uptimeState === 'monitoring'
+          ? (isArabic ? `قيد المراقبة · ${values.uptimeSamples || 0}/${values.uptimeRequiredSamples || 12} عينات` : `Monitoring · ${values.uptimeSamples || 0}/${values.uptimeRequiredSamples || 12} samples`)
+          : values.uptime || (Number.isFinite(Number(values.uptimeSamples)) ? (isArabic ? `غير متاح · ${values.uptimeSamples}/288 عينات` : `Unavailable · ${values.uptimeSamples}/288 samples`) : null);
         const valueMap = { 'last-update': formatRelativeTime(values.lastUpdate, isArabic), uptime: uptimeValue, response: values.response, version: values.version ? String(values.version).slice(0, 7) : null };
         insights.querySelectorAll('[data-os-metric-value]').forEach((item) => {
           const value = valueMap[item.dataset.osMetricValue];
           item.textContent = value || (isArabic ? 'غير متاح' : 'Unavailable');
         });
+      };
+      const setSummaryMetrics = (data) => {
+        latestSummaryData = data || null;
+        const isArabic = root.lang === 'ar';
+        const unavailable = isArabic ? 'غير متاح' : 'Unavailable';
+        const hasNumber = (value) => value !== null && value !== undefined && Number.isFinite(Number(value));
+        const statusLabels = isArabic
+          ? { active: 'نشط', down: 'متوقف', degraded: 'متدهور' }
+          : { active: 'Active', down: 'Down', degraded: 'Degraded' };
+        const values = {
+          visitors: hasNumber(data?.visitors) ? String(Math.max(0, Number(data.visitors))) : unavailable,
+          online: hasNumber(data?.online) ? String(Math.max(0, Number(data.online))) : unavailable,
+          'site-status': statusLabels[data?.siteStatus] || unavailable
+        };
+        summaryContent.querySelectorAll('[data-os-summary-value]').forEach((item) => {
+          item.textContent = values[item.dataset.osSummaryValue] || unavailable;
+        });
+      };
+      const loadSummaryMetrics = async () => {
+        const run = ++summaryLoadRun;
+        if (summaryController) summaryController.abort();
+        const controller = new AbortController();
+        summaryController = controller;
+        try {
+          const response = await osFetch('/api/os/insights?mode=summary', { cache: 'no-store', signal: controller.signal });
+          if (!response.ok) throw new Error('summary_unavailable');
+          const data = (await response.json()).data;
+          if (run !== summaryLoadRun || panelView !== 'summary') return;
+          setSummaryMetrics(data);
+        } catch (_) {
+          if (run !== summaryLoadRun || controller.signal.aborted || panelView !== 'summary') return;
+          setSummaryMetrics(null);
+        } finally {
+          if (summaryController === controller) summaryController = null;
+        }
       };
       const loadInsights = async () => {
         const run = ++insightsLoadRun;
@@ -588,15 +1106,15 @@
         const value = Number(responseMs);
         if (!Number.isFinite(value) || value < 0) {
           if (summaryResponseValue.dataset.available !== 'true') {
-            summaryResponseValue.textContent = '—';
+            summaryResponseNumber.textContent = '—';
             summaryResponseValue.setAttribute('aria-label', root.lang === 'ar' ? 'الاستجابة غير متاحة' : 'Response unavailable');
           }
           return;
         }
         const rounded = Math.round(value);
-        summaryResponseValue.textContent = String(rounded);
+        summaryResponseNumber.textContent = String(rounded);
         summaryResponseValue.dataset.available = 'true';
-        summaryResponseValue.setAttribute('aria-label', `${rounded} ms`);
+        summaryResponseValue.setAttribute('aria-label', `${rounded} ${root.lang === 'ar' ? 'ملي ثانية' : 'ms'}`);
       };
       const stopSummaryResponsePolling = () => {
         summaryResponseRun += 1;
@@ -631,21 +1149,29 @@
         void requestSummaryResponse();
       };
       const setPanelView = (view) => {
-        panelView = ['insights', 'notifications', 'promo-codes', 'products', 'consultations', 'buttons', 'notification-add'].includes(view) ? view : 'summary';
-        if (panelView !== 'summary') stopSummaryResponsePolling();
+        const isAdmin = view === 'admin';
+        panelView = isAdmin || ['insights', 'notifications', 'promo-codes', 'products', 'consultations', 'buttons', 'notification-add'].includes(view) ? view : 'summary';
+        adminShell.hidden = !isAdmin;
+        adminShell.classList.toggle('is-menu-obscured', sideMenu.classList.contains('is-open'));
+        if (panelView !== 'summary') {
+          stopSummaryResponsePolling();
+          summaryLoadRun += 1;
+          summaryController?.abort();
+        }
         if (panelView !== 'insights') { insightsLoadRun += 1; insightsController?.abort(); }
         if (panelView !== 'notifications') { notificationsLoadRun += 1; notificationsController?.abort(); }
         if (panelView !== 'promo-codes') { promoCodesLoadRun += 1; promoCodesController?.abort(); }
         Object.entries(panelViews).forEach(([name, content]) => {
           const active = name === panelView;
           content.hidden = !active;
-          content.setAttribute('aria-hidden', String(!active || !panel.classList.contains('is-expanded')));
+          content.setAttribute('aria-hidden', String(!active || (!panel.classList.contains('is-expanded') && name !== 'buttons')));
         });
         panel.dataset.osView = panelView;
-        panel.dataset.osCopyEn = ({ summary: 'Today Summary', insights: 'Insights', notifications: 'Notifications', 'promo-codes': 'Promo Code', products: 'Products', consultations: 'Consultations', buttons: 'Buttons', 'notification-add': 'Add Notification' })[panelView];
-        panel.dataset.osCopyAr = ({ summary: 'ملخص اليوم', insights: 'التحليلات', notifications: 'الإشعارات', 'promo-codes': 'رمز الخصم', products: 'المنتجات', consultations: 'الاستشارات', buttons: 'الأزرار', 'notification-add': 'إضافة إشعار' })[panelView];
+        panel.dataset.osCopyEn = ({ summary: 'Today Summary', insights: 'Insights', notifications: 'Notifications', 'promo-codes': 'Promo Code', products: 'Products', consultations: 'Consultations', buttons: 'Buttons', 'notification-add': 'Add Notification', admin: 'Admin' })[panelView];
+        panel.dataset.osCopyAr = ({ summary: 'ملخص اليوم', insights: 'التحليلات', notifications: 'الإشعارات', 'promo-codes': 'رمز الخصم', products: 'المنتجات', consultations: 'الاستشارات', buttons: 'الأزرار', 'notification-add': 'إضافة إشعار', admin: 'الإدارة' })[panelView];
         panelCopy.textContent = root.lang === 'ar' ? panel.dataset.osCopyAr : panel.dataset.osCopyEn;
         setLanguage(root.lang);
+        if (panelView === 'summary') void loadSummaryMetrics();
         if (panelView === 'insights') void loadInsights();
         if (panelView === 'notifications') void loadNotifications();
         if (panelView === 'promo-codes') void loadPromoCodes();
@@ -659,8 +1185,21 @@
         root.lang = isArabic ? 'ar' : 'en';
         root.dir = isArabic ? 'rtl' : 'ltr';
         document.body.dir = root.dir;
-        authPanelCopy.textContent = isArabic ? 'ملخص اليوم' : 'Today Summary';
+        summaryResponseUnit.textContent = isArabic ? ' ملي ثانية' : ' ms';
+        authUser.placeholder = isArabic ? 'المستخدم' : 'User';
+        authUser.setAttribute('aria-label', isArabic ? 'المستخدم' : 'User');
+        authInput.placeholder = authInput.dataset.authError
+          ? authErrorMessages[authInput.dataset.authError]?.[isArabic ? 'ar' : 'en'] || (isArabic ? 'كلمة المرور' : 'Password')
+          : (isArabic ? 'كلمة المرور' : 'Password');
+        authInput.setAttribute('aria-label', isArabic ? 'كلمة المرور' : 'Admin password');
+        authForm.querySelector('button[type="submit"]').textContent = isArabic ? 'تسجيل الدخول' : 'Log In';
         authEye.setAttribute('aria-label', authInput.type === 'text' ? (isArabic ? 'إخفاء كلمة المرور' : 'Hide password') : (isArabic ? 'إظهار كلمة المرور' : 'Show password'));
+        const adminLabels = isArabic
+          ? { user: 'مستخدم جديد', currentPassword: 'كلمة المرور الحالية', newPassword: 'كلمة المرور الجديدة', confirmPassword: 'تأكيد كلمة المرور الجديدة', submit: 'تغيير بيانات الدخول', success: 'تم التغيير بنجاح', error: 'حدث خطأ' }
+          : { user: 'New User', currentPassword: 'Current Password', newPassword: 'New Password', confirmPassword: 'Confirm New Password', submit: 'Change Credentials', success: 'Changed successfully', error: 'An error occurred' };
+        Object.entries(adminFields).forEach(([name, field]) => { field.placeholder = adminLabels[name]; field.setAttribute('aria-label', adminLabels[name]); });
+        adminForm.querySelector('button[type="submit"]').textContent = adminLabels.submit;
+        if (adminStatus.dataset.state) adminStatus.textContent = adminStatus.dataset.state === 'success' ? adminLabels.success : adminLabels.error;
         panelCopy.textContent = panelView === 'summary'
           ? (isArabic ? 'ملخص اليوم' : 'Today Summary')
           : panelView === 'insights'
@@ -673,10 +1212,12 @@
                 ? (isArabic ? 'الاستشارات' : 'Consultations')
               : panelView === 'buttons'
                 ? (isArabic ? 'الأزرار' : 'Buttons')
-            : panelView === 'notification-add'
+          : panelView === 'notification-add'
               ? (isArabic ? 'إضافة إشعار' : 'Add Notification')
+              : panelView === 'admin'
+                ? (isArabic ? 'الإدارة' : 'Admin')
               : (isArabic ? 'الإشعارات' : 'Notifications');
-        document.querySelectorAll('[data-os-menu-copy-en]').forEach((item) => { item.textContent = isArabic ? item.dataset.osMenuCopyAr : item.dataset.osMenuCopyEn; });
+        document.querySelectorAll('[data-os-menu-copy-en]').forEach((item) => { (item.querySelector('.os-menu-label') || item).textContent = isArabic ? item.dataset.osMenuCopyAr : item.dataset.osMenuCopyEn; });
         panelViewNodes('[data-os-insights-en], [data-os-service-en], [data-os-metric-en], [data-os-summary-en]').forEach((item) => {
           const prefix = item.dataset.osSummaryEn !== undefined
             ? 'osSummary'
@@ -689,6 +1230,7 @@
           item.textContent = isArabic ? item.dataset.osWebsiteDescriptionAr || item.dataset.osSystemDescriptionAr : item.dataset.osWebsiteDescriptionEn || item.dataset.osSystemDescriptionEn;
         });
         panelViewNodes('[data-os-metric-value]').forEach((item) => { item.textContent = isArabic ? 'غير متاح' : 'Unknown'; });
+        if (latestSummaryData) setSummaryMetrics(latestSummaryData);
         if (latestInsightsData && panelView === 'insights') setInsightsStatus(latestInsightsData);
         if (panelView === 'notifications') renderNotifications();
         if (panelView === 'promo-codes') renderPromoCodes();
@@ -716,25 +1258,80 @@
         if (actionItem.dataset.osMenuAction === 'promo-codes') { setPanelView('promo-codes'); setPanelOpen(true); setMenuOpen(false); }
         if (actionItem.dataset.osMenuAction === 'products') { setPanelView('products'); setPanelOpen(true); setMenuOpen(false); }
         if (actionItem.dataset.osMenuAction === 'consultations') { setPanelView('consultations'); setPanelOpen(true); setMenuOpen(false); }
+        if (actionItem.dataset.osMenuAction === 'buttons') { setPanelView('buttons'); setPanelOpen(false); setMenuOpen(false); }
+         if (actionItem.dataset.osMenuAction === 'admin') { setPanelView('admin'); setPanelOpen(false); setMenuOpen(false); }
         if (actionItem.dataset.osMenuAction === 'logout') void (async () => { try { await osFetch('/api/os/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) }); } finally { csrfToken = ''; setAuthenticated(false); setPanelOpen(false); setMenuOpen(false); } })();
       });
       buttons.addEventListener('click', async (event) => { const control = event.target.closest('[data-control-key]'); if (!control) return; const next = control.getAttribute('aria-pressed') !== 'true'; const response = await osFetch('/api/os/page-controls', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ actionKey: control.dataset.controlKey, version: Number(control.dataset.controlVersion), enabled: next }) }); if (response.ok) await loadButtons(); });
-      products.addEventListener('click', async (event) => { const action = event.target.closest('[data-product-action]')?.dataset.productAction; if (!action) return; if (action === 'new') { productEditor = { mode: 'new', id: null, idempotencyKey: window.crypto?.randomUUID?.() || String(Date.now()) }; renderProducts(); return; } if (action === 'cancel') { productEditor = null; renderProducts(); return; } const row = event.target.closest('[data-product-id]'); if (!row) return; if (action === 'edit') { productEditor = { mode: 'edit', id: row.dataset.productId }; renderProducts(); return; } if (action === 'archive') { const response = await osFetch('/api/os/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'archive', id: row.dataset.productId }) }); if (response.ok) await loadProducts(); } });
-      products.addEventListener('submit', async (event) => { const form = event.target.closest('[data-product-form]'); if (!form) return; event.preventDefault(); const data = new FormData(form); const current = productEditor?.id ? productsData.find((item) => item.id === productEditor.id) : null; const response = await osFetch('/api/os/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: productEditor?.mode === 'edit' ? 'update' : 'create', id: productEditor?.id, version: current?.version, idempotencyKey: productEditor?.idempotencyKey, slug: data.get('slug'), nameEn: data.get('nameEn'), nameAr: data.get('nameAr'), categoryEn: data.get('categoryEn'), categoryAr: data.get('categoryAr'), descriptionEn: data.get('descriptionEn'), descriptionAr: data.get('descriptionAr'), priceAmount: data.get('priceAmount'), priceCurrency: 'USD', priceLabelEn: data.get('priceAmount') ? `$${data.get('priceAmount')}` : 'Custom', priceLabelAr: data.get('priceAmount') ? `$${data.get('priceAmount')}` : 'مخصص', status: data.get('status') }) }); if (response.ok) { productEditor = null; await loadProducts(); } });
-      consultations.addEventListener('change', async (event) => { const select = event.target.closest('[data-consultation-status]'); const row = event.target.closest('[data-consultation-id]'); if (!select || !row) return; const item = consultationsData.find((entry) => entry.id === row.dataset.consultationId); if (!item) return; const response = await osFetch('/api/os/consultations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: item.id, status: select.value, version: item.version }) }); if (response.ok) await loadConsultations(); else renderConsultations(); });
+      products.addEventListener('click', async (event) => {
+        const control = event.target.closest('[data-product-action]');
+        const action = control?.dataset.productAction;
+        if (!action) return;
+        const row = event.target.closest('[data-product-id]');
+        if (action === 'new') { productEditor = { mode: 'new', id: null, idempotencyKey: window.crypto?.randomUUID?.() || String(Date.now()) }; productImageDraft = ''; productCarouselScrollLeft = 0; renderProducts(); return; }
+        if (action === 'cancel') { const wasEditingExisting = productEditor?.mode === 'edit' && productEditor.id; productEditor = null; productImageDraft = ''; if (!wasEditingExisting) productCarouselScrollLeft = 0; renderProducts(); return; }
+        if (action === 'choose-image') { products.querySelector('[data-product-image-input]')?.click(); return; }
+        if (!row) return;
+        if (action === 'edit') { productCarouselScrollLeft = products.querySelector('[data-product-track]')?.scrollLeft || productCarouselScrollLeft; productEditor = { mode: 'edit', id: row.dataset.productId }; productImageDraft = productsData.find((item) => item.id === row.dataset.productId)?.imageData || ''; renderProducts(); return; }
+        if (action === 'toggle-status') {
+          const item = productsData.find((entry) => entry.id === row.dataset.productId);
+          if (!item) return;
+          const response = await osFetch('/api/os/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update', id: item.id, version: item.version, slug: item.slug, nameEn: item.name.en, nameAr: item.name.ar, categoryEn: item.category.en, categoryAr: item.category.ar, descriptionEn: item.description.en, descriptionAr: item.description.ar, priceAmount: item.price.amount, priceCurrency: item.price.currency, priceLabelEn: item.price.label.en, priceLabelAr: item.price.label.ar, priceAfterDiscountAmount: item.price.afterDiscount?.amount, priceAfterDiscountLabelEn: item.price.afterDiscount?.label?.en, priceAfterDiscountLabelAr: item.price.afterDiscount?.label?.ar, imageData: item.imageData, status: item.status === 'active' ? 'inactive' : 'active' }) });
+          if (response.ok) await loadProducts();
+        }
+      });
+      products.addEventListener('change', (event) => {
+        const input = event.target.closest('[data-product-image-input]');
+        const file = input?.files?.[0];
+        if (!file || !/^image\/(?:png|jpe?g|webp|avif)$/i.test(file.type) || file.size > 1_500_000) return;
+        const reader = new FileReader();
+        reader.addEventListener('load', () => { productImageDraft = String(reader.result || ''); renderProducts(); });
+        reader.readAsDataURL(file);
+      });
+      products.addEventListener('submit', async (event) => {
+        const form = event.target.closest('[data-product-form]');
+        if (!form) return;
+        event.preventDefault();
+        const data = new FormData(form);
+        const current = productEditor?.id ? productsData.find((item) => item.id === productEditor.id) : null;
+        const response = await osFetch('/api/os/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: productEditor?.mode === 'edit' ? 'update' : 'create', id: productEditor?.id, version: current?.version, idempotencyKey: productEditor?.idempotencyKey, slug: data.get('slug'), nameEn: data.get('nameEn'), nameAr: data.get('nameAr'), categoryEn: data.get('categoryEn'), categoryAr: data.get('categoryAr'), descriptionEn: data.get('descriptionEn'), descriptionAr: data.get('descriptionAr'), priceAmount: data.get('priceAmount'), priceCurrency: 'USD', priceLabelEn: data.get('priceAmount') ? `$${data.get('priceAmount')}` : 'Custom', priceLabelAr: data.get('priceAmount') ? `$${data.get('priceAmount')}` : 'مخصص', priceAfterDiscountAmount: data.get('priceAfterDiscountAmount'), priceAfterDiscountLabelEn: data.get('priceAfterDiscountAmount') ? `$${data.get('priceAfterDiscountAmount')}` : null, priceAfterDiscountLabelAr: data.get('priceAfterDiscountAmount') ? `$${data.get('priceAfterDiscountAmount')}` : null, imageData: productImageDraft, status: data.get('status') }) });
+        if (response.ok) { productEditor = null; productImageDraft = ''; await loadProducts(); }
+      });
+      consultations.addEventListener('click', async (event) => {
+        const row = event.target.closest('[data-consultation-id]');
+        if (!row) return;
+        const item = consultationsData.find((entry) => entry.id === row.dataset.consultationId);
+        if (!item) return;
+        const action = event.target.closest('[data-consultation-action]')?.dataset.consultationAction;
+        if (!action && !event.target.closest('button, a, input, textarea, select')) {
+          consultationsExpandedId = consultationsExpandedId === item.id ? null : item.id;
+          renderConsultations();
+          return;
+        }
+        if (!action) return;
+        if (action === 'delete' && !window.confirm(root.lang === 'ar' ? 'حذف هذه الاستشارة؟' : 'Delete this consultation?')) return;
+        const response = await osFetch('/api/os/consultations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action, id: item.id, version: item.version }) });
+        if (response.ok) { consultationsExpandedId = null; await loadConsultations(); } else renderConsultations();
+      });
+      consultations.addEventListener('keydown', (event) => {
+        if (!['Enter', ' '].includes(event.key) || !event.target.matches('.os-consultation-title-row')) return;
+        event.preventDefault();
+        event.target.closest('[data-consultation-id]')?.querySelector('.os-consultation-title-row')?.click();
+      });
       const setPanelOpen = (open) => {
         if (open) setMenuOpen(false);
         if (!open || panelView !== 'summary') stopSummaryResponsePolling();
         panel.classList.toggle('is-expanded', open);
         panel.style.height = '';
         Object.entries(panelViews).forEach(([name, content]) => {
-          content.setAttribute('aria-hidden', String(name !== panelView || !open));
+          content.setAttribute('aria-hidden', String(name !== panelView || (!open && name !== 'buttons')));
         });
-        panelHandle.setAttribute('aria-label', open ? 'Collapse panel' : 'Expand panel');
+        panelHandle.setAttribute('aria-label', panelView === 'buttons' ? panelCopy.textContent : (open ? 'Collapse panel' : 'Expand panel'));
         if (open && panelView === 'summary') startSummaryResponsePolling();
       };
       const setMenuOpen = (open) => {
-        if (open) setPanelOpen(false);
+        panel.classList.toggle('is-menu-obscured', open);
+        adminShell.classList.toggle('is-menu-obscured', open);
         sideMenu.classList.toggle('is-open', open);
         sideMenu.setAttribute('aria-hidden', String(!open));
         addButton.setAttribute('aria-expanded', String(open));
@@ -743,9 +1340,15 @@
       const closeAll = () => { setMenuOpen(false); setPanelOpen(false); };
       addButton.addEventListener('click', (event) => { event.stopPropagation(); setMenuOpen(!sideMenu.classList.contains('is-open')); });
       const updatePanelToggle = () => {
+        if (panelView === 'buttons') return;
         setPanelOpen(!panel.classList.contains('is-expanded'));
       };
       panelHandle.addEventListener('click', (event) => { event.stopPropagation(); updatePanelToggle(); });
+      panel.addEventListener('click', (event) => {
+        if (!panel.classList.contains('is-expanded') || panelView === 'buttons') return;
+        const interactive = event.target.closest?.('button, input, textarea, select, a, [role="button"], [data-control-key], [data-product-action], [data-product-id], [data-notification-id], [data-promo-code-id], [data-consultation-id], .os-buttons-track, .os-product-image-wrap');
+        if (!interactive) setPanelOpen(false);
+      });
       notifications.addEventListener('click', async (event) => {
         const action = event.target.closest('[data-notification-action]')?.dataset.notificationAction;
         const row = event.target.closest('[data-notification-id]');
@@ -828,12 +1431,11 @@
         try { await saveNotification(form, 'create'); } catch (_) { /* Keep the editor open on validation/API failure. */ }
       });
       notifications.addEventListener('input', (event) => syncBilingualDirection(event.target));
-      notifications.addEventListener('focusin', keepNotificationInputVisible);
-      notifications.addEventListener('focusout', handleFormFocusOut);
+      document.addEventListener('focusin', handleFieldFocusIn);
+      document.addEventListener('focusout', handleFieldFocusOut);
       notificationAdd.addEventListener('input', (event) => syncBilingualDirection(event.target));
-      notificationAdd.addEventListener('focusin', keepNotificationInputVisible);
-      notificationAdd.addEventListener('focusout', handleFormFocusOut);
       if (window.visualViewport) window.visualViewport.addEventListener('resize', handleVisualViewportResize);
+      if (window.visualViewport) window.visualViewport.addEventListener('scroll', () => keepNotificationInputVisible());
       document.addEventListener('click', (event) => {
         const path = typeof event.composedPath === 'function' ? event.composedPath() : [];
         const insidePanel = path.includes(panel) || event.target.closest?.('.os-panel');

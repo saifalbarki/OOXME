@@ -1755,7 +1755,6 @@
   }, { once: true });
 
   const setupLogoParticleField = () => {
-    const particleRenderScale = 3;
     const context = logoParticleCanvas.getContext('2d', { alpha: true });
     if (!context) return;
 
@@ -1851,7 +1850,11 @@
     };
 
     const startRendering = () => {
-      if (!isReady || !isInViewport || document.hidden || renderedFrame) return;
+      const fieldRect = logoParticleField.getBoundingClientRect();
+      if (!isReady || !isInViewport || document.hidden || renderedFrame || !fieldRect.width || !fieldRect.height) {
+        if (!fieldRect.width || !fieldRect.height) stopRendering();
+        return;
+      }
       renderedFrame = window.requestAnimationFrame(render);
     };
 
@@ -1864,6 +1867,8 @@
     const resizeCanvas = () => {
       if (!logoMaskImage.naturalWidth) return;
       const rect = logoParticleCanvas.getBoundingClientRect();
+      const isPhoneViewport = window.matchMedia('(max-width: 600px)').matches;
+      const particleRenderScale = isPhoneViewport ? 1.75 : 2.25;
       const pixelRatio = Math.min(Math.max(window.devicePixelRatio || 1, 1), 4) * particleRenderScale;
       const nextWidth = Math.max(1, Math.round(rect.width * pixelRatio));
       const nextHeight = Math.max(1, Math.round(rect.height * pixelRatio));
@@ -1881,11 +1886,10 @@
       // The trademark is separate from the OOXME mark; exclude it before sampling and clipping.
       maskContext.clearRect(Math.floor(width * .855), 0, Math.ceil(width * .145), Math.ceil(height * .072));
       const maskPixels = maskContext.getImageData(0, 0, width, height).data;
-      const isPhoneViewport = window.matchMedia('(max-width: 600px)').matches;
       const particleCount = isPhoneViewport
-        ? Math.min(1320, Math.max(1100, Math.round((rect.width * rect.height) / 54)))
-        : Math.min(880, Math.max(640, Math.round((rect.width * rect.height) / 87.5)));
-      const edgeParticleCount = Math.round(particleCount * .6);
+        ? Math.min(1120, Math.max(960, Math.round((rect.width * rect.height) / 63)))
+        : Math.min(820, Math.max(600, Math.round((rect.width * rect.height) / 96)));
+      const edgeParticleCount = Math.round(particleCount * .5);
       const particleTargetCount = particleCount + edgeParticleCount;
       const particleRadius = isPhoneViewport ? [.56, .76] : [.46, .62];
       const alphaAt = (x, y) => {

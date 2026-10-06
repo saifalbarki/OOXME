@@ -3,9 +3,34 @@ const fs = require('fs');
 const { calendarApi, driveApi, gmailApi } = require('./google');
 
 const productionOrigin = () => String(process.env.OOXME_PRODUCTION_ORIGIN || 'https://www.ooxme.com').replace(/\/+$/, '');
+const MIN_UPTIME_SAMPLES = 12;
 const unknown = (reason = 'not_connected') => ({ status: 'unknown', reason });
 const githubRepository = () => process.env.GITHUB_REPOSITORY
   || (process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}` : 'saifalbarki/OOXME');
+const vercelConfig = () => {
+  const token = process.env.VERCEL_API_TOKEN || process.env.VERCEL_TOKEN;
+  if (!token) throw Object.assign(new Error('Vercel read token unavailable'), { code: 'not_connected' });
+  let projectId = process.env.VERCEL_PROJECT_ID;
+  if (!projectId) { try { projectId = JSON.parse(fs.readFileSync('.vercel/project.json', 'utf8')).projectId; } catch (_) {} }
+  if (!projectId) throw Object.assign(new Error('Vercel project id unavailable'), { code: 'not_connected' });
+  return { token, projectId, teamId: process.env.VERCEL_TEAM_ID || '' };
+};
+
+const analyticsWeekRange = () => {
+  const configuredTimeZone = process.env.BOOKING_TIMEZONE || 'Asia/Baghdad';
+  let timeZone = 'Asia/Baghdad';
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: configuredTimeZone }).format();
+    timeZone = configuredTimeZone;
+  } catch (_) {}
+  const now = new Date();
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now).map(({ type, value }) => [type, value]));
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(parts.weekday);
+  const daysSinceMonday = (weekday + 6) % 7;
+  const sinceDate = new Date(Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day) - daysSinceMonday));
+  const formatDate = (date) => date.toISOString().slice(0, 10);
+  return { since: formatDate(sinceDate), until: `${parts.year}-${parts.month}-${parts.day}`, timeZone };
+};
 
 const githubLatest = async () => {
   const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
@@ -21,18 +46,26 @@ const githubLatest = async () => {
 };
 
 const vercelLatest = async () => {
-  const token = process.env.VERCEL_API_TOKEN || process.env.VERCEL_TOKEN;
-  if (!token) throw Object.assign(new Error('Vercel read token unavailable'), { code: 'not_connected' });
-  let projectId = process.env.VERCEL_PROJECT_ID;
-  if (!projectId) { try { projectId = JSON.parse(fs.readFileSync('.vercel/project.json', 'utf8')).projectId; } catch (_) {} }
-  if (!projectId) throw Object.assign(new Error('Vercel project id unavailable'), { code: 'not_connected' });
+  const { token, projectId, teamId } = vercelConfig();
   const params = new URLSearchParams({ projectId, limit: '1' });
-  if (process.env.VERCEL_TEAM_ID) params.set('teamId', process.env.VERCEL_TEAM_ID);
+  if (teamId) params.set('teamId', teamId);
   const response = await fetch(`https://api.vercel.com/v6/deployments?${params}`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
   const body = await response.json().catch(() => ({}));
   if (!response.ok || !body.deployments?.[0]) throw Object.assign(new Error('Vercel deployment metadata unavailable'), { code: `http_${response.status}` });
   const deployment = body.deployments[0];
   return { status: deployment.readyState === 'ERROR' ? 'attention' : 'operational', updatedAt: deployment.createdAt ? new Date(deployment.createdAt).toISOString() : null, deploymentId: deployment.uid || null };
+};
+
+const vercelAnalyticsVisitors = async () => {
+  const { token, projectId, teamId } = vercelConfig();
+  const { since, until, timeZone } = analyticsWeekRange();
+  const params = new URLSearchParams({ projectId, since, until });
+  if (teamId) params.set('teamId', teamId);
+  const response = await fetch(`https://api.vercel.com/v1/query/web-analytics/visits/count?${params}`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
+  const body = await response.json().catch(() => ({}));
+  const visitors = Number(body.data?.visitors);
+  if (!response.ok || !Number.isFinite(visitors) || visitors < 0) throw Object.assign(new Error('Vercel visitor data unavailable'), { code: `http_${response.status}` });
+  return { value: visitors, since, until, timeZone };
 };
 
 const probeWebsite = async () => {
@@ -83,11 +116,29 @@ const uptimeSummary = async () => {
         WHERE checked_at >= now() - interval '24 hours'`
     );
     const row = result.rows[0];
-    if (row.total < 12) return { value: null, reason: 'monitoring', samples: row.total, latest: row.latest };
-    return { value: Number(((row.healthy / row.total) * 100).toFixed(2)), samples: row.total, latest: row.latest };
+    if (row.total < MIN_UPTIME_SAMPLES) return { value: null, reason: 'monitoring', samples: row.total, latest: row.latest, requiredSamples: MIN_UPTIME_SAMPLES };
+    return { value: Number(((row.healthy / row.total) * 100).toFixed(2)), samples: row.total, latest: row.latest, requiredSamples: MIN_UPTIME_SAMPLES };
   } catch (_) {
-    return { value: null, reason: 'monitoring_unavailable', samples: 0, latest: null };
+    return { value: null, reason: 'monitoring_unavailable', samples: 0, latest: null, requiredSamples: MIN_UPTIME_SAMPLES };
   }
+};
+
+const summaryData = async () => {
+  const [sample, database] = await Promise.all([probeWebsite(), databaseHealth()]);
+  let analytics = null;
+  try { analytics = await vercelAnalyticsVisitors(); } catch (_) {}
+  const siteStatus = !sample.isUp ? 'down' : database.status === 'operational' ? 'active' : 'degraded';
+  return {
+    visitors: analytics?.value ?? null,
+    visitorsState: analytics ? 'ready' : 'unavailable',
+    online: null,
+    onlineState: 'unavailable',
+    siteStatus,
+    siteStatusSource: 'production_probe_and_database',
+    visitorsSince: analytics?.since || null,
+    visitorsUntil: analytics?.until || null,
+    visitorsTimeZone: analytics?.timeZone || null
+  };
 };
 
 const providerCheck = async (name, work) => {
@@ -157,9 +208,11 @@ const insightsData = async () => {
       response: sample.responseMs === null ? null : `${sample.responseMs} ms`,
       version,
       responseStatus: sample.statusCode,
-      uptimeSamples: uptime.samples
+      siteStatus: !sample.isUp ? 'down' : database.status === 'operational' ? 'active' : 'degraded',
+      uptimeSamples: uptime.samples,
+      uptimeRequiredSamples: uptime.requiredSamples
     }
   };
 };
 
-module.exports = { insightsData, probeWebsite, recordUptimeSample, cleanupUptimeSamples };
+module.exports = { insightsData, summaryData, probeWebsite, recordUptimeSample, cleanupUptimeSamples };

@@ -1,0 +1,3 @@
+# Copy this marker into the ignored .env.os.local for local UI testing only.
+# Production never enables this mode; the server also requires NODE_ENV=development.
+OOXME_DEV_AUTH_BYPASS=true

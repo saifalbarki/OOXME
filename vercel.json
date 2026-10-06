@@ -14,19 +14,22 @@
     {
       "source": "/css/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
       "source": "/js/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600, stale-while-revalidate=86400" }
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
   ],
   "functions": {
     "api/**/*.js": { "maxDuration": 30 }
   },
+  "crons": [
+    { "path": "/api/cron/insights-uptime", "schedule": "*/5 * * * *" }
+  ],
   "rewrites": [
     { "source": "/api/booking/availability", "destination": "/api/public?route=availability" },
     { "source": "/api/booking/available-slots", "destination": "/api/public?route=available-slots" },

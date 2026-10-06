@@ -2784,7 +2784,6 @@ html[dir="ltr"] body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-two-colu
   border-radius: 50%;
   background: currentColor;
   transform: translateX(0);
-  will-change: transform;
 }
 
 .s-page__composer-menu-item .s-page__composer-menu-icon {
@@ -2807,7 +2806,6 @@ html[dir="ltr"] body.s-page:not(.s-page--rpn) .s-page__composer-menu.is-two-colu
   flex: 0 0 11px;
   transform: scaleX(1);
   transform-origin: center;
-  will-change: transform;
 }
 
 .s-page__composer-menu-icon-arrow path {

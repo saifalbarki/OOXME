@@ -275,6 +275,17 @@
     normalizeMenu();
   };
 
+  const scheduleAfterFirstPaint = (callback) => {
+    const runWhenIdle = () => {
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(callback, { timeout: 1200 });
+      } else {
+        window.setTimeout(callback, 180);
+      }
+    };
+    window.requestAnimationFrame(() => window.requestAnimationFrame(runWhenIdle));
+  };
+
   let menuExpanded = false;
   const updateMenuTriggerLabel = () => {
     const labels = root.lang === 'ar'
@@ -332,7 +343,7 @@
     if (menu) menu.inert = true;
   };
   window.OOXMEHeader = { setMenuOpen, normalizeMenu, markNotificationUnread };
-  void loadActiveNotification();
+  scheduleAfterFirstPaint(() => { void loadActiveNotification(); });
 
   if (menu) {
     menu.id ||= 'ooxme-primary-menu';

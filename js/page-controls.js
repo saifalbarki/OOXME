@@ -80,11 +80,24 @@
     event.stopPropagation();
   }, true);
 
-  fetch('/api/os/page-controls', { headers: { Accept: 'application/json' }, cache: 'no-store' })
+  const loadPageControls = () => fetch('/api/os/page-controls', { headers: { Accept: 'application/json' }, cache: 'no-store' })
     .then((response) => response.ok ? response.json() : Promise.reject(new Error('page_controls_unavailable')))
     .then((payload) => {
       (payload.data?.controls || []).forEach((control) => apply(control.actionKey, control.enabled !== false));
       page.dataset.osControlsReady = 'true';
     })
     .catch(() => { page.dataset.osControlsReady = 'false'; });
+
+  const scheduleAfterFirstPaint = (callback) => {
+    const runWhenIdle = () => {
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(callback, { timeout: 1200 });
+      } else {
+        window.setTimeout(callback, 180);
+      }
+    };
+    window.requestAnimationFrame(() => window.requestAnimationFrame(runWhenIdle));
+  };
+
+  scheduleAfterFirstPaint(() => { void loadPageControls(); });
 })();

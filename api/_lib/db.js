@@ -17,8 +17,11 @@ const getPool = () => {
       connectionString,
       ssl: shouldUseSsl(connectionString) ? { rejectUnauthorized: false } : undefined,
       max: 5,
-      idleTimeoutMillis: 10_000,
-      connectionTimeoutMillis: 10_000
+      min: process.env.NODE_ENV === 'production' ? 0 : 1,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10_000
     });
     pool.on('error', (error) => {
       if (error?.code || error?.message) console.error('PostgreSQL idle connection error', error.code || error.message);

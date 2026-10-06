@@ -1,5 +1,5 @@
 const { json, methodNotAllowed } = require('../_lib/http');
-const { insightsData, probeWebsite } = require('../_lib/insights');
+const { insightsData, summaryData, probeWebsite } = require('../_lib/insights');
 const { requireAdmin } = require('../_lib/os-auth');
 const { setRequestId } = require('../_lib/os-audit');
 
@@ -20,6 +20,7 @@ module.exports = async (request, response) => {
         }
       });
     }
+    if (request.query?.mode === 'summary') return json(response, 200, { success: true, data: await summaryData() });
     return json(response, 200, { success: true, data: await insightsData() });
   } catch (error) {
     const status = Number(error.status) || 503;

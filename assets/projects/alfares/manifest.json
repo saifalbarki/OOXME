@@ -4,7 +4,11 @@
     {
       "name": "01.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "01.avif",
+        "webp": "01.webp"
+      }
     },
     {
       "name": "02.png",
@@ -49,12 +53,20 @@
     {
       "name": "10.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "10.avif",
+        "webp": "10.webp"
+      }
     },
     {
       "name": "11.png",
       "width": 2175,
-      "height": 2175
+      "height": 2175,
+      "formats": {
+        "avif": "11.avif",
+        "webp": "11.webp"
+      }
     }
   ]
 }

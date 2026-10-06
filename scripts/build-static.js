@@ -22,6 +22,10 @@ const analyticsSnippet = `
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/insights/script.js"></script>`;
+const assetVersion = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || '';
+const versionStaticReferences = (html) => assetVersion
+  ? html.replace(/((?:href|src)="(?:css|js)\/[^"?]+)"/g, `$1?v=${assetVersion}"`)
+  : html;
 
 const readPngDimensions = (filePath) => {
   const header = fs.readFileSync(filePath).subarray(16, 24);
@@ -32,7 +36,14 @@ const writeProjectManifest = (projectPath) => {
   const assets = fs.readdirSync(projectPath)
     .filter((name) => /^\d+\.png$/i.test(name))
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
-    .map((name) => ({ name, ...readPngDimensions(path.join(projectPath, name)) }));
+    .map((name) => {
+      const formats = {};
+      ['avif', 'webp'].forEach((extension) => {
+        const candidate = `${name.slice(0, -4)}.${extension}`;
+        if (fs.existsSync(path.join(projectPath, candidate))) formats[extension] = candidate;
+      });
+      return { name, ...readPngDimensions(path.join(projectPath, name)), ...(Object.keys(formats).length ? { formats } : {}) };
+    });
   fs.writeFileSync(path.join(projectPath, 'manifest.json'), `${JSON.stringify({ project: path.basename(projectPath), assets }, null, 2)}\n`);
 };
 
@@ -40,7 +51,10 @@ if (!fs.existsSync(sourceRoot)) {
   throw new Error('Expected website source directory is missing.');
 }
 
-writeProjectManifest(path.join(sourceRoot, 'assets', 'projects', 'alfares'));
+const projectsRoot = path.join(sourceRoot, 'assets', 'projects');
+fs.readdirSync(projectsRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && fs.readdirSync(path.join(projectsRoot, entry.name)).some((name) => /^\d+\.png$/i.test(name)))
+  .forEach((entry) => writeProjectManifest(path.join(projectsRoot, entry.name)));
 
 fs.rmSync(output, { recursive: true, force: true });
 fs.mkdirSync(output, { recursive: true });
@@ -54,7 +68,7 @@ for (const name of fs.readdirSync(sourceRoot)) {
     if (destination === source && !source.includes('/_vercel/insights/script.js')) {
       throw new Error(`Unable to add Vercel Web Analytics to ${name}: </head> was not found.`);
     }
-    fs.writeFileSync(path.join(output, pageOutputs[name]), destination);
+    fs.writeFileSync(path.join(output, pageOutputs[name]), versionStaticReferences(destination));
   }
 }
 

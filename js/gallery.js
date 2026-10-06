@@ -381,6 +381,12 @@
     card.style.removeProperty('opacity');
     card.style.removeProperty('z-index');
   };
+  const assetCandidates = (asset) => [
+    asset?.formats?.avif ? `${assetRoot}/${asset.formats.avif}` : null,
+    asset?.formats?.webp ? `${assetRoot}/${asset.formats.webp}` : null,
+    asset?.src
+  ].filter(Boolean);
+  const resolvedAssetSource = (asset) => asset?.resolvedSrc || asset?.src;
   const mix = (from, to, value) => from + ((to - from) * value);
   const preloadAsset = (index) => {
     const asset = assets[index];
@@ -392,19 +398,27 @@
     image.height = asset.height;
     const promise = new Promise((resolve, reject) => {
       let settled = false;
+      const candidates = assetCandidates(asset);
+      let candidateIndex = 0;
       const finish = () => {
         if (settled) return;
         settled = true;
+        asset.resolvedSrc = candidates[candidateIndex];
         resolve();
       };
       const fail = () => {
         if (settled) return;
+        candidateIndex += 1;
+        if (candidateIndex < candidates.length) {
+          image.src = candidates[candidateIndex];
+          return;
+        }
         settled = true;
         reject(new Error(`Gallery asset failed to load: ${asset.src}`));
       };
       image.addEventListener('load', finish, { once: true });
-      image.addEventListener('error', fail, { once: true });
-      image.src = asset.src;
+      image.addEventListener('error', fail);
+      image.src = candidates[candidateIndex];
       if (image.complete) {
         if (image.naturalWidth > 0) finish();
         else fail();
@@ -422,10 +436,10 @@
     const asset = assets[index];
     if (!asset) return;
     const image = card.querySelector('img');
-    if (decodedCards.has(card) && image.getAttribute('src') === asset.src && image.complete && image.naturalWidth > 0) return;
+    if (decodedCards.has(card) && image.getAttribute('src') === resolvedAssetSource(asset) && image.complete && image.naturalWidth > 0) return;
     try {
       await preloadAsset(index);
-      if (image.getAttribute('src') !== asset.src) image.src = asset.src;
+      if (image.getAttribute('src') !== resolvedAssetSource(asset)) image.src = resolvedAssetSource(asset);
       image.width = asset.width;
       image.height = asset.height;
       if (image.decode) {
@@ -451,7 +465,7 @@
   const isCardReady = (card) => {
     const asset = assets[Number(card?.dataset.assetIndex)];
     const image = card?.querySelector('img');
-    return Boolean(asset && image && decodedCards.has(card) && image.getAttribute('src') === asset.src && image.complete && image.naturalWidth > 0);
+    return Boolean(asset && image && decodedCards.has(card) && image.getAttribute('src') === resolvedAssetSource(asset) && image.complete && image.naturalWidth > 0);
   };
   const renderStack = () => {
     if (!assets.length || order.length < 3) return;
