@@ -3945,8 +3945,8 @@ html[lang="ar"] body.s-page.s-page--main .s-page__section-3-image-frame .s-page_
 body.s-page.s-page--main {
   --space-gap-tight: calc(var(--s-x) * .5);
   --space-gap-standard: var(--s-x);
-  --s-main-section-1-bottom-card-height: calc((var(--s-x) * 2) + 28.8px);
-  --s-main-section-1-card-radius: 36px;
+  --s-main-section-1-bottom-card-height: calc(var(--s-x) * 4);
+  --s-main-section-1-card-radius: var(--os-panel-radius);
 }
 
 /* Retain each original homepage composition; JS positions the later groups by
@@ -4065,23 +4065,6 @@ body.s-page.s-page--main .s-page__gallery-preview-stage {
   overflow: visible;
   overflow-anchor: none;
   -webkit-tap-highlight-color: transparent;
-}
-
-/* One restrained reveal for ordinary homepage content. Dedicated Gallery
-   card and Consultation dot motion remain outside this shared rule. */
-body.s-page.s-page--main .s-page__home-reveal,
-body.s-page.s-page--main [data-s-main-section-1-image-card] {
-  opacity: 0;
-  filter: blur(5px);
-  transform: translateY(8px);
-  transition: opacity .48s ease-in-out, filter .48s ease-in-out, transform .48s ease-in-out;
-}
-
-body.s-page.s-page--main .s-page__home-reveal.is-home-revealed,
-body.s-page.s-page--main [data-s-main-section-1-image-card].is-ready {
-  opacity: 1;
-  filter: blur(0);
-  transform: translateY(0);
 }
 
 body.s-page.s-page--main .s-page__gallery-preview-cards {
@@ -4473,8 +4456,11 @@ body.s-page.s-page--main .s-page__contact-button {
 }
 
 body.s-page.s-page--main [data-s-main-section-1-image-card] {
-  visibility: hidden;
-  pointer-events: none;
+  opacity: 1;
+  filter: none;
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 html.s-route.is-day-mode body.s-page.s-page--main :is([data-s-main-section-1-image-card], .s-page__contact-button) {
@@ -4500,11 +4486,6 @@ html.s-route.is-day-mode body.s-page.s-page--main .s-page__section-2-image-frame
 
 html.s-route.is-day-mode body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy[data-s-main-section-1-image-card] {
   background: #0A84FF;
-}
-
-body.s-page.s-page--main [data-s-main-section-1-image-card].is-ready {
-  visibility: visible;
-  pointer-events: auto;
 }
 
 body.s-page.s-page--main .s-page__major-section--section-2 > .s-page__group--section-2-image > .s-page__section-2-image-frame {
@@ -4668,10 +4649,19 @@ body.s-page.s-page--main .s-page__section-3-image-frame--section-1-copy
   letter-spacing: normal;
 }
 
-/* The physical bottom card uses one two-line Update text block anchored to the approved bottom inset. */
+/* The physical bottom card keeps its text block centered within the approved panel geometry. */
 body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy
   > .s-page__image-copy > .s-page__image-copy-language {
-  justify-content: flex-end;
+  width: 100%;
+  margin-inline: 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+body.s-page.s-page--main .s-page__section-2-image-frame--section-1-copy
+  > .s-page__image-copy {
+  justify-content: center;
 }
 
 /* The two Main hero-card copy lines remain explicit in landscape as well. */

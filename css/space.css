@@ -248,7 +248,7 @@ html[lang="ar"] .s-page--space :is(.space-message, .space-baseline) {
   z-index: 0;
   box-sizing: border-box;
   display: flex;
-  width: calc(100% - 2px);
+  width: min(340px, calc(100vw - (var(--s-x) * 2)));
   height: auto;
   margin: 0 auto;
   padding: var(--space-gap-standard);
@@ -322,7 +322,8 @@ html.s-route.is-day-mode .s-page--space .space-rewards__item + .space-rewards__i
 }
 
 .s-page--space .space-faq {
-  width: 100%;
+  width: min(340px, calc(100vw - (var(--s-x) * 2)));
+  max-width: min(340px, calc(100vw - (var(--s-x) * 2)));
   margin: var(--space-gap-major) auto 0;
 }
 
@@ -472,8 +473,8 @@ html.s-route.is-day-mode .s-page--space .space-application {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-gap-standard);
-  width: var(--space-side-menu-width);
-  max-width: var(--space-side-menu-width);
+  width: min(340px, calc(100vw - (var(--s-x) * 2)));
+  max-width: min(340px, calc(100vw - (var(--s-x) * 2)));
   margin-top: var(--space-gap-standard);
   margin-inline: auto;
 }
@@ -485,7 +486,10 @@ html.s-route.is-day-mode .s-page--space .space-application {
   min-width: 0;
   margin: 0;
   align-items: center;
-  line-height: var(--space-copy-line-height);
+  block-size: var(--s-x-closed-notice-height);
+  min-block-size: var(--s-x-closed-notice-height);
+  padding: 0;
+  font: 500 12px/1 OOXMEScript, Arial, sans-serif;
   border-color: var(--s-composer-stroke);
   border-radius: var(--s-composer-radius);
   background: var(--s-composer-surface);
@@ -535,8 +539,7 @@ html[dir="ltr"] .s-page--space .space-application__button [lang="ar"] {
   .space-rewards-stage.is-pulsing,
   .space-application__surface.is-pulsing,
   .space-application__button.is-pulsing,
-  .space-details__mark.is-pulsing,
-  .space-faq__question.is-pulsing
+  .space-details__mark.is-pulsing
 ) {
   transform-box: border-box;
   transform-origin: 50% 50%;
@@ -552,8 +555,7 @@ html[dir="ltr"] .s-page--space .space-application__button [lang="ar"] {
     .space-rewards-stage.is-pulsing,
     .space-application__surface.is-pulsing,
     .space-application__button.is-pulsing,
-    .space-details__mark.is-pulsing,
-    .space-faq__question.is-pulsing
+    .space-details__mark.is-pulsing
   ) {
     animation: none;
   }

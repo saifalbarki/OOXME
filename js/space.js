@@ -8,7 +8,7 @@
   const numberNode = page?.querySelector('[data-space-hero-number]');
   const spaceMark = page?.querySelector('.space-details__mark');
   const pulseTargets = [
-    ...page?.querySelectorAll('.space-rewards-stage, .space-application__surface, .space-application__button, .space-details__mark, .space-faq__question') || []
+    ...page?.querySelectorAll('.space-rewards-stage, .space-application__surface, .space-application__button, .space-details__mark') || []
   ];
   const faq = page?.querySelector('.space-faq');
 

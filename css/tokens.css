@@ -23,6 +23,7 @@
   --space: clamp(16px, 4vw, 48px);
   --space-half: calc(var(--space) / 2);
   --panel-radius: clamp(36px, 10vmin, 88px);
+  --os-panel-radius: clamp(42px, 6vw, 72px);
   /* One radius family: every rectangular surface descends from the panel. */
   --radius-panel: var(--panel-radius);
   --radius-box: clamp(20px, calc(var(--radius-panel) * .6), 36px);

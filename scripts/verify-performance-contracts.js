@@ -58,7 +58,7 @@ const verifyStaticContracts = () => {
   assert(osStyles.includes('.os-notification-list { display: grid; gap: var(--os-divider-spacing);'), 'Notification dividers must use shared spacing');
   const notificationsApi = read('api/os/notifications.js');
   assert(notificationsApi.includes("date.getTime() <= Date.now()"), 'Notification scheduling must reject past datetimes in the API');
-  assert(read('css/space.css').includes('width: calc(100% - 2px)'), 'Space card tail width contract was lost');
+  assert(read('css/space.css').includes('width: min(340px, calc(100vw - (var(--s-x) * 2)))'), 'Space card tail width contract was lost');
   const databaseRuntime = read('api/_lib/db.js');
   const pooledQuery = databaseRuntime.slice(databaseRuntime.indexOf('const query ='), databaseRuntime.indexOf('const timedQuery ='));
   assert(!/\bclient\b/.test(pooledQuery), 'Pool query retry references an undefined client');

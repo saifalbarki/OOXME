@@ -114,27 +114,6 @@
 
   if (!page || !content || !composer || !composerMenu || !sendUtilities || !sendThemeUtility || !sendLanguageUtility || !addButton || !input || !submitButton || !logoParticleField || !logoParticleCanvas || !firstGroup || !conversation || !conversationFinal || !conversationFinalCopy || !sections.length || !majorSections.length || !localizedGroups.length) return;
 
-  // Homepage ordinary content uses one shared reveal. The Gallery card stage
-  // and Consultation dot field keep their dedicated motion systems.
-  const homepageRevealTargets = [
-    galleryPreview?.querySelector('.s-page__gallery-preview-copy')
-  ].filter(Boolean);
-  homepageRevealTargets.forEach((target) => target.classList.add('s-page__home-reveal'));
-  if (homepageRevealTargets.length) {
-    if (reducedMotion.matches || !('IntersectionObserver' in window)) {
-      homepageRevealTargets.forEach((target) => target.classList.add('is-home-revealed'));
-    } else {
-      const homepageRevealObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-home-revealed');
-          observer.unobserve(entry.target);
-        });
-      }, { threshold: 0.15 });
-      homepageRevealTargets.forEach((target) => homepageRevealObserver.observe(target));
-    }
-  }
-
   const consultationDotField = document.querySelector('[data-s-consultation-dot-field]');
   const consultationText = document.querySelector('[data-s-contact-consultation] .s-page__contact-consultation-text');
   const consultationGroup = document.querySelector('.s-page__flow-group--section-8-contact');
@@ -487,37 +466,6 @@
     previewStage.addEventListener('pointerdown', pulsePreviewStage, { passive: true });
     previewStage.addEventListener('animationend', (event) => {
       if (event.animationName === 's-page-composer-pulse') previewStage.classList.remove('is-pulsing');
-    });
-  }
-
-  const mainSectionOneImageCards = page.classList.contains('s-page--main')
-    ? Array.from(page.querySelectorAll('[data-s-main-section-1-image-card]'))
-    : [];
-  if (mainSectionOneImageCards.length) {
-    const waitForDecodedImage = (image) => {
-      const decode = () => {
-        try {
-          return typeof image.decode === 'function'
-            ? Promise.resolve(image.decode()).catch(() => {})
-            : Promise.resolve();
-        } catch (_) {
-          return Promise.resolve();
-        }
-      };
-      if (image.complete) return decode();
-      return new Promise((resolve) => {
-        image.addEventListener('load', () => { decode().then(resolve); }, { once: true });
-        image.addEventListener('error', resolve, { once: true });
-      });
-    };
-    Promise.all([
-      document.fonts?.ready || Promise.resolve(),
-      ...mainSectionOneImageCards.map((card) => {
-        const image = card.querySelector('img');
-        return image ? waitForDecodedImage(image) : Promise.resolve();
-      })
-    ]).then(() => {
-      mainSectionOneImageCards.forEach((card) => card.classList.add('is-ready'));
     });
   }
 
