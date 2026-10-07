@@ -70,7 +70,7 @@
     { "source": "/update", "destination": "/update.html" },
     { "source": "/consultation", "destination": "/consultation.html" },
     { "source": "/store", "destination": "/store.html" },
-    { "source": "/os", "destination": "/api/os/page" }
+    { "source": "/os", "destination": "/api/os/auth?view=page" }
   ],
   "redirects": [
     { "source": "/service", "destination": "/bm", "permanent": true },
