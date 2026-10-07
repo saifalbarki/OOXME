@@ -9,8 +9,13 @@ const { normalizePromoCode, validatePromoOrToken, RESERVATION_TTL_MINUTES } = re
 
 const validEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || ''));
 const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
-const normalizePhone = (value) => String(value || '').replace(/\D/g, '');
-const identityHash = (email, phone) => crypto.createHash('sha256').update(`${normalizeEmail(email)}\u0000${normalizePhone(phone)}`).digest('hex');
+const normalizePhoneDigits = (value) => String(value || '').replace(/[٠-٩۰-۹]/g, (digit) => {
+  const code = digit.charCodeAt(0);
+  return String(code >= 0x06F0 ? code - 0x06F0 : code - 0x0660);
+});
+const normalizePhone = (value) => normalizePhoneDigits(value).trim().replace(/[\s().-]/g, '').replace(/^00/, '+');
+const phoneDigits = (value) => normalizePhone(value).replace(/\D/g, '');
+const identityHash = (email, phone) => crypto.createHash('sha256').update(`${normalizeEmail(email)}\u0000${phoneDigits(phone)}`).digest('hex');
 const validIdempotencyKey = (value) => /^[A-Za-z0-9._:-]{16,128}$/.test(String(value || ''));
 const slotBounds = (date, time, duration) => {
   const start = new Date(`${date}T${time}:00+03:00`);
@@ -40,7 +45,7 @@ async function reserveBooking(input, customer, config) {
     customer: {
       name: String(customer.name).trim(),
       email: normalizeEmail(customer.email),
-      phone: String(customer.phone).trim(),
+      phone: normalizePhone(customer.phone),
       topic: String(customer.topic).trim(),
       sector: String(customer.sector).trim(),
       additional: String(customer.additional || '').trim()
@@ -65,7 +70,7 @@ async function reserveBooking(input, customer, config) {
     await execute(
       `INSERT INTO bookings (id, public_reference, status, service_code, customer_name, customer_email, customer_phone, customer_email_normalized, customer_phone_normalized, customer_identity_hash, topic, sector, additional_information, scheduled_start, scheduled_end, timezone, duration_minutes, base_amount, discount_amount, final_amount, currency, payment_provider, promotion_id, promo_code_normalized, idempotency_key, booking_language)
        VALUES ($1, $2, 'held', 'consultation', $3, $4, $5, $4, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)`,
-      [booking.id, booking.publicReference, booking.customer.name, booking.customer.email, booking.customer.phone, normalizePhone(booking.customer.phone), customerHash, booking.customer.topic, booking.customer.sector, booking.customer.additional, bounds.start, bounds.end, config.timezone, duration, quote.baseAmount, quote.discountAmount, quote.finalAmount, quote.currency, quote.finalAmount === 0 ? null : (booking.payment || null), promotion.promotionId || null, booking.promo || null, booking.idempotencyKey, booking.language]
+      [booking.id, booking.publicReference, booking.customer.name, booking.customer.email, booking.customer.phone, phoneDigits(booking.customer.phone), customerHash, booking.customer.topic, booking.customer.sector, booking.customer.additional, bounds.start, bounds.end, config.timezone, duration, quote.baseAmount, quote.discountAmount, quote.finalAmount, quote.currency, quote.finalAmount === 0 ? null : (booking.payment || null), promotion.promotionId || null, booking.promo || null, booking.idempotencyKey, booking.language]
     );
     await execute(
       `INSERT INTO booking_holds (id, booking_id, service_code, slot_start, slot_end, status, expires_at)
@@ -157,7 +162,7 @@ module.exports = async (request, response) => {
     const customer = input.customer || {};
     const duration = Number(input.duration);
     const config = bookingConfig();
-    if (!customer.name || !validEmail(customer.email) || normalizePhone(customer.phone).length < 7 || !customer.topic || !customer.sector || !validIdempotencyKey(input.idempotencyKey) || !/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !config.slots.includes(input.time) || !config.consultationMinutes.includes(duration)) {
+    if (!customer.name || !validEmail(customer.email) || phoneDigits(customer.phone).length < 7 || !customer.topic || !customer.sector || !validIdempotencyKey(input.idempotencyKey) || !/^\d{4}-\d{2}-\d{2}$/.test(input.date) || !config.slots.includes(input.time) || !config.consultationMinutes.includes(duration)) {
       return json(response, 400, { error: 'invalid_booking' });
     }
     const existing = await findBookingByIdempotencyKey(input.idempotencyKey);

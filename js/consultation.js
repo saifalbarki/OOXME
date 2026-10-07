@@ -9,6 +9,7 @@
   const consultationAction = page?.querySelector('.s-page__consultation-page-action');
   const consultationIntro = page?.querySelector('[data-s-consultation-intro]');
   const startBookingButton = page?.querySelector('[data-s-consultation-start]');
+  const summaryFrame = page?.querySelector('.s-page__major-section--consultation-summary');
   const sectionComposerUnit = page?.querySelector('[data-s-consultation-composer-unit]');
   const sectionComposer = page?.querySelector('[data-s-consultation-composer]');
   const sectionInput = page?.querySelector('[data-s-consultation-composer-input]');
@@ -33,7 +34,7 @@
   const successOverlayTitle = page?.querySelector('[data-s-consultation-success-title]');
   const successOverlayInstruction = page?.querySelector('[data-s-consultation-success-instruction]');
   const consultationPricing = globalThis.OOXME_CONSULTATION_PRICING;
-  if (!page || !content || !composer || !addButton || !input || !consultationAction || !consultationIntro || !startBookingButton || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionComposerHelper || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
+  if (!page || !content || !composer || !addButton || !input || !consultationAction || !consultationIntro || !startBookingButton || !summaryFrame || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionComposerHelper || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
 
   const copy = {
     en: { ask: 'Ask ooxme', add: 'OOXME character', language: 'Switch to Arabic' },
@@ -120,7 +121,7 @@
       success: 'تم استلام حجزك بنجاح', send: 'إرسال الإجابة', confirm: 'تأكيد الحجز', message: 'إجابة الاستشارة', helper: 'انقر في المربع، أجب عن المطلوب'
     }
   };
-  const booking = { index: 0, answers: [], complete: false, payment: '' };
+  const booking = { index: 0, answers: [], complete: false, summaryUnlocked: false, payment: '' };
   const successMessages = {
     en: { full: 'Booking received successfully', short: 'Received successfully' },
     ar: { full: 'تم استلام حجزك بنجاح', short: 'استلم بنجاح' }
@@ -181,7 +182,23 @@
     phone: { en: 'Enter a real phone number.', ar: 'ادخل رقم هاتف حقيقي.' },
     email: { en: 'Enter a valid email address.', ar: 'ادخل بريدا الكترونيا صالحا.' }
   };
-  const normalizePhoneInput = (value) => String(value || '').trim().replace(/[\s().-]/g, '').replace(/^00/, '+');
+  const normalizePhoneDigits = (value) => String(value || '').replace(/[٠-٩۰-۹]/g, (digit) => {
+    const code = digit.charCodeAt(0);
+    return String(code >= 0x06F0 ? code - 0x06F0 : code - 0x0660);
+  });
+  const normalizePhoneInput = (value) => normalizePhoneDigits(value).trim().replace(/[\s().-]/g, '').replace(/^00/, '+');
+  const normalizePhoneFieldValue = () => {
+    if (currentBookingStep().id !== 'phone') return;
+    const value = sectionInput.value;
+    const normalized = normalizePhoneDigits(value);
+    if (normalized === value) return;
+    const caret = sectionInput.selectionStart;
+    sectionInput.value = normalized;
+    if (caret !== null) {
+      const normalizedCaret = normalizePhoneDigits(value.slice(0, caret)).length;
+      sectionInput.setSelectionRange(normalizedCaret, normalizedCaret);
+    }
+  };
   const isValidPhoneInput = (value) => {
     const normalized = normalizePhoneInput(value);
     const digits = normalized.startsWith('+') ? normalized.slice(1) : normalized;
@@ -317,6 +334,20 @@
     return choicesFor(step, language).find(([id]) => id === answer.choice)?.[1] || answer.value;
   };
   const answerFor = (stepId) => booking.answers.find((item) => item.step === stepId);
+  const requiredBookingDataComplete = () => bookingSteps
+    .filter((step) => step.type !== 'confirm')
+    .every((step) => {
+      const answer = answerFor(step.id);
+      return Boolean(answer && String(answer.value || answer.choice || '').trim());
+    });
+  const summaryIsUnlocked = () => booking.summaryUnlocked === true || booking.complete === true;
+  const syncSummaryAccess = () => {
+    const unlocked = summaryIsUnlocked();
+    summaryFrame.hidden = !unlocked;
+    summaryFrame.inert = !unlocked;
+    summaryFrame.toggleAttribute('inert', !unlocked);
+    summaryFrame.setAttribute('aria-hidden', String(!unlocked));
+  };
   const selectedDuration = () => Number(answerFor('duration')?.choice || answerFor('duration')?.value || 0);
   const baseQuoteForDuration = (duration) => {
     const prices = consultationPricing.durations[duration];
@@ -339,6 +370,7 @@
   };
   const formatMoney = (value) => Number.isFinite(Number(value)) ? `$${Number(value).toFixed(0)}` : '—';
   const renderSummary = () => {
+    syncSummaryAccess();
     const language = bookingLanguage();
     const ar = language === 'ar';
     const labels = ar ? {
@@ -671,7 +703,8 @@
     if (booking.complete) return;
     if (step.type === 'confirm') { completeBooking(); return; }
     if (step.type !== 'text') return;
-    const value = sectionInput.value.trim();
+    const value = step.id === 'phone' ? normalizePhoneInput(sectionInput.value) : sectionInput.value.trim();
+    if (step.id === 'phone') sectionInput.value = value;
     const valid = step.id === 'phone' ? isValidPhoneInput(value)
       : step.id === 'email' ? isValidEmailInput(value)
         : Boolean(value);
@@ -706,6 +739,7 @@
   const activeIndex = () => sections.reduce((closest, section, index) => { const distance = Math.abs(section.getBoundingClientRect().top - referenceY()); return !closest || distance < closest.distance ? { index, distance } : closest; }, null)?.index ?? 0;
   const transition = (direction) => {
     if (!direction || locked) return;
+    if (direction > 0 && !summaryIsUnlocked()) return;
     // Section 2 must be entered from a clean Section 1 visual state. Clear the
     // keyboard transform and any native-pan correction before reading geometry.
     restoreClosedSectionComposerBaseline();
@@ -776,8 +810,7 @@
     keyboardSessionActive = true;
     keyboardOpen = false;
     keyboardSessionScrollY = window.scrollY;
-    keyboardBaselineViewportHeight = Math.max(window.innerHeight, viewport?.height || 0);
-    closedComposerBottom = sectionComposerUnit.getBoundingClientRect().bottom;
+    keyboardBaselineViewportHeight = Math.max(closedComposerFrameHeight, window.innerHeight, viewport?.height || 0);
   };
   const isSectionKeyboardClosed = () => {
     const viewport = currentVisualViewport();
@@ -795,11 +828,13 @@
     }
     const viewport = currentVisualViewport();
     if (!viewport) return;
-    // Restore the proven 12px gap method: calculate only the amount needed to
-    // place the fixed closed-baseline bottom above the CURRENT visual viewport.
-    // No document scroll, previous transform, or previous keyboard offset is used.
+    // Place the stable closed-baseline bottom above the CURRENT visual viewport.
+    // Compensate for native browser panning since getBoundingClientRect() and
+    // VisualViewport coordinates move differently while the keyboard is open.
     const keyboardTop = viewport.offsetTop + viewport.height;
-    const nextOffset = Math.max(0, closedComposerBottom - keyboardTop + 12);
+    const nativePan = window.scrollY - (keyboardSessionScrollY || 0);
+    const baselineBottom = closedComposerBottom - nativePan;
+    const nextOffset = Math.max(0, baselineBottom - keyboardTop + 12);
     setSectionComposerKeyboardOffset(nextOffset);
   };
   const scheduleSectionComposerKeyboard = () => {
@@ -853,6 +888,7 @@
   composer.addEventListener('animationend', () => composer.classList.remove('is-pulsing'));
   input.addEventListener('input', updateInputLanguage);
   sectionInput.addEventListener('input', () => {
+    normalizePhoneFieldValue();
     dismissBookingHelper();
     syncSectionInputTextStyle();
     if (sectionInputValidationStep) {
@@ -864,7 +900,14 @@
   sectionInput.addEventListener('blur', restoreClosedSectionComposerBaseline);
   sectionComposer.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (booking.complete || currentBookingStep().type === 'confirm') { transition(1); return; }
+    if (booking.complete) { transition(1); return; }
+    if (currentBookingStep().type === 'confirm') {
+      if (!requiredBookingDataComplete()) return;
+      booking.summaryUnlocked = true;
+      syncSummaryAccess();
+      transition(1);
+      return;
+    }
     submitBooking();
   });
   const cancelDiscountValidation = () => {
@@ -1043,6 +1086,7 @@
     scheduleBookingGeometry();
   }, { passive: true });
   document.documentElement.classList.add('s-x-discrete-sections');
+  syncSummaryAccess();
   applyLanguage(document.documentElement.lang === 'en' ? 'en' : 'ar', { emit: false }); establishClosedComposerBaseline();
   requestAnimationFrame(() => { renderBookingFlow(); restoreClosedSectionComposerBaseline(); document.documentElement.classList.remove('s-x-initializing'); void loadNearestBookingDays(); });
 })();

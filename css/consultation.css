@@ -196,6 +196,10 @@ body.s-page--consultation .s-page__consultation-composer-unit {
   transition: transform .28s cubic-bezier(.22, .61, .36, 1), opacity .28s ease, filter .28s ease, visibility 0s linear .28s;
 }
 
+body.s-page--consultation .s-page__major-section--consultation-summary[hidden] {
+  display: none !important;
+}
+
 body.s-page--consultation .s-page__consultation-composer-unit.is-intro-hidden {
   visibility: hidden;
   opacity: 0;

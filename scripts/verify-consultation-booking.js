@@ -63,7 +63,7 @@ mock('../api/_lib/db', {
   query: async (text, values) => ({ rows: text.startsWith('SELECT public_reference') && records.has(values[0]) ? [records.get(values[0])] : [] }),
   withTransaction: async (work) => work({
     query: async (text, values = []) => {
-      if (text.startsWith('INSERT INTO bookings')) records.set(values[21], { public_reference: values[1], status: 'held', calendar_event_id: null, final_amount: values[16], currency: values[17], payment_provider: values[18], booking_language: values[22] });
+      if (text.startsWith('INSERT INTO bookings')) records.set(values[21], { public_reference: values[1], status: 'held', calendar_event_id: null, customer_phone: values[4], customer_phone_normalized: values[5], final_amount: values[16], currency: values[17], payment_provider: values[18], booking_language: values[22] });
       if (text.startsWith('UPDATE bookings SET status = \'confirmed\'')) {
         for (const record of records.values()) {
           if (record.status === 'held') { record.status = 'confirmed'; record.calendar_event_id = values[1]; }
@@ -140,10 +140,12 @@ const invoke = async (idempotencyKey, overrides = {}) => {
   assert.equal(noPayment.body.status, 'confirmed');
   assert.equal(records.get('safe-booking-no-payment').payment_provider, null);
   assert.equal(records.get('safe-booking-no-payment').booking_language, 'ar');
-  const tamperedPrice = await invoke('safe-booking-client-price-override', { baseAmount: 1, discountAmount: 49, finalAmount: 1 });
+  const tamperedPrice = await invoke('safe-booking-client-price-override', { baseAmount: 1, discountAmount: 49, finalAmount: 1, phone: '+٩٦٤٧٧٠٠٠٠٠٠٠٠' });
   assert.equal(tamperedPrice.code, 201);
   assert.equal(tamperedPrice.body.finalAmount, 50);
   assert.equal(records.get('safe-booking-client-price-override').final_amount, 50);
+  assert.equal(records.get('safe-booking-client-price-override').customer_phone, '+9647700000000');
+  assert.equal(records.get('safe-booking-client-price-override').customer_phone_normalized, '9647700000000');
   assert.equal(calendarCalls, 2);
   assert.equal(notificationCalls, 2);
   const first = await invoke('safe-booking-idempotency-0001');
