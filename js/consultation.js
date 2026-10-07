@@ -341,12 +341,16 @@
       const x = Number.parseFloat(getComputedStyle(page).getPropertyValue('--s-x')) || 0;
       const panelBottom = unitRect.bottom - (booking.complete ? composerHeight + x : composerHeight / 2);
       const maximum = Math.max(0, panelBottom - (topBarRect.bottom + x));
-      const desired = booking.answers.length * 48 + (booking.complete ? 0 : composerHeight / 2);
+      const contentHeight = Array.from(sectionAnswerHistory.children)
+        .reduce((height, row) => height + row.getBoundingClientRect().height, 0);
+      const desired = contentHeight + (booking.complete ? 0 : composerHeight / 2);
       const height = Math.min(desired, maximum);
       sectionComposerUnit.style.setProperty('--s-consultation-history-height', `${height.toFixed(2)}px`);
       sectionComposerUnit.style.setProperty('--s-consultation-history-max-height', `${maximum.toFixed(2)}px`);
-      sectionAnswerHistory.scrollTop = sectionAnswerHistory.scrollHeight;
     });
+  };
+  const scrollAnswerHistoryToEnd = () => {
+    sectionAnswerHistory.scrollTop = sectionAnswerHistory.scrollHeight;
   };
   const renderAnswerHistory = () => {
     const language = bookingLanguage();
@@ -589,6 +593,7 @@
     booking.answers.push({ step: step.id, value, choice });
     booking.index += 1;
     renderBookingFlow({ clearSectionInput: step.type === 'text', placeSectionCaret: keepTextFocus });
+    scrollAnswerHistoryToEnd();
     // Keep the native keyboard session alive while consecutive Section 1
     // questions are text inputs. It closes naturally when the next step is a
     // choice/confirmation step because the input is disabled there.
@@ -948,14 +953,6 @@
     // Section 1 composer baseline. The viewport listener owns keyboard lift.
     if (!window.visualViewport) restoreClosedSectionComposerBaseline();
     scheduleBookingGeometry();
-  }, { passive: true });
-  window.addEventListener('scroll', () => {
-    if (!keyboardSessionActive || !keyboardOpen || keyboardSessionScrollY === null) return;
-    if (Math.abs(window.scrollY - keyboardSessionScrollY) > .5) {
-      // Keep Section 1 fixed while the browser tries to native-pan the focused
-      // field. This is a corrective guard, not part of keyboard offset math.
-      window.scrollTo({ top: keyboardSessionScrollY, left: 0, behavior: 'auto' });
-    }
   }, { passive: true });
   document.documentElement.classList.add('s-x-discrete-sections');
   applyLanguage(document.documentElement.lang === 'en' ? 'en' : 'ar', { emit: false }); establishClosedComposerBaseline();

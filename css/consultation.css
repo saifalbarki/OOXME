@@ -4,7 +4,7 @@
 body.s-page--consultation {
   --s-consultation-keyboard-offset: 0px;
   --s-consultation-frame-height: 100dvh;
-  --s-consultation-primary-card-width: min(calc(100% - (var(--s-x) * 2)), 420px);
+  --s-consultation-primary-card-width: 100%;
   --s-consultation-section-bottom-inset: calc(var(--s-x) * 2.5);
 }
 
@@ -54,7 +54,7 @@ body.s-page--consultation .s-page__consultation-composer-row {
   align-items: center;
   position: relative;
   z-index: 1;
-  width: calc(100% - (var(--s-x) * 4));
+  width: 100%;
   height: var(--s-composer-height);
   margin: 0;
   margin-inline: auto;
@@ -131,22 +131,24 @@ body.s-page--consultation .s-page__consultation-answer-history::-webkit-scrollba
 
 body.s-page--consultation .s-page__consultation-answer-row {
   --s-consultation-answer-row-height: 48px;
-  width: 100%;
-  height: var(--s-consultation-answer-row-height);
+  width: min(calc(100% - (var(--s-x) * 2)), 420px);
+  height: auto;
   min-height: var(--s-consultation-answer-row-height);
   min-width: 0;
-  margin: 0;
+  margin: 0 auto;
   box-sizing: border-box;
   position: relative;
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
+  padding: calc(var(--s-x) * .5) var(--s-x);
   overflow: hidden;
   color: #FFFFFF;
   font: 500 12px/1.2 OOXMEScript, Arial, sans-serif;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 body.s-page--consultation .s-page__consultation-answer-row[role="button"] { pointer-events: auto; cursor: pointer; }
 
