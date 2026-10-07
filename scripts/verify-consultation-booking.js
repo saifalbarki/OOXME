@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const { getLaunchQuote, validatePromotionInput } = require('../api/_lib/promo-engine');
+const { calculateQuote, getBasePrice, getBaseQuote, validatePromotionInput } = require('../api/_lib/promo-engine');
 
 const resolve = (path) => require.resolve(path);
 const mock = (path, exports) => {
@@ -53,7 +53,11 @@ mock('../api/_lib/messaging', {
 });
 mock('../api/_lib/promo-engine', {
   normalizePromoCode: (value) => String(value || '').trim().toUpperCase(),
-  validatePromoOrToken: async ({ serviceId, durationMinutes }) => ({ valid: true, quote: getLaunchQuote({ serviceCode: serviceId, durationMinutes }), type: 'none', notificationMode: 'final' })
+  validatePromoOrToken: async ({ serviceId, durationMinutes, promoCode }) => {
+    const basePrice = getBasePrice({ serviceCode: serviceId, durationMinutes });
+    if (!promoCode) return { valid: true, quote: getBaseQuote({ serviceCode: serviceId, durationMinutes }), type: 'none', notificationMode: 'final' };
+    return { valid: true, type: 'promotion', promotionId: 'safe-promo', promoCode, maxUses: null, perCustomerLimit: null, quote: calculateQuote(basePrice, { discountType: 'percentage', discountValue: 20, currency: 'USD' }), notificationMode: 'final' };
+  }
 });
 mock('../api/_lib/db', {
   query: async (text, values) => ({ rows: text.startsWith('SELECT public_reference') && records.has(values[0]) ? [records.get(values[0])] : [] }),
@@ -101,12 +105,12 @@ const invoke = async (idempotencyKey, overrides = {}) => {
 };
 
 (async () => {
-  const expectedQuotes = new Map([[45, [50, 30, 20]], [60, [75, 45, 30]], [90, [125, 75, 50]], [120, [175, 105, 70]]]);
+  const expectedQuotes = new Map([[45, 50], [60, 75], [90, 125], [120, 175]]);
   const noPromoExecute = async () => ({ rows: [] });
-  for (const [duration, [baseAmount, discountAmount, finalAmount]] of expectedQuotes) {
+  for (const [duration, baseAmount] of expectedQuotes) {
     const noPromoQuote = await validatePromotionInput({ promoCode: '', serviceCode: 'consultation', durationMinutes: duration, execute: noPromoExecute });
     assert.equal(noPromoQuote.valid, true);
-    assert.deepEqual(noPromoQuote.quote, { baseAmount, discountAmount, finalAmount, currency: 'USD', durationMinutes: duration, serviceCode: 'consultation', discountType: 'percentage', discountValue: 60 });
+    assert.deepEqual(noPromoQuote.quote, { baseAmount, discountAmount: 0, finalAmount: baseAmount, currency: 'USD', durationMinutes: duration, serviceCode: 'consultation', discountType: null, discountValue: 0 });
   }
   const freeQuote = await validatePromotionInput({
     promoCode: 'FREE',
@@ -119,13 +123,29 @@ const invoke = async (idempotencyKey, overrides = {}) => {
     }
   });
   assert.deepEqual(freeQuote.quote, { baseAmount: 50, discountAmount: 50, finalAmount: 0, currency: 'USD', durationMinutes: 45, serviceCode: 'consultation', discountType: 'percentage', discountValue: 100 });
+  const discountExecute = async (text) => {
+    if (text.includes('FROM promotions')) return { rows: [{ id: 'safe-promotion', code_normalized: 'SAVE20', status: 'active', campaign_source: 'promo_input', starts_at: null, ends_at: null, total_usage_limit: null, per_customer_limit: null, service_restrictions: ['consultation'], duration_restrictions: [], discount_type: 'percentage', discount_value: 20, currency: null }] };
+    if (text.includes('count(*) FILTER')) return { rows: [{ total: 0, customer: 0 }] };
+    return { rows: [] };
+  };
+  const discountedQuotes = new Map([[45, [10, 40]], [60, [15, 60]], [90, [25, 100]], [120, [35, 140]]]);
+  for (const [duration, [discountAmount, finalAmount]] of discountedQuotes) {
+    const quote = await validatePromotionInput({ promoCode: 'SAVE20', serviceCode: 'consultation', durationMinutes: duration, execute: discountExecute });
+    assert.equal(quote.valid, true);
+    assert.equal(quote.quote.discountAmount, discountAmount);
+    assert.equal(quote.quote.finalAmount, finalAmount);
+  }
   const noPayment = await invoke('safe-booking-no-payment', { payment: '' });
   assert.equal(noPayment.code, 201);
   assert.equal(noPayment.body.status, 'confirmed');
   assert.equal(records.get('safe-booking-no-payment').payment_provider, null);
   assert.equal(records.get('safe-booking-no-payment').booking_language, 'ar');
-  assert.equal(calendarCalls, 1);
-  assert.equal(notificationCalls, 1);
+  const tamperedPrice = await invoke('safe-booking-client-price-override', { baseAmount: 1, discountAmount: 49, finalAmount: 1 });
+  assert.equal(tamperedPrice.code, 201);
+  assert.equal(tamperedPrice.body.finalAmount, 50);
+  assert.equal(records.get('safe-booking-client-price-override').final_amount, 50);
+  assert.equal(calendarCalls, 2);
+  assert.equal(notificationCalls, 2);
   const first = await invoke('safe-booking-idempotency-0001');
   assert.equal(first.code, 201);
   assert.equal(first.body.status, 'confirmed');
@@ -135,29 +155,35 @@ const invoke = async (idempotencyKey, overrides = {}) => {
   const replay = await invoke('safe-booking-idempotency-0001');
   assert.equal(replay.code, 200);
   assert.equal(replay.body.replayed, true);
-  assert.equal(calendarCalls, 2);
-  assert.equal(notificationCalls, 2);
+  assert.equal(calendarCalls, 3);
+  assert.equal(notificationCalls, 3);
   failCustomerWhatsApp = true;
   const notificationFailure = await invoke('safe-booking-idempotency-0002');
   assert.equal(notificationFailure.code, 201);
   assert.equal(notificationFailure.body.status, 'confirmed');
   assert.equal(notificationFailure.body.integrations.notifications.customerWhatsApp.status, 'rejected');
-  assert.equal(calendarCalls, 3);
-  assert.equal(notificationCalls, 3);
+  assert.equal(calendarCalls, 4);
+  assert.equal(notificationCalls, 4);
   failCalendar = true;
   const calendarFailure = await invoke('safe-booking-idempotency-0003');
   assert.equal(calendarFailure.code, 503);
-  assert.equal(notificationCalls, 3);
+  assert.equal(notificationCalls, 4);
   failCalendar = false;
   const englishLanguage = await invoke('safe-booking-language-en', { language: 'en' });
   assert.equal(englishLanguage.code, 201);
   assert.equal(records.get('safe-booking-language-en').booking_language, 'en');
   assert.deepEqual(notificationLanguages.slice(-2), ['ar', 'en']);
-  for (const [duration, language, finalAmount] of [[45, 'ar', 20], [60, 'en', 30], [90, 'ar', 50], [120, 'en', 70]]) {
+  for (const [duration, language, finalAmount] of [[45, 'ar', 50], [60, 'en', 75], [90, 'ar', 125], [120, 'en', 175]]) {
     const response = await invoke(`safe-booking-pricing-${duration}-${language}`, { duration, language });
     assert.equal(response.code, 201);
     assert.equal(response.body.finalAmount, finalAmount);
     assert.equal(records.get(`safe-booking-pricing-${duration}-${language}`).final_amount, finalAmount);
+  }
+  for (const [duration, finalAmount] of [[45, 40], [60, 60], [90, 100], [120, 140]]) {
+    const response = await invoke(`safe-booking-discounted-${duration}`, { duration, promoCode: 'SAVE20' });
+    assert.equal(response.code, 201);
+    assert.equal(response.body.finalAmount, finalAmount);
+    assert.equal(records.get(`safe-booking-discounted-${duration}`).final_amount, finalAmount);
   }
   console.log('Safe consultation booking verification passed.');
 })().catch((error) => {

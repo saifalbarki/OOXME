@@ -16,13 +16,20 @@ function getBasePrice({ serviceCode = 'consultation', durationMinutes } = {}) {
   return { amount, currency: consultationPricing.currency, durationMinutes: duration, serviceCode };
 }
 
-function calculateQuote(basePrice, { discountType, discountValue, currency }) {
+function calculateQuote(basePrice, { discountType = null, discountValue = 0, currency } = {}) {
   if (discountType === 'fixed' && currency && currency.trim() !== basePrice.currency) {
     throw Object.assign(new Error('Promotion currency does not match the service currency'), { code: 'promotion_currency_mismatch' });
   }
+  if (discountType !== null && !['fixed', 'percentage'].includes(discountType)) {
+    throw Object.assign(new Error('Unsupported promotion discount type'), { code: 'promotion_invalid' });
+  }
+  const numericDiscount = Number(discountValue);
+  if (!Number.isFinite(numericDiscount) || numericDiscount < 0) {
+    throw Object.assign(new Error('Invalid promotion discount value'), { code: 'promotion_invalid' });
+  }
   const raw = discountType === 'percentage'
-    ? basePrice.amount * (Number(discountValue) / 100)
-    : Number(discountValue);
+    ? basePrice.amount * (numericDiscount / 100)
+    : discountType === 'fixed' ? numericDiscount : 0;
   const discountAmount = money(Math.min(basePrice.amount, Math.max(0, raw)));
   return {
     baseAmount: basePrice.amount,
@@ -32,15 +39,12 @@ function calculateQuote(basePrice, { discountType, discountValue, currency }) {
     durationMinutes: basePrice.durationMinutes,
     serviceCode: basePrice.serviceCode,
     discountType,
-    discountValue: Number(discountValue)
+    discountValue: numericDiscount
   };
 }
 
-function getLaunchQuote({ serviceCode = 'consultation', durationMinutes } = {}) {
-  return calculateQuote(getBasePrice({ serviceCode, durationMinutes }), {
-    discountType: 'percentage',
-    discountValue: consultationPricing.launchDiscountPercent
-  });
+function getBaseQuote({ serviceCode = 'consultation', durationMinutes } = {}) {
+  return calculateQuote(getBasePrice({ serviceCode, durationMinutes }));
 }
 
 async function loadPromotion(code, execute = query) {
@@ -136,7 +140,7 @@ async function validatePromotionInput({ promoCode, offerToken, offerSession, ser
     const promotion = validatePromotionForRequest(promo, { source: 'promo_input', serviceCode, durationMinutes });
     return promotion ? ensurePromoUsageAvailable(promotion, execute) : { valid: false, error: 'promotion_unavailable' };
   }
-  return { valid: true, type: 'none', quote: getLaunchQuote({ serviceCode, durationMinutes }) };
+  return { valid: true, type: 'none', quote: getBaseQuote({ serviceCode, durationMinutes }) };
 }
 
 const validatePromoOrToken = ({ serviceId, ...input }) => validatePromotionInput({ ...input, serviceCode: serviceId || input.serviceCode || 'consultation' });
@@ -144,8 +148,8 @@ const validatePromoOrToken = ({ serviceId, ...input }) => validatePromotionInput
 module.exports = {
   RESERVATION_TTL_MINUTES,
   calculateQuote,
+  getBaseQuote,
   getBasePrice,
-  getLaunchQuote,
   hashOfferSession,
   hashToken,
   loadPromotion,

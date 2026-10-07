@@ -36,23 +36,20 @@ body.s-page--consultation .s-page__consultation-intro {
   max-width: none;
   margin-inline: auto;
   text-align: center;
-  transition: opacity .22s ease, transform .22s ease;
+  transition: opacity .28s ease, transform .28s ease, filter .28s ease;
 }
 
 body.s-page--consultation .s-page__consultation-intro.is-dismissed {
   opacity: 0;
   pointer-events: none;
-  transform: translateY(-8px);
+  filter: blur(8px);
+  transform: translateY(-12px);
 }
 
-body.s-page--consultation .s-page__consultation-intro > * {
-  opacity: 1;
-  transform: none;
-  transition: opacity .22s ease, transform .22s ease;
-}
-body.s-page--consultation .s-page__consultation-intro > *.is-intro-exiting {
+body.s-page--consultation .s-page__consultation-intro.is-intro-transitioning {
   opacity: 0;
-  transform: translateY(-8px);
+  filter: blur(8px);
+  transform: translateY(-12px);
   pointer-events: none;
 }
 
@@ -64,11 +61,10 @@ body.s-page--consultation .s-page__consultation-intro-hook {
   font: 600 clamp(22px, 4.8vw, 34px)/1.12 OOXMEScript, Arial, sans-serif;
   letter-spacing: -.03em;
 }
+body.s-page--consultation .s-page__consultation-intro-hook > span { display: block; }
 
 body.s-page--consultation .s-page__consultation-intro-value,
 body.s-page--consultation .s-page__consultation-intro-topics {
-  display: grid;
-  gap: calc(var(--s-x) * .75);
   width: 100%;
   max-width: none;
   margin: var(--s-x) 0 0;
@@ -77,24 +73,68 @@ body.s-page--consultation .s-page__consultation-intro-topics {
 }
 body.s-page--consultation .s-page__consultation-intro-value > span,
 body.s-page--consultation .s-page__consultation-intro-topics > span { display: block; }
-body.s-page--consultation .s-page__consultation-intro-topics strong { color: #FFFFFF; font-weight: 600; }
 
 body.s-page--consultation .s-page__consultation-intro-topics {
   margin-top: calc(var(--s-x) * .75);
-  color: rgba(255, 255, 255, .92);
-  font-size: 12px;
 }
-body.s-page--consultation .s-page__consultation-intro-meta > span { white-space: nowrap; }
+
+body.s-page--consultation .s-page__consultation-intro-block-5 {
+  color: rgba(255, 255, 255, .72);
+}
+
+body.s-page--consultation .s-page__consultation-intro-block-5 strong {
+  color: #0A84FF;
+  font-weight: 700;
+}
 
 body.s-page--consultation .s-page__consultation-intro-meta {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: calc(var(--s-x) * 1.25);
+  flex-direction: column;
+  align-items: center;
   margin-top: var(--s-x);
+  padding-top: calc(var(--s-x) * .75);
   color: rgba(255, 255, 255, .82);
-  font: 500 12px/1.35 OOXMEScript, Arial, sans-serif;
   width: 100%;
+  text-align: center;
+}
+
+body.s-page--consultation .s-page__consultation-intro-meta::before {
+  position: absolute;
+  top: 0;
+  inset-inline: 20%;
+  height: 1px;
+  background: rgba(255, 255, 255, .18);
+  content: '';
+}
+
+body.s-page--consultation .s-page__consultation-intro-prices {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--s-x) * .35);
+  width: min(100%, 460px);
+  color: rgba(255, 255, 255, .84);
+  font: 500 11px/1.35 OOXMEScript, Arial, sans-serif;
+  white-space: nowrap;
+}
+
+body.s-page--consultation .s-page__consultation-intro-price {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+body.s-page--consultation .s-page__consultation-intro-price strong {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+body.s-page--consultation .s-page__consultation-intro-discount-note {
+  margin: calc(var(--s-x) * .55) 0 0;
+  color: rgba(255, 255, 255, .54);
+  font: 400 10px/1.35 OOXMEScript, Arial, sans-serif;
 }
 
 body.s-page--consultation .s-page__consultation-intro-cta {
@@ -128,8 +168,14 @@ body.s-page--consultation .s-page__consultation-intro-cta:focus-visible { backgr
 html[lang="ar"] body.s-page--consultation .s-page__consultation-intro-hook,
 html[lang="ar"] body.s-page--consultation .s-page__consultation-intro-value,
 html[lang="ar"] body.s-page--consultation .s-page__consultation-intro-topics,
+html[lang="ar"] body.s-page--consultation .s-page__consultation-intro-prices,
+html[lang="ar"] body.s-page--consultation .s-page__consultation-intro-discount-note,
 html[lang="ar"] body.s-page--consultation .s-page__consultation-intro-meta,
 html[lang="ar"] body.s-page--consultation .s-page__consultation-intro-cta { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
+html[lang="ar"] body.s-page--consultation .s-page__consultation-intro-hook {
+  font-size: clamp(21px, 4.8vw, 34px);
+  letter-spacing: -.05em;
+}
 
 body.s-page--consultation .s-page__consultation-composer-unit {
   --s-consultation-composer-height: 48px;
@@ -142,14 +188,57 @@ body.s-page--consultation .s-page__consultation-composer-unit {
   height: var(--s-consultation-composer-height);
   justify-self: stretch;
   direction: ltr;
-  transform: none;
-  transition: transform .22s cubic-bezier(.22, .61, .36, 1), opacity .22s ease;
+  transform: translate3d(0, 12px, 0);
+  opacity: 0;
+  filter: blur(8px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform .28s cubic-bezier(.22, .61, .36, 1), opacity .28s ease, filter .28s ease, visibility 0s linear .28s;
 }
 
 body.s-page--consultation .s-page__consultation-composer-unit.is-intro-hidden {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
+}
+
+body.s-page--consultation .s-page__consultation-composer-unit.is-intro-entering {
+  visibility: visible;
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+  transition: transform .28s cubic-bezier(.22, .61, .36, 1), opacity .28s ease, filter .28s ease, visibility 0s linear 0s;
+}
+
+body.s-page--consultation .s-page__consultation-composer-helper {
+  position: absolute;
+  z-index: 4;
+  inset-inline: 0;
+  bottom: calc(var(--s-consultation-composer-height) + var(--s-x));
+  width: 100%;
+  margin: 0;
+  color: rgba(255, 255, 255, .72);
+  font: 500 11px/1.35 OOXMEScript, Arial, sans-serif;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  filter: blur(4px);
+  transform: translateY(4px);
+  pointer-events: none;
+  transition: opacity .14s ease, transform .14s ease, filter .14s ease, visibility 0s linear .14s;
+}
+
+body.s-page--consultation .s-page__consultation-composer-helper.is-visible {
+  opacity: 1;
+  visibility: visible;
+  filter: blur(0);
+  transform: translateY(0);
+  transition: opacity .14s ease, transform .14s ease, filter .14s ease, visibility 0s linear 0s;
+}
+
+html[lang="ar"] body.s-page--consultation .s-page__consultation-composer-helper {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
 }
 
 body.s-page--consultation .s-page__consultation-composer-unit.is-keyboard-offset {

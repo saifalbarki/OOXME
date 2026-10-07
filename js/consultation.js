@@ -15,6 +15,7 @@
   const sectionLanguage = page?.querySelector('[data-s-consultation-composer-language]');
   const sectionAnswerHistory = page?.querySelector('[data-s-consultation-answer-history]');
   const sectionChoiceTray = page?.querySelector('[data-s-consultation-choice-tray]');
+  const sectionComposerHelper = page?.querySelector('[data-s-consultation-composer-helper]');
   const sectionSuccess = page?.querySelector('[data-s-consultation-composer-success]');
   const sectionSend = sectionComposer?.querySelector('.s-page__consultation-composer-send');
   const summary = page?.querySelector('[data-s-consultation-summary]');
@@ -32,7 +33,7 @@
   const successOverlayTitle = page?.querySelector('[data-s-consultation-success-title]');
   const successOverlayInstruction = page?.querySelector('[data-s-consultation-success-instruction]');
   const consultationPricing = globalThis.OOXME_CONSULTATION_PRICING;
-  if (!page || !content || !composer || !addButton || !input || !consultationAction || !consultationIntro || !startBookingButton || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
+  if (!page || !content || !composer || !addButton || !input || !consultationAction || !consultationIntro || !startBookingButton || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionComposerHelper || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
 
   const copy = {
     en: { ask: 'Ask ooxme', add: 'OOXME character', language: 'Switch to Arabic' },
@@ -40,27 +41,26 @@
   };
   const introCopy = {
     en: {
-      hook: 'Better success starts with consultation.',
-      value: '<span>With more than 8 years of experience, we’ve diagnosed growth, operational, financial, and profit challenges.</span><span>We analyze your business as a complete system, to identify problems, opportunities, and what deserves focus.</span>',
-      topics: '<span>Your business has room to become better.</span><span><strong>After the consultation, you receive a free business diagnosis,</strong> showing where your business stands and what it needs to improve.</span>',
-      duration: '45–120 minutes',
-      starting: 'Starting at',
+      hook: '<span>One consultation.</span><span>A better future.</span>',
+      value: '<span>With more than 8 years of experience, we’ve diagnosed growth, operational, financial, and profit challenges. We analyze your business as a complete system, to identify problems, opportunities, and what deserves focus.</span>',
+      topics: '<span class="s-page__consultation-intro-block-5">Get a <strong>Free business diagnosis</strong> after the consultation</span>',
+      pricingLabel: 'Consultation pricing',
+      discountNote: 'Available discounts may apply',
       cta: 'Book Now'
     },
     ar: {
-      hook: 'نجاح أفضل، يبدأ باستشارة.',
-      value: '<span>بخبرة تمتد لأكثر من 8 سنوات، شخّصنا تحديات النمو والتشغيل والتسرب المالي والربحي.</span><span>نحلل مشروعك كمنظومة متكاملة، لنحدد المشاكل والفرص وما يستحق العمل عليه.</span>',
-      topics: '<span>مشروعك لديه فرصة ليصبح أفضل.</span><span><strong>بعد الاستشارة، تحصل على تشخيص تجاري مجاني،</strong> يوضح وضع مشروعك وما يحتاجه للتحسين والتطوير.</span>',
-      duration: '45–120 دقيقة',
-      starting: 'تبدأ من',
+      hook: '<span>استشارة واحدة</span><span>ستغير مستقبل مشروعك</span>',
+      value: '<span>بخبرة تتجاوز 8 سنوات، نساعدك على فهم تحديات النمو والتشغيل والمال والربحية، ونربط بين أسبابها ونتائجها. نحلل مشروعك كمنظومة متكاملة، ونراجع تفاصيله بوضوح لنحدد مشكلاته وفرصه، ونرتب أولوياته وما يستحق العمل عليه، لتخرج بخطوات أوضح نحو التطور.</span>',
+      topics: '<span class="s-page__consultation-intro-block-5">احصل على <strong>تشخيص تجاري مجاني</strong> بعد الاستشارة</span>',
+      pricingLabel: 'أسعار الاستشارة',
+      discountNote: 'مع إمكانية الحصول على خصومات متاحة',
       cta: 'احجز الآن'
     }
   };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  const introExitInterval = 220;
   let menuTimer = 0, locked = false, unlockTimer = 0, transitionSettleTimer = 0, touch = null;
   let closedComposerFrameHeight = 0, closedComposerBottom = 0, keyboardSyncFrame = 0, appliedKeyboardOffset = 0, keyboardViewportRevision = 0;
-  let introExitInProgress = false;
+  let introExitInProgress = false, introTransitionActive = false, bookingHelperDismissed = false;
   let keyboardBaselineViewportHeight = 0, keyboardSessionScrollY = null, keyboardSessionActive = false, keyboardOpen = false;
 
   const updateInputLanguage = () => {
@@ -106,7 +106,7 @@
         time: [],
         duration: [['45', '45 minutes'], ['60', '60 minutes'], ['90', '90 minutes'], ['120', '120 minutes']]
       },
-      success: 'Booking received successfully', send: 'Submit answer', confirm: 'Confirm booking', message: 'Consultation answer'
+      success: 'Booking received successfully', send: 'Submit answer', confirm: 'Confirm booking', message: 'Consultation answer', helper: 'Click the box and answer the prompt.'
     },
     ar: {
       questions: { name: 'ما اسمك؟', phone: 'ما رقم هاتفك؟', email: 'ما بريدك الإلكتروني؟', sector: 'اختر قطاع عملك:', topic: 'اختر موضوع الاستشارة:', day: 'اختر يوماً مناسباً:', time: 'اختر وقتاً مناسباً:', duration: 'اختر المدة التي تحتاجها:', confirm: 'تأكيد ومتابعة' },
@@ -117,7 +117,7 @@
         time: [],
         duration: [['45', '45 دقيقة'], ['60', '60 دقيقة'], ['90', '90 دقيقة'], ['120', '120 دقيقة']]
       },
-      success: 'تم استلام حجزك بنجاح', send: 'إرسال الإجابة', confirm: 'تأكيد الحجز', message: 'إجابة الاستشارة'
+      success: 'تم استلام حجزك بنجاح', send: 'إرسال الإجابة', confirm: 'تأكيد الحجز', message: 'إجابة الاستشارة', helper: 'انقر في المربع، أجب عن المطلوب'
     }
   };
   const booking = { index: 0, answers: [], complete: false, payment: '' };
@@ -126,7 +126,6 @@
     ar: { full: 'تم استلام حجزك بنجاح', short: 'استلم بنجاح' }
   };
   const consultationPrices = new Map(Object.entries(consultationPricing.durations).map(([duration, prices]) => [Number(duration), prices.base]));
-  const startingPrice = Math.min(...Object.values(consultationPricing.durations).map((prices) => Number(prices.launch ?? prices.base)));
   const bookingAvailability = { days: [], timesByDate: new Map(), loadingDays: false, loadingDate: '' };
   let discountCode = '';
   let discountQuote = null;
@@ -142,14 +141,35 @@
   let editingAnswer = null;
   let sectionInputValidationStep = '';
   const bookingLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
+  const dismissBookingHelper = () => {
+    if (bookingHelperDismissed) return;
+    bookingHelperDismissed = true;
+    sectionComposerHelper.classList.remove('is-visible');
+    sectionComposerHelper.setAttribute('aria-hidden', 'true');
+  };
+  const revealBookingHelper = () => {
+    if (bookingHelperDismissed) return;
+    sectionComposerHelper.classList.add('is-visible');
+    sectionComposerHelper.setAttribute('aria-hidden', 'false');
+  };
   const syncConsultationIntro = () => {
     const language = bookingLanguage();
     const labels = introCopy[language];
-    consultationIntro.querySelector('[data-s-consultation-intro-hook]').textContent = labels.hook;
+    const pricingList = consultationIntro.querySelector('[data-s-consultation-intro-prices]');
+    const pricingNote = consultationIntro.querySelector('[data-s-consultation-intro-discount-note]');
+    consultationIntro.querySelector('[data-s-consultation-intro-hook]').innerHTML = labels.hook;
     consultationIntro.querySelector('[data-s-consultation-intro-value]').innerHTML = labels.value;
     consultationIntro.querySelector('[data-s-consultation-intro-topics]').innerHTML = labels.topics;
-    consultationIntro.querySelector('[data-s-consultation-intro-duration]').textContent = labels.duration;
-    consultationIntro.querySelector('[data-s-consultation-intro-price]').textContent = `${labels.starting} $${startingPrice}`;
+    pricingList.innerHTML = Object.entries(consultationPricing.durations)
+      .sort(([left], [right]) => Number(left) - Number(right))
+      .map(([duration, prices]) => `<span class="s-page__consultation-intro-price"><span>${language === 'ar' ? `${duration} دقيقة` : `${duration} min`}</span><span aria-hidden="true"> - </span><strong>$${Number(prices.base)}</strong></span>`)
+      .join('');
+    pricingList.lang = language;
+    pricingList.dir = language === 'ar' ? 'rtl' : 'ltr';
+    pricingNote.textContent = labels.discountNote;
+    pricingNote.lang = language;
+    pricingNote.dir = language === 'ar' ? 'rtl' : 'ltr';
+    consultationIntro.querySelector('[data-s-consultation-intro-pricing]').setAttribute('aria-label', labels.pricingLabel);
     startBookingButton.textContent = labels.cta;
     consultationIntro.setAttribute('aria-label', labels.hook);
     consultationIntro.lang = language;
@@ -298,24 +318,24 @@
   };
   const answerFor = (stepId) => booking.answers.find((item) => item.step === stepId);
   const selectedDuration = () => Number(answerFor('duration')?.choice || answerFor('duration')?.value || 0);
-  const launchQuoteForDuration = (duration) => {
+  const baseQuoteForDuration = (duration) => {
     const prices = consultationPricing.durations[duration];
     if (!prices) return null;
     return {
       baseAmount: prices.base,
-      discountAmount: prices.base - prices.launch,
-      finalAmount: prices.launch,
+      discountAmount: 0,
+      finalAmount: prices.base,
       currency: consultationPricing.currency,
       durationMinutes: duration,
       serviceCode: consultationPricing.serviceCode,
-      discountType: 'percentage',
-      discountValue: consultationPricing.launchDiscountPercent
+      discountType: null,
+      discountValue: 0
     };
   };
   const currentQuote = () => {
     const duration = selectedDuration();
     if (discountCode) return discountQuote && Number(discountQuote.durationMinutes) === duration ? discountQuote : null;
-    return launchQuoteForDuration(duration);
+    return baseQuoteForDuration(duration);
   };
   const formatMoney = (value) => Number.isFinite(Number(value)) ? `$${Number(value).toFixed(0)}` : '—';
   const renderSummary = () => {
@@ -526,6 +546,9 @@
     // Set the language state after native type changes so mobile browsers keep
     // the current language's direction for both text and placeholder rendering.
     syncSectionInputTextStyle();
+    sectionComposerHelper.textContent = labels.helper;
+    sectionComposerHelper.lang = language;
+    sectionComposerHelper.dir = language === 'ar' ? 'rtl' : 'ltr';
     sectionInput.setAttribute('aria-label', booking.complete ? labels.success : labels.questions[step.id]);
     sectionInput.closest('label').querySelector('.s-page__visually-hidden').textContent = booking.complete ? labels.success : labels.message;
     sectionSend.classList.toggle('is-confirm', !booking.complete && step.type === 'confirm');
@@ -830,6 +853,7 @@
   composer.addEventListener('animationend', () => composer.classList.remove('is-pulsing'));
   input.addEventListener('input', updateInputLanguage);
   sectionInput.addEventListener('input', () => {
+    dismissBookingHelper();
     syncSectionInputTextStyle();
     if (sectionInputValidationStep) {
       sectionInputValidationStep = '';
@@ -952,23 +976,30 @@
     if (event.key === 'Escape' && !paymentOverlay.hidden) closePaymentOverlay();
     if (event.key === 'Escape' && !successOverlay.hidden) closeSuccessOverlay();
   });
+  const finishIntroTransition = () => {
+    if (!introTransitionActive) return;
+    introTransitionActive = false;
+    consultationIntro.classList.add('is-dismissed');
+    consultationAction.classList.remove('is-consultation-intro-state');
+    establishClosedComposerBaseline();
+    revealBookingHelper();
+    sectionInput.focus({ preventScroll: true });
+  };
+  sectionComposerUnit.addEventListener('transitionend', (event) => {
+    if (introTransitionActive && event.target === sectionComposerUnit && event.propertyName === 'transform') finishIntroTransition();
+  });
   startBookingButton.addEventListener('click', () => {
     if (introExitInProgress) return;
     introExitInProgress = true;
+    introTransitionActive = true;
     consultationIntro.setAttribute('aria-hidden', 'true');
-    const introElements = Array.from(consultationIntro.children);
-    introElements.forEach((element, index) => {
-      window.setTimeout(() => element.classList.add('is-intro-exiting'), index * introExitInterval);
+    consultationIntro.classList.add('is-intro-transitioning');
+    consultationAction.classList.remove('is-consultation-intro-state');
+    sectionComposerUnit.classList.remove('is-intro-hidden');
+    requestAnimationFrame(() => {
+      sectionComposerUnit.classList.add('is-intro-entering');
+      if (reducedMotion.matches) finishIntroTransition();
     });
-    window.setTimeout(() => {
-      consultationIntro.classList.add('is-dismissed');
-      consultationAction.classList.remove('is-consultation-intro-state');
-      sectionComposerUnit.classList.remove('is-intro-hidden');
-      requestAnimationFrame(() => {
-        establishClosedComposerBaseline();
-        sectionInput.focus({ preventScroll: true });
-      });
-    }, (introElements.length + 1) * introExitInterval);
   });
   page.querySelector('[data-s-consultation-pay]').addEventListener('click', (event) => {
     event.preventDefault();
