@@ -6,6 +6,9 @@
   const addButton = page?.querySelector('.s-page__add');
   const input = page?.querySelector('.s-page__composer-input');
   const sections = Array.from(page?.querySelectorAll('[data-s-major-section]') || []);
+  const consultationAction = page?.querySelector('.s-page__consultation-page-action');
+  const consultationIntro = page?.querySelector('[data-s-consultation-intro]');
+  const startBookingButton = page?.querySelector('[data-s-consultation-start]');
   const sectionComposerUnit = page?.querySelector('[data-s-consultation-composer-unit]');
   const sectionComposer = page?.querySelector('[data-s-consultation-composer]');
   const sectionInput = page?.querySelector('[data-s-consultation-composer-input]');
@@ -29,15 +32,35 @@
   const successOverlayTitle = page?.querySelector('[data-s-consultation-success-title]');
   const successOverlayInstruction = page?.querySelector('[data-s-consultation-success-instruction]');
   const consultationPricing = globalThis.OOXME_CONSULTATION_PRICING;
-  if (!page || !content || !composer || !addButton || !input || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
+  if (!page || !content || !composer || !addButton || !input || !consultationAction || !consultationIntro || !startBookingButton || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
 
   const copy = {
     en: { ask: 'Ask ooxme', add: 'OOXME character', language: 'Switch to Arabic' },
     ar: { ask: 'اسأل اوكسوم', add: 'شخصية اوكسوم', language: 'Switch to English' }
   };
+  const introCopy = {
+    en: {
+      hook: 'Better success starts with consultation.',
+      value: '<span>With more than 8 years of experience, we’ve diagnosed growth, operational, financial, and profit challenges.</span><span>We analyze your business as a complete system, to identify problems, opportunities, and what deserves focus.</span>',
+      topics: '<span>Your business has room to become better.</span><span><strong>After the consultation, you receive a free business diagnosis,</strong> showing where your business stands and what it needs to improve.</span>',
+      duration: '45–120 minutes',
+      starting: 'Starting at',
+      cta: 'Book Now'
+    },
+    ar: {
+      hook: 'نجاح أفضل، يبدأ باستشارة.',
+      value: '<span>بخبرة تمتد لأكثر من 8 سنوات، شخّصنا تحديات النمو والتشغيل والتسرب المالي والربحي.</span><span>نحلل مشروعك كمنظومة متكاملة، لنحدد المشاكل والفرص وما يستحق العمل عليه.</span>',
+      topics: '<span>مشروعك لديه فرصة ليصبح أفضل.</span><span><strong>بعد الاستشارة، تحصل على تشخيص تجاري مجاني،</strong> يوضح وضع مشروعك وما يحتاجه للتحسين والتطوير.</span>',
+      duration: '45–120 دقيقة',
+      starting: 'تبدأ من',
+      cta: 'احجز الآن'
+    }
+  };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const introExitInterval = 220;
   let menuTimer = 0, locked = false, unlockTimer = 0, transitionSettleTimer = 0, touch = null;
   let closedComposerFrameHeight = 0, closedComposerBottom = 0, keyboardSyncFrame = 0, appliedKeyboardOffset = 0, keyboardViewportRevision = 0;
+  let introExitInProgress = false;
   let keyboardBaselineViewportHeight = 0, keyboardSessionScrollY = null, keyboardSessionActive = false, keyboardOpen = false;
 
   const updateInputLanguage = () => {
@@ -103,6 +126,7 @@
     ar: { full: 'تم استلام حجزك بنجاح', short: 'استلم بنجاح' }
   };
   const consultationPrices = new Map(Object.entries(consultationPricing.durations).map(([duration, prices]) => [Number(duration), prices.base]));
+  const startingPrice = Math.min(...Object.values(consultationPricing.durations).map((prices) => Number(prices.launch ?? prices.base)));
   const bookingAvailability = { days: [], timesByDate: new Map(), loadingDays: false, loadingDate: '' };
   let discountCode = '';
   let discountQuote = null;
@@ -118,6 +142,19 @@
   let editingAnswer = null;
   let sectionInputValidationStep = '';
   const bookingLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
+  const syncConsultationIntro = () => {
+    const language = bookingLanguage();
+    const labels = introCopy[language];
+    consultationIntro.querySelector('[data-s-consultation-intro-hook]').textContent = labels.hook;
+    consultationIntro.querySelector('[data-s-consultation-intro-value]').innerHTML = labels.value;
+    consultationIntro.querySelector('[data-s-consultation-intro-topics]').innerHTML = labels.topics;
+    consultationIntro.querySelector('[data-s-consultation-intro-duration]').textContent = labels.duration;
+    consultationIntro.querySelector('[data-s-consultation-intro-price]').textContent = `${labels.starting} $${startingPrice}`;
+    startBookingButton.textContent = labels.cta;
+    consultationIntro.setAttribute('aria-label', labels.hook);
+    consultationIntro.lang = language;
+    consultationIntro.dir = language === 'ar' ? 'rtl' : 'ltr';
+  };
   const createBookingIdempotencyKey = () => globalThis.crypto?.randomUUID?.() || `booking-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const currentBookingStep = () => bookingSteps[booking.index] || bookingSteps[bookingSteps.length - 1];
   const sectionInputValidationMessages = {
@@ -631,6 +668,7 @@
     if (emit) window.dispatchEvent(new CustomEvent('ooxme-language-change', { detail: { language: current } }));
     page.querySelector('.s-page__visually-hidden').textContent = labels.ask; addButton.setAttribute('aria-label', labels.add);
     sectionLanguage.classList.toggle('is-active', current === 'en'); sectionLanguage.setAttribute('aria-pressed', String(current === 'en')); sectionLanguage.setAttribute('aria-label', labels.language);
+    syncConsultationIntro();
     updateInputLanguage();
     renderBookingFlow({ clearSectionInput, placeSectionCaret });
   };
@@ -710,6 +748,7 @@
     return viewport && Number.isFinite(viewport.height) && Number.isFinite(viewport.offsetTop) ? viewport : null;
   };
   const beginSectionKeyboardSession = () => {
+    if (keyboardSessionActive) return;
     const viewport = currentVisualViewport();
     keyboardSessionActive = true;
     keyboardOpen = false;
@@ -912,6 +951,24 @@
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && !paymentOverlay.hidden) closePaymentOverlay();
     if (event.key === 'Escape' && !successOverlay.hidden) closeSuccessOverlay();
+  });
+  startBookingButton.addEventListener('click', () => {
+    if (introExitInProgress) return;
+    introExitInProgress = true;
+    consultationIntro.setAttribute('aria-hidden', 'true');
+    const introElements = Array.from(consultationIntro.children);
+    introElements.forEach((element, index) => {
+      window.setTimeout(() => element.classList.add('is-intro-exiting'), index * introExitInterval);
+    });
+    window.setTimeout(() => {
+      consultationIntro.classList.add('is-dismissed');
+      consultationAction.classList.remove('is-consultation-intro-state');
+      sectionComposerUnit.classList.remove('is-intro-hidden');
+      requestAnimationFrame(() => {
+        establishClosedComposerBaseline();
+        sectionInput.focus({ preventScroll: true });
+      });
+    }, (introElements.length + 1) * introExitInterval);
   });
   page.querySelector('[data-s-consultation-pay]').addEventListener('click', (event) => {
     event.preventDefault();
