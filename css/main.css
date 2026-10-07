@@ -3073,13 +3073,7 @@ html.s-route.is-day-mode .s-page__composer-menu-item::before {
   height: 6px;
   border-radius: 50%;
   background: #FF3B30;
-  opacity: 1;
   pointer-events: none;
-  transition: opacity .24s ease;
-}
-
-.s-page__notification-indicator.is-hidden {
-  opacity: 0;
 }
 
 .s-page__notification-indicator.is-pulsing {

@@ -45,6 +45,10 @@
   const unreadIndicator = submitButton.querySelector('.s-page__notification-indicator') || document.createElement('span');
   unreadIndicator.className = 's-page__notification-indicator';
   unreadIndicator.setAttribute('aria-hidden', 'true');
+  // The indicator has no authoritative state until the public runtime
+  // bootstrap resolves. Keep it absent from layout/paint until then instead
+  // of rendering an optimistic unread state and correcting it afterward.
+  unreadIndicator.hidden = true;
   if (!unreadIndicator.parentElement) submitButton.append(unreadIndicator);
 
   const pulse = () => {
@@ -64,6 +68,7 @@
   const notificationReadStateKey = 'ooxme-notification-read-state';
   let activeNotification = null;
   let notificationId = null;
+  let notificationStateResolved = false;
   const readNotificationState = () => {
     try {
       const stored = JSON.parse(window.localStorage.getItem(notificationReadStateKey) || '{}');
@@ -180,15 +185,16 @@
     icon.append(dot);
     return icon;
   };
-  let notificationRead = isNotificationRead(notificationId);
+  let notificationRead = true;
   const syncNotificationIndicator = ({ pulse: shouldPulse = false } = {}) => {
-    unreadIndicator.classList.toggle('is-hidden', notificationRead);
-    if (!notificationRead && shouldPulse) {
+    const showUnread = notificationStateResolved && !notificationRead;
+    unreadIndicator.hidden = !showUnread;
+    if (showUnread && shouldPulse) {
       unreadIndicator.classList.remove('is-pulsing');
       requestAnimationFrame(() => unreadIndicator.classList.add('is-pulsing'));
     }
   };
-  syncNotificationIndicator({ pulse: true });
+  syncNotificationIndicator();
   const menuMotionDuration = 260;
   const createNotification = () => {
     if (!activeNotification?.id) return null;
@@ -279,6 +285,7 @@
     } catch (_) { activeNotification = null; }
     notificationId = activeNotification?.id || null;
     notificationRead = notificationId ? isNotificationRead(notificationId) : true;
+    notificationStateResolved = true;
     syncNotificationIndicator();
     normalizeMenu();
   };
@@ -287,17 +294,6 @@
     setNotificationRead(notificationId, false);
     syncNotificationIndicator({ pulse: true });
     normalizeMenu();
-  };
-
-  const scheduleAfterFirstPaint = (callback) => {
-    const runWhenIdle = () => {
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(callback, { timeout: 1200 });
-      } else {
-        window.setTimeout(callback, 180);
-      }
-    };
-    window.requestAnimationFrame(() => window.requestAnimationFrame(runWhenIdle));
   };
 
   let menuExpanded = false;
@@ -357,7 +353,7 @@
     if (menu) menu.inert = true;
   };
   window.OOXMEHeader = { setMenuOpen, normalizeMenu, markNotificationUnread };
-  scheduleAfterFirstPaint(() => { void loadActiveNotification(); });
+  void loadActiveNotification();
 
   if (menu) {
     menu.id ||= 'ooxme-primary-menu';

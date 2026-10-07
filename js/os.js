@@ -184,17 +184,17 @@
         menuTrigger.style.maskImage = `url("${hugeIconAssetRoot}menu-09.svg")`;
       }
       const menuIconAssets = Object.freeze({
-        Summary: { name: 'Dashboard Browsing', file: 'dashboard-browsing.svg' },
-        Insights: { name: 'Analytics 01', file: 'analytics-01.svg' },
-        Notifications: { name: 'Notification 01', file: 'notification-01.svg' },
+        Summary: { name: 'Approximately Equal Circle', file: 'approximately-equal-circle.svg' },
+        Insights: { name: 'Activity Circle', file: 'activity-circle.svg' },
+        Notifications: { name: 'Notification Circle', file: 'notification-circle.svg' },
         'Promo Codes': { name: 'Badge Percent', file: 'badge-percent.svg' },
         Consultations: { name: 'Property New', file: 'property-new.svg' },
-        Products: { name: 'Shopping Bag 03', file: 'shopping-bag-03.svg' },
+        Products: { name: 'Dashboard Circle', file: 'dashboard-circle.svg' },
         Buttons: { name: 'Stop Circle', file: 'stop-circle.svg' },
-        Admin: { name: 'Shield 01', file: 'shield-01.svg' },
+        Admin: { name: 'User Circle', file: 'user-circle.svg' },
         Language: { name: 'Language Circle', file: 'language-circle.svg' },
         Appearance: { name: 'Dark Mode', file: 'dark-mode.svg' },
-        'Log Out': { name: 'Logout 01', file: 'logout-01.svg' }
+        'Log Out': { name: 'Logout Circle 01', file: 'logout-circle-01.svg' }
       });
       const decorateMenuIcons = () => {
         sideMenu.querySelectorAll('[data-os-menu-copy-en]').forEach((item) => {
