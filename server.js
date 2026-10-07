@@ -38,6 +38,7 @@ const pageRoutes = {
   '/space': 'space.html',
   '/update': 'update.html',
   '/consultation': 'consultation.html',
+  '/check': 'check.html',
   '/store': 'store.html',
   '/os': 'os.html'
 };

@@ -69,6 +69,7 @@
     { "source": "/space", "destination": "/space.html" },
     { "source": "/update", "destination": "/update.html" },
     { "source": "/consultation", "destination": "/consultation.html" },
+    { "source": "/check", "destination": "/check.html" },
     { "source": "/store", "destination": "/store.html" },
     { "source": "/os", "destination": "/api/os/auth?view=page" }
   ],

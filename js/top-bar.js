@@ -115,7 +115,8 @@
       || document.body.classList.contains('s-page--update')
       || document.body.classList.contains('s-page--consultation')
       || document.body.classList.contains('s-page--store')
-      || document.body.classList.contains('s-page--brand-management');
+      || document.body.classList.contains('s-page--brand-management')
+      || document.body.classList.contains('s-page--check');
     if (!isHomepageMenuPage) return;
     document.body.classList.toggle('is-menu-open', isOpen);
     if (isOpen) lockPageScroll();
@@ -571,6 +572,7 @@
   const eyes = face?.querySelector('.s-page__x-face-eyes');
   const eyeMotion = face?.querySelector('.s-page__x-face-eye-motion');
   if (!addButton || !face || !shell || !eyes || !eyeMotion) return;
+  const isCheckPage = document.body.classList.contains('s-page--check');
 
   const gazeLimit = 1.1;
   const dragThreshold = 6;
@@ -624,6 +626,7 @@
   };
   const begin = (event) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (isCheckPage && !addButton.contains(event.target)) return;
     if (pointer) return;
     pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
     dragging = false;

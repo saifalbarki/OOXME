@@ -20,6 +20,7 @@ const pageOutputs = {
   'space.html': 'space.html',
   'update.html': 'update.html',
   'consultation.html': 'consultation.html',
+  'check.html': 'check.html',
   'store.html': 'store.html',
   'os.html': 'os.html'
 };
