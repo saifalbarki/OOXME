@@ -758,15 +758,23 @@
     if ('onscrollend' in window) window.addEventListener('scrollend', settleTargetSection, { once: true, passive: true });
     transitionSettleTimer = setTimeout(settleTargetSection, reducedMotion.matches ? 80 : 900);
   };
-  // Section 1 gets one closed-keyboard frame at load. It is intentionally never
-  // re-measured on resize/orientation events: those events can arrive while a
-  // mobile browser is still reporting its keyboard viewport.
-  const establishClosedComposerBaseline = () => {
-    if (closedComposerFrameHeight) return;
-    closedComposerFrameHeight = Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight));
-    page.style.setProperty('--s-consultation-frame-height', `${closedComposerFrameHeight}px`);
+  // The consultation frame must follow the same settled dynamic viewport that
+  // the browser uses for 100dvh. Do not freeze documentElement.clientHeight:
+  // mobile browser chrome can report a taller layout viewport before the first
+  // VisualViewport update, which makes the composer start too high.
+  const closedViewportHeight = () => {
+    const viewport = currentVisualViewport();
+    return Math.max(1, Math.round(viewport?.height || window.innerHeight || document.documentElement.clientHeight));
+  };
+  const synchronizeClosedComposerFrame = ({ force = false } = {}) => {
+    if (!force && (keyboardSessionActive || document.activeElement === sectionInput)) return;
+    const nextHeight = closedViewportHeight();
+    if (!force && closedComposerFrameHeight === nextHeight) return;
+    closedComposerFrameHeight = nextHeight;
+    page.style.setProperty('--s-consultation-frame-height', `${nextHeight}px`);
     closedComposerBottom = sectionComposerUnit.getBoundingClientRect().bottom;
   };
+  const establishClosedComposerBaseline = () => synchronizeClosedComposerFrame({ force: true });
   const setSectionComposerKeyboardOffset = (offset) => {
     const nextOffset = Math.max(0, Number.isFinite(offset) ? offset : 0);
     if (Math.abs(nextOffset - appliedKeyboardOffset) < .01) return;
@@ -810,7 +818,8 @@
     keyboardSessionActive = true;
     keyboardOpen = false;
     keyboardSessionScrollY = window.scrollY;
-    keyboardBaselineViewportHeight = Math.max(closedComposerFrameHeight, window.innerHeight, viewport?.height || 0);
+    keyboardBaselineViewportHeight = Math.max(window.innerHeight, viewport?.height || 0);
+    closedComposerBottom = sectionComposerUnit.getBoundingClientRect().bottom;
   };
   const isSectionKeyboardClosed = () => {
     const viewport = currentVisualViewport();
@@ -828,13 +837,11 @@
     }
     const viewport = currentVisualViewport();
     if (!viewport) return;
-    // Place the stable closed-baseline bottom above the CURRENT visual viewport.
-    // Compensate for native browser panning since getBoundingClientRect() and
-    // VisualViewport coordinates move differently while the keyboard is open.
+    // Restore the proven 12px gap method: calculate only the amount needed to
+    // place the fixed closed-baseline bottom above the CURRENT visual viewport.
+    // No document scroll, previous transform, or previous keyboard offset is used.
     const keyboardTop = viewport.offsetTop + viewport.height;
-    const nativePan = window.scrollY - (keyboardSessionScrollY || 0);
-    const baselineBottom = closedComposerBottom - nativePan;
-    const nextOffset = Math.max(0, baselineBottom - keyboardTop + 12);
+    const nextOffset = Math.max(0, closedComposerBottom - keyboardTop + 12);
     setSectionComposerKeyboardOffset(nextOffset);
   };
   const scheduleSectionComposerKeyboard = () => {
@@ -1075,18 +1082,27 @@
   }, { passive: true });
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
+      synchronizeClosedComposerFrame();
       scheduleSectionComposerKeyboard();
     }, { passive: true });
-    window.visualViewport.addEventListener('scroll', scheduleSectionComposerKeyboard, { passive: true });
+    window.visualViewport.addEventListener('scroll', () => {
+      synchronizeClosedComposerFrame();
+      scheduleSectionComposerKeyboard();
+    }, { passive: true });
   }
   window.addEventListener('resize', () => {
-    // Layout/orientation changes may update booking geometry, but never the
-    // Section 1 composer baseline. The viewport listener owns keyboard lift.
+    synchronizeClosedComposerFrame();
     if (!window.visualViewport) restoreClosedSectionComposerBaseline();
     scheduleBookingGeometry();
   }, { passive: true });
   document.documentElement.classList.add('s-x-discrete-sections');
   syncSummaryAccess();
   applyLanguage(document.documentElement.lang === 'en' ? 'en' : 'ar', { emit: false }); establishClosedComposerBaseline();
-  requestAnimationFrame(() => { renderBookingFlow(); restoreClosedSectionComposerBaseline(); document.documentElement.classList.remove('s-x-initializing'); void loadNearestBookingDays(); });
+  requestAnimationFrame(() => {
+    synchronizeClosedComposerFrame();
+    renderBookingFlow();
+    restoreClosedSectionComposerBaseline();
+    document.documentElement.classList.remove('s-x-initializing');
+    void loadNearestBookingDays();
+  });
 })();

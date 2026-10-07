@@ -5,7 +5,11 @@ body.s-page--consultation {
   --s-consultation-keyboard-offset: 0px;
   --s-consultation-frame-height: 100dvh;
   --s-consultation-primary-card-width: 100%;
-  --s-consultation-section-bottom-inset: calc(var(--s-x) * 4);
+  --s-consultation-section-bottom-inset: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+  );
 }
 
 body.s-page--consultation .s-page__major-section,
@@ -19,9 +23,9 @@ body.s-page--consultation .s-page__major-section--transition-frame > .s-page__gr
    The shared group defaults to flex-start; align-self on the composer only
    controls its horizontal cross-axis and cannot provide vertical placement. */
 body.s-page--consultation .s-page__consultation-page-action {
-  position: relative;
+  position: static;
   justify-content: flex-end;
-  padding-bottom: var(--s-consultation-section-bottom-inset);
+  padding-bottom: 0;
 }
 
 body.s-page--consultation .s-page__consultation-intro {
@@ -181,7 +185,13 @@ body.s-page--consultation .s-page__consultation-composer-unit {
   --s-consultation-composer-height: 48px;
   --s-consultation-history-height: 0px;
   --s-consultation-history-max-height: 0px;
-  position: relative;
+  position: absolute;
+  inset-inline: 0;
+  bottom: calc(
+    (var(--s-x) * 2)
+    + var(--s-first-group-bottom-baseline)
+    + var(--s-section-2-bottom-baseline-correction, 0px)
+  );
   z-index: 1;
   align-self: end;
   width: 100%;
@@ -218,9 +228,9 @@ body.s-page--consultation .s-page__consultation-composer-unit.is-intro-entering 
 body.s-page--consultation .s-page__consultation-composer-helper {
   position: absolute;
   z-index: 4;
-  inset-inline: 0;
+  inset-inline: var(--s-x);
+  width: calc(100% - (var(--s-x) * 2));
   bottom: calc(var(--s-consultation-composer-height) + var(--s-x));
-  width: 100%;
   margin: 0;
   color: rgba(255, 255, 255, .72);
   font: 500 11px/1.35 OOXMEScript, Arial, sans-serif;
@@ -261,7 +271,7 @@ body.s-page--consultation .s-page__consultation-composer-row {
   align-items: center;
   position: relative;
   z-index: 1;
-  width: 100%;
+  width: calc(100% - (var(--s-x) * 2));
   height: var(--s-composer-height);
   margin: 0;
   margin-inline: auto;
@@ -278,7 +288,7 @@ body.s-page--consultation .s-page__consultation-composer-back-panel {
   z-index: 0;
   inset-inline-start: 50%;
   bottom: calc(var(--s-consultation-composer-height, 48px) / 2);
-  width: calc(100% - (var(--s-x) * 4));
+  width: calc(100% - (var(--s-x) * 2));
   transform: translateX(-50%);
   height: var(--s-consultation-history-height);
   max-height: var(--s-consultation-history-max-height);
@@ -703,7 +713,11 @@ body.s-page--consultation .s-page__consultation-summary-card {
 }
 @media (orientation: portrait) {
   body.s-page--consultation {
-    --s-consultation-section-bottom-inset: calc(var(--s-x) * 4);
+    --s-consultation-section-bottom-inset: calc(
+      (var(--s-x) * 2)
+      + var(--s-first-group-bottom-baseline)
+      + var(--s-section-2-bottom-baseline-correction, 0px)
+    );
   }
 }
 
