@@ -6,7 +6,7 @@ const { spawn } = require('child_process');
 const { query, closeDatabase } = require('../api/_lib/db');
 
 const root = path.resolve(__dirname, '..');
-const port = Number(process.env.PORT || 3000);
+const port = Number(process.env.PORT || 3100);
 
 const loadLocalEnvironment = () => {
   if (process.env.NODE_ENV === 'production') {

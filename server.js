@@ -297,7 +297,7 @@ const server = http.createServer(async (request, response) => {
   });
 });
 
-const port = Number(process.env.PORT || 3000);
+const port = Number(process.env.PORT || 3100);
 const activeLanIpv4 = () => Object.values(os.networkInterfaces())
   .flat()
   .find((address) => address && address.family === 'IPv4' && !address.internal)?.address;
