@@ -12,7 +12,7 @@ const deploymentOnlyExclusions = [
   'assets/fonts/SFPRODISPLAYREGULAR.OTF',
   'assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf',
 ];
-const rootFiles = ['site.webmanifest', 'os.webmanifest', 'robots.txt', 'sitemap.xml'];
+const rootFiles = ['site.webmanifest', 'os.webmanifest', 'check.webmanifest', 'robots.txt', 'sitemap.xml'];
 const pageOutputs = {
   'main.html': 'index.html',
   'brand.html': 'bm.html',
@@ -111,7 +111,7 @@ for (const name of rootFiles) {
   const source = path.join(sourceRoot, name);
   if (!fs.existsSync(source)) continue;
   const destination = path.join(output, name);
-  if ((name === 'site.webmanifest' || name === 'os.webmanifest') && assetVersion) {
+  if ((name === 'site.webmanifest' || name === 'os.webmanifest' || name === 'check.webmanifest') && assetVersion) {
     const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
     manifest.icons = manifest.icons.map((icon) => ({ ...icon, src: `${icon.src}${versionQuery}` }));
     fs.writeFileSync(destination, `${JSON.stringify(manifest, null, 2)}\n`);

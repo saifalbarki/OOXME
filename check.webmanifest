@@ -1,0 +1,18 @@
+{
+  "name": "OOXME Check",
+  "short_name": "OOXME Check",
+  "id": "/check",
+  "start_url": "/check",
+  "scope": "/check",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/assets/logo/Favicon.png",
+      "sizes": "4000x4000",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

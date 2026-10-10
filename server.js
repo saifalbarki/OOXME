@@ -44,7 +44,7 @@ const pageRoutes = {
 };
 const legacyRoutes = { '/service': '/bm', '/start': '/update', '/scale': '/consultation', '/system': '/os', '/rpn': '/space' };
 const publicRoots = ['assets', 'css', 'js', 'public'];
-const publicRootFiles = new Set(['site.webmanifest', 'os.webmanifest']);
+const publicRootFiles = new Set(['site.webmanifest', 'os.webmanifest', 'check.webmanifest']);
 const apiRoutes = {
   '/api/booking/available-slots': './api/public',
   '/api/booking/availability': './api/public',

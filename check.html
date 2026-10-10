@@ -8,51 +8,88 @@
     <link rel="canonical" href="https://ooxme.com/check" />
     <link rel="icon" href="/assets/logo/Favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/assets/logo/Favicon.png" />
-    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="manifest" href="/check.webmanifest" />
     <link rel="preload" href="assets/fonts/TRYToshB-wght-BF677df27a71b87.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="css/tokens.css" />
     <link rel="stylesheet" href="css/check.css" />
-    <link rel="stylesheet" href="css/header.css" />
-    <script src="js/top-bar.js" defer></script>
     <script src="js/check.js" defer></script>
-    <script src="js/page-controls.js" defer></script>
   </head>
-  <body class="s-page s-page--x s-page--check">
+  <body class="s-page s-page--x s-page--check is-check-intro">
     <main class="s-page__content">
       <section class="s-check-viewport" data-s-check-viewport aria-label="OOXME check">
+      <div class="s-page__composer" data-s-check-conversation-layer>
+        <div class="s-check-conversation-scroll" data-s-check-conversation-scroll aria-label="Conversation">
+          <div class="s-check-conversation-canvas" data-s-check-conversation-canvas>
+            <div class="s-check-message-list" data-s-check-message-list>
+            <div class="s-check-ooxo-bubble s-check-ooxo-bubble--welcome" data-message-owner="ooxme" data-s-check-ooxme-group="original" data-s-check-bubble="welcome" lang="ar" dir="rtl" aria-hidden="true">مرحباً بك في اوكسوم</div>
+            <div class="s-check-ooxo-bubble s-check-ooxo-bubble--upper" data-message-owner="ooxme" data-s-check-ooxme-group="original" data-s-check-bubble="upper" lang="ar" dir="rtl" aria-hidden="true">هل أنت جاهز للبدء في التشخيص التجاري؟</div>
+            <div class="s-check-user-avatar s-page__icon-button" data-s-check-user-avatar data-s-check-avatar-group="name" aria-hidden="true"><span class="s-check-user-avatar-initial">A</span></div>
+            <div class="s-check-ooxo-bubble s-check-ooxo-bubble--lower" data-message-owner="ooxme" data-s-check-ooxme-group="original" data-s-check-bubble="lower" lang="ar" dir="rtl" aria-hidden="true">أولاً ما هو اسمك؟</div>
+            <div class="s-check-ooxo-bubble s-check-user-bubble" data-message-owner="user" data-s-check-user-bubble data-s-check-avatar-group="name" lang="ar" dir="rtl" aria-hidden="true"></div>
+            <div class="s-check-ooxo-bubble s-check-ooxo-bubble--start" data-message-owner="ooxme" data-s-check-ooxme-group="followup" data-s-check-bubble="start" lang="ar" dir="rtl" aria-hidden="true">لنبدأ</div>
+            <div class="s-check-ooxo-bubble s-check-ooxo-bubble--followup" data-message-owner="ooxme" data-s-check-ooxme-group="followup" data-s-check-question-bubble data-question-id="q01" lang="ar" dir="rtl" aria-hidden="true">هل تستطيع شرح ما يقدمه مشروعك ولمن، بجملة واضحة ومباشرة؟</div>
+            <button class="s-check-followup-avatar s-check-original-avatar s-page__icon-button" data-s-check-avatar-group="original" type="button" aria-label="OOXME character"><span aria-hidden="true"></span><svg class="s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85" /><circle cx="9.25" cy="6.5" r="1.85" /></g></g></g></svg></button>
+            <button class="s-check-followup-avatar s-page__icon-button" data-s-check-avatar-group="followup" type="button" aria-label="OOXME character"><span aria-hidden="true"></span><svg class="s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false" data-s-x-face data-face-state="idle"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85" /><circle cx="9.25" cy="6.5" r="1.85" /></g></g></g></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="s-check-floating-menu" id="s-check-floating-menu" data-s-check-floating-menu role="menu" aria-label="Check menu" aria-hidden="true">
+        <button class="s-check-floating-menu-item" type="button" role="menuitem" data-s-check-menu-action="home">
+          <span data-s-check-menu-label="home">الرئيسية</span>
+        </button>
+        <button class="s-check-floating-menu-item" type="button" role="menuitem" data-s-check-menu-action="language">
+          <span data-s-check-menu-label="language">تغيير اللغة</span>
+        </button>
+        <button class="s-check-floating-menu-item" type="button" role="menuitem" data-s-check-menu-action="appearance">
+          <span data-s-check-menu-label="appearance">تغيير المظهر</span>
+        </button>
+        <div class="s-check-floating-menu-divider" role="separator" aria-hidden="true"></div>
+        <section class="s-check-progress-panel" id="s-check-progress-panel" data-s-check-progress-panel aria-label="Progress details">
+          <div class="s-check-progress-gauges" data-s-check-progress-gauges>
+            <div class="s-check-progress-gauge s-check-progress-gauge--score" data-s-check-progress-gauge="score" role="img" aria-label="النتيجة غير متاحة">
+              <div class="s-check-progress-gauge-dial" data-s-check-progress-gauge-ticks aria-hidden="true"></div>
+              <div class="s-check-progress-gauge-value" aria-hidden="true"><span data-s-check-progress-gauge-value>—</span><span class="s-check-progress-gauge-total">/100</span></div>
+              <span class="s-check-progress-gauge-label" data-s-check-progress-gauge-label="score">النتيجة</span>
+            </div>
+            <div class="s-check-progress-gauge s-check-progress-gauge--sections" data-s-check-progress-gauge="sections" role="img" aria-label="0 من 8 أقسام مكتملة">
+              <div class="s-check-progress-gauge-dial" data-s-check-progress-gauge-ticks aria-hidden="true"></div>
+              <div class="s-check-progress-gauge-value" aria-hidden="true"><span data-s-check-progress-gauge-value>0</span><span class="s-check-progress-gauge-total">/8</span></div>
+              <span class="s-check-progress-gauge-label" data-s-check-progress-gauge-label="sections">الأقسام</span>
+            </div>
+            <div class="s-check-progress-gauge s-check-progress-gauge--questions" data-s-check-progress-gauge="questions" role="img" aria-label="0 من 40 سؤالاً مجاباً">
+              <div class="s-check-progress-gauge-dial" data-s-check-progress-gauge-ticks aria-hidden="true"></div>
+              <div class="s-check-progress-gauge-value" aria-hidden="true"><span data-s-check-progress-gauge-value>0</span><span class="s-check-progress-gauge-total">/40</span></div>
+              <span class="s-check-progress-gauge-label" data-s-check-progress-gauge-label="questions">الأسئلة</span>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div class="s-check-bottom-area" data-s-check-bottom-area>
         <form class="s-check-composer-row" data-s-check-composer novalidate>
           <div class="s-check-composer-field">
+            <span class="s-check-composer-zone s-check-composer-zone--left">
+              <button class="s-page__icon-button s-page__add" type="button" aria-label="Open check menu" aria-controls="s-check-floating-menu" aria-expanded="false" aria-pressed="false"><span aria-hidden="true"></span><svg class="s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85" /><circle cx="9.25" cy="6.5" r="1.85" /></g></g></g></svg></button>
+            </span>
             <label class="s-check-composer-text-zone">
               <span class="s-page__visually-hidden">Check message</span>
-              <input class="s-check-composer-input is-english-input" type="text" name="check-message" placeholder="Type..." autocomplete="off" enterkeyhint="send" maxlength="120" lang="en" dir="ltr" />
+            <input class="s-check-composer-input is-english-input" data-s-check-intro-input type="text" name="check-message" placeholder="اكتب اسمك.." autocomplete="off" enterkeyhint="send" maxlength="120" lang="ar" dir="rtl" disabled />
             </label>
             <span class="s-check-composer-zone">
               <button class="s-check-composer-send" type="submit" aria-label="Send message"><svg viewBox="3.9 3.9 16.2 16.2" aria-hidden="true" focusable="false"><path d="M12 18V6M6 12l6-6 6 6" /></svg></button>
             </span>
           </div>
+          <section class="s-check-info-card s-check-test-bubble" data-s-check-info-card data-s-check-test-bubble lang="en" dir="ltr" aria-label="Answer options">
+            <div class="s-check-test-options" role="radiogroup" aria-label="Placeholder choices">
+              <button class="s-check-test-option" type="button" role="radio" aria-checked="false" data-s-check-test-option="0" data-option-id="q01a"><span class="s-check-test-option-circle" aria-hidden="true"></span><span data-s-check-test-option-label>نعم، أستطيع شرحه بوضوح وباختصار.</span></button>
+              <button class="s-check-test-option" type="button" role="radio" aria-checked="false" data-s-check-test-option="1" data-option-id="q01b"><span class="s-check-test-option-circle" aria-hidden="true"></span><span data-s-check-test-option-label>أستطيع، لكن الشرح يحتاج بعض التفاصيل.</span></button>
+              <button class="s-check-test-option" type="button" role="radio" aria-checked="false" data-s-check-test-option="2" data-option-id="q01c"><span class="s-check-test-option-circle" aria-hidden="true"></span><span data-s-check-test-option-label>لا، يصعب علي شرحه بشكل واضح.</span></button>
+            </div>
+          </section>
         </form>
+        </div>
       </section>
     </main>
 
-    <form class="s-page__composer" data-s-composer novalidate>
-      <div class="s-page__composer-menu" data-s-composer-menu aria-hidden="true"></div>
-      <section class="s-check-test-bubble" data-s-check-test-bubble lang="en" dir="ltr" aria-label="Test question">
-        <p class="s-check-test-question" data-s-check-test-question>Which placeholder direction should this test conversation take when the interface needs a deliberately long question to verify natural wrapping and vertical growth?</p>
-        <div class="s-check-test-divider" aria-hidden="true"></div>
-        <div class="s-check-test-options" role="radiogroup" aria-label="Placeholder choices">
-          <button class="s-check-test-option" type="button" role="radio" aria-checked="false" data-s-check-test-option="0"><span class="s-check-test-option-circle" aria-hidden="true"></span><span data-s-check-test-option-label>Use the first long placeholder choice to represent a calm, direct, and carefully measured answer.</span></button>
-          <button class="s-check-test-option" type="button" role="radio" aria-checked="false" data-s-check-test-option="1"><span class="s-check-test-option-circle" aria-hidden="true"></span><span data-s-check-test-option-label>Use the second long placeholder choice to test a longer response with additional wrapping.</span></button>
-          <button class="s-check-test-option" type="button" role="radio" aria-checked="false" data-s-check-test-option="2"><span class="s-check-test-option-circle" aria-hidden="true"></span><span data-s-check-test-option-label>Use the third long placeholder choice to confirm that only one selection can remain active.</span></button>
-        </div>
-      </section>
-      <div class="s-check-test-face s-page__icon-button" data-s-check-test-face aria-hidden="true"><svg class="s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85" /><circle cx="9.25" cy="6.5" r="1.85" /></g></g></g></svg></div>
-      <div class="s-check-ooxo-bubble s-check-ooxo-bubble--upper" data-s-check-bubble="upper" lang="en" dir="ltr" aria-hidden="true">This is a deliberately long placeholder sentence used to verify the bubble’s maximum right boundary.</div>
-      <div class="s-check-ooxo-face s-page__icon-button s-check-ooxo-face--upper" aria-hidden="true"><span class="s-check-user-avatar-initial">A</span></div>
-      <div class="s-check-ooxo-bubble s-check-ooxo-bubble--lower" data-s-check-bubble="lower" lang="en" dir="ltr" aria-hidden="true">This is a deliberately long placeholder sentence used to verify the bubble’s maximum right boundary.</div>
-      <button class="s-page__icon-button s-page__add" type="button" aria-label="OOXME character"><span aria-hidden="true"></span><svg class="s-page__x-top-bar-eyes" viewBox="0 0 13 13" aria-hidden="true" focusable="false" data-s-x-face data-face-state="idle"><g class="s-page__x-face-shell"><g class="s-page__x-face-eyes"><g class="s-page__x-face-eye-motion"><circle cx="3.75" cy="6.5" r="1.85" /><circle cx="9.25" cy="6.5" r="1.85" /></g></g></g></svg></button>
-      <label class="s-page__input-label"><span class="s-page__visually-hidden">Ask ooxme</span><input class="s-page__composer-input is-english-input" type="text" name="question" placeholder="Type..." autocomplete="off" enterkeyhint="send" maxlength="120" lang="en" dir="ltr" /></label>
-      <button class="s-page__submit s-page__x-top-bar-submit" type="submit" aria-label="Open menu"><svg class="s-page__submit-icon" viewBox="3.9 3.9 16.2 16.2" aria-hidden="true" focusable="false"><path class="s-page__x-top-bar-line s-page__x-top-bar-line--top" d="M4.22 8h15.56" /><path class="s-page__x-top-bar-line s-page__x-top-bar-line--bottom" d="M4.22 16h15.56" /></svg></button>
-      <div class="s-page__send-utilities" data-s-send-utilities aria-hidden="true"><button class="s-page__send-utility is-active" type="button" data-s-utility="theme" aria-label="Toggle theme" aria-pressed="true"><span class="s-page__send-utility-inner" aria-hidden="true"></span></button><button class="s-page__send-utility is-active" type="button" data-s-utility="language" aria-label="Toggle language" aria-pressed="true"><span class="s-page__send-utility-inner" aria-hidden="true"></span></button></div>
-    </form>
   </body>
 </html>
