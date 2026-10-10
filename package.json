@@ -7,7 +7,6 @@
     "dev": "node scripts/start-dev.js",
     "start": "node server.js",
     "build": "node scripts/build-static.js",
-    "icons:generate": "node scripts/generate-favicon-ico.js",
     "db:migrate": "node scripts/migrate-booking-db.js",
     "configure:providers": "node scripts/configure-os-providers.js",
     "verify:performance": "node scripts/verify-performance-contracts.js"
