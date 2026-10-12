@@ -1,9 +1,9 @@
 {
   "name": "OOXME OS",
   "short_name": "OOXME OS",
-  "id": "/os",
-  "start_url": "/os",
-  "scope": "/os",
+  "id": "/system",
+  "start_url": "/system",
+  "scope": "/system",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
@@ -22,3 +22,4 @@
     }
   ]
 }
+

@@ -276,7 +276,7 @@ const main = async () => {
     process.stdout.write(`Google: FAIL — ${error.message}\n`);
   }
 
-  process.stdout.write('\nSetup complete. Restart the OOXME local server so it loads the validated provider configuration, then refresh /os.\n');
+  process.stdout.write('\nSetup complete. Restart the OOXME local server so it loads the validated provider configuration, then refresh /system.\n');
 };
 
 main().catch((error) => { process.stderr.write(`Setup stopped: ${error.message}\n`); process.exitCode = 1; });

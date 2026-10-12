@@ -26,7 +26,7 @@ const isPageRequest = (request) => {
 
 const sendAuthenticatedPage = async (request, response) => {
   const session = await authenticateAndIssueCsrf(request);
-  const file = session ? 'os.html' : 'os-login.html';
+  const file = session ? 'system.html' : 'system-login.html';
   let content = await fs.readFile(path.join(root, file), 'utf8');
   if (session) {
     content = content.replace(

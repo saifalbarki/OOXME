@@ -40,11 +40,11 @@ const pageRoutes = {
   '/consultation': 'consultation.html',
   '/check': 'check.html',
   '/store': 'store.html',
-  '/os': 'os.html'
+  '/system': 'system.html'
 };
-const legacyRoutes = { '/bm': '/services', '/service': '/services', '/start': '/update', '/scale': '/consultation', '/system': '/os', '/rpn': '/space' };
+const legacyRoutes = { '/bm': '/services', '/service': '/services', '/start': '/update', '/scale': '/consultation', '/os': '/system', '/os/setup': '/system/setup', '/os.webmanifest': '/system.webmanifest', '/rpn': '/space' };
 const publicRoots = ['assets', 'css', 'js', 'public'];
-const publicRootFiles = new Set(['site.webmanifest', 'os.webmanifest', 'check.webmanifest']);
+const publicRootFiles = new Set(['site.webmanifest', 'system.webmanifest', 'check.webmanifest']);
 const apiRoutes = {
   '/api/booking/available-slots': './api/public',
   '/api/booking/availability': './api/public',
@@ -151,8 +151,8 @@ const sendOsHtml = (response, request, body, status = 200) => {
 // The login shell is a public document. Keep OS data and API routes protected,
 // but return the shell as a successful document so browsers render its form
 // instead of treating the unauthenticated navigation as a failed page load.
-const sendOsLoginPage = (response, status = 200, request) => {
-  fs.readFile(path.join(root, 'os-login.html'), (error, content) => {
+const sendSystemLoginPage = (response, status = 200, request) => {
+  fs.readFile(path.join(root, 'system-login.html'), (error, content) => {
     if (error) return send(response, 503, 'text/plain; charset=utf-8', 'OS login unavailable');
     sendOsHtml(response, request, content, status);
   });
@@ -164,9 +164,9 @@ const escapeHtmlAttribute = (value) => String(value)
   .replace(/</g, '&lt;')
   .replace(/>/g, '&gt;');
 
-const sendOsAuthenticatedPage = async (response, request, session) => {
+const sendSystemAuthenticatedPage = async (response, request, session) => {
   try {
-    const content = await fs.promises.readFile(path.join(root, 'os.html'), 'utf8');
+    const content = await fs.promises.readFile(path.join(root, 'system.html'), 'utf8');
     const authenticatedDocument = content
       .replace('data-os-auth-state="pending"', `data-os-auth-state="authenticated" data-os-auth-ready="true" data-os-csrf-token="${escapeHtmlAttribute(session.csrfToken)}"`);
     sendOsHtml(response, request, authenticatedDocument);
@@ -176,8 +176,8 @@ const sendOsAuthenticatedPage = async (response, request, session) => {
 };
 
 
-const sendOsSetup = (response) => {
-  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OOXME OS Setup</title><style>html,body{margin:0;min-height:100%;background:#fff;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Rounded","Helvetica Neue",sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.setup{width:min(100%,380px);display:grid;gap:16px}.setup h1{margin:0;font-size:20px;font-weight:500}.setup p{margin:0;color:#666;font-size:13px;line-height:1.4}.setup form{display:grid;gap:12px}.setup input,.setup button{box-sizing:border-box;width:100%;min-height:48px;border:1px solid #d8dbe2;border-radius:16px;padding:0 16px;font:inherit;font-size:16px}.setup button{border:0;background:#111;color:#fff;cursor:pointer}.error{min-height:1.2em;color:#9b3131;font-size:13px}</style></head><body><main class="setup"><h1>OOXME OS admin setup</h1><p>Set the admin password locally. Only a server-side scrypt hash is stored.</p><form><input type="password" name="password" autocomplete="new-password" minlength="12" placeholder="Password (12+ characters)" required><input type="password" name="confirm" autocomplete="new-password" minlength="12" placeholder="Confirm password" required><button type="submit">Configure securely</button><div class="error" role="alert"></div></form></main><script>const form=document.querySelector('form'),error=document.querySelector('.error');form.addEventListener('submit',async event=>{event.preventDefault();error.textContent='';const data=new FormData(form);if(data.get('password')!==data.get('confirm')){error.textContent='Passwords do not match';return}try{const response=await fetch('/api/os/setup',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({password:data.get('password')})});const body=await response.json();if(!response.ok)throw new Error(body.error||'setup_failed');form.reset();location.href='/os'}catch(exception){error.textContent=exception.message==='password_too_short'?'Use at least 12 characters':'Setup unavailable'}})</script></body></html>`;
+const sendSystemSetup = (response) => {
+  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OOXME OS Setup</title><style>html,body{margin:0;min-height:100%;background:#fff;color:#111;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Rounded","Helvetica Neue",sans-serif}body{display:grid;place-items:center;padding:24px;box-sizing:border-box}.setup{width:min(100%,380px);display:grid;gap:16px}.setup h1{margin:0;font-size:20px;font-weight:500}.setup p{margin:0;color:#666;font-size:13px;line-height:1.4}.setup form{display:grid;gap:12px}.setup input,.setup button{box-sizing:border-box;width:100%;min-height:48px;border:1px solid #d8dbe2;border-radius:16px;padding:0 16px;font:inherit;font-size:16px}.setup button{border:0;background:#111;color:#fff;cursor:pointer}.error{min-height:1.2em;color:#9b3131;font-size:13px}</style></head><body><main class="setup"><h1>OOXME OS admin setup</h1><p>Set the admin password locally. Only a server-side scrypt hash is stored.</p><form><input type="password" name="password" autocomplete="new-password" minlength="12" placeholder="Password (12+ characters)" required><input type="password" name="confirm" autocomplete="new-password" minlength="12" placeholder="Confirm password" required><button type="submit">Configure securely</button><div class="error" role="alert"></div></form></main><script>const form=document.querySelector('form'),error=document.querySelector('.error');form.addEventListener('submit',async event=>{event.preventDefault();error.textContent='';const data=new FormData(form);if(data.get('password')!==data.get('confirm')){error.textContent='Passwords do not match';return}try{const response=await fetch('/api/os/setup',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({password:data.get('password')})});const body=await response.json();if(!response.ok)throw new Error(body.error||'setup_failed');form.reset();location.href='/system'}catch(exception){error.textContent=exception.message==='password_too_short'?'Use at least 12 characters':'Setup unavailable'}})</script></body></html>`;
   response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
   response.end(body);
 };
@@ -256,16 +256,16 @@ const server = http.createServer(async (request, response) => {
   }
   const page = pageRoutes[requestPath];
 
-  if (requestPath === '/os/setup') {
-    if (String(request.socket?.remoteAddress || '') === '127.0.0.1' || String(request.socket?.remoteAddress || '') === '::1' || String(request.socket?.remoteAddress || '') === '::ffff:127.0.0.1') return sendOsSetup(response);
+  if (requestPath === '/system/setup') {
+    if (String(request.socket?.remoteAddress || '') === '127.0.0.1' || String(request.socket?.remoteAddress || '') === '::1' || String(request.socket?.remoteAddress || '') === '::ffff:127.0.0.1') return sendSystemSetup(response);
     return send(response, 403, 'text/plain; charset=utf-8', 'Local setup only');
   }
 
-  if (requestPath === '/os') {
+  if (requestPath === '/system') {
     try {
       const session = await authenticateAndIssueCsrf(request);
-       if (!session) return sendOsLoginPage(response, 200, request);
-       return void sendOsAuthenticatedPage(response, request, session);
+       if (!session) return sendSystemLoginPage(response, 200, request);
+       return void sendSystemAuthenticatedPage(response, request, session);
     } catch (error) {
       return send(response, Number(error.status) || 503, 'text/plain; charset=utf-8', 'OS authentication unavailable');
     }

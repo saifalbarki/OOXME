@@ -94,7 +94,7 @@ const main = async () => {
   await waitForReady();
   const address = lanAddress();
   if (!address) throw new Error('No active LAN IPv4 address detected');
-  console.log(`OOXME LAN /os: http://${address}:${port}/os`);
+  console.log(`OOXME LAN /system: http://${address}:${port}/system`);
 };
 
 main().catch(async (error) => {

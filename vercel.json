@@ -12,7 +12,7 @@
       ]
     },
     {
-      "source": "/os.webmanifest",
+      "source": "/system.webmanifest",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
@@ -71,14 +71,15 @@
     { "source": "/consultation", "destination": "/consultation.html" },
     { "source": "/check", "destination": "/check.html" },
     { "source": "/store", "destination": "/store.html" },
-    { "source": "/os", "destination": "/api/os/auth?view=page" }
+    { "source": "/system", "destination": "/api/os/auth?view=page" }
   ],
   "redirects": [
     { "source": "/bm", "destination": "/services", "permanent": true },
     { "source": "/service", "destination": "/services", "permanent": true },
     { "source": "/start", "destination": "/update", "permanent": true },
     { "source": "/scale", "destination": "/consultation", "permanent": true },
-    { "source": "/system", "destination": "/os", "permanent": true },
+    { "source": "/os", "destination": "/system", "permanent": true },
+    { "source": "/os.webmanifest", "destination": "/system.webmanifest", "permanent": true },
     { "source": "/rpn", "destination": "/space", "permanent": true }
   ]
 }
