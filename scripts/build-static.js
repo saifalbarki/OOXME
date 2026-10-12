@@ -33,7 +33,7 @@ const analyticsSnippet = `
 const assetVersion = process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || '';
 const versionQuery = assetVersion ? `?v=${assetVersion}` : '';
 const versionRootReferences = (html) => assetVersion
-  ? html.replace(/((?:href|src)="\/?(?:assets\/logo\/Favicon\.png|site\.webmanifest|system\.webmanifest))"/g, `$1${versionQuery}"`)
+  ? html.replace(/((?:href|src)="\/?(?:site\.webmanifest|system\.webmanifest))"/g, `$1${versionQuery}"`)
   : html;
 const versionStaticReferences = (html) => assetVersion
   ? versionRootReferences(html.replace(/((?:href|src)="\/?(?:css|js|assets\/(?:fonts|projects))\/[^"?]+)"/g, `$1?v=${assetVersion}"`))
@@ -113,7 +113,6 @@ for (const name of rootFiles) {
   const destination = path.join(output, name);
   if ((name === 'site.webmanifest' || name === 'system.webmanifest' || name === 'check.webmanifest') && assetVersion) {
     const manifest = JSON.parse(fs.readFileSync(source, 'utf8'));
-    manifest.icons = manifest.icons.map((icon) => ({ ...icon, src: `${icon.src}${versionQuery}` }));
     fs.writeFileSync(destination, `${JSON.stringify(manifest, null, 2)}\n`);
   } else {
     fs.copyFileSync(source, destination);
