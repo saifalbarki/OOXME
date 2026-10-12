@@ -170,14 +170,18 @@
       stage.dataset.initialized = 'true';
     }
     const reference = app.querySelector('.service-atlas__hero [data-scroll-to]');
-    const render = (translation, centerOffset, limit) => { track.style.transform = 'translate3d(' + translation + 'px,0,0)'; const position = limit ? Math.max(0, Math.min(1, (centerOffset - translation) / limit)) : 0; track.querySelectorAll(':scope > .service-atlas__chapter').forEach((chapter, cardIndex) => { const distance = Math.min(1, Math.abs(cardIndex - position)); chapter.style.setProperty('--chapter-card-scale', String(1 - (distance * .06))); chapter.style.setProperty('--chapter-card-opacity', String(1 - (distance * .28))); chapter.style.direction = document.documentElement.dir || 'ltr'; }); };
+    const render = (translation, centerOffset, limit) => { track.style.transform = 'translate3d(' + translation + 'px,0,0)'; const rtl = document.documentElement.dir === 'rtl'; const firstCardOffset = rtl ? centerOffset - limit : centerOffset; const position = limit ? Math.max(0, Math.min(1, (translation - firstCardOffset) / limit)) : 0; track.querySelectorAll(':scope > .service-atlas__chapter').forEach((chapter, cardIndex) => { const distance = Math.min(1, Math.abs(cardIndex - position)); chapter.style.setProperty('--chapter-card-scale', String(1 - (distance * .06))); chapter.style.setProperty('--chapter-card-opacity', String(1 - (distance * .28))); chapter.style.direction = rtl ? 'rtl' : 'ltr'; }); };
     const sync = () => {
       const gap = parseFloat(getComputedStyle(stage).getPropertyValue('--s-x')) || 18;
       const width = Math.max(0, reference?.getBoundingClientRect().width || parseFloat(getComputedStyle(app).getPropertyValue('--atlas-action-width')) || stage.clientWidth - (gap * 2));
       const centerOffset = Math.max(0, (stage.clientWidth - width) / 2);
       stage.style.setProperty('--chapter-card-width', `${width}px`);
+      const limit = width + gap;
+      const rtl = document.documentElement.dir === 'rtl';
+      track.style.flexDirection = rtl ? 'row-reverse' : 'row';
       const index = Number(stage.dataset.index || 0);
-      render(centerOffset - (index * (width + gap)), centerOffset, width + gap);
+      const firstCardOffset = rtl ? centerOffset - limit : centerOffset;
+      render(firstCardOffset + (index * limit), centerOffset, limit);
     };
     const syncDrag = (delta) => {
       const gap = parseFloat(getComputedStyle(stage).getPropertyValue('--s-x')) || 18;
@@ -185,9 +189,11 @@
       const centerOffset = Math.max(0, (stage.clientWidth - width) / 2);
       const index = Number(stage.dataset.index || 0);
       const limit = width + gap;
-      const base = centerOffset - (index * limit);
-      const effectiveDelta = document.documentElement.dir === 'rtl' ? -delta : delta;
-      const candidate = base + effectiveDelta;
+      const rtl = document.documentElement.dir === 'rtl';
+      track.style.flexDirection = rtl ? 'row-reverse' : 'row';
+      const firstCardOffset = rtl ? centerOffset - limit : centerOffset;
+      const base = firstCardOffset + (index * limit);
+      const candidate = base + delta;
       const translation = Math.max(centerOffset - limit, Math.min(centerOffset, candidate));
       render(translation, centerOffset, limit);
     };
@@ -274,4 +280,58 @@
   };
   syncSelectedWorksContent();
   window.addEventListener('ooxme-language-change', syncSelectedWorksContent);
+})();
+
+(() => {
+  const page = document.querySelector('.s-page--services');
+  if (!page) return;
+
+  page._servicesViewportSyncCleanup?.();
+
+  let frame = 0;
+  let lastOffset = null;
+  const viewport = window.visualViewport;
+  const controls = 'input,select,textarea,[contenteditable="true"]';
+
+  const sync = () => {
+    frame = 0;
+    const layoutHeight = Math.max(1, Math.round(document.documentElement.clientHeight || window.innerHeight || 0));
+    const active = document.activeElement;
+    const keyboardOpen = Boolean(active && active.matches?.(controls));
+    const keyboardOffset = viewport && keyboardOpen
+      ? Math.max(0, layoutHeight - viewport.height - viewport.offsetTop)
+      : 0;
+    const nextOffset = Number(keyboardOffset.toFixed(2));
+    if (lastOffset !== nextOffset) {
+      page.style.setProperty('--s-keyboard-offset', `${nextOffset.toFixed(2)}px`);
+      lastOffset = nextOffset;
+    }
+  };
+
+  const schedule = () => {
+    if (frame) return;
+    frame = window.requestAnimationFrame(sync);
+  };
+
+  const onViewportChange = () => schedule();
+  const onFocusChange = () => schedule();
+  window.addEventListener('resize', onViewportChange, { passive: true });
+  window.addEventListener('orientationchange', onViewportChange, { passive: true });
+  page.addEventListener('focusin', onFocusChange, { passive: true });
+  page.addEventListener('focusout', onFocusChange, { passive: true });
+  viewport?.addEventListener('resize', onViewportChange, { passive: true });
+  viewport?.addEventListener('scroll', onViewportChange, { passive: true });
+  document.fonts?.ready.then(schedule);
+  schedule();
+
+  page._servicesViewportSyncCleanup = () => {
+    window.removeEventListener('resize', onViewportChange);
+    window.removeEventListener('orientationchange', onViewportChange);
+    page.removeEventListener('focusin', onFocusChange);
+    page.removeEventListener('focusout', onFocusChange);
+    viewport?.removeEventListener('resize', onViewportChange);
+    viewport?.removeEventListener('scroll', onViewportChange);
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+  };
 })();
