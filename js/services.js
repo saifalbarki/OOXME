@@ -133,6 +133,29 @@
       visuals.forEach((visual) => { visual.style.minHeight = ''; });
       const cardHeight = Math.max(...visuals.map((visual) => visual.getBoundingClientRect().height), 0);
       visuals.forEach((visual) => { visual.style.minHeight = `${cardHeight}px`; });
+
+      const footers = contents.map((content) => {
+        const visual = content.closest('.service-atlas__chapter')?.querySelector(':scope > .service-atlas__chapter-visual');
+        const actions = content.querySelector(':scope > .service-atlas__actions');
+        const price = content.querySelector(':scope > .service-atlas__chapter-price');
+        return { visual, actions, price };
+      }).filter(({ visual, actions, price }) => visual && actions && price);
+      footers.forEach(({ actions, price }) => {
+        actions.style.setProperty('--chapter-footer-shift', '0px');
+        price.style.setProperty('--chapter-footer-shift', '0px');
+      });
+      const bottomGaps = footers.map(({ visual, actions, price }) => {
+        const visualBottom = visual.getBoundingClientRect().bottom;
+        const footerBottom = Math.max(actions.getBoundingClientRect().bottom, price.getBoundingClientRect().bottom);
+        return visualBottom - footerBottom;
+      });
+      const targetGap = Math.min(...bottomGaps);
+      footers.forEach(({ actions, price }, index) => {
+        const shift = Math.max(0, bottomGaps[index] - targetGap);
+        const value = `${shift}px`;
+        actions.style.setProperty('--chapter-footer-shift', value);
+        price.style.setProperty('--chapter-footer-shift', value);
+      });
     });
   };
   syncChapterOrder();
@@ -170,10 +193,9 @@
       stage.dataset.index = '0';
       stage.dataset.initialized = 'true';
     }
-    const reference = app.querySelector('.service-atlas__hero [data-scroll-to]');
     const getMetrics = () => {
       const gap = parseFloat(getComputedStyle(stage).getPropertyValue('--s-x')) || 18;
-      const width = Math.max(0, reference?.getBoundingClientRect().width || parseFloat(getComputedStyle(app).getPropertyValue('--atlas-action-width')) || stage.clientWidth - (gap * 2));
+      const width = Math.max(0, parseFloat(getComputedStyle(app).getPropertyValue('--atlas-action-width')) || stage.clientWidth - (gap * 2));
       const rtl = document.documentElement.dir === 'rtl';
       stage.style.setProperty('--chapter-card-width', `${width}px`);
       track.style.flexDirection = rtl ? 'row-reverse' : 'row';
@@ -191,7 +213,6 @@
       const rtl = document.documentElement.dir === 'rtl';
       track.querySelectorAll(':scope > .service-atlas__chapter').forEach((chapter, cardIndex) => {
         const distance = Math.min(1, Math.abs(cardIndex - position));
-        chapter.style.setProperty('--chapter-card-scale', String(1 - (distance * .06)));
         chapter.style.setProperty('--chapter-card-opacity', String(1 - (distance * .28)));
         chapter.style.direction = rtl ? 'rtl' : 'ltr';
       });
@@ -258,7 +279,6 @@
     if (typeof ResizeObserver === 'function') {
       stage._atlasResizeObserver = new ResizeObserver(() => requestAnimationFrame(sync));
       stage._atlasResizeObserver.observe(stage);
-      if (reference) stage._atlasResizeObserver.observe(reference);
     }
     activeSync = sync;
     syncViewportWidth();
