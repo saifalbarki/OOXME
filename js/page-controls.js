@@ -24,15 +24,15 @@
       'gallery-zone': '[data-gallery-project="zone"] [data-gallery-deck]',
       'gallery-sada-al-riwaq': '[data-gallery-project="sda-alrwaq"] [data-gallery-deck]'
     },
-    '/bm': {
-      'bm-view': '[data-brand-view]',
-      'bm-prev': '[data-brand-prev]',
-      'bm-next': '[data-brand-next]'
+    '/services': {
+      'services-view': '[data-services-view]',
+      'services-prev': '[data-services-prev]',
+      'services-next': '[data-services-next]'
     },
     '/space': {
-      'rpn-faq': '.space-faq__question',
-      'rpn-email': '.space-application__button[href^="mailto:"]',
-      'rpn-join': '.space-application__button--join'
+      'space-faq': '.space-faq__question',
+      'space-email': '.space-application__button[href^="mailto:"]',
+      'space-join': '.space-application__button--join'
     },
     '/consultation': {
       'consultation-send': '[data-s-consultation-composer] button[type="submit"]',

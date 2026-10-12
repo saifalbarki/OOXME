@@ -15,7 +15,7 @@ const deploymentOnlyExclusions = [
 const rootFiles = ['site.webmanifest', 'os.webmanifest', 'check.webmanifest', 'robots.txt', 'sitemap.xml'];
 const pageOutputs = {
   'main.html': 'index.html',
-  'brand.html': 'bm.html',
+  'services.html': 'services.html',
   'gallery.html': 'gallery.html',
   'space.html': 'space.html',
   'update.html': 'update.html',

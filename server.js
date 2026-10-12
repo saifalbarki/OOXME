@@ -33,7 +33,7 @@ if (process.env.NODE_ENV !== 'production' && typeof process.loadEnvFile === 'fun
 
 const pageRoutes = {
   '/': 'main.html',
-  '/bm': 'brand.html',
+  '/services': 'services.html',
   '/gallery': 'gallery.html',
   '/space': 'space.html',
   '/update': 'update.html',
@@ -42,7 +42,7 @@ const pageRoutes = {
   '/store': 'store.html',
   '/os': 'os.html'
 };
-const legacyRoutes = { '/service': '/bm', '/start': '/update', '/scale': '/consultation', '/system': '/os', '/rpn': '/space' };
+const legacyRoutes = { '/bm': '/services', '/service': '/services', '/start': '/update', '/scale': '/consultation', '/system': '/os', '/rpn': '/space' };
 const publicRoots = ['assets', 'css', 'js', 'public'];
 const publicRootFiles = new Set(['site.webmanifest', 'os.webmanifest', 'check.webmanifest']);
 const apiRoutes = {

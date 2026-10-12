@@ -41,6 +41,7 @@
   const addButton = composer?.querySelector('.s-page__add');
   const submitButton = composer?.querySelector('button[type="submit"]');
   if (!composer || !addButton || !submitButton) return;
+  const isCheckPage = document.body.classList.contains('s-page--check');
 
   const unreadIndicator = submitButton.querySelector('.s-page__notification-indicator') || document.createElement('span');
   unreadIndicator.className = 's-page__notification-indicator';
@@ -52,14 +53,17 @@
   if (!unreadIndicator.parentElement) submitButton.append(unreadIndicator);
 
   const pulse = () => {
+    if (isCheckPage) return;
     composer.classList.remove('is-pulsing');
     requestAnimationFrame(() => composer.classList.add('is-pulsing'));
   };
-  composer.addEventListener('animationend', (event) => {
-    if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing');
-  });
-  [addButton, submitButton].forEach((control) => control.addEventListener('pointerdown', pulse, { passive: true }));
-  composer.addEventListener('pointerdown', (event) => { if (event.target === composer) pulse(); }, { passive: true });
+  if (!isCheckPage) {
+    composer.addEventListener('animationend', (event) => {
+      if (event.animationName === 's-page-composer-pulse') composer.classList.remove('is-pulsing');
+    });
+    [addButton, submitButton].forEach((control) => control.addEventListener('pointerdown', pulse, { passive: true }));
+    composer.addEventListener('pointerdown', (event) => { if (event.target === composer) pulse(); }, { passive: true });
+  }
 
   const menu = composer.querySelector('[data-s-composer-menu]');
   const utilities = composer.querySelector('[data-s-send-utilities]');
@@ -86,7 +90,7 @@
     writeNotificationState(state);
   };
   const pageFadeTargets = [...document.querySelectorAll(
-    'body.s-page--main > .s-page__content > *, body.s-page--main > .s-page__conversation > *, body.s-page--main > .s-page__conversation-final > *, body.s-page--gallery > .s-page__content > *, body.s-page--space > .s-page__content > *, body.s-page--update > .s-page__content > *, body.s-page--consultation > .s-page__content > *, body.s-page--store > .s-page__content > *, body.s-page--brand-management > .s-page__content > *'
+    'body.s-page--main > .s-page__content > *, body.s-page--main > .s-page__conversation > *, body.s-page--main > .s-page__conversation-final > *, body.s-page--gallery > .s-page__content > *, body.s-page--space > .s-page__content > *, body.s-page--update > .s-page__content > *, body.s-page--consultation > .s-page__content > *, body.s-page--store > .s-page__content > *, body.s-page--services > .s-page__content > *'
   )];
   let pageScrollLocked = false;
   let lockedScrollX = 0;
@@ -115,7 +119,7 @@
       || document.body.classList.contains('s-page--update')
       || document.body.classList.contains('s-page--consultation')
       || document.body.classList.contains('s-page--store')
-      || document.body.classList.contains('s-page--brand-management')
+      || document.body.classList.contains('s-page--services')
       || document.body.classList.contains('s-page--check');
     if (!isHomepageMenuPage) return;
     document.body.classList.toggle('is-menu-open', isOpen);
@@ -190,7 +194,7 @@
   const syncNotificationIndicator = ({ pulse: shouldPulse = false } = {}) => {
     const showUnread = notificationStateResolved && !notificationRead;
     unreadIndicator.hidden = !showUnread;
-    if (showUnread && shouldPulse) {
+    if (showUnread && shouldPulse && !isCheckPage) {
       unreadIndicator.classList.remove('is-pulsing');
       requestAnimationFrame(() => unreadIndicator.classList.add('is-pulsing'));
     }
@@ -251,7 +255,7 @@
     menu.setAttribute('aria-label', root.lang === 'ar' ? 'التنقل الرئيسي' : 'Main navigation');
     const items = [
       itemForKey('home', '/'),
-      itemForKey('brand', '/bm'),
+      itemForKey('services', '/services'),
       itemForKey('gallery', '/gallery'),
       itemForKey('store', '', false, true),
       itemForKey('consultation', '/consultation'),
@@ -261,8 +265,8 @@
     ];
     const language = root.lang === 'en' ? 'en' : 'ar';
     const menuLabels = {
-      en: { home: 'Home', brand: 'Brand Management', gallery: 'Gallery', store: 'Store', consultation: 'Consultation', contact: 'Contact', language: 'Language', appearance: 'Appearance' },
-      ar: { home: 'الرئيسية', brand: 'إدارة العلامة التجارية', gallery: 'المعرض', store: 'المتجر', consultation: 'الاستشارة', contact: 'تواصل', language: 'اللغة', appearance: 'المظهر' }
+      en: { home: 'Home', services: 'Services', gallery: 'Gallery', store: 'Store', consultation: 'Consultation', contact: 'Contact', language: 'Language', appearance: 'Appearance' },
+      ar: { home: 'الرئيسية', services: 'الخدمات', gallery: 'المعرض', store: 'المتجر', consultation: 'الاستشارة', contact: 'تواصل', language: 'اللغة', appearance: 'المظهر' }
     };
     items.forEach((item) => {
       const key = item.dataset.sMenuKey;
@@ -335,11 +339,17 @@
       menu?.classList.add('is-open');
       menu?.setAttribute('aria-hidden', 'false');
       if (menu) menu.inert = false;
-      requestAnimationFrame(() => {
+      if (isCheckPage) {
         measureMenuEdge();
-        requestAnimationFrame(measureMenuDotAlignment);
-        requestAnimationFrame(updateMenuLayoutMode);
-      });
+        measureMenuDotAlignment();
+        updateMenuLayoutMode();
+      } else {
+        requestAnimationFrame(() => {
+          measureMenuEdge();
+          requestAnimationFrame(measureMenuDotAlignment);
+          requestAnimationFrame(updateMenuLayoutMode);
+        });
+      }
       submitButton.classList.add('is-active');
       submitButton.setAttribute('aria-expanded', 'true');
       updateMenuTriggerLabel();
@@ -366,15 +376,19 @@
     menu.addEventListener('pointerdown', (event) => {
       const notification = event.target.closest('.s-page__composer-menu-notification');
       if (notification) {
-        notification.classList.add('is-active');
-        window.setTimeout(() => notification.classList.remove('is-active'), 120);
+        if (!isCheckPage) {
+          notification.classList.add('is-active');
+          window.setTimeout(() => notification.classList.remove('is-active'), 120);
+        }
         return;
       }
       const item = event.target.closest('.s-page__composer-menu-item');
       if (!item || item.disabled) return;
       if (item.dataset.sMenuKey === 'store') return;
-      item.classList.add('is-active');
-      window.setTimeout(() => item.classList.remove('is-active'), 120);
+      if (!isCheckPage) {
+        item.classList.add('is-active');
+        window.setTimeout(() => item.classList.remove('is-active'), 120);
+      }
     }, { passive: true });
     menu.addEventListener('click', (event) => {
       const notification = event.target.closest('.s-page__composer-menu-notification');
@@ -388,7 +402,6 @@
         setMenuOpen(false);
         const gallery = document.querySelector('[data-s-gallery-preview]');
         if (gallery) {
-          const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
           let focused = false;
           const restartPreview = () => {
             if (focused) return;
@@ -396,19 +409,21 @@
             window.OOXMEGalleryPreview?.restart?.();
           };
           const focusGallery = () => {
-            gallery.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
-            if (reducedMotion) restartPreview();
+            gallery.scrollIntoView({ behavior: isCheckPage ? 'auto' : (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'), block: 'center' });
+            if (isCheckPage || window.matchMedia('(prefers-reduced-motion: reduce)').matches) restartPreview();
             else {
               gallery.addEventListener('scrollend', restartPreview, { once: true });
               window.setTimeout(restartPreview, 600);
             }
           };
-          window.setTimeout(focusGallery, menuMotionDuration);
+          if (isCheckPage) focusGallery();
+          else window.setTimeout(focusGallery, menuMotionDuration);
         } else {
           // The notification always targets the Homepage Gallery Preview.
           // On internal routes, complete the shared menu close before routing
           // so the destination uses the Homepage's own section geometry.
-          window.setTimeout(() => window.location.assign('/?section=gallery'), menuMotionDuration);
+          if (isCheckPage) window.location.assign('/?section=gallery');
+          else window.setTimeout(() => window.location.assign('/?section=gallery'), menuMotionDuration);
         }
         return;
       }
@@ -427,14 +442,16 @@
         event.stopPropagation();
         const arrow = item.querySelector('.s-page__composer-menu-icon-arrow');
         if (arrow) {
-          arrow.getAnimations().forEach((animation) => animation.cancel());
-          arrow.animate([
-            { translate: '0 0' },
-            { translate: '4px 0' },
-            { translate: '-4px 0' },
-            { translate: '2px 0' },
-            { translate: '0 0' }
-          ], { duration: 220, easing: 'ease-in-out', fill: 'none' });
+          if (!isCheckPage) {
+            arrow.getAnimations().forEach((animation) => animation.cancel());
+            arrow.animate([
+              { translate: '0 0' },
+              { translate: '4px 0' },
+              { translate: '-4px 0' },
+              { translate: '2px 0' },
+              { translate: '0 0' }
+            ], { duration: 220, easing: 'ease-in-out', fill: 'none' });
+          }
         }
         return;
       }
@@ -446,7 +463,8 @@
       event.stopPropagation();
       setMenuOpen(false);
       const destination = item.href;
-      window.setTimeout(() => window.location.assign(destination), menuMotionDuration);
+      if (isCheckPage) window.location.assign(destination);
+      else window.setTimeout(() => window.location.assign(destination), menuMotionDuration);
     });
     document.addEventListener('keydown', (event) => {
       if (event.key !== 'Escape' || !menu.classList.contains('is-open')) return;
@@ -573,6 +591,13 @@
   const eyeMotion = face?.querySelector('.s-page__x-face-eye-motion');
   if (!addButton || !face || !shell || !eyes || !eyeMotion) return;
   const isCheckPage = document.body.classList.contains('s-page--check');
+  if (isCheckPage) {
+    face.dataset.faceState = 'idle';
+    shell.setAttribute('transform', 'translate(0 0)');
+    eyes.setAttribute('transform', 'translate(0 0)');
+    eyeMotion.setAttribute('transform', 'translate(0 0)');
+    return;
+  }
 
   const gazeLimit = 1.1;
   const dragThreshold = 6;

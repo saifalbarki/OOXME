@@ -1,8 +1,8 @@
 @import url("./main.css");
 
 html.s-route body.s-page--check {
-  --s-check-font-en: "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --s-check-font-ar: "SF Arabic Rounded", "SF Arabic", "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --s-check-font-en: var(--font-english);
+  --s-check-font-ar: var(--font-arabic);
   --s-check-font-family: var(--s-check-font-en);
   --s-check-vv-left: 0px;
   --s-check-vv-top: 0px;
@@ -320,40 +320,7 @@ html.s-route.is-day-mode body.s-page--check .s-check-composer-input { color: #11
 html.s-route.is-day-mode body.s-page--check .s-check-composer-input::placeholder { color: rgba(17, 17, 17, .52); }
 html.s-route.is-day-mode body.s-page--check .s-check-composer-send { color: #FFFFFF; background: #0A84FF; }
 
-body.s-page--check .s-page__composer {
-  top: max(calc(var(--s-check-vv-top) + var(--s-check-x)), calc(env(safe-area-inset-top) + var(--s-check-x)));
-  right: max(calc(100vw - var(--s-check-vv-left) - var(--s-check-vv-width) + var(--s-check-x)), calc(env(safe-area-inset-right) + var(--s-check-x)));
-  left: max(calc(var(--s-check-vv-left) + var(--s-check-x)), calc(env(safe-area-inset-left) + var(--s-check-x)));
-  width: auto;
-  height: 48px;
-  min-height: 48px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  pointer-events: none;
-}
-body.s-page--check .s-page__composer::before { display: none; }
-body.s-page.s-page--check .s-page__composer { grid-template-columns: 48px minmax(0, 1fr) 48px; }
-body.s-page.s-page--check .s-page__add,
-body.s-page.s-page--check .s-page__add.is-active {
-  pointer-events: auto;
-  position: fixed;
-  top: auto;
-  right: auto;
-  bottom: max(calc(100dvh - var(--s-check-vv-top) - var(--s-check-vv-height) + var(--s-check-x) + 8px), calc(env(safe-area-inset-bottom) + 8px));
-  left: max(calc(var(--s-check-vv-left) + var(--s-check-x)), calc(env(safe-area-inset-left) + var(--s-check-x)));
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--s-glass-stroke);
-  background: #080808 !important;
-  box-shadow: 0 2px 7px rgba(0, 0, 0, .045), 0 1px 1px rgba(0, 0, 0, .025);
-  -webkit-backdrop-filter: blur(20px) saturate(125%);
-  backdrop-filter: blur(20px) saturate(125%);
-  transform: none;
-}
-/* /check owns this control because its page-specific composer intentionally does not load main.css. */
+/* /check uses the shared composer tokens while keeping its page-specific controls. */
 body.s-page.s-page--check .s-page__add > span,
 body.s-page.s-page--check .s-page__add > span::after {
   display: block;
@@ -374,23 +341,6 @@ body.s-page.s-page--check .s-page__add > span::after {
   transform: rotate(90deg);
 }
 body.s-page.s-page--check .s-page__add .s-page__x-top-bar-eyes { display: none; }
-body.s-page.s-page--check .s-page__add,
-body.s-page.s-page--check .s-page__add.is-active,
-body.s-page.s-page--check .s-page__add.is-intro-visible {
-  bottom: max(calc(100dvh - var(--s-check-vv-top) - var(--s-check-vv-height) + var(--s-check-x) + 8px), calc(env(safe-area-inset-bottom) + 8px));
-}
-html.s-route:not(.is-day-mode) body.s-page.s-page--check .s-page__add,
-html.s-route:not(.is-day-mode) body.s-page.s-page--check .s-page__add.is-active {
-  background: #FFFFFF !important;
-  color: #080808;
-}
-html.s-route:not(.is-day-mode) body.s-page.s-page--check .s-page__add,
-html.s-route:not(.is-day-mode) body.s-page.s-page--check .s-page__add.is-active,
-html.s-route.is-day-mode body.s-page.s-page--check .s-page__add,
-html.s-route.is-day-mode body.s-page.s-page--check .s-page__add.is-active {
-  background: #292929 !important;
-  color: #F1F2F7 !important;
-}
 body.s-page.s-page--check .s-check-user-avatar-initial {
   display: grid;
   width: 100%;
@@ -1135,13 +1085,6 @@ html.s-route body.s-page.s-page--check main {
   margin: 0;
   overflow: hidden;
   background: #000000;
-}
-
-html.s-route body.s-page.s-page--check {
-  height: 100vh;
-  height: 100dvh;
-  min-height: 100vh;
-  min-height: 100dvh;
 }
 
 html.s-route.is-day-mode,

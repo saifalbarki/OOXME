@@ -543,8 +543,8 @@
       const loadConsultations = async () => { try { const response = await osFetch('/api/os/consultations', { cache: 'no-store' }); if (!response.ok) throw new Error(); consultationsData = (await response.json()).data?.consultations || []; } catch (_) { consultationsData = []; } renderConsultations(); };
       const controlPageName = (page, language = root.lang) => {
         const names = language === 'ar'
-          ? { Homepage: 'الرئيسية', Gallery: 'المعرض', 'Brand Management': 'العلامة', RPN: 'RPN', Consultation: 'الاستشارة', Store: 'المتجر', Update: 'التحديث' }
-          : { Homepage: 'Home', Gallery: 'Gallery', 'Brand Management': 'Brand', RPN: 'RPN', Consultation: 'Consultation', Store: 'Store', Update: 'Update' };
+          ? { Homepage: 'الرئيسية', Gallery: 'المعرض', Services: 'الخدمات', 'Brand Management': 'العلامة', RPN: 'RPN', Consultation: 'الاستشارة', Store: 'المتجر', Update: 'التحديث' }
+          : { Homepage: 'Home', Gallery: 'Gallery', Services: 'Services', 'Brand Management': 'Brand', RPN: 'RPN', Consultation: 'Consultation', Store: 'Store', Update: 'Update' };
         return names[page] || String(page || (root.lang === 'ar' ? 'صفحة' : 'Page')).split(/\s+/)[0];
       };
       const controlSectionName = (item) => {
@@ -554,10 +554,10 @@
         if (key === 'main-gallery') return root.lang === 'ar' ? 'المعرض' : 'Gallery';
         if (key.startsWith('main-')) return root.lang === 'ar' ? 'التواصل' : 'Contact';
         if (key.startsWith('gallery-')) return root.lang === 'ar' ? 'المشاريع' : 'Projects';
-        if (key === 'bm-view') return root.lang === 'ar' ? 'الرئيسي' : 'Main';
-        if (key.startsWith('bm-')) return root.lang === 'ar' ? 'التنقل' : 'Navigation';
-        if (key === 'rpn-faq') return 'FAQ';
-        if (key.startsWith('rpn-')) return root.lang === 'ar' ? 'التقديم' : 'Application';
+        if (key === 'services-view' || key === 'bm-view') return root.lang === 'ar' ? 'الرئيسي' : 'Main';
+        if (key.startsWith('services-') || key.startsWith('bm-')) return root.lang === 'ar' ? 'التنقل' : 'Navigation';
+        if (key === 'space-faq' || key === 'rpn-faq') return 'FAQ';
+        if (key.startsWith('space-') || key.startsWith('rpn-')) return root.lang === 'ar' ? 'التقديم' : 'Application';
         if (key.startsWith('consultation-')) return root.lang === 'ar' ? 'النموذج' : 'Form';
         if (key.startsWith('store-') || key.startsWith('update-')) return root.lang === 'ar' ? 'التنقل' : 'Navigation';
         return root.lang === 'ar' ? 'الرئيسي' : 'Main';
@@ -568,7 +568,7 @@
         const labels = {
           'main-update-1': 'فتح التحديث', 'main-rpn': 'فتح RPN', 'main-gallery': 'فتح المعرض', 'main-consultation': 'حجز استشارة',
           'main-phone': 'هاتف', 'main-email': 'بريد إلكتروني', 'main-whatsapp': 'واتساب', 'main-instagram': 'إنستغرام', 'main-facebook': 'فيسبوك', 'main-linkedin': 'لينكدإن',
-          'bm-view': 'عرض', 'bm-prev': 'السابق', 'bm-next': 'التالي', 'rpn-faq': 'أسئلة شائعة', 'rpn-email': 'إرسال بريد', 'rpn-join': 'انضمام',
+          'services-view': 'عرض', 'services-prev': 'السابق', 'services-next': 'التالي', 'bm-view': 'عرض', 'bm-prev': 'السابق', 'bm-next': 'التالي', 'space-faq': 'أسئلة شائعة', 'space-email': 'إرسال بريد', 'space-join': 'انضمام', 'rpn-faq': 'أسئلة شائعة', 'rpn-email': 'إرسال بريد', 'rpn-join': 'انضمام',
           'gallery-alfares': 'صور مشروع ألفارس', 'gallery-alsibtain': 'صور مشروع السبطين', 'gallery-velvet-flora': 'صور فيلفت فلورا', 'gallery-zone': 'صور مشروع زون', 'gallery-sada-al-riwaq': 'صور صدى الرواق',
           'consultation-send': 'إرسال رسالة', 'consultation-language': 'تبديل اللغة', 'consultation-apply': 'تقديم', 'consultation-zaincash': 'زين كاش', 'consultation-superqi': 'سوبر كي', 'consultation-confirm': 'تأكيد',
           'store-prev': 'المنتج السابق', 'store-next': 'المنتج التالي', 'update-prev': 'البطاقة السابقة', 'update-next': 'البطاقة التالية'

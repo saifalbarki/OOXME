@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const verifyStaticContracts = () => {
-  const pages = ['main.html', 'brand.html', 'gallery.html', 'space.html', 'update.html', 'consultation.html', 'store.html', 'os.html'];
+  const pages = ['main.html', 'services.html', 'gallery.html', 'space.html', 'update.html', 'consultation.html', 'store.html', 'os.html'];
   const styles = ['css/main.css', 'css/brand-base.css', 'css/update-base.css', 'css/tokens.css'];
   const runtimeSources = [...pages, ...styles].map(read).join('\n');
   assert(!/assets\/fonts\/[^)'"?]+\.(?:ttf|otf)/i.test(runtimeSources), 'Legacy font formats remain referenced');
