@@ -12,7 +12,7 @@ const deploymentOnlyExclusions = [
   'assets/fonts/SFPRODISPLAYREGULAR.OTF',
   'assets/fonts/TRYToshB-wght-BF677df27a71b87.ttf',
 ];
-const rootFiles = ['site.webmanifest', 'system.webmanifest', 'check.webmanifest', 'robots.txt', 'sitemap.xml'];
+const rootFiles = ['site.webmanifest', 'system.webmanifest', 'check.webmanifest', 'apple-touch-icon.png', 'robots.txt', 'sitemap.xml'];
 const pageOutputs = {
   'main.html': 'index.html',
   'services.html': 'services.html',

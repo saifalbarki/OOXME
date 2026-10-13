@@ -44,7 +44,7 @@ const pageRoutes = {
 };
 const legacyRoutes = { '/bm': '/services', '/service': '/services', '/start': '/update', '/scale': '/consultation', '/os': '/system', '/os/setup': '/system/setup', '/os.webmanifest': '/system.webmanifest', '/rpn': '/space' };
 const publicRoots = ['assets', 'css', 'js', 'public'];
-const publicRootFiles = new Set(['site.webmanifest', 'system.webmanifest', 'check.webmanifest']);
+const publicRootFiles = new Set(['site.webmanifest', 'system.webmanifest', 'check.webmanifest', 'apple-touch-icon.png']);
 const apiRoutes = {
   '/api/booking/available-slots': './api/public',
   '/api/booking/availability': './api/public',
