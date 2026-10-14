@@ -4,6 +4,7 @@
   const pricing = Object.freeze({
     serviceCode: 'consultation',
     currency: 'USD',
+    exchangeRates: Object.freeze({ USD_TO_IQD: 1520 }),
     durations: Object.freeze({
       45: Object.freeze({ base: 50 }),
       60: Object.freeze({ base: 75 }),

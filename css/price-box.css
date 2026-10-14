@@ -1,0 +1,59 @@
+/* Shared Services price-box component. */
+.service-atlas__price {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 34px;
+  margin: 20px 0 0;
+  padding: 7px 12px;
+  border: 1px solid rgba(10, 132, 255, .45);
+  border-radius: 999px;
+  background: rgba(10, 132, 255, .16);
+  color: var(--atlas-color-normal, #fff);
+  font-family: OOXMEEnglish, OOXMEScript, Arial, sans-serif;
+  font-size: var(--atlas-size-button, 12px);
+  font-weight: 500;
+  line-height: var(--atlas-line-button, 18px);
+  direction: ltr;
+}
+
+.service-atlas__price-number {
+  display: inline-block;
+  margin-inline: 0;
+  font-family: OOXMESFPro, Arial, sans-serif;
+  font-weight: 600;
+  direction: ltr;
+  unicode-bidi: isolate;
+  white-space: nowrap;
+}
+
+.service-atlas__price-currency {
+  display: inline-block;
+  margin-inline-start: 3px;
+  font-family: inherit;
+  font-weight: 400;
+  direction: ltr;
+  unicode-bidi: isolate;
+  white-space: nowrap;
+}
+
+html[lang="ar"] .service-atlas__price { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
+
+.service-atlas__hero-price-grid {
+  --hero-price-box-width: 124px;
+  --hero-price-box-height: 34px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--hero-price-box-width);
+  gap: var(--s-x);
+  width: min(100%, 360px);
+  margin: var(--s-x) auto 0;
+  color: #fff;
+  font-family: OOXMEEnglish, OOXMEScript, Arial, sans-serif;
+  direction: inherit;
+}
+
+.service-atlas__hero-price-pair { display: contents; }
+.service-atlas__hero-price { position: relative; z-index: 2; box-sizing: border-box; display: inline-flex; inline-size: var(--hero-price-box-width); block-size: var(--hero-price-box-height); min-height: var(--hero-price-box-height); align-items: center; justify-content: center; margin: 0; border: 1px solid var(--brand-blue, #0A84FF); background: var(--brand-blue, #0A84FF); color: #fff; text-align: center; }
+.service-atlas__hero-price-description { position: relative; z-index: 1; box-sizing: border-box; display: flex; inline-size: calc(100% + var(--s-x) + (var(--hero-price-box-width) / 2)); block-size: var(--hero-price-box-height); min-width: 0; min-height: var(--hero-price-box-height); align-items: center; justify-content: center; padding-block: 7px; padding-inline-start: 8px; padding-inline-end: calc(8px + var(--s-x) + (var(--hero-price-box-width) / 2)); border: 1px solid transparent; border-radius: 999px; background: var(--hero-description-bg, #2A2A2A); color: var(--hero-description-fg, #fff); font-family: OOXMEEnglish, OOXMEScript, Arial, sans-serif; font-size: var(--atlas-size-button, 12px); font-weight: 500; line-height: var(--atlas-line-button, 18px); text-align: center; white-space: nowrap; }
+html[lang="ar"] .service-atlas__hero-price-description { font-family: OOXMETosh, OOXMEScript, Arial, sans-serif; }
+.service-atlas__hero-price :is(.service-atlas__price-number, .service-atlas__price-currency) { color: inherit; }

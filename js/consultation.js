@@ -8,7 +8,6 @@
   const sections = Array.from(page?.querySelectorAll('[data-s-major-section]') || []);
   const consultationAction = page?.querySelector('.s-page__consultation-page-action');
   const consultationIntro = page?.querySelector('[data-s-consultation-intro]');
-  const startBookingButton = page?.querySelector('[data-s-consultation-start]');
   const summaryFrame = page?.querySelector('.s-page__major-section--consultation-summary');
   const sectionComposerUnit = page?.querySelector('[data-s-consultation-composer-unit]');
   const sectionComposer = page?.querySelector('[data-s-consultation-composer]');
@@ -16,7 +15,6 @@
   const sectionLanguage = page?.querySelector('[data-s-consultation-composer-language]');
   const sectionAnswerHistory = page?.querySelector('[data-s-consultation-answer-history]');
   const sectionChoiceTray = page?.querySelector('[data-s-consultation-choice-tray]');
-  const sectionComposerHelper = page?.querySelector('[data-s-consultation-composer-helper]');
   const sectionSuccess = page?.querySelector('[data-s-consultation-composer-success]');
   const sectionSend = sectionComposer?.querySelector('.s-page__consultation-composer-send');
   const summary = page?.querySelector('[data-s-consultation-summary]');
@@ -34,7 +32,8 @@
   const successOverlayTitle = page?.querySelector('[data-s-consultation-success-title]');
   const successOverlayInstruction = page?.querySelector('[data-s-consultation-success-instruction]');
   const consultationPricing = globalThis.OOXME_CONSULTATION_PRICING;
-  if (!page || !content || !composer || !addButton || !input || !consultationAction || !consultationIntro || !startBookingButton || !summaryFrame || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionComposerHelper || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || sections.length !== 2) return;
+  const priceFormatter = globalThis.OOXME_PRICE_FORMAT?.format;
+  if (!page || !content || !composer || !addButton || !input || !consultationAction || !consultationIntro || !summaryFrame || !sectionComposerUnit || !sectionComposer || !sectionInput || !sectionLanguage || !sectionAnswerHistory || !sectionChoiceTray || !sectionSuccess || !sectionSend || !summary || !discountForm || !discountInput || !discountStatus || !paymentOverlay || !paymentOverlayCard || !paymentOverlayTitle || !paymentOverlayQr || !paymentOverlayInstruction || !successOverlay || !successOverlayState || !successOverlayTitle || !successOverlayInstruction || !consultationPricing || !priceFormatter || sections.length !== 2) return;
 
   const copy = {
     en: { ask: 'Ask ooxme', add: 'OOXME character', language: 'Switch to Arabic' },
@@ -45,23 +44,19 @@
       hook: '<span>One consultation.</span><span>A better future.</span>',
       value: '<span>With more than 8 years of experience, we’ve diagnosed growth, operational, financial, and profit challenges. We analyze your business as a complete system, to identify problems, opportunities, and what deserves focus.</span>',
       topics: '<span class="s-page__consultation-intro-block-5">Get a <strong>Free business diagnosis</strong> after the consultation</span>',
-      pricingLabel: 'Consultation pricing',
-      discountNote: 'Available discounts may apply',
-      cta: 'Book Now'
+      pricingLabel: 'Consultation pricing'
     },
     ar: {
       hook: '<span>استشارة واحدة</span><span>ستغير مستقبل مشروعك</span>',
       value: '<span>بخبرة تتجاوز 8 سنوات، نساعدك على فهم تحديات النمو والتشغيل والمال والربحية، ونربط بين أسبابها ونتائجها. نحلل مشروعك كمنظومة متكاملة، ونراجع تفاصيله بوضوح لنحدد مشكلاته وفرصه، ونرتب أولوياته وما يستحق العمل عليه، لتخرج بخطوات أوضح نحو التطور.</span>',
       topics: '<span class="s-page__consultation-intro-block-5">احصل على <strong>تشخيص تجاري مجاني</strong> بعد الاستشارة</span>',
-      pricingLabel: 'أسعار الاستشارة',
-      discountNote: 'مع إمكانية الحصول على خصومات متاحة',
-      cta: 'احجز الآن'
+      pricingLabel: 'أسعار الاستشارة'
     }
   };
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-  let menuTimer = 0, locked = false, unlockTimer = 0, transitionSettleTimer = 0, touch = null;
+  let locked = false, unlockTimer = 0, transitionSettleTimer = 0;
   let closedComposerFrameHeight = 0, closedComposerBottom = 0, keyboardSyncFrame = 0, appliedKeyboardOffset = 0, keyboardViewportRevision = 0;
-  let introExitInProgress = false, introTransitionActive = false, bookingHelperDismissed = false;
+  let introExitInProgress = false, introTransitionActive = false;
   let keyboardBaselineViewportHeight = 0, keyboardSessionScrollY = null, keyboardSessionActive = false, keyboardOpen = false;
 
   const updateInputLanguage = () => {
@@ -107,7 +102,7 @@
         time: [],
         duration: [['45', '45 minutes'], ['60', '60 minutes'], ['90', '90 minutes'], ['120', '120 minutes']]
       },
-      success: 'Booking received successfully', send: 'Submit answer', confirm: 'Confirm booking', message: 'Consultation answer', helper: 'Click the box and answer the prompt.'
+      success: 'Booking received successfully', send: 'Submit answer', confirm: 'Confirm booking', message: 'Consultation answer', inactive: 'Click to start consultation booking'
     },
     ar: {
       questions: { name: 'ما اسمك؟', phone: 'ما رقم هاتفك؟', email: 'ما بريدك الإلكتروني؟', sector: 'اختر قطاع عملك:', topic: 'اختر موضوع الاستشارة:', day: 'اختر يوماً مناسباً:', time: 'اختر وقتاً مناسباً:', duration: 'اختر المدة التي تحتاجها:', confirm: 'تأكيد ومتابعة' },
@@ -118,7 +113,7 @@
         time: [],
         duration: [['45', '45 دقيقة'], ['60', '60 دقيقة'], ['90', '90 دقيقة'], ['120', '120 دقيقة']]
       },
-      success: 'تم استلام حجزك بنجاح', send: 'إرسال الإجابة', confirm: 'تأكيد الحجز', message: 'إجابة الاستشارة', helper: 'انقر في المربع، أجب عن المطلوب'
+      success: 'تم استلام حجزك بنجاح', send: 'إرسال الإجابة', confirm: 'تأكيد الحجز', message: 'إجابة الاستشارة', inactive: 'انقر لبدء حجز الاستشارة'
     }
   };
   const booking = { index: 0, answers: [], complete: false, summaryUnlocked: false, payment: '' };
@@ -142,36 +137,34 @@
   let editingAnswer = null;
   let sectionInputValidationStep = '';
   const bookingLanguage = () => document.documentElement.lang === 'ar' ? 'ar' : 'en';
-  const dismissBookingHelper = () => {
-    if (bookingHelperDismissed) return;
-    bookingHelperDismissed = true;
-    sectionComposerHelper.classList.remove('is-visible');
-    sectionComposerHelper.setAttribute('aria-hidden', 'true');
-  };
-  const revealBookingHelper = () => {
-    if (bookingHelperDismissed) return;
-    sectionComposerHelper.classList.add('is-visible');
-    sectionComposerHelper.setAttribute('aria-hidden', 'false');
+  const syncConsultationIntroGeometry = () => {
+    const topBarRect = composer.getBoundingClientRect();
+    const containingRect = consultationIntro.offsetParent?.getBoundingClientRect()
+      || consultationAction.getBoundingClientRect();
+    const leftInset = Math.max(0, topBarRect.left - containingRect.left);
+    const rightInset = Math.max(0, containingRect.right - topBarRect.right);
+    consultationIntro.style.setProperty('--s-consultation-intro-card-left', `${leftInset}px`);
+    consultationIntro.style.setProperty('--s-consultation-intro-card-right', `${rightInset}px`);
   };
   const syncConsultationIntro = () => {
     const language = bookingLanguage();
     const labels = introCopy[language];
     const pricingList = consultationIntro.querySelector('[data-s-consultation-intro-prices]');
-    const pricingNote = consultationIntro.querySelector('[data-s-consultation-intro-discount-note]');
     consultationIntro.querySelector('[data-s-consultation-intro-hook]').innerHTML = labels.hook;
     consultationIntro.querySelector('[data-s-consultation-intro-value]').innerHTML = labels.value;
     consultationIntro.querySelector('[data-s-consultation-intro-topics]').innerHTML = labels.topics;
+    pricingList.classList.add('service-atlas__hero-price-grid');
+    const usdToIqd = consultationPricing.exchangeRates.USD_TO_IQD;
     pricingList.innerHTML = Object.entries(consultationPricing.durations)
       .sort(([left], [right]) => Number(left) - Number(right))
-      .map(([duration, prices]) => `<span class="s-page__consultation-intro-price"><span>${language === 'ar' ? `${duration} دقيقة` : `${duration} min`}</span><span aria-hidden="true"> - </span><strong>$${Number(prices.base)}</strong></span>`)
+      .map(([duration, prices]) => {
+        const formattedPrice = priceFormatter(Number(prices.base) * usdToIqd);
+        return `<span class="service-atlas__hero-price-pair"><span class="service-atlas__hero-price-description">${language === 'ar' ? `${duration} دقيقة` : `${duration} min`}</span><span class="service-atlas__price service-atlas__hero-price"><span class="service-atlas__price-number" dir="ltr">${formattedPrice.amount}</span> <span class="service-atlas__price-currency" dir="ltr">${formattedPrice.currency}</span></span></span>`;
+      })
       .join('');
     pricingList.lang = language;
     pricingList.dir = language === 'ar' ? 'rtl' : 'ltr';
-    pricingNote.textContent = labels.discountNote;
-    pricingNote.lang = language;
-    pricingNote.dir = language === 'ar' ? 'rtl' : 'ltr';
     consultationIntro.querySelector('[data-s-consultation-intro-pricing]').setAttribute('aria-label', labels.pricingLabel);
-    startBookingButton.textContent = labels.cta;
     consultationIntro.setAttribute('aria-label', labels.hook);
     consultationIntro.lang = language;
     consultationIntro.dir = language === 'ar' ? 'rtl' : 'ltr';
@@ -559,9 +552,10 @@
     sectionSuccess.classList.toggle('is-arabic-success', language === 'ar');
     renderSectionSuccessMessage(language);
     sectionInput.hidden = booking.complete;
-    sectionInput.disabled = booking.complete || step.type !== 'text';
+    const bookingInactive = consultationAction.classList.contains('is-consultation-intro-state') || introTransitionActive;
+    sectionInput.disabled = booking.complete || step.type !== 'text' || bookingInactive;
     const validationMessage = sectionInputValidationStep === step.id ? sectionInputValidationMessages[step.id]?.[language] : '';
-    sectionInput.placeholder = booking.complete ? '' : validationMessage || labels.questions[step.id];
+    sectionInput.placeholder = bookingInactive ? labels.inactive : booking.complete ? '' : validationMessage || labels.questions[step.id];
     const textInputAttributes = {
       name: { name: 'customer-name', autocomplete: 'name', type: 'text', inputmode: 'text' },
       phone: { name: 'customer-phone', autocomplete: 'tel', type: 'tel', inputmode: 'tel' },
@@ -578,14 +572,11 @@
     // Set the language state after native type changes so mobile browsers keep
     // the current language's direction for both text and placeholder rendering.
     syncSectionInputTextStyle();
-    sectionComposerHelper.textContent = labels.helper;
-    sectionComposerHelper.lang = language;
-    sectionComposerHelper.dir = language === 'ar' ? 'rtl' : 'ltr';
-    sectionInput.setAttribute('aria-label', booking.complete ? labels.success : labels.questions[step.id]);
+    sectionInput.setAttribute('aria-label', bookingInactive ? labels.inactive : booking.complete ? labels.success : labels.questions[step.id]);
     sectionInput.closest('label').querySelector('.s-page__visually-hidden').textContent = booking.complete ? labels.success : labels.message;
     sectionSend.classList.toggle('is-confirm', !booking.complete && step.type === 'confirm');
     sectionSend.classList.toggle('is-success', booking.complete);
-    sectionSend.disabled = false;
+    sectionSend.disabled = bookingInactive;
     sectionSend.setAttribute('aria-label', step.type === 'confirm' ? labels.confirm : labels.send);
     sectionComposerUnit.classList.toggle('is-booking-complete', booking.complete);
     sectionComposerUnit.classList.toggle('is-booking-ready', !booking.complete && step.type === 'confirm');
@@ -837,11 +828,11 @@
     }
     const viewport = currentVisualViewport();
     if (!viewport) return;
-    // Restore the proven 12px gap method: calculate only the amount needed to
-    // place the fixed closed-baseline bottom above the CURRENT visual viewport.
-    // No document scroll, previous transform, or previous keyboard offset is used.
+    // Use the same overlap-only keyboard correction as the shared composer:
+    // move the closed baseline only by the amount covered by the current
+    // visual viewport. No arbitrary gap, document scroll, or previous offset.
     const keyboardTop = viewport.offsetTop + viewport.height;
-    const nextOffset = Math.max(0, closedComposerBottom - keyboardTop + 12);
+    const nextOffset = Math.max(0, closedComposerBottom - keyboardTop);
     setSectionComposerKeyboardOffset(nextOffset);
   };
   const scheduleSectionComposerKeyboard = () => {
@@ -896,7 +887,6 @@
   input.addEventListener('input', updateInputLanguage);
   sectionInput.addEventListener('input', () => {
     normalizePhoneFieldValue();
-    dismissBookingHelper();
     syncSectionInputTextStyle();
     if (sectionInputValidationStep) {
       sectionInputValidationStep = '';
@@ -907,6 +897,10 @@
   sectionInput.addEventListener('blur', restoreClosedSectionComposerBaseline);
   sectionComposer.addEventListener('submit', (event) => {
     event.preventDefault();
+    if (consultationAction.classList.contains('is-consultation-intro-state')) {
+      activateBooking();
+      return;
+    }
     if (booking.complete) { transition(1); return; }
     if (currentBookingStep().type === 'confirm') {
       if (!requiredBookingDataComplete()) return;
@@ -1032,25 +1026,30 @@
     consultationIntro.classList.add('is-dismissed');
     consultationAction.classList.remove('is-consultation-intro-state');
     establishClosedComposerBaseline();
-    revealBookingHelper();
+    renderBookingFlow();
     sectionInput.focus({ preventScroll: true });
   };
-  sectionComposerUnit.addEventListener('transitionend', (event) => {
-    if (introTransitionActive && event.target === sectionComposerUnit && event.propertyName === 'transform') finishIntroTransition();
+  consultationIntro.addEventListener('transitionend', (event) => {
+    if (introTransitionActive && event.target === consultationIntro && event.propertyName === 'opacity') finishIntroTransition();
   });
-  startBookingButton.addEventListener('click', () => {
-    if (introExitInProgress) return;
+  const activateBooking = () => {
+    if (!consultationAction.classList.contains('is-consultation-intro-state') || introExitInProgress) return;
     introExitInProgress = true;
     introTransitionActive = true;
     consultationIntro.setAttribute('aria-hidden', 'true');
     consultationIntro.classList.add('is-intro-transitioning');
     consultationAction.classList.remove('is-consultation-intro-state');
-    sectionComposerUnit.classList.remove('is-intro-hidden');
     requestAnimationFrame(() => {
       sectionComposerUnit.classList.add('is-intro-entering');
       if (reducedMotion.matches) finishIntroTransition();
     });
-  });
+  };
+  sectionComposerUnit.addEventListener('pointerdown', (event) => {
+    if (!consultationAction.classList.contains('is-consultation-intro-state')) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    activateBooking();
+  }, { capture: true });
   page.querySelector('[data-s-consultation-pay]').addEventListener('click', (event) => {
     event.preventDefault();
     if (!booking.complete) void submitCalendarBooking();
@@ -1082,15 +1081,18 @@
   }, { passive: true });
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
+      syncConsultationIntroGeometry();
       synchronizeClosedComposerFrame();
       scheduleSectionComposerKeyboard();
     }, { passive: true });
     window.visualViewport.addEventListener('scroll', () => {
+      syncConsultationIntroGeometry();
       synchronizeClosedComposerFrame();
       scheduleSectionComposerKeyboard();
     }, { passive: true });
   }
   window.addEventListener('resize', () => {
+    syncConsultationIntroGeometry();
     synchronizeClosedComposerFrame();
     if (!window.visualViewport) restoreClosedSectionComposerBaseline();
     scheduleBookingGeometry();
@@ -1101,6 +1103,7 @@
   requestAnimationFrame(() => {
     synchronizeClosedComposerFrame();
     renderBookingFlow();
+    syncConsultationIntroGeometry();
     restoreClosedSectionComposerBaseline();
     document.documentElement.classList.remove('s-x-initializing');
     void loadNearestBookingDays();

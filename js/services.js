@@ -15,7 +15,7 @@
   };
   const copy={en:{viewScope:'Explore the scope',request:'Request this service',requestShort:'Request service',scopeEyebrow:'How Brand Management works',scopeTitle:'Four operating areas. One managed brand.',smallEyebrow:'',smallTitle:'Small Design Services',smallLead:'We offer a range of creation and design services to help you prepare the materials your business needs, such as presentations, documents, forms, menus, and cards. Each service can be requested separately based on your needs.',from:'Starting at',technicalEyebrow:'Digital execution',technicalTitle:'Technical Services',technicalLead:'Choose the right technical starting point for the way your business needs to work.',technicalNote:'Technical scope may include design, development, responsiveness, hosting integration, security, and maintenance depending on the service. External subscriptions and third-party fees are excluded where applicable.',partnersEyebrow:'Connected delivery',partnersTitle:'Partner Services',custom:'Custom quotation',comingSoon:'Other services — Coming soon. Not currently orderable.',galleryEyebrow:'Selected work',galleryTitle:'Explore Our Work.',galleryLead:"Browse a selection of visual identity projects we've created for different brands, and discover how we design logos, colors, and visual elements that give each brand its own identity.",galleryAction:'Visit the Gallery',requestEyebrow:'Tell us what you need',requestTitle:"Let's Start Your Project.",requestLead:'Need one of our services or want to discuss a project idea? Contact us by phone, email, or WhatsApp. Tell us what you need, and we\'ll help you identify the right service and next steps.',service:'Service',name:'Name',contact:'Phone or email',business:'Business or sector',details:'Project details',send:'Prepare email request',fallback:'Email unavailable? Use one of the verified contact channels below.',status:'Your email application is opening with your prepared request.',required:'Please complete your name, contact details, and project details.',emailSubject:'OOXME Service Request',phone:'Phone',email:'Email',whatsapp:'WhatsApp'},ar:{viewScope:'استكشف النطاق',request:'اطلب هذه الخدمة',requestShort:'اطلب الخدمة',scopeEyebrow:'كيف تعمل إدارة العلامة',scopeTitle:'أربعة مجالات تشغيلية. علامة واحدة مُدارة.',smallEyebrow:'',smallTitle:'خدمات التصميم المصغرة',smallLead:'نقدم خدمات إنشاء وتصميم متنوعة تساعدك على تجهيز المواد التي تحتاجها في عملك، مثل العروض التقديمية والملفات والنماذج والقوائم والبطاقات. يمكنك طلب كل خدمة بشكل مستقل حسب احتياجك.',from:'يبدأ من',technicalEyebrow:'التنفيذ الرقمي',technicalTitle:'الخدمات التقنية',technicalLead:'اختر نقطة البداية التقنية المناسبة لطريقة عمل مشروعك.',technicalNote:'قد يشمل النطاق التقني التصميم والتطوير والاستجابة ودمج الاستضافة والأمان والصيانة بحسب الخدمة. الاشتراكات الخارجية ورسوم الأطراف الثالثة مستثناة عند الاقتضاء.',partnersEyebrow:'تنفيذ متصل',partnersTitle:'خدمات الشركاء',custom:'عرض سعر مخصص',comingSoon:'خدمات أخرى — قريباً. غير متاحة للطلب حالياً.',galleryEyebrow:'أعمال مختارة',galleryTitle:'اكتشف أعمالنا.',galleryLead:'تصفح مجموعة من مشاريع الهوية البصرية التي صممناها لعلامات تجارية مختلفة، وتعرّف على أسلوبنا في تصميم الشعارات والألوان والعناصر التي تمنح كل علامة هويتها الخاصة.',galleryAction:'زيارة المعرض',requestEyebrow:'أخبرنا بما تحتاجه',requestTitle:'لنبدأ مشروعك.',requestLead:'هل تحتاج إلى إحدى خدماتنا أو تريد مناقشة فكرة مشروعك؟ تواصل معنا عبر الهاتف أو البريد الإلكتروني أو واتساب. أخبرنا بما تحتاجه وسنساعدك على تحديد الخدمة المناسبة والخطوات التالية.',service:'الخدمة',name:'الاسم',contact:'الهاتف أو البريد الإلكتروني',business:'النشاط أو القطاع',details:'تفاصيل المشروع',send:'تجهيز طلب البريد الإلكتروني',fallback:'البريد غير متاح؟ استخدم إحدى قنوات التواصل الموثقة أدناه.',status:'يتم فتح تطبيق البريد لديك مع طلبك الجاهز.',required:'يرجى إكمال الاسم وبيانات التواصل وتفاصيل المشروع.',emailSubject:'طلب خدمة من OOXME',phone:'الهاتف',email:'البريد الإلكتروني',whatsapp:'واتساب'}};
   const esc=(value)=>String(value).replace(/[&<>'"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-  const formatPrice=(value)=>{const text=String(value).replace(/[٠-٩]/g,(digit)=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit))),match=text.match(/\d[\d,.'\s]*/);if(!match)return {prefix:text,amount:'',currency:''};const digits=match[0].replace(/\D/g,''),amount=digits.replace(/\B(?=(\d{3})+(?!\d))/g,"'"),suffix=text.slice(match.index+match[0].length),currency=/USD|دولار|\$/i.test(suffix)?'$':'IQD';return {prefix:text.slice(0,match.index).trimEnd(),amount,currency};};
+  const formatPrice = globalThis.OOXME_PRICE_FORMAT?.format || ((value) => ({ prefix: String(value), amount: '', currency: '' }));
   const priceMarkup=(value,includePrefix=false)=>{const formatted=formatPrice(value);if(!formatted.amount)return esc(formatted.prefix);const prefix=includePrefix&&formatted.prefix?`<span class="service-atlas__price-prefix">${esc(formatted.prefix)}</span> `:'';return `${prefix}<span class="service-atlas__price-number" dir="ltr">${formatted.amount}</span> <span class="service-atlas__price-currency" dir="ltr">${formatted.currency}</span>`;};
   const lang=()=>root.lang==='en'?'en':'ar';
   const button=(id,text)=>`<button class="service-atlas__button service-atlas__button--blue" type="button" data-request-service="${id}">${esc(text)}</button>`;
@@ -77,6 +77,16 @@
 (() => {
   const syncApprovedSectionCopy = () => {
     const english = document.documentElement.lang === 'en';
+    const flagshipHero = document.querySelector('.ooxme-services .service-atlas__hero');
+    const flagshipEyebrow = flagshipHero?.querySelector('.service-atlas__eyebrow');
+    const flagshipHeading = flagshipHero?.querySelector('.service-atlas__title');
+    flagshipHeading?.classList.add('service-atlas__primary-heading');
+    flagshipEyebrow?.remove();
+    if (!english) {
+      if (flagshipHeading) flagshipHeading.innerHTML = 'الخدمة الرئيسية<br>إدارة العلامة التجارية';
+    } else {
+      if (flagshipHeading) flagshipHeading.innerHTML = 'Main Service<br>Brand Management';
+    }
     const galleryTitle = document.querySelector('.ooxme-services .service-atlas__gallery .service-atlas__title');
     const galleryLead = document.querySelector('.ooxme-services .service-atlas__gallery .service-atlas__gallery-lead, .ooxme-services .service-atlas__gallery .service-atlas__lead');
     const requestTitle = document.querySelector('.ooxme-services .service-atlas__request .service-atlas__title');
@@ -230,6 +240,17 @@
       const position = index - (delta / Math.max(1, metrics.width + metrics.gap));
       render(resistance, metrics, Math.max(0, Math.min(1, position)));
     };
+    const isWithinVisibleCardBounds = (card, event) => {
+      const cardRect = card.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      const left = Math.max(cardRect.left, stageRect.left);
+      const right = Math.min(cardRect.right, stageRect.right);
+      const top = Math.max(cardRect.top, stageRect.top);
+      const bottom = Math.min(cardRect.bottom, stageRect.bottom);
+      return right > left && bottom > top
+        && event.clientX >= left && event.clientX <= right
+        && event.clientY >= top && event.clientY <= bottom;
+    };
     const move = (next) => {
       stage.dataset.index = String(Math.max(0, Math.min(1, next)));
       track.classList.remove('is-dragging');
@@ -242,7 +263,7 @@
       let blockedPointerId = null;
       stage.addEventListener('pointerdown', (event) => {
         const card = event.target.closest?.('.service-atlas__chapter');
-        if (card && track.contains(card)) {
+        if (card && track.contains(card) && isWithinVisibleCardBounds(card, event)) {
           blockedPointerId = null;
           return;
         }
@@ -256,6 +277,7 @@
       });
       chapters.forEach((card) => card.addEventListener('pointerdown', (event) => {
         if (event.isPrimary === false || event.target.closest('button,a,input,select,textarea') || (event.pointerType === 'mouse' && event.button !== 0)) return;
+        if (!isWithinVisibleCardBounds(card, event)) return;
         blockedPointerId = null;
         drag = { id: event.pointerId, startX: event.clientX, x: event.clientX, delta: 0, lastTime: performance.now(), velocity: 0, index: Number(stage.dataset.index || 0), metrics: getMetrics() };
         suppressClick = false;

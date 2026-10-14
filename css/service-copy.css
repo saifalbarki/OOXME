@@ -1,0 +1,49 @@
+/* Shared primary service-description contract used by Services and Consultation. */
+:is(.s-page__consultation-intro-hook, .service-atlas__primary-heading) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  color: #FFFFFF;
+  font: 600 clamp(22px, 4.8vw, 34px)/1.18 OOXMEScript, Arial, sans-serif;
+  letter-spacing: -.03em;
+  text-align: center;
+}
+
+html[lang="en"] :is(.s-page__consultation-intro-hook, .service-atlas__primary-heading) {
+  font-family: OOXMEEnglish, OOXMEScript, Arial, sans-serif;
+}
+
+html[lang="ar"] :is(.s-page__consultation-intro-hook, .service-atlas__primary-heading) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+  font-size: clamp(21px, 4.8vw, 34px);
+  letter-spacing: -.05em;
+}
+
+html.s-route.is-day-mode :is(.s-page__consultation-intro-hook, .service-atlas__primary-heading) {
+  color: var(--atlas-color-normal, #111111);
+}
+
+:is(.service-atlas__primary-description, .service-atlas__hero-copy > .service-atlas__lead) {
+  width: min(100%, var(--atlas-action-width, min(340px, calc(100vw - (var(--s-x) * 2)))));
+  max-width: var(--atlas-reference-lead-max-width, 610px);
+  margin: 18px auto 0;
+  padding: 0;
+  color: var(--atlas-reference-lead-color, #fff);
+  font-size: var(--atlas-size-button, 12px);
+  font-weight: 500;
+  line-height: var(--atlas-line-button, 18px);
+  letter-spacing: normal;
+  text-align: center;
+}
+
+html[lang="en"] :is(.service-atlas__primary-description, .service-atlas__hero-copy > .service-atlas__lead) {
+  font-family: OOXMEEnglish, OOXMEScript, Arial, sans-serif;
+}
+
+html[lang="ar"] :is(.service-atlas__primary-description, .service-atlas__hero-copy > .service-atlas__lead) {
+  font-family: OOXMETosh, OOXMEScript, Arial, sans-serif;
+}
+
+html.s-route.is-day-mode :is(.service-atlas__primary-description, .service-atlas__hero-copy > .service-atlas__lead) {
+  color: var(--atlas-reference-lead-color, rgba(17, 17, 17, .61));
+}
